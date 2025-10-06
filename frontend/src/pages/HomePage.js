@@ -21,6 +21,43 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Utility function for relative time
+const getRelativeTime = (dateString) => {
+  const now = new Date();
+  const postDate = new Date(dateString);
+  const diffInSeconds = Math.floor((now - postDate) / 1000);
+  
+  // Less than 1 minute
+  if (diffInSeconds < 60) {
+    return "just now";
+  }
+  
+  // Less than 1 hour
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min ago`;
+  }
+  
+  // Less than 24 hours
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  }
+  
+  // Less than 7 days
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  }
+  
+  // More than 7 days - show date
+  return postDate.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: postDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
+};
+
 const HomePage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [stories, setStories] = useState([]);
