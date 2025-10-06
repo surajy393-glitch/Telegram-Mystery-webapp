@@ -89,6 +89,9 @@ const HomePage = ({ user, onLogout }) => {
   const [editCaption, setEditCaption] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingPost, setDeletingPost] = useState(null);
+  const [showCommentDialog, setShowCommentDialog] = useState(false);
+  const [commentingPost, setCommentingPost] = useState(null);
+  const [commentText, setCommentText] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
   const [newPost, setNewPost] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
