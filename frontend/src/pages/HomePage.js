@@ -430,7 +430,7 @@ const HomePage = ({ user, onLogout }) => {
                   <div>
                     <p className="font-semibold text-gray-800">{post.username}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(post.createdAt).toLocaleDateString()}
+                      {getRelativeTime(post.createdAt)}
                     </p>
                   </div>
                 </div>
