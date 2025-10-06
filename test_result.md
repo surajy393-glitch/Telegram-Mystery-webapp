@@ -118,28 +118,58 @@ backend:
         comment: "Comment system exists but doesn't properly fetch commenter profile images - shows default or initials instead"
 
   - task: "Add AI vibe compatibility endpoint"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main" 
         comment: "Need to add AI integration for vibe compatibility analysis between users"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: AI vibe compatibility endpoint (/api/ai/vibe-compatibility) working correctly. OpenAI GPT-5 integration functional, returns compatibility scores 0-100% with analysis. Proper error handling for missing target user ID (400 status). Authentication required and working."
 
   - task: "Add user blocking/unblocking functionality"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
         comment: "Backend endpoints needed for user blocking functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: User blocking endpoint (/api/users/{userId}/block) working correctly. Prevents self-blocking (400 status), updates user's blockedUsers list, removes from following/followers. Authentication required and working."
+
+  - task: "Add user profile endpoints"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: User profile endpoints working correctly. /api/users/{userId}/profile returns complete user profile data with follower counts. /api/users/{userId}/posts returns user's posts with proper metadata. Both handle invalid user IDs correctly (404 status). Authentication required and working."
+
+  - task: "Add story hiding functionality"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Story hiding endpoint (/api/users/{userId}/hide-story) working correctly. Prevents hiding own stories (400 status), updates user's hiddenStoryUsers list. Authentication required and working."
 
 frontend:
   - task: "Fix comment profile pictures display"
