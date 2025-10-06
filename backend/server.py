@@ -123,6 +123,17 @@ class TelegramLink(BaseModel):
     telegramUserId: str
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class Notification(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str  # Who receives the notification
+    fromUserId: str  # Who triggered the notification
+    fromUsername: str
+    fromUserImage: Optional[str] = None
+    type: str  # "like", "comment", "follow"
+    postId: Optional[str] = None  # For like/comment notifications
+    isRead: bool = False
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class ChatMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     senderId: str
