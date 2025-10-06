@@ -29,6 +29,8 @@ const HomePage = ({ user, onLogout }) => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [storyToDelete, setStoryToDelete] = useState(null);
   const [viewingStories, setViewingStories] = useState(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [newPost, setNewPost] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
