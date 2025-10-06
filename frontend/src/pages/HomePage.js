@@ -158,6 +158,89 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleDeleteStory = async () => {
+    if (!storyToDelete) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/stories/${storyToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setShowDeleteConfirm(false);
+      setShowStoryViewer(false);
+      setStoryToDelete(null);
+      fetchFeed();
+      alert("Story deleted successfully!");
+    } catch (error) {
+      alert("Failed to delete story");
+    }
+  };
+
+  const handleSaveVideo = async () => {
+    if (!viewingStories || !viewingStories.stories[currentStoryIndex]) return;
+
+    const currentStory = viewingStories.stories[currentStoryIndex];
+    const mediaUrl = currentStory.mediaUrl;
+
+    try {
+      // Download the media
+      const link = document.createElement('a');
+      link.href = mediaUrl;
+      link.download = `story-${Date.now()}.${currentStory.mediaType === 'video' ? 'mp4' : 'jpg'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert("Media saved successfully!");
+    } catch (error) {
+      alert("Failed to save media");
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (!viewingStories || !viewingStories.stories[currentStoryIndex]) return;
+
+    const currentStory = viewingStories.stories[currentStoryIndex];
+    const storyLink = `${window.location.origin}/story/${currentStory.id}`;
+
+    navigator.clipboard.writeText(storyLink).then(() => {
+      alert("Link copied to clipboard!");
+    }).catch(() => {
+      alert("Failed to copy link");
+    });
+  };
+
+  const handleShareStory = async () => {
+    if (!viewingStories || !viewingStories.stories[currentStoryIndex]) return;
+
+    const currentStory = viewingStories.stories[currentStoryIndex];
+    const storyLink = `${window.location.origin}/story/${currentStory.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Story by ${viewingStories.username}`,
+          text: currentStory.caption || "Check out this story on LuvHive!",
+          url: storyLink,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          alert("Failed to share");
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(storyLink).then(() => {
+        alert("Link copied! Share it on Telegram, WhatsApp, Snapchat, or Instagram!");
+      });
+    }
+  };
+
+  const openDeleteConfirm = (storyId) => {
+    setStoryToDelete(storyId);
+    setShowDeleteConfirm(true);
+  };
+
   // Find user's own stories
   const myStories = stories.find(s => s.userId === user?.id);
   const otherStories = stories.filter(s => s.userId !== user?.id);
