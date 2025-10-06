@@ -36,9 +36,14 @@ const ProfilePage = ({ user, onLogout }) => {
   const isViewingOwnProfile = userId === user?.id;
 
   useEffect(() => {
-    fetchProfile();
-    fetchUsers();
-  }, []);
+    if (isViewingSpecificUser) {
+      fetchUserProfile(userId);
+      fetchUserPosts(userId);
+    } else {
+      fetchProfile();
+      fetchUsers();
+    }
+  }, [userId]);
 
   const fetchProfile = async () => {
     try {
