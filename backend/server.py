@@ -324,6 +324,10 @@ async def create_post(post_data: PostCreate, current_user: User = Depends(get_cu
 async def get_posts_feed(current_user: User = Depends(get_current_user)):
     posts = await db.posts.find().sort("createdAt", -1).to_list(1000)
     
+    # Get current user's saved posts
+    user = await db.users.find_one({"id": current_user.id})
+    saved_posts = user.get("savedPosts", [])
+    
     posts_list = []
     for post in posts:
         posts_list.append({
@@ -337,7 +341,8 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
             "createdAt": post["createdAt"].isoformat(),
-            "isLiked": current_user.id in post.get("likes", [])
+            "isLiked": current_user.id in post.get("likes", []),
+            "isSaved": post["id"] in saved_posts
         })
     
     return {"posts": posts_list}
