@@ -21,10 +21,19 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const ProfilePage = ({ user, onLogout }) => {
+  const { userId } = useParams();
   const [profile, setProfile] = useState(null);
+  const [viewingUser, setViewingUser] = useState(null);
   const [users, setUsers] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
+  const [showVibeCompatibility, setShowVibeCompatibility] = useState(false);
+  const [vibeScore, setVibeScore] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Check if we're viewing a specific user or discovery page
+  const isViewingSpecificUser = !!userId;
+  const isViewingOwnProfile = userId === user?.id;
 
   useEffect(() => {
     fetchProfile();
