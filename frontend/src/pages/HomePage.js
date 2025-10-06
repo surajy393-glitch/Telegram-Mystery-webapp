@@ -23,8 +23,10 @@ const API = `${BACKEND_URL}/api`;
 
 // Utility function for relative time (IST-aware)
 const getRelativeTime = (dateString) => {
-  // Parse the UTC time from backend
-  const postDate = new Date(dateString);
+  // Parse the UTC time from backend - ensure it's treated as UTC
+  // If the string doesn't have 'Z' at end, add it to mark as UTC
+  const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+  const postDate = new Date(utcString);
   const now = new Date();
   
   // Calculate difference in milliseconds
