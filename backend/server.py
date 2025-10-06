@@ -277,6 +277,20 @@ async def create_story(story_data: StoryCreate, current_user: User = Depends(get
     
     return {"message": "Story created successfully", "story": story.dict()}
 
+@api_router.delete("/stories/{story_id}")
+async def delete_story(story_id: str, current_user: User = Depends(get_current_user)):
+    story = await db.stories.find_one({"id": story_id})
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+    
+    # Check if user owns the story
+    if story["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this story")
+    
+    await db.stories.delete_one({"id": story_id})
+    
+    return {"message": "Story deleted successfully"}
+
 @api_router.get("/stories/feed")
 async def get_stories_feed(current_user: User = Depends(get_current_user)):
     # Get all stories that haven't expired
