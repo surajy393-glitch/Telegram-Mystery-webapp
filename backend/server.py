@@ -457,10 +457,24 @@ async def like_post(post_id: str, current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Post not found")
     
     likes = post.get("likes", [])
+    is_liking = current_user.id not in likes
+    
     if current_user.id in likes:
         likes.remove(current_user.id)
     else:
         likes.append(current_user.id)
+        
+        # Create notification if liking someone else's post
+        if post["userId"] != current_user.id:
+            notification = Notification(
+                userId=post["userId"],
+                fromUserId=current_user.id,
+                fromUsername=current_user.username,
+                fromUserImage=current_user.profileImage,
+                type="like",
+                postId=post_id
+            )
+            await db.notifications.insert_one(notification.dict())
     
     await db.posts.update_one(
         {"id": post_id},
