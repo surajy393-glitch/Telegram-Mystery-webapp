@@ -212,6 +212,206 @@ const ProfilePage = ({ user, onLogout }) => {
     );
   }
 
+  if (isViewingSpecificUser && isViewingOwnProfile) {
+    // Redirect to MyProfile if viewing own profile
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600 mb-4">Redirecting to your profile...</p>
+          <Link to="/my-profile" className="text-pink-600 hover:text-pink-800">
+            Click here if not redirected
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isViewingSpecificUser) {
+    // Individual User Profile View
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100" data-testid="user-profile-page">
+        {/* Header */}
+        <header className="glass-effect border-b border-pink-100">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <Link to="/home">
+              <Button variant="ghost" className="hover:bg-pink-50">
+                <ArrowLeft className="w-5 h-5 text-pink-600" />
+              </Button>
+            </Link>
+            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
+              @{viewingUser?.username}
+            </h1>
+            
+            {/* 3-Dot Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="hover:bg-pink-50" data-testid="profile-menu-btn">
+                  <MoreVertical className="w-5 h-5 text-pink-600" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
+                <DropdownMenuItem onClick={handleBlockUser} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
+                  <Shield className="w-4 h-4 mr-3" />
+                  Block
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReportUser} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
+                  <AlertCircle className="w-4 h-4 mr-3" />
+                  Report
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleHideStory} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                  <EyeOff className="w-4 h-4 mr-3" />
+                  Hide your story
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyProfileURL} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                  <Link2 className="w-4 h-4 mr-3" />
+                  Copy profile URL
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShareProfile} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                  <Share2 className="w-4 h-4 mr-3" />
+                  Share this profile
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
+          {/* User Profile Card */}
+          <div className="glass-effect rounded-3xl p-8 mb-8 shadow-xl animate-fadeIn">
+            <div className="text-center">
+              <img
+                src={viewingUser?.profileImage || "https://via.placeholder.com/120"}
+                alt={viewingUser?.username}
+                className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-pink-200 shadow-lg mb-4"
+              />
+              <h2 className="text-3xl font-bold text-gray-800 mb-1">{viewingUser?.fullName}</h2>
+              <p className="text-lg text-gray-600 mb-2">@{viewingUser?.username}</p>
+              
+              {viewingUser?.isPremium && (
+                <div className="inline-flex items-center gap-2 premium-badge mb-4">
+                  <Crown className="w-4 h-4" />
+                  PREMIUM MEMBER
+                </div>
+              )}
+
+              <div className="flex justify-center gap-8 mt-6 mb-6">
+                <div>
+                  <p className="text-2xl font-bold text-pink-600">{viewingUser?.posts || userPosts?.length || 0}</p>
+                  <p className="text-sm text-gray-600">Posts</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-pink-600">{viewingUser?.followersCount || 0}</p>
+                  <p className="text-sm text-gray-600">Followers</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-pink-600">{viewingUser?.followingCount || 0}</p>
+                  <p className="text-sm text-gray-600">Following</p>
+                </div>
+              </div>
+
+              {viewingUser?.bio && (
+                <div className="bg-pink-50 rounded-2xl p-4 mt-4 mb-6">
+                  <p className="text-gray-700">{viewingUser.bio}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={() => handleFollowToggle(viewingUser?.id, viewingUser?.isFollowing)}
+                  data-testid="follow-user-btn"
+                  variant={viewingUser?.isFollowing ? "outline" : "default"}
+                  className={viewingUser?.isFollowing 
+                    ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-4" 
+                    : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-4"
+                  }
+                >
+                  {viewingUser?.isFollowing ? "Following" : "Follow"}
+                </Button>
+                
+                <Button
+                  onClick={handleVibeCompatibility}
+                  data-testid="vibe-compatibility-btn"
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl py-4"
+                >
+                  <Zap className="w-5 h-5 mr-2" />
+                  Vibe Compatibility
+                </Button>
+                
+                <Link to={`/chat/${viewingUser?.id}`}>
+                  <Button
+                    data-testid="premium-chat-user-btn"
+                    variant="outline"
+                    className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 rounded-xl py-4 px-6"
+                  >
+                    Premium Chat
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* User Posts Grid */}
+          {userPosts && userPosts.length > 0 && (
+            <div className="glass-effect rounded-3xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Posts</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {userPosts.slice(0, 9).map((post) => (
+                  <div key={post.id} className="aspect-square rounded-lg overflow-hidden">
+                    {post.mediaType === "video" ? (
+                      <video src={post.mediaUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={post.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Vibe Compatibility Dialog */}
+        <Dialog open={showVibeCompatibility} onOpenChange={setShowVibeCompatibility}>
+          <DialogContent className="bg-white rounded-3xl" data-testid="vibe-compatibility-dialog">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">
+                Vibe Compatibility
+              </DialogTitle>
+            </DialogHeader>
+            <div className="text-center py-6">
+              {vibeScore !== null ? (
+                <div className="space-y-4">
+                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">
+                    {vibeScore}%
+                  </div>
+                  <p className="text-lg text-gray-700">
+                    Your vibe compatibility with {viewingUser?.fullName}
+                  </p>
+                  <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl p-4 mt-4">
+                    <p className="text-sm text-gray-600">
+                      {vibeScore >= 80 ? "🔥 Amazing connection! You two are perfectly matched!" :
+                       vibeScore >= 60 ? "💫 Great chemistry! You have a lot in common!" :
+                       vibeScore >= 40 ? "✨ Good potential! Worth getting to know each other better!" :
+                       "🌟 Different vibes, but opposites can attract!"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                  <p className="text-lg text-gray-700">
+                    AI is analyzing your compatibility...
+                  </p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  // Discovery Page (Original Content)
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100" data-testid="profile-page">
       {/* Header */}
@@ -223,7 +423,7 @@ const ProfilePage = ({ user, onLogout }) => {
             </Button>
           </Link>
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
-            Profile
+            Discover
           </h1>
           <div className="w-10"></div>
         </div>
@@ -308,13 +508,17 @@ const ProfilePage = ({ user, onLogout }) => {
                   key={u.id}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition-colors"
                 >
-                  <img
-                    src={u.profileImage || "https://via.placeholder.com/48"}
-                    alt={u.username}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-pink-200"
-                  />
+                  <Link to={`/profile/${u.id}`}>
+                    <img
+                      src={u.profileImage || "https://via.placeholder.com/48"}
+                      alt={u.username}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-colors"
+                    />
+                  </Link>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{u.fullName}</p>
+                    <Link to={`/profile/${u.id}`} className="font-semibold text-gray-800 hover:text-pink-600 transition-colors">
+                      {u.fullName}
+                    </Link>
                     <p className="text-sm text-gray-600">@{u.username}</p>
                     <p className="text-xs text-gray-500">{u.followersCount} followers</p>
                   </div>
