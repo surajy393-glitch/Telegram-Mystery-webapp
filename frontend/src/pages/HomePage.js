@@ -191,12 +191,31 @@ const HomePage = ({ user, onLogout }) => {
   const handleLike = async (postId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API}/posts/${postId}/like`, {}, {
+      const response = await axios.post(`${API}/posts/${postId}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log("Like response:", response.data);
+      
+      // Immediately update the UI without waiting for full fetch
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === postId) {
+          const isLiked = post.isLiked;
+          return {
+            ...post,
+            isLiked: !isLiked,
+            likes: isLiked 
+              ? post.likes.filter(id => id !== user?.id)
+              : [...post.likes, user?.id]
+          };
+        }
+        return post;
+      }));
+      
+      // Fetch full feed in background
       fetchFeed();
     } catch (error) {
       console.error("Error liking post:", error);
+      alert("Failed to like post. Please try again.");
     }
   };
 
