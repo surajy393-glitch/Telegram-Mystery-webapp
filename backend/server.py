@@ -51,6 +51,8 @@ class User(BaseModel):
     followers: List[str] = []  # List of user IDs
     following: List[str] = []  # List of user IDs
     savedPosts: List[str] = []  # List of post IDs
+    blockedUsers: List[str] = []  # List of blocked user IDs
+    hiddenStoryUsers: List[str] = []  # List of user IDs whose stories are hidden
     lastUsernameChange: Optional[datetime] = None  # Track username changes
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
