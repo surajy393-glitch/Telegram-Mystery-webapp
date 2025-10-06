@@ -194,7 +194,7 @@ const ProfilePage = ({ user, onLogout }) => {
     try {
       const token = localStorage.getItem("token");
       const endpoint = isFollowing ? "unfollow" : "follow";
-      await axios.post(`${API}/users/${userId}/${endpoint}`, {}, {
+      await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers(); // Refresh users list
