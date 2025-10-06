@@ -650,6 +650,148 @@ async def save_post(post_id: str, current_user: User = Depends(get_current_user)
         )
         return {"message": "Post saved", "isSaved": True}
 
+# Post Management (Own Posts)
+@api_router.post("/posts/{post_id}/archive")
+async def archive_post(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    is_archived = post.get("isArchived", False)
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"isArchived": not is_archived}}
+    )
+    return {"message": "Post archived" if not is_archived else "Post unarchived", "isArchived": not is_archived}
+
+@api_router.post("/posts/{post_id}/hide-likes")
+async def hide_likes(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    likes_hidden = post.get("likesHidden", False)
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"likesHidden": not likes_hidden}}
+    )
+    return {"message": "Likes hidden" if not likes_hidden else "Likes shown", "likesHidden": not likes_hidden}
+
+@api_router.post("/posts/{post_id}/toggle-comments")
+async def toggle_comments(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    comments_disabled = post.get("commentsDisabled", False)
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"commentsDisabled": not comments_disabled}}
+    )
+    return {"message": "Comments disabled" if not comments_disabled else "Comments enabled", "commentsDisabled": not comments_disabled}
+
+@api_router.put("/posts/{post_id}/caption")
+async def edit_caption(post_id: str, caption: str = Form(...), current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"caption": caption}}
+    )
+    return {"message": "Caption updated successfully"}
+
+@api_router.delete("/posts/{post_id}")
+async def delete_post(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.posts.delete_one({"id": post_id})
+    return {"message": "Post deleted successfully"}
+
+@api_router.post("/posts/{post_id}/pin")
+async def pin_post(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    is_pinned = post.get("isPinned", False)
+    
+    if not is_pinned:
+        # Unpin all other posts first
+        await db.posts.update_many(
+            {"userId": current_user.id, "isPinned": True},
+            {"$set": {"isPinned": False}}
+        )
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"isPinned": not is_pinned}}
+    )
+    return {"message": "Post pinned" if not is_pinned else "Post unpinned", "isPinned": not is_pinned}
+
+# Get archived posts
+@api_router.get("/profile/archived")
+async def get_archived(current_user: User = Depends(get_current_user)):
+    posts = await db.posts.find({"userId": current_user.id, "isArchived": True}).sort("createdAt", -1).to_list(1000)
+    stories = await db.stories.find({"userId": current_user.id, "isArchived": True}).sort("createdAt", -1).to_list(1000)
+    
+    posts_list = []
+    for post in posts:
+        posts_list.append({
+            "id": post["id"],
+            "type": "post",
+            "mediaType": post["mediaType"],
+            "mediaUrl": post["mediaUrl"],
+            "caption": post.get("caption", ""),
+            "createdAt": post["createdAt"].isoformat()
+        })
+    
+    for story in stories:
+        posts_list.append({
+            "id": story["id"],
+            "type": "story",
+            "mediaType": story["mediaType"],
+            "mediaUrl": story["mediaUrl"],
+            "caption": story.get("caption", ""),
+            "createdAt": story["createdAt"].isoformat()
+        })
+    
+    # Sort by date
+    posts_list.sort(key=lambda x: x["createdAt"], reverse=True)
+    
+    return {"archived": posts_list}
+
+# Archive story
+@api_router.post("/stories/{story_id}/archive")
+async def archive_story(story_id: str, current_user: User = Depends(get_current_user)):
+    story = await db.stories.find_one({"id": story_id})
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+    if story["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    is_archived = story.get("isArchived", False)
+    await db.stories.update_one(
+        {"id": story_id},
+        {"$set": {"isArchived": not is_archived}}
+    )
+    return {"message": "Story archived" if not is_archived else "Story unarchived", "isArchived": not is_archived}
+
 # Include the router in the main app
 app.include_router(api_router)
 
