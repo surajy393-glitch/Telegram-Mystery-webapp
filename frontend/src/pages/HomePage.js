@@ -571,48 +571,64 @@ const HomePage = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  {/* 3-Dot Menu - Only show for other users' posts */}
-                  {post.userId !== user?.id && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button 
-                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                          data-testid={`post-menu-${post.id}`}
-                        >
-                          <MoreVertical className="w-5 h-5 text-gray-600" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
-                        <DropdownMenuItem 
-                          onClick={() => handleSavePost(post.id)}
-                          className="cursor-pointer hover:bg-pink-50 rounded-lg py-3"
-                          data-testid={`save-post-menu-${post.id}`}
-                        >
-                          <Bookmark className={`w-4 h-4 mr-3 ${post.isSaved ? "fill-pink-500 text-pink-500" : ""}`} />
-                          {post.isSaved ? "Unsave Post" : "Save Post"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleUnfollowFromPost(post.userId)}
-                          className="cursor-pointer hover:bg-pink-50 rounded-lg py-3"
-                          data-testid={`unfollow-menu-${post.id}`}
-                        >
-                          <UserIcon className="w-4 h-4 mr-3" />
-                          Unfollow @{post.username}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => {
-                            setReportingPost(post);
-                            setShowReportDialog(true);
-                          }}
-                          className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3"
-                          data-testid={`report-menu-${post.id}`}
-                        >
-                          <AlertCircle className="w-4 h-4 mr-3" />
-                          Report Post
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  {/* 3-Dot Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button 
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        data-testid={`post-menu-${post.id}`}
+                      >
+                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
+                      {post.userId === user?.id ? (
+                        /* Own Post Menu */
+                        <>
+                          <DropdownMenuItem onClick={() => handleArchivePost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <Download className="w-4 h-4 mr-3" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleHideLikes(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <Heart className="w-4 h-4 mr-3" />
+                            {post.likesHidden ? "Show" : "Hide"} Like Count
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleToggleComments(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <MessageCircle className="w-4 h-4 mr-3" />
+                            {post.commentsDisabled ? "Turn On" : "Turn Off"} Commenting
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setEditingPost(post); setEditCaption(post.caption); setShowEditDialog(true); }} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <Send className="w-4 h-4 mr-3" />
+                            Edit Caption
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setDeletingPost(post.id); setShowDeleteDialog(true); }} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
+                            <Trash2 className="w-4 h-4 mr-3" />
+                            Delete
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePinPost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <Plus className="w-4 h-4 mr-3" />
+                            {post.isPinned ? "Unpin from" : "Pin to"} Your Main Grid
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        /* Other User's Post Menu */
+                        <>
+                          <DropdownMenuItem onClick={() => handleSavePost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <Bookmark className={`w-4 h-4 mr-3 ${post.isSaved ? "fill-pink-500 text-pink-500" : ""}`} />
+                            {post.isSaved ? "Unsave" : "Save"} Post
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleUnfollowFromPost(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <UserIcon className="w-4 h-4 mr-3" />
+                            Unfollow @{post.username}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setReportingPost(post); setShowReportDialog(true); }} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
+                            <AlertCircle className="w-4 h-4 mr-3" />
+                            Report Post
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 {/* Post Media */}
