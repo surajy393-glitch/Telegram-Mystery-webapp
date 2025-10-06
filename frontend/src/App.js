@@ -105,6 +105,16 @@ function App() {
             } 
           />
           <Route 
+            path="/edit-profile" 
+            element={
+              isAuthenticated ? (
+                <EditProfilePage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/profile" 
             element={
               isAuthenticated ? (
