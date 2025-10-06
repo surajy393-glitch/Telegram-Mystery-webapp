@@ -235,12 +235,62 @@ async def get_me(current_user: User = Depends(get_current_user)):
     }
 
 @api_router.put("/auth/profile")
-async def update_profile(bio: str = Form(None), profileImage: str = Form(None), current_user: User = Depends(get_current_user)):
+async def update_profile(
+    fullName: str = Form(None), 
+    username: str = Form(None), 
+    bio: str = Form(None), 
+    profileImage: str = Form(None), 
+    current_user: User = Depends(get_current_user)
+):
     update_data = {}
+    
+    # Handle username change with 15-day restriction
+    if username is not None and username != current_user.username:
+        # Check if username is already taken
+        existing_user = await db.users.find_one({"username": username, "id": {"$ne": current_user.id}})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        
+        # Check 15-day restriction
+        if current_user.lastUsernameChange:
+            days_since_change = (datetime.now(timezone.utc) - current_user.lastUsernameChange).days
+            if days_since_change < 15:
+                days_remaining = 15 - days_since_change
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"You can change username again in {days_remaining} days"
+                )
+        
+        update_data["username"] = username
+        update_data["lastUsernameChange"] = datetime.now(timezone.utc)
+        
+        # Update username in all posts and stories
+        await db.posts.update_many(
+            {"userId": current_user.id},
+            {"$set": {"username": username}}
+        )
+        await db.stories.update_many(
+            {"userId": current_user.id},
+            {"$set": {"username": username}}
+        )
+    
+    # Handle other fields
+    if fullName is not None:
+        update_data["fullName"] = fullName
     if bio is not None:
         update_data["bio"] = bio
     if profileImage is not None:
         update_data["profileImage"] = profileImage
+        
+        # Update profile image in posts and stories
+        await db.posts.update_many(
+            {"userId": current_user.id},
+            {"$set": {"userProfileImage": profileImage}}
+        )
+        await db.stories.update_many(
+            {"userId": current_user.id},
+            {"$set": {"userProfileImage": profileImage}}
+        )
     
     if update_data:
         await db.users.update_one(
@@ -249,6 +299,21 @@ async def update_profile(bio: str = Form(None), profileImage: str = Form(None), 
         )
     
     return {"message": "Profile updated successfully"}
+
+@api_router.get("/auth/can-change-username")
+async def can_change_username(current_user: User = Depends(get_current_user)):
+    if not current_user.lastUsernameChange:
+        return {"canChange": True, "daysRemaining": 0}
+    
+    days_since_change = (datetime.now(timezone.utc) - current_user.lastUsernameChange).days
+    can_change = days_since_change >= 15
+    days_remaining = max(0, 15 - days_since_change)
+    
+    return {
+        "canChange": can_change,
+        "daysRemaining": days_remaining,
+        "lastChanged": current_user.lastUsernameChange.isoformat()
+    }
 
 # Telegram Linking
 @api_router.post("/telegram/link")
