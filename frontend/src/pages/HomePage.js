@@ -558,6 +558,56 @@ const HomePage = ({ user, onLogout }) => {
                 <X className="w-6 h-6 text-white" />
               </button>
 
+              {/* 3-Dot Menu (Only for own stories) */}
+              {viewingStories.userId === user?.id && (
+                <div className="absolute top-4 right-16 z-50">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button 
+                        className="bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-opacity"
+                        data-testid="story-menu-btn"
+                      >
+                        <MoreVertical className="w-6 h-6 text-white" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-48" align="end">
+                      <DropdownMenuItem 
+                        onClick={() => openDeleteConfirm(viewingStories.stories[currentStoryIndex].id)}
+                        className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg"
+                        data-testid="delete-story-btn"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={handleSaveVideo}
+                        className="cursor-pointer hover:bg-pink-50 rounded-lg"
+                        data-testid="save-video-btn"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Save Video
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={handleCopyLink}
+                        className="cursor-pointer hover:bg-pink-50 rounded-lg"
+                        data-testid="copy-link-btn"
+                      >
+                        <Link2 className="w-4 h-4 mr-2" />
+                        Copy Link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={handleShareStory}
+                        className="cursor-pointer hover:bg-pink-50 rounded-lg"
+                        data-testid="share-story-btn"
+                      >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
+
               {/* Story Progress Bars */}
               <div className="absolute top-2 left-2 right-2 flex gap-1 z-40">
                 {viewingStories.stories.map((_, index) => (
