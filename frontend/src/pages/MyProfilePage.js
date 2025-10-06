@@ -61,14 +61,17 @@ const MyProfilePage = ({ user, onLogout }) => {
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
             My Profile
           </h1>
-          <Button 
-            variant="ghost" 
-            onClick={onLogout}
-            className="hover:bg-pink-50"
-            data-testid="logout-btn"
-          >
-            <Settings className="w-5 h-5 text-pink-600" />
-          </Button>
+          <div className="flex gap-2">
+            <Link to="/edit-profile">
+              <Button 
+                variant="ghost" 
+                className="hover:bg-pink-50"
+                data-testid="edit-profile-btn"
+              >
+                <Settings className="w-5 h-5 text-pink-600" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
