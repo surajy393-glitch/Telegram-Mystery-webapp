@@ -69,6 +69,12 @@ class UserProfile(BaseModel):
     bio: Optional[str] = ""
     profileImage: Optional[str] = None
 
+class ProfileUpdate(BaseModel):
+    fullName: Optional[str] = None
+    username: Optional[str] = None
+    bio: Optional[str] = None
+    profileImage: Optional[str] = None
+
 class UserLogin(BaseModel):
     username: str
     password: str
