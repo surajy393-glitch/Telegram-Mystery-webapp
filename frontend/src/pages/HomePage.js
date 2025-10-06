@@ -673,6 +673,40 @@ const HomePage = ({ user, onLogout }) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="bg-white rounded-3xl" data-testid="delete-confirm-dialog">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
+              Delete Story?
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-600 mt-4">
+              Are you sure you want to delete this story? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setStoryToDelete(null);
+              }}
+              variant="outline"
+              className="flex-1 border-2 border-gray-300 hover:bg-gray-50 rounded-xl py-6"
+              data-testid="cancel-delete-btn"
+            >
+              No, Keep It
+            </Button>
+            <Button
+              onClick={handleDeleteStory}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-6"
+              data-testid="confirm-delete-btn"
+            >
+              Yes, Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
