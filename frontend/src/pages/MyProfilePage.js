@@ -123,6 +123,16 @@ const MyProfilePage = ({ user, onLogout }) => {
                   <p className="text-gray-700">{profile.bio}</p>
                 </div>
               )}
+
+              {/* Edit Profile Button */}
+              <Link to="/edit-profile" className="block mt-4">
+                <Button
+                  data-testid="edit-profile-button"
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white rounded-xl py-3"
+                >
+                  Edit Profile
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
