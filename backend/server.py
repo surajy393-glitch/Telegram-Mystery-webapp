@@ -51,6 +51,7 @@ class User(BaseModel):
     followers: List[str] = []  # List of user IDs
     following: List[str] = []  # List of user IDs
     savedPosts: List[str] = []  # List of post IDs
+    lastUsernameChange: Optional[datetime] = None  # Track username changes
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserRegister(BaseModel):
