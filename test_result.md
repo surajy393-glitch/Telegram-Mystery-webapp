@@ -101,3 +101,98 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Fix comment profile pictures (showing 'L' instead of actual user dp), replace 'Send Spark' with 'Vibe Compatibility' connected to AI, and add 3-dot menu to other users' profiles with Block, Report, Hide story, Copy profile URL, and Share profile options"
+
+backend:
+  - task: "Update comment system to include commenter profile pictures"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Comment system exists but doesn't properly fetch commenter profile images - shows default or initials instead"
+
+  - task: "Add AI vibe compatibility endpoint"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main" 
+        comment: "Need to add AI integration for vibe compatibility analysis between users"
+
+  - task: "Add user blocking/unblocking functionality"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Backend endpoints needed for user blocking functionality"
+
+frontend:
+  - task: "Fix comment profile pictures display"
+    implemented: false
+    working: false
+    file: "HomePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Comments show initials 'L' instead of actual user profile pictures from line 1139-1150"
+
+  - task: "Replace Send Spark with Vibe Compatibility"
+    implemented: false
+    working: false
+    file: "ProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Need to add Send Spark button first, then replace with AI-powered Vibe Compatibility"
+
+  - task: "Add 3-dot menu to other users' profiles"
+    implemented: false
+    working: false
+    file: "ProfilePage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Missing 3-dot menu with Block, Report, Hide story, Copy profile URL, Share profile options"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Fix comment profile pictures display"
+    - "Replace Send Spark with Vibe Compatibility"
+    - "Add 3-dot menu to other users' profiles"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Starting implementation of comment profile pictures fix, AI vibe compatibility, and 3-dot menu features as requested by user"
