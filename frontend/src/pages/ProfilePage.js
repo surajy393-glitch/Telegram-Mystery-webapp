@@ -163,16 +163,29 @@ const ProfilePage = ({ user, onLogout }) => {
                   <div className="flex-1">
                     <p className="font-semibold text-gray-800">{u.fullName}</p>
                     <p className="text-sm text-gray-600">@{u.username}</p>
+                    <p className="text-xs text-gray-500">{u.followersCount} followers</p>
                   </div>
-                  <Link to={`/chat/${u.id}`}>
+                  <div className="flex gap-2">
                     <Button
-                      data-testid={`chat-btn-${u.id}`}
+                      onClick={() => handleFollowToggle(u.id, u.isFollowing)}
+                      data-testid={`follow-btn-${u.id}`}
                       size="sm"
-                      className="bg-pink-500 hover:bg-pink-600 text-white rounded-full"
+                      variant={u.isFollowing ? "outline" : "default"}
+                      className={u.isFollowing ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full" : "bg-pink-500 hover:bg-pink-600 text-white rounded-full"}
                     >
-                      Chat
+                      {u.isFollowing ? "Following" : "Follow"}
                     </Button>
-                  </Link>
+                    <Link to={`/chat/${u.id}`}>
+                      <Button
+                        data-testid={`chat-btn-${u.id}`}
+                        size="sm"
+                        variant="outline"
+                        className="border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full"
+                      >
+                        Chat
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               ))
             )}
