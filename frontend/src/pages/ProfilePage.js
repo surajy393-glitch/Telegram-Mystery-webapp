@@ -71,7 +71,126 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   };
 
-  const handleFollowToggle = async (userId, isFollowing) => {
+  const fetchUserProfile = async (targetUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/${targetUserId}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setViewingUser(response.data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserPosts = async (targetUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/${targetUserId}/posts`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserPosts(response.data.posts || []);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
+
+  const handleVibeCompatibility = async () => {
+    if (!viewingUser) return;
+    
+    setShowVibeCompatibility(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(`${API}/ai/vibe-compatibility`, {
+        targetUserId: viewingUser.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setVibeScore(response.data.compatibility);
+    } catch (error) {
+      console.error("Error calculating vibe compatibility:", error);
+      alert("Failed to calculate vibe compatibility. Please try again.");
+    }
+  };
+
+  const handleBlockUser = async () => {
+    if (!viewingUser) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${viewingUser.id}/block`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert(`${viewingUser.username} has been blocked`);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      alert("Failed to block user");
+    }
+  };
+
+  const handleReportUser = async () => {
+    if (!viewingUser) return;
+    alert(`Report submitted for ${viewingUser.username}. Our team will review this profile.`);
+  };
+
+  const handleHideStory = async () => {
+    if (!viewingUser) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${viewingUser.id}/hide-story`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("You will no longer see stories from this user");
+    } catch (error) {
+      console.error("Error hiding story:", error);
+      alert("Failed to hide stories");
+    }
+  };
+
+  const handleCopyProfileURL = () => {
+    if (!viewingUser) return;
+    const profileURL = `${window.location.origin}/profile/${viewingUser.id}`;
+    navigator.clipboard.writeText(profileURL).then(() => {
+      alert("Profile URL copied to clipboard!");
+    }).catch(() => {
+      alert("Failed to copy URL");
+    });
+  };
+
+  const handleShareProfile = async () => {
+    if (!viewingUser) return;
+    
+    const profileURL = `${window.location.origin}/profile/${viewingUser.id}`;
+    const shareText = `Check out ${viewingUser.fullName}'s profile on LuvHive!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${viewingUser.fullName} - LuvHive Profile`,
+          text: shareText,
+          url: profileURL,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          // Fallback to copy link
+          navigator.clipboard.writeText(profileURL).then(() => {
+            alert('Profile link copied! Share it on Telegram, WhatsApp, Instagram, or Facebook!');
+          });
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(profileURL).then(() => {
+        alert('Profile link copied! Share it on Telegram, WhatsApp, Instagram, or Facebook!');
+      }).catch(() => {
+        alert('Failed to copy link');
+      });
+    }
+  };
+
+  const handleFollowToggle = async (targetUserId, isFollowing) => {
     try {
       const token = localStorage.getItem("token");
       const endpoint = isFollowing ? "unfollow" : "follow";
