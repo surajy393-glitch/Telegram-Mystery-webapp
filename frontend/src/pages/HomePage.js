@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, MessageCircle, Send, Plus, LogOut, User } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, LogOut, User as UserIcon, Bookmark, X } from "lucide-react";
 import axios from "axios";
 import {
   Dialog,
@@ -21,6 +21,9 @@ const HomePage = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateStory, setShowCreateStory] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [viewingStories, setViewingStories] = useState(null);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [newPost, setNewPost] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
 
@@ -114,6 +117,42 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleSavePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/save`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchFeed();
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+
+  const openStoryViewer = (storyGroup) => {
+    setViewingStories(storyGroup);
+    setCurrentStoryIndex(0);
+    setShowStoryViewer(true);
+  };
+
+  const nextStory = () => {
+    if (viewingStories && currentStoryIndex < viewingStories.stories.length - 1) {
+      setCurrentStoryIndex(currentStoryIndex + 1);
+    } else {
+      setShowStoryViewer(false);
+    }
+  };
+
+  const previousStory = () => {
+    if (currentStoryIndex > 0) {
+      setCurrentStoryIndex(currentStoryIndex - 1);
+    }
+  };
+
+  // Find user's own stories
+  const myStories = stories.find(s => s.userId === user?.id);
+  const otherStories = stories.filter(s => s.userId !== user?.id);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-50 to-white">
@@ -134,9 +173,14 @@ const HomePage = ({ user, onLogout }) => {
             {user?.isPremium && (
               <span className="premium-badge">PREMIUM</span>
             )}
+            <Link to="/my-profile">
+              <Button variant="ghost" className="hover:bg-pink-50" data-testid="my-profile-btn">
+                <UserIcon className="w-5 h-5 text-pink-600" />
+              </Button>
+            </Link>
             <Link to="/profile">
-              <Button variant="ghost" className="hover:bg-pink-50" data-testid="profile-btn">
-                <User className="w-5 h-5 text-pink-600" />
+              <Button variant="ghost" className="hover:bg-pink-50 text-sm text-gray-600">
+                Discover
               </Button>
             </Link>
             <Button 
@@ -155,17 +199,50 @@ const HomePage = ({ user, onLogout }) => {
         {/* Stories Section */}
         <div className="mb-8 animate-fadeIn">
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-            {/* Add Story Button */}
-            <div className="flex-shrink-0 text-center cursor-pointer" onClick={() => setShowCreateStory(true)}>
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center border-4 border-white shadow-lg hover:scale-105 transition-transform">
-                <Plus className="w-8 h-8 text-white" />
-              </div>
-              <p className="text-xs mt-2 text-gray-700 font-medium">Add Story</p>
+            {/* User's Own Story */}
+            <div className="flex-shrink-0 text-center cursor-pointer relative" data-testid="my-story-circle">
+              {myStories ? (
+                <div className="relative" onClick={() => openStoryViewer(myStories)}>
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 p-1 story-ring">
+                    <div className="w-full h-full rounded-full bg-white p-1">
+                      <img
+                        src={user?.profileImage || "https://via.placeholder.com/80"}
+                        alt="Your story"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  {/* Add More Story Button */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center border-2 border-white cursor-pointer hover:bg-pink-600 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCreateStory(true);
+                    }}
+                    data-testid="add-more-story-btn"
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                  </div>
+                  <p className="text-xs mt-2 text-gray-700 font-medium">Your Story</p>
+                </div>
+              ) : (
+                <div onClick={() => setShowCreateStory(true)}>
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center border-4 border-white shadow-lg hover:scale-105 transition-transform">
+                    <Plus className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-xs mt-2 text-gray-700 font-medium">Add Story</p>
+                </div>
+              )}
             </div>
 
-            {/* Stories */}
-            {stories.map((storyGroup) => (
-              <div key={storyGroup.userId} className="flex-shrink-0 text-center cursor-pointer">
+            {/* Other Users' Stories */}
+            {otherStories.map((storyGroup) => (
+              <div 
+                key={storyGroup.userId} 
+                className="flex-shrink-0 text-center cursor-pointer"
+                onClick={() => openStoryViewer(storyGroup)}
+                data-testid={`story-circle-${storyGroup.userId}`}
+              >
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 p-1 story-ring">
                   <div className="w-full h-full rounded-full bg-white p-1">
                     <img
@@ -230,20 +307,31 @@ const HomePage = ({ user, onLogout }) => {
 
                 {/* Post Actions */}
                 <div className="p-4">
-                  <div className="flex gap-4 mb-3">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        className="flex items-center gap-2 hover:scale-110 transition-transform"
+                        data-testid={`like-btn-${post.id}`}
+                      >
+                        <Heart
+                          className={`w-6 h-6 ${post.isLiked ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                        />
+                        <span className="text-sm text-gray-700">{post.likes.length}</span>
+                      </button>
+                      <button className="flex items-center gap-2 hover:scale-110 transition-transform">
+                        <MessageCircle className="w-6 h-6 text-gray-700" />
+                        <span className="text-sm text-gray-700">{post.comments.length}</span>
+                      </button>
+                    </div>
                     <button
-                      onClick={() => handleLike(post.id)}
-                      className="flex items-center gap-2 hover:scale-110 transition-transform"
-                      data-testid={`like-btn-${post.id}`}
+                      onClick={() => handleSavePost(post.id)}
+                      className="hover:scale-110 transition-transform"
+                      data-testid={`save-btn-${post.id}`}
                     >
-                      <Heart
-                        className={`w-6 h-6 ${post.isLiked ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                      <Bookmark
+                        className={`w-6 h-6 ${post.isSaved ? "fill-pink-500 text-pink-500" : "text-gray-700"}`}
                       />
-                      <span className="text-sm text-gray-700">{post.likes.length}</span>
-                    </button>
-                    <button className="flex items-center gap-2 hover:scale-110 transition-transform">
-                      <MessageCircle className="w-6 h-6 text-gray-700" />
-                      <span className="text-sm text-gray-700">{post.comments.length}</span>
                     </button>
                   </div>
 
@@ -362,6 +450,85 @@ const HomePage = ({ user, onLogout }) => {
               Add Story
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Story Viewer Modal */}
+      <Dialog open={showStoryViewer} onOpenChange={setShowStoryViewer}>
+        <DialogContent className="bg-black max-w-md p-0 rounded-3xl overflow-hidden" data-testid="story-viewer">
+          {viewingStories && viewingStories.stories[currentStoryIndex] && (
+            <div className="relative w-full h-[600px]">
+              {/* Close Button */}
+              <button
+                onClick={() => setShowStoryViewer(false)}
+                className="absolute top-4 right-4 z-50 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-opacity"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+
+              {/* Story Progress Bars */}
+              <div className="absolute top-2 left-2 right-2 flex gap-1 z-40">
+                {viewingStories.stories.map((_, index) => (
+                  <div key={index} className="flex-1 h-1 bg-gray-400 bg-opacity-50 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-white transition-all duration-300 ${
+                        index === currentStoryIndex ? "w-full" : index < currentStoryIndex ? "w-full" : "w-0"
+                      }`}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* User Info */}
+              <div className="absolute top-6 left-4 flex items-center gap-2 z-40">
+                <img
+                  src={viewingStories.userProfileImage || "https://via.placeholder.com/40"}
+                  alt={viewingStories.username}
+                  className="w-8 h-8 rounded-full border-2 border-white"
+                />
+                <span className="text-white font-semibold text-sm">{viewingStories.username}</span>
+              </div>
+
+              {/* Story Content */}
+              <div
+                className="w-full h-full flex items-center justify-center bg-black cursor-pointer"
+                onClick={nextStory}
+              >
+                {viewingStories.stories[currentStoryIndex].mediaType === "video" ? (
+                  <video
+                    src={viewingStories.stories[currentStoryIndex].mediaUrl}
+                    autoPlay
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <img
+                    src={viewingStories.stories[currentStoryIndex].mediaUrl}
+                    alt="Story"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+              </div>
+
+              {/* Caption */}
+              {viewingStories.stories[currentStoryIndex].caption && (
+                <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 rounded-2xl p-3">
+                  <p className="text-white text-sm">{viewingStories.stories[currentStoryIndex].caption}</p>
+                </div>
+              )}
+
+              {/* Navigation Areas */}
+              <div className="absolute inset-0 flex">
+                <div
+                  className="w-1/2 h-full cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    previousStory();
+                  }}
+                />
+                <div className="w-1/2 h-full cursor-pointer" onClick={nextStory} />
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
