@@ -7,6 +7,7 @@ import LoginPage from "@/pages/LoginPage";
 import HomePage from "@/pages/HomePage";
 import ProfilePage from "@/pages/ProfilePage";
 import MyProfilePage from "@/pages/MyProfilePage";
+import EditProfilePage from "@/pages/EditProfilePage";
 import ChatPage from "@/pages/ChatPage";
 
 function App() {
