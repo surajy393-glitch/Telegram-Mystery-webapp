@@ -136,6 +136,16 @@ function App() {
             } 
           />
           <Route 
+            path="/profile/:userId" 
+            element={
+              isAuthenticated ? (
+                <ProfilePage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/chat/:userId" 
             element={
               isAuthenticated ? (
