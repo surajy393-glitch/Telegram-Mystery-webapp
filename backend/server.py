@@ -48,6 +48,9 @@ class User(BaseModel):
     telegramCode: Optional[str] = None
     telegramUserId: Optional[str] = None
     isPremium: bool = False
+    followers: List[str] = []  # List of user IDs
+    following: List[str] = []  # List of user IDs
+    savedPosts: List[str] = []  # List of post IDs
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserRegister(BaseModel):
