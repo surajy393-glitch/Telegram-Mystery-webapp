@@ -1137,11 +1137,11 @@ const HomePage = ({ user, onLogout }) => {
                 <div className="mb-4 max-h-48 overflow-y-auto space-y-3">
                   {commentingPost.comments.map((comment, index) => (
                     <div key={index} className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-pink-200 flex-shrink-0 flex items-center justify-center">
-                        <span className="text-xs font-semibold text-pink-600">
-                          {comment.username?.[0]?.toUpperCase() || 'U'}
-                        </span>
-                      </div>
+                      <img
+                        src={user?.profileImage || "https://via.placeholder.com/32"}
+                        alt={comment.username || 'User'}
+                        className="w-8 h-8 rounded-full object-cover border-2 border-pink-200 flex-shrink-0"
+                      />
                       <div className="flex-1">
                         <p className="text-sm">
                           <span className="font-semibold text-gray-800">{comment.username || 'User'}</span>{" "}
