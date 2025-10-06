@@ -808,6 +808,47 @@ async def archive_story(story_id: str, current_user: User = Depends(get_current_
     )
     return {"message": "Story archived" if not is_archived else "Story unarchived", "isArchived": not is_archived}
 
+# Notifications
+@api_router.get("/notifications")
+async def get_notifications(current_user: User = Depends(get_current_user)):
+    notifications = await db.notifications.find({"userId": current_user.id}).sort("createdAt", -1).to_list(100)
+    
+    notifications_list = []
+    for notif in notifications:
+        notifications_list.append({
+            "id": notif["id"],
+            "fromUserId": notif["fromUserId"],
+            "fromUsername": notif["fromUsername"],
+            "fromUserImage": notif.get("fromUserImage"),
+            "type": notif["type"],
+            "postId": notif.get("postId"),
+            "isRead": notif.get("isRead", False),
+            "createdAt": notif["createdAt"].isoformat()
+        })
+    
+    return {"notifications": notifications_list}
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(current_user: User = Depends(get_current_user)):
+    count = await db.notifications.count_documents({"userId": current_user.id, "isRead": False})
+    return {"count": count}
+
+@api_router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current_user: User = Depends(get_current_user)):
+    await db.notifications.update_one(
+        {"id": notification_id, "userId": current_user.id},
+        {"$set": {"isRead": True}}
+    )
+    return {"message": "Notification marked as read"}
+
+@api_router.post("/notifications/read-all")
+async def mark_all_read(current_user: User = Depends(get_current_user)):
+    await db.notifications.update_many(
+        {"userId": current_user.id},
+        {"$set": {"isRead": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
