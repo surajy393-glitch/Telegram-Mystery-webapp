@@ -82,6 +82,8 @@ const HomePage = ({ user, onLogout }) => {
   const [storyToDelete, setStoryToDelete] = useState(null);
   const [viewingStories, setViewingStories] = useState(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportingPost, setReportingPost] = useState(null);
   const [newPost, setNewPost] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
 
