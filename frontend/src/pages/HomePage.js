@@ -323,6 +323,96 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleArchivePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/archive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Post archived successfully!");
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to archive post");
+    }
+  };
+
+  const handleHideLikes = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/hide-likes`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to toggle likes visibility");
+    }
+  };
+
+  const handleToggleComments = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/toggle-comments`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to toggle comments");
+    }
+  };
+
+  const handleEditCaption = async () => {
+    if (!editingPost) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("caption", editCaption);
+      
+      await axios.put(`${API}/posts/${editingPost.id}/caption`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setShowEditDialog(false);
+      setEditingPost(null);
+      setEditCaption("");
+      alert("Caption updated successfully!");
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to update caption");
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletingPost) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/posts/${deletingPost}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setShowDeleteDialog(false);
+      setDeletingPost(null);
+      alert("Post deleted successfully!");
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to delete post");
+    }
+  };
+
+  const handlePinPost = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/pin`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Post pinned successfully!");
+      fetchFeed();
+    } catch (error) {
+      alert("Failed to pin post");
+    }
+  };
+
   // Find user's own stories
   const myStories = stories.find(s => s.userId === user?.id);
   const otherStories = stories.filter(s => s.userId !== user?.id);
