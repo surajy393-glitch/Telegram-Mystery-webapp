@@ -951,6 +951,34 @@ const HomePage = ({ user, onLogout }) => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Caption Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="bg-white rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Edit Caption</DialogTitle>
+          </DialogHeader>
+          <Textarea value={editCaption} onChange={(e) => setEditCaption(e.target.value)} rows={4} className="mt-4" />
+          <div className="flex gap-3 mt-4">
+            <Button onClick={() => setShowEditDialog(false)} variant="outline" className="flex-1">Cancel</Button>
+            <Button onClick={handleEditCaption} className="flex-1 bg-pink-500 hover:bg-pink-600">Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Post Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-white rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">Delete Post?</DialogTitle>
+            <DialogDescription className="text-center mt-4">Are you sure you want to delete this post? This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6">
+            <Button onClick={() => setShowDeleteDialog(false)} variant="outline" className="flex-1">Cancel</Button>
+            <Button onClick={handleDeletePost} className="flex-1 bg-red-500 hover:bg-red-600">Delete</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Report Post Dialog */}
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent className="bg-white rounded-3xl max-w-md" data-testid="report-dialog">
