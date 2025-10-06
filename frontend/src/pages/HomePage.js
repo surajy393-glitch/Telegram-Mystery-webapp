@@ -455,6 +455,16 @@ const HomePage = ({ user, onLogout }) => {
             {user?.isPremium && (
               <span className="premium-badge">PREMIUM</span>
             )}
+            <Link to="/notifications">
+              <Button variant="ghost" className="hover:bg-pink-50 relative" data-testid="notifications-btn">
+                <Bell className="w-5 h-5 text-pink-600" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Link to="/my-profile">
               <Button variant="ghost" className="hover:bg-pink-50" data-testid="my-profile-btn">
                 <UserIcon className="w-5 h-5 text-pink-600" />
