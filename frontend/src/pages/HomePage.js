@@ -680,11 +680,28 @@ const HomePage = ({ user, onLogout }) => {
                         <Heart
                           className={`w-6 h-6 ${post.isLiked ? "fill-red-500 text-red-500" : "text-gray-700"}`}
                         />
-                        <span className="text-sm text-gray-700">{post.likes.length}</span>
+                        {!post.likesHidden && (
+                          <span className="text-sm text-gray-700">{post.likes.length}</span>
+                        )}
                       </button>
-                      <button className="flex items-center gap-2 hover:scale-110 transition-transform">
+                      <button 
+                        onClick={() => {
+                          if (post.commentsDisabled) {
+                            alert("Comments are turned off for this post");
+                          }
+                        }}
+                        className="flex items-center gap-2 hover:scale-110 transition-transform"
+                        data-testid={`comment-btn-${post.id}`}
+                      >
                         <MessageCircle className="w-6 h-6 text-gray-700" />
                         <span className="text-sm text-gray-700">{post.comments.length}</span>
+                      </button>
+                      <button
+                        onClick={() => handleSharePost(post.id)}
+                        className="flex items-center gap-2 hover:scale-110 transition-transform"
+                        data-testid={`share-btn-${post.id}`}
+                      >
+                        <Send className="w-6 h-6 text-gray-700" />
                       </button>
                     </div>
                     <button
