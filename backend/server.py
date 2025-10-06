@@ -584,6 +584,16 @@ async def follow_user(userId: str, current_user: User = Depends(get_current_user
         {"$addToSet": {"followers": current_user.id}}
     )
     
+    # Create notification
+    notification = Notification(
+        userId=userId,
+        fromUserId=current_user.id,
+        fromUsername=current_user.username,
+        fromUserImage=current_user.profileImage,
+        type="follow"
+    )
+    await db.notifications.insert_one(notification.dict())
+    
     return {"message": "User followed successfully"}
 
 @api_router.post("/users/{userId}/unfollow")
