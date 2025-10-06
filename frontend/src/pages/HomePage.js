@@ -672,7 +672,9 @@ const HomePage = ({ user, onLogout }) => {
                       className="w-10 h-10 rounded-full object-cover border-2 border-pink-200"
                     />
                     <div>
-                      <p className="font-semibold text-gray-800">{post.username}</p>
+                      <Link to={`/profile/${post.userId}`} className="font-semibold text-gray-800 hover:text-pink-600 transition-colors">
+                        {post.username}
+                      </Link>
                       <p className="text-xs text-gray-500">
                         {getRelativeTime(post.createdAt)}
                       </p>
