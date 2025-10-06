@@ -233,7 +233,6 @@ const MyProfilePage = ({ user, onLogout }) => {
                       ) : (
                         <img src={post.mediaUrl} alt="Post" className="w-full h-full object-cover" />
                       )}
-                      {/* Hover Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
@@ -246,6 +245,36 @@ const MyProfilePage = ({ user, onLogout }) => {
                           </div>
                         </div>
                         <p className="text-xs">@{post.username}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Archived Tab */}
+            <TabsContent value="archived" className="mt-0">
+              {archivedItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <Grid className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-600 text-lg">No archived items</p>
+                  <p className="text-gray-500 text-sm mt-2">Archive posts and stories to view them here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {archivedItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl"
+                      data-testid={`archived-${item.id}`}
+                    >
+                      {item.mediaType === "video" ? (
+                        <video src={item.mediaUrl} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={item.mediaUrl} alt={item.type} className="w-full h-full object-cover" />
+                      )}
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
+                        {item.type}
                       </div>
                     </div>
                   ))}
