@@ -274,6 +274,7 @@ const HomePage = ({ user, onLogout }) => {
             comments: [...post.comments, {
               userId: user?.id,
               username: user?.username,
+              profileImage: user?.profileImage,
               text: commentText,
               createdAt: new Date().toISOString()
             }]
