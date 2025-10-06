@@ -262,6 +262,35 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
+  const handlePostComment = async () => {
+    if (!commentText.trim() || !commentingPost) return;
+
+    try {
+      // For now, we'll update locally (backend endpoint can be added later)
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === commentingPost.id) {
+          return {
+            ...post,
+            comments: [...post.comments, {
+              userId: user?.id,
+              username: user?.username,
+              text: commentText,
+              createdAt: new Date().toISOString()
+            }]
+          };
+        }
+        return post;
+      }));
+
+      setShowCommentDialog(false);
+      setCommentingPost(null);
+      setCommentText("");
+      alert("Comment posted!");
+    } catch (error) {
+      alert("Failed to post comment");
+    }
+  };
+
   const openStoryViewer = (storyGroup) => {
     setViewingStories(storyGroup);
     setCurrentStoryIndex(0);
