@@ -212,6 +212,34 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleSharePost = async (postId) => {
+    const postLink = `${window.location.origin}/post/${postId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Check out this post on LuvHive',
+          text: 'Amazing post on LuvHive!',
+          url: postLink,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          // Fallback to copy link
+          navigator.clipboard.writeText(postLink).then(() => {
+            alert('Link copied to clipboard! Share it on Telegram, WhatsApp, Snapchat, Instagram, or Facebook!');
+          });
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(postLink).then(() => {
+        alert('Link copied to clipboard! Share it on Telegram, WhatsApp, Snapchat, Instagram, or Facebook!');
+      }).catch(() => {
+        alert('Failed to copy link');
+      });
+    }
+  };
+
   const openStoryViewer = (storyGroup) => {
     setViewingStories(storyGroup);
     setCurrentStoryIndex(0);
