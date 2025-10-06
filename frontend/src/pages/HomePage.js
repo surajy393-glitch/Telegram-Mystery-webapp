@@ -21,11 +21,20 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Utility function for relative time
+// Utility function for relative time (IST-aware)
 const getRelativeTime = (dateString) => {
-  const now = new Date();
+  // Parse the UTC time from backend
   const postDate = new Date(dateString);
-  const diffInSeconds = Math.floor((now - postDate) / 1000);
+  const now = new Date();
+  
+  // Calculate difference in milliseconds
+  const diffInMs = now.getTime() - postDate.getTime();
+  const diffInSeconds = Math.floor(diffInMs / 1000);
+  
+  // Handle negative times (future dates - shouldn't happen but just in case)
+  if (diffInSeconds < 0) {
+    return "just now";
+  }
   
   // Less than 1 minute
   if (diffInSeconds < 60) {
@@ -50,11 +59,12 @@ const getRelativeTime = (dateString) => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   }
   
-  // More than 7 days - show date
-  return postDate.toLocaleDateString('en-US', { 
+  // More than 7 days - show date in IST
+  return postDate.toLocaleDateString('en-IN', { 
     month: 'short', 
     day: 'numeric',
-    year: postDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    year: postDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    timeZone: 'Asia/Kolkata'
   });
 };
 
