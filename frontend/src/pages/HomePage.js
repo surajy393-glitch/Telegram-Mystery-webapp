@@ -738,6 +738,9 @@ const HomePage = ({ user, onLogout }) => {
                         onClick={() => {
                           if (post.commentsDisabled) {
                             alert("Comments are turned off for this post");
+                          } else {
+                            setCommentingPost(post);
+                            setShowCommentDialog(true);
                           }
                         }}
                         className="flex items-center gap-2 hover:scale-110 transition-transform"
