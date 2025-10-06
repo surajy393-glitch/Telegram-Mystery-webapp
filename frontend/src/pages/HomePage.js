@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, MessageCircle, Send, Plus, LogOut, User as UserIcon, Bookmark, X, MoreVertical, Trash2, Download, Link2, Share2, AlertCircle } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, LogOut, User as UserIcon, Bookmark, X, MoreVertical, Trash2, Download, Link2, Share2, AlertCircle, Bell } from "lucide-react";
 import axios from "axios";
 import {
   Dialog,
