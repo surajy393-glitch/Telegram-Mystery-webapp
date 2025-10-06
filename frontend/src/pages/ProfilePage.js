@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Crown } from "lucide-react";
+import { ArrowLeft, Crown, MoreVertical, Shield, AlertCircle, EyeOff, Link2, Share2, Zap } from "lucide-react";
 import axios from "axios";
 import {
   Dialog,
