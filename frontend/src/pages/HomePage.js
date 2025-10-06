@@ -1106,6 +1106,90 @@ const HomePage = ({ user, onLogout }) => {
         </DialogContent>
       </Dialog>
 
+      {/* Comment Dialog */}
+      <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
+        <DialogContent className="bg-white rounded-3xl" data-testid="comment-dialog">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
+              Add Comment
+            </DialogTitle>
+          </DialogHeader>
+          
+          {commentingPost && (
+            <div className="mt-4">
+              {/* Post Preview */}
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
+                <img
+                  src={commentingPost.userProfileImage || "https://via.placeholder.com/40"}
+                  alt={commentingPost.username}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-pink-200"
+                />
+                <div>
+                  <p className="font-semibold text-gray-800">{commentingPost.username}</p>
+                  {commentingPost.caption && (
+                    <p className="text-sm text-gray-600 truncate max-w-xs">{commentingPost.caption}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Existing Comments */}
+              {commentingPost.comments.length > 0 && (
+                <div className="mb-4 max-h-48 overflow-y-auto space-y-3">
+                  {commentingPost.comments.map((comment, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-pink-200 flex-shrink-0 flex items-center justify-center">
+                        <span className="text-xs font-semibold text-pink-600">
+                          {comment.username?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <span className="font-semibold text-gray-800">{comment.username || 'User'}</span>{" "}
+                          <span className="text-gray-700">{comment.text}</span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Comment Input */}
+              <div className="space-y-4">
+                <Textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Write a comment..."
+                  rows={3}
+                  className="border-gray-300 focus:border-pink-500 rounded-xl resize-none"
+                  data-testid="comment-input"
+                />
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      setShowCommentDialog(false);
+                      setCommentingPost(null);
+                      setCommentText("");
+                    }}
+                    variant="outline"
+                    className="flex-1 border-2 border-gray-300 hover:bg-gray-50 rounded-xl"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handlePostComment}
+                    disabled={!commentText.trim()}
+                    className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl"
+                    data-testid="post-comment-btn"
+                  >
+                    Post
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Report Post Dialog */}
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent className="bg-white rounded-3xl max-w-md" data-testid="report-dialog">
