@@ -95,7 +95,24 @@ const HomePage = ({ user, onLogout }) => {
 
   useEffect(() => {
     fetchFeed();
+    fetchNotificationCount();
+    
+    // Poll notification count every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/notifications/unread-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotificationCount(response.data.count);
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+    }
+  };
 
   const fetchFeed = async () => {
     try {
