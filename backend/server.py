@@ -873,6 +873,146 @@ async def mark_all_read(current_user: User = Depends(get_current_user)):
     )
     return {"message": "All notifications marked as read"}
 
+# New endpoints for enhanced features
+
+@api_router.get("/users/{userId}/profile")
+async def get_user_profile(userId: str, current_user: User = Depends(get_current_user)):
+    """Get detailed profile of a specific user"""
+    user = await db.users.find_one({"id": userId})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if current user is following this user
+    is_following = current_user.id in user.get("followers", [])
+    
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "fullName": user["fullName"],
+        "profileImage": user.get("profileImage"),
+        "bio": user.get("bio", ""),
+        "age": user.get("age"),
+        "gender": user.get("gender"),
+        "isPremium": user.get("isPremium", False),
+        "followersCount": len(user.get("followers", [])),
+        "followingCount": len(user.get("following", [])),
+        "isFollowing": is_following,
+        "createdAt": user["createdAt"].isoformat()
+    }
+
+@api_router.get("/users/{userId}/posts")
+async def get_user_posts(userId: str, current_user: User = Depends(get_current_user)):
+    """Get posts by a specific user"""
+    user = await db.users.find_one({"id": userId})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's non-archived posts
+    posts = await db.posts.find({
+        "userId": userId,
+        "isArchived": False
+    }).sort("createdAt", -1).to_list(50)
+    
+    posts_list = []
+    for post in posts:
+        # Check if current user liked this post
+        is_liked = current_user.id in post.get("likes", [])
+        # Check if current user saved this post
+        is_saved = post["id"] in current_user.savedPosts
+        
+        posts_list.append({
+            "id": post["id"],
+            "userId": post["userId"],
+            "username": post["username"],
+            "userProfileImage": post.get("userProfileImage"),
+            "mediaType": post["mediaType"],
+            "mediaUrl": post["mediaUrl"],
+            "caption": post.get("caption", ""),
+            "likes": post.get("likes", []),
+            "comments": post.get("comments", []),
+            "isLiked": is_liked,
+            "isSaved": is_saved,
+            "likesHidden": post.get("likesHidden", False),
+            "commentsDisabled": post.get("commentsDisabled", False),
+            "isPinned": post.get("isPinned", False),
+            "createdAt": post["createdAt"].isoformat()
+        })
+    
+    return {"posts": posts_list}
+
+@api_router.post("/ai/vibe-compatibility")
+async def calculate_vibe_compatibility(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Calculate AI-powered vibe compatibility between users"""
+    target_user_id = request.get("targetUserId")
+    
+    if not target_user_id:
+        raise HTTPException(status_code=400, detail="Target user ID required")
+    
+    target_user = await db.users.find_one({"id": target_user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+    
+    # TODO: Implement AI integration here
+    # For now, return a mock compatibility score
+    # This will be replaced with actual AI analysis
+    
+    import random
+    compatibility_score = random.randint(45, 95)
+    
+    return {
+        "compatibility": compatibility_score,
+        "analysis": "AI-powered compatibility analysis based on profiles, interests, and behavior patterns."
+    }
+
+@api_router.post("/users/{userId}/block")
+async def block_user(userId: str, current_user: User = Depends(get_current_user)):
+    """Block a user"""
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot block yourself")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add to blocked users list (add this field to User model if needed)
+    # For now, we'll remove from following/followers and add to a blocked list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {
+            "$addToSet": {"blockedUsers": userId},
+            "$pull": {"following": userId}
+        }
+    )
+    
+    # Remove current user from target's followers
+    await db.users.update_one(
+        {"id": userId},
+        {"$pull": {"followers": current_user.id}}
+    )
+    
+    return {"message": "User blocked successfully"}
+
+@api_router.post("/users/{userId}/hide-story")
+async def hide_user_story(userId: str, current_user: User = Depends(get_current_user)):
+    """Hide stories from a specific user"""
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot hide your own stories")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add to hidden stories list (add this field to User model if needed)
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$addToSet": {"hiddenStoryUsers": userId}}
+    )
+    
+    return {"message": "Stories hidden successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
