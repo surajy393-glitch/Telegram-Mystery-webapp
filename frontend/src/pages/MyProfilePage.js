@@ -12,6 +12,7 @@ const MyProfilePage = ({ user, onLogout }) => {
   const [profile, setProfile] = useState(null);
   const [myPosts, setMyPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
+  const [archivedItems, setArchivedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("posts");
 
