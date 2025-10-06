@@ -140,14 +140,14 @@ const MyProfilePage = ({ user, onLogout }) => {
         {/* Tabs */}
         <div className="glass-effect rounded-3xl p-6 shadow-xl animate-slideIn">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-pink-100 rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-pink-100 rounded-xl p-1">
               <TabsTrigger 
                 value="posts" 
                 className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-pink-600"
                 data-testid="my-posts-tab"
               >
                 <Grid className="w-4 h-4 mr-2" />
-                My Posts
+                Posts
               </TabsTrigger>
               <TabsTrigger 
                 value="saved" 
@@ -156,6 +156,14 @@ const MyProfilePage = ({ user, onLogout }) => {
               >
                 <Bookmark className="w-4 h-4 mr-2" />
                 Saved
+              </TabsTrigger>
+              <TabsTrigger 
+                value="archived" 
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-pink-600"
+                data-testid="archived-tab"
+              >
+                <Grid className="w-4 h-4 mr-2" />
+                Archive
               </TabsTrigger>
             </TabsList>
 
