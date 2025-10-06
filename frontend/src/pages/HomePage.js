@@ -319,8 +319,18 @@ const HomePage = ({ user, onLogout }) => {
                 </div>
               ) : (
                 <div onClick={() => setShowCreateStory(true)}>
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center border-4 border-white shadow-lg hover:scale-105 transition-transform">
-                    <Plus className="w-8 h-8 text-white" />
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-200 to-rose-200 p-1 border-4 border-white shadow-lg hover:scale-105 transition-transform">
+                    <div className="w-full h-full rounded-full bg-white p-0.5">
+                      <img
+                        src={user?.profileImage || "https://via.placeholder.com/80"}
+                        alt="Add story"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  {/* Plus Button Overlay */}
+                  <div className="absolute bottom-0 right-0 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center border-2 border-white cursor-pointer hover:bg-pink-600 transition-colors">
+                    <Plus className="w-4 h-4 text-white" />
                   </div>
                   <p className="text-xs mt-2 text-gray-700 font-medium">Add Story</p>
                 </div>
