@@ -580,7 +580,11 @@ async def unfollow_user(userId: str, current_user: User = Depends(get_current_us
 # My Profile Routes
 @api_router.get("/profile/posts")
 async def get_my_posts(current_user: User = Depends(get_current_user)):
-    posts = await db.posts.find({"userId": current_user.id}).sort("createdAt", -1).to_list(1000)
+    # Get all non-archived posts
+    posts = await db.posts.find({"userId": current_user.id, "isArchived": {"$ne": True}}).to_list(1000)
+    
+    # Sort: pinned first, then by date
+    posts.sort(key=lambda x: (not x.get("isPinned", False), -x["createdAt"].timestamp()))
     
     posts_list = []
     for post in posts:
