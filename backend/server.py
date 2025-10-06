@@ -105,6 +105,10 @@ class Post(BaseModel):
     caption: Optional[str] = ""
     likes: List[str] = []  # List of user IDs
     comments: List[dict] = []
+    isArchived: bool = False
+    likesHidden: bool = False
+    commentsDisabled: bool = False
+    isPinned: bool = False
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PostCreate(BaseModel):
