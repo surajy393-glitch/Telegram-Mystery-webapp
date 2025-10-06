@@ -51,6 +51,20 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleFollowToggle = async (userId, isFollowing) => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = isFollowing ? "unfollow" : "follow";
+      await axios.post(`${API}/users/${userId}/${endpoint}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchUsers(); // Refresh users list
+      fetchProfile(); // Update followers count
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-50 to-white">
