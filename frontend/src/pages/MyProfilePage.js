@@ -25,15 +25,17 @@ const MyProfilePage = ({ user, onLogout }) => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [profileRes, postsRes, savedRes] = await Promise.all([
+      const [profileRes, postsRes, savedRes, archivedRes] = await Promise.all([
         axios.get(`${API}/auth/me`, { headers }),
         axios.get(`${API}/profile/posts`, { headers }),
-        axios.get(`${API}/profile/saved`, { headers })
+        axios.get(`${API}/profile/saved`, { headers }),
+        axios.get(`${API}/profile/archived`, { headers })
       ]);
 
       setProfile(profileRes.data);
       setMyPosts(postsRes.data.posts || []);
       setSavedPosts(savedRes.data.posts || []);
+      setArchivedItems(archivedRes.data.archived || []);
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
