@@ -1139,7 +1139,7 @@ const HomePage = ({ user, onLogout }) => {
                   {commentingPost.comments.map((comment, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <img
-                        src={user?.profileImage || "https://via.placeholder.com/32"}
+                        src={comment.profileImage || "https://via.placeholder.com/32"}
                         alt={comment.username || 'User'}
                         className="w-8 h-8 rounded-full object-cover border-2 border-pink-200 flex-shrink-0"
                       />
