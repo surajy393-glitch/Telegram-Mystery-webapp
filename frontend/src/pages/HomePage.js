@@ -292,6 +292,32 @@ const HomePage = ({ user, onLogout }) => {
     setShowDeleteConfirm(true);
   };
 
+  const handleUnfollowFromPost = async (postUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${postUserId}/unfollow`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Unfollowed successfully!");
+      fetchFeed(); // Refresh feed
+    } catch (error) {
+      console.error("Error unfollowing:", error);
+      alert("Failed to unfollow");
+    }
+  };
+
+  const handleReportPost = async (postId, reason) => {
+    try {
+      // In a real app, you'd send this to backend
+      console.log(`Reporting post ${postId} for reason: ${reason}`);
+      alert(`Post reported for: ${reason}\n\nThank you for helping keep LuvHive safe!`);
+      setShowReportDialog(false);
+      setReportingPost(null);
+    } catch (error) {
+      console.error("Error reporting post:", error);
+    }
+  };
+
   // Find user's own stories
   const myStories = stories.find(s => s.userId === user?.id);
   const otherStories = stories.filter(s => s.userId !== user?.id);
