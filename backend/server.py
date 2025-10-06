@@ -411,10 +411,148 @@ async def get_users(current_user: User = Depends(get_current_user)):
             "username": user["username"],
             "fullName": user["fullName"],
             "profileImage": user.get("profileImage"),
-            "bio": user.get("bio", "")
+            "bio": user.get("bio", ""),
+            "followersCount": len(user.get("followers", [])),
+            "followingCount": len(user.get("following", [])),
+            "isFollowing": current_user.id in user.get("followers", [])
         })
     
     return {"users": users_list}
+
+@api_router.get("/users/{userId}")
+async def get_user_profile(userId: str, current_user: User = Depends(get_current_user)):
+    user = await db.users.find_one({"id": userId})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's posts
+    posts = await db.posts.find({"userId": userId}).sort("createdAt", -1).to_list(1000)
+    
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "fullName": user["fullName"],
+        "profileImage": user.get("profileImage"),
+        "bio": user.get("bio", ""),
+        "followersCount": len(user.get("followers", [])),
+        "followingCount": len(user.get("following", [])),
+        "isFollowing": current_user.id in user.get("followers", []),
+        "postsCount": len(posts)
+    }
+
+# Follow/Unfollow Routes
+@api_router.post("/users/{userId}/follow")
+async def follow_user(userId: str, current_user: User = Depends(get_current_user)):
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot follow yourself")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add to following list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$addToSet": {"following": userId}}
+    )
+    
+    # Add to followers list
+    await db.users.update_one(
+        {"id": userId},
+        {"$addToSet": {"followers": current_user.id}}
+    )
+    
+    return {"message": "User followed successfully"}
+
+@api_router.post("/users/{userId}/unfollow")
+async def unfollow_user(userId: str, current_user: User = Depends(get_current_user)):
+    # Remove from following list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$pull": {"following": userId}}
+    )
+    
+    # Remove from followers list
+    await db.users.update_one(
+        {"id": userId},
+        {"$pull": {"followers": current_user.id}}
+    )
+    
+    return {"message": "User unfollowed successfully"}
+
+# My Profile Routes
+@api_router.get("/profile/posts")
+async def get_my_posts(current_user: User = Depends(get_current_user)):
+    posts = await db.posts.find({"userId": current_user.id}).sort("createdAt", -1).to_list(1000)
+    
+    posts_list = []
+    for post in posts:
+        posts_list.append({
+            "id": post["id"],
+            "mediaType": post["mediaType"],
+            "mediaUrl": post["mediaUrl"],
+            "caption": post.get("caption", ""),
+            "likes": post.get("likes", []),
+            "comments": post.get("comments", []),
+            "createdAt": post["createdAt"].isoformat(),
+            "isLiked": current_user.id in post.get("likes", []),
+            "isSaved": post["id"] in current_user.savedPosts
+        })
+    
+    return {"posts": posts_list}
+
+@api_router.get("/profile/saved")
+async def get_saved_posts(current_user: User = Depends(get_current_user)):
+    if not current_user.savedPosts:
+        return {"posts": []}
+    
+    # Get all saved posts
+    posts = await db.posts.find({"id": {"$in": current_user.savedPosts}}).sort("createdAt", -1).to_list(1000)
+    
+    posts_list = []
+    for post in posts:
+        posts_list.append({
+            "id": post["id"],
+            "userId": post["userId"],
+            "username": post["username"],
+            "userProfileImage": post.get("userProfileImage"),
+            "mediaType": post["mediaType"],
+            "mediaUrl": post["mediaUrl"],
+            "caption": post.get("caption", ""),
+            "likes": post.get("likes", []),
+            "comments": post.get("comments", []),
+            "createdAt": post["createdAt"].isoformat(),
+            "isLiked": current_user.id in post.get("likes", []),
+            "isSaved": True
+        })
+    
+    return {"posts": posts_list}
+
+# Save/Unsave Post
+@api_router.post("/posts/{post_id}/save")
+async def save_post(post_id: str, current_user: User = Depends(get_current_user)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Check if already saved
+    user = await db.users.find_one({"id": current_user.id})
+    saved_posts = user.get("savedPosts", [])
+    
+    if post_id in saved_posts:
+        # Unsave
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$pull": {"savedPosts": post_id}}
+        )
+        return {"message": "Post unsaved", "isSaved": False}
+    else:
+        # Save
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$addToSet": {"savedPosts": post_id}}
+        )
+        return {"message": "Post saved", "isSaved": True}
 
 # Include the router in the main app
 app.include_router(api_router)
