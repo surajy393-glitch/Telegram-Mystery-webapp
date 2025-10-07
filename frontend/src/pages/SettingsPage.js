@@ -395,6 +395,66 @@ const SettingsPage = ({ user, onLogout }) => {
           </div>
         </div>
       </div>
+
+      {/* Blocked Users Dialog */}
+      <Dialog open={showBlockedUsers} onOpenChange={setShowBlockedUsers}>
+        <DialogContent className="bg-white rounded-3xl max-w-md" data-testid="blocked-users-dialog">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <Shield className="w-6 h-6 text-red-600" />
+              Blocked Users
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            {blockedUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No blocked users</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Users you block will appear here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {blockedUsers.map((blockedUser) => (
+                  <div key={blockedUser.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={blockedUser.profileImage || "https://via.placeholder.com/40"}
+                        alt={blockedUser.username}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                      />
+                      <div>
+                        <p className="font-semibold text-gray-800">{blockedUser.fullName}</p>
+                        <p className="text-sm text-gray-600">@{blockedUser.username}</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleUnblockUser(blockedUser.id)}
+                      size="sm"
+                      variant="outline"
+                      className="border-red-300 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <UserMinus className="w-4 h-4 mr-2" />
+                      Unblock
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-6">
+              <Button
+                onClick={() => setShowBlockedUsers(false)}
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white rounded-xl py-3"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
