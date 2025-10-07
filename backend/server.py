@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file explicitly
 load_dotenv()
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
