@@ -337,4 +337,52 @@ const SettingsPage = ({ user, onLogout }) => {
   );
 };
 
+// Helper Components
+const SettingToggle = ({ icon, label, description, isOn, onToggle, loading }) => (
+  <div 
+    className="flex items-center justify-between p-4 bg-white rounded-2xl border-2 border-pink-100 hover:border-pink-200 transition-colors cursor-pointer"
+    onClick={onToggle}
+  >
+    <div className="flex items-center gap-4">
+      {icon && (
+        <div className={`p-2 rounded-full ${isOn ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-500'}`}>
+          {icon}
+        </div>
+      )}
+      <div>
+        <h4 className="text-base font-semibold text-gray-800">{label}</h4>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </div>
+    
+    <div className="flex items-center">
+      <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+        isOn ? 'bg-pink-600' : 'bg-gray-300'
+      }`}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          isOn ? 'translate-x-6' : 'translate-x-1'
+        }`} />
+      </div>
+      {loading && (
+        <div className="ml-3 animate-spin w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full"></div>
+      )}
+    </div>
+  </div>
+);
+
+const ActionButton = ({ icon, label, description, onClick, bgColor, textColor }) => (
+  <div 
+    className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-transparent hover:border-pink-200 transition-colors cursor-pointer ${bgColor}`}
+    onClick={onClick}
+  >
+    <div className={`p-2 rounded-full ${textColor}`}>
+      {icon}
+    </div>
+    <div>
+      <h4 className={`text-base font-semibold ${textColor}`}>{label}</h4>
+      <p className="text-sm text-gray-600">{description}</p>
+    </div>
+  </div>
+);
+
 export default SettingsPage;
