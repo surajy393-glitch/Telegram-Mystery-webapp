@@ -1342,12 +1342,14 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
             ]
         }
         
-        # First, search for exact matches (case-insensitive)
+        # First, search for exact matches (case-insensitive, whitespace-tolerant)
         exact_filter = {**base_filter}
         exact_filter["$and"].append({
             "$or": [
-                {"username": {"$regex": f"^{query}$", "$options": "i"}},  # Exact username match
-                {"fullName": {"$regex": f"^{query}$", "$options": "i"}}   # Exact full name match
+                # Exact username match (handles whitespace)
+                {"username": {"$regex": f"^\\s*{escaped_query}\\s*$", "$options": "i"}},
+                # Exact full name match (handles whitespace) 
+                {"fullName": {"$regex": f"^\\s*{escaped_query}\\s*$", "$options": "i"}}
             ]
         })
         
