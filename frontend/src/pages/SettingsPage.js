@@ -62,28 +62,54 @@ const SettingsPage = ({ user, onLogout }) => {
     }
   };
 
-  const handlePrivacyToggle = async () => {
-    if (updating) return;
+  const handleSettingToggle = async (settingKey) => {
+    if (updating[settingKey]) return;
     
-    setUpdating(true);
+    setUpdating(prev => ({ ...prev, [settingKey]: true }));
     try {
       const token = localStorage.getItem("token");
-      const newPrivacyStatus = !isPrivate;
+      const newValue = !settings[settingKey];
       
-      await axios.put(`${API}/auth/privacy`, {
-        isPrivate: newPrivacyStatus
+      await axios.put(`${API}/auth/settings`, {
+        [settingKey]: newValue
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setIsPrivate(newPrivacyStatus);
-      alert(`Account is now ${newPrivacyStatus ? 'Private' : 'Public'}`);
+      setSettings(prev => ({ ...prev, [settingKey]: newValue }));
     } catch (error) {
-      console.error("Error updating privacy setting:", error);
-      alert("Failed to update privacy setting");
+      console.error(`Error updating ${settingKey}:`, error);
+      alert(`Failed to update ${settingKey.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
     } finally {
-      setUpdating(false);
+      setUpdating(prev => ({ ...prev, [settingKey]: false }));
     }
+  };
+
+  const handleDownloadData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/auth/download-data`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `luvhive-data-${profile?.username}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading data:", error);
+      alert("Failed to download your data");
+    }
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
   };
 
   if (loading) {
