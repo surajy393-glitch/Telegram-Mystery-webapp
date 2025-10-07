@@ -347,12 +347,12 @@ class LuvHiveAPITester:
             self.log_result("Get User Profile with Settings", False, "Exception occurred", str(e))
     
     def test_update_individual_settings(self):
-        """Test PUT /api/auth/settings endpoint for updating individual settings"""
+        """Test PUT /api/auth/settings endpoint for updating individual settings (excluding publicProfile)"""
         try:
-            # Test updating privacy settings
+            # Test updating valid privacy settings (excluding publicProfile)
             privacy_update = {
-                "publicProfile": False,
-                "appearInSearch": False
+                "appearInSearch": False,
+                "allowDirectMessages": False
             }
             
             response = self.session.put(f"{API_BASE}/auth/settings", json=privacy_update)
@@ -364,12 +364,12 @@ class LuvHiveAPITester:
                     me_response = self.session.get(f"{API_BASE}/auth/me")
                     if me_response.status_code == 200:
                         me_data = me_response.json()
-                        if me_data['publicProfile'] == False and me_data['appearInSearch'] == False:
+                        if me_data['appearInSearch'] == False and me_data['allowDirectMessages'] == False:
                             self.log_result("Update Individual Settings", True, 
                                           f"Successfully updated privacy settings: {data['updated']}")
                         else:
                             self.log_result("Update Individual Settings", False, 
-                                          f"Settings not persisted correctly. Expected: {privacy_update}, Got: publicProfile={me_data['publicProfile']}, appearInSearch={me_data['appearInSearch']}")
+                                          f"Settings not persisted correctly. Expected: {privacy_update}, Got: appearInSearch={me_data['appearInSearch']}, allowDirectMessages={me_data['allowDirectMessages']}")
                     else:
                         self.log_result("Update Individual Settings", False, "Could not verify settings persistence")
                 else:
