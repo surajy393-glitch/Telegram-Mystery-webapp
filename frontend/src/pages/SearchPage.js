@@ -113,18 +113,27 @@ const SearchPage = ({ user, onLogout }) => {
     }
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const value = e.target.value;
     setSearchQuery(value);
     
+    // Clear previous timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
     if (value.trim()) {
-      fetchSuggestions(value);
-      setShowSuggestions(true);
+      // Debounce suggestions by 300ms
+      const newTimeout = setTimeout(() => {
+        fetchSuggestions(value);
+        setShowSuggestions(true);
+      }, 300);
+      setSearchTimeout(newTimeout);
     } else {
       setShowSuggestions(false);
       setSuggestions([]);
     }
-  };
+  }, [searchTimeout, fetchSuggestions]);
 
   const handleSuggestionClick = (suggestion) => {
     setSearchQuery(suggestion.value);
