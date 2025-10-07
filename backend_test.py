@@ -1946,7 +1946,21 @@ class LuvHiveAPITester:
         print("Testing Telegram User Registration...")
         self.test_telegram_registration_new_user()
         
-        self.print_summary()
+        # Summary
+        print("=" * 60)
+        print("TEST SUMMARY")
+        print("=" * 60)
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        print(f"Total Tests: {self.results['passed'] + self.results['failed']}")
+        
+        if self.results['errors']:
+            print("\nFAILED TESTS:")
+            for error in self.results['errors']:
+                print(f"- {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"  Error: {error['error']}")
+        
         return self.results['failed'] == 0
 
 if __name__ == "__main__":
