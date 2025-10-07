@@ -17,6 +17,9 @@ from passlib.context import CryptContext
 import jwt
 from jwt import PyJWTError
 import base64
+import hmac
+import hashlib
+from urllib.parse import parse_qsl
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
