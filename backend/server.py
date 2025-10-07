@@ -129,7 +129,25 @@ class UserRegister(BaseModel):
     username: str
     age: int
     gender: str
-    password: str
+    password: Optional[str] = None  # Optional for Telegram auth
+    email: Optional[str] = None  # Optional for recovery
+    authMethod: str = "password"  # "password" or "telegram"
+
+class TelegramAuthRequest(BaseModel):
+    id: int
+    first_name: str
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    photo_url: Optional[str] = None
+    auth_date: int
+    hash: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 class UserProfile(BaseModel):
     fullName: str
