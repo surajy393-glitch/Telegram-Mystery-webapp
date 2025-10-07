@@ -19,7 +19,6 @@ const SettingsPage = ({ user, onLogout }) => {
   const [settings, setSettings] = useState({
     // Privacy Controls
     isPrivate: false,
-    publicProfile: true,
     appearInSearch: true,
     allowDirectMessages: true,
     showOnlineStatus: true,
@@ -35,6 +34,8 @@ const SettingsPage = ({ user, onLogout }) => {
   });
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState({});
+  const [showBlockedUsers, setShowBlockedUsers] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState([]);
 
   useEffect(() => {
     fetchProfile();
