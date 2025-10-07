@@ -216,6 +216,25 @@ const SettingsPage = ({ user, onLogout }) => {
           </div>
         </div>
 
+        {/* Blocked Users Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-red-100">
+              <Shield className="w-6 h-6 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">Blocked Users</h3>
+          </div>
+          
+          <ActionButton
+            icon={<Shield className="w-5 h-5" />}
+            label="Manage Blocked Users"
+            description={`View and unblock users (${profile?.blockedUsers?.length || 0} blocked)`}
+            onClick={() => setShowBlockedUsers(true)}
+            bgColor="bg-red-50 hover:bg-red-100"
+            textColor="text-red-600"
+          />
+        </div>
+
         {/* Interaction Preferences Section */}
         <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
