@@ -1425,7 +1425,7 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
                 "fullName": user["fullName"],
                 "username": user["username"],
                 "profileImage": user.get("profileImage"),
-                "bio": user.get("bio", ""),
+                "bio": user.get("bio", "")[:100],  # Limit bio length for performance
                 "followersCount": len(user.get("followers", [])),
                 "isFollowing": user["id"] in current_user.following,
                 "isPremium": user.get("isPremium", False)
