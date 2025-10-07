@@ -10,6 +10,7 @@ import MyProfilePage from "@/pages/MyProfilePage";
 import EditProfilePage from "@/pages/EditProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
+import SearchPage from "@/pages/SearchPage";
 import ChatPage from "@/pages/ChatPage";
 
 function App() {
