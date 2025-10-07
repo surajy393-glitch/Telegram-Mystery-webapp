@@ -1314,23 +1314,46 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     
     # Search users (if type is "users" or "all")
     if search_type in ["users", "all"]:
-        user_filter = {
+        # Create a more intelligent search with exact match priority
+        base_filter = {
             "$and": [
                 {"id": {"$ne": current_user.id}},  # Exclude current user
                 {"id": {"$nin": current_user.blockedUsers}},  # Exclude blocked users
-                {"appearInSearch": True},  # Only users who appear in search
-                {
-                    "$or": [
-                        {"fullName": {"$regex": query, "$options": "i"}},
-                        {"username": {"$regex": query, "$options": "i"}},
-                        {"bio": {"$regex": query, "$options": "i"}}
-                    ]
-                }
+                {"appearInSearch": True}  # Only users who appear in search
             ]
         }
         
-        users = await db.users.find(user_filter).limit(20).to_list(20)
-        for user in users:
+        # First, search for exact matches (case-insensitive)
+        exact_filter = {**base_filter}
+        exact_filter["$and"].append({
+            "$or": [
+                {"username": {"$regex": f"^{query}$", "$options": "i"}},  # Exact username match
+                {"fullName": {"$regex": f"^{query}$", "$options": "i"}}   # Exact full name match
+            ]
+        })
+        
+        exact_users = await db.users.find(exact_filter).limit(10).to_list(10)
+        user_ids_found = {user["id"] for user in exact_users}
+        
+        # Then, search for partial matches, excluding exact matches
+        partial_filter = {**base_filter}
+        partial_filter["$and"].extend([
+            {"id": {"$nin": list(user_ids_found)}},  # Exclude already found users
+            {
+                "$or": [
+                    {"fullName": {"$regex": query, "$options": "i"}},
+                    {"username": {"$regex": query, "$options": "i"}},
+                    {"bio": {"$regex": query, "$options": "i"}}
+                ]
+            }
+        ])
+        
+        partial_users = await db.users.find(partial_filter).limit(10).to_list(10)
+        
+        # Combine results with exact matches first
+        all_users = exact_users + partial_users
+        
+        for user in all_users[:20]:  # Limit to 20 total results
             results["users"].append({
                 "id": user["id"],
                 "fullName": user["fullName"],
