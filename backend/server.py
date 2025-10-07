@@ -362,7 +362,7 @@ async def update_user_settings(
     
     # Define allowed settings
     allowed_settings = [
-        'isPrivate', 'publicProfile', 'appearInSearch', 'allowDirectMessages', 
+        'isPrivate', 'appearInSearch', 'allowDirectMessages', 
         'showOnlineStatus', 'allowTagging', 'allowStoryReplies', 'showVibeScore',
         'pushNotifications', 'emailNotifications'
     ]
