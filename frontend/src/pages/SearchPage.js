@@ -131,12 +131,20 @@ const SearchPage = ({ user, onLogout }) => {
   };
 
   const handleFollowToggle = async (targetUserId, isFollowing) => {
+    // Prevent multiple simultaneous follow actions on same user
+    if (followingInProgress.has(targetUserId)) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No authentication token found");
         return;
       }
+
+      // Add to following in progress
+      setFollowingInProgress(prev => new Set(prev).add(targetUserId));
 
       // OPTIMISTIC UI UPDATE - Update immediately before API call
       const updateUserFollowStatus = (users, userId, newFollowStatus) => {
@@ -182,6 +190,20 @@ const SearchPage = ({ user, onLogout }) => {
       console.error("Error toggling follow:", error);
       
       // ROLLBACK optimistic update on error
+      const updateUserFollowStatus = (users, userId, newFollowStatus) => {
+        return users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                isFollowing: newFollowStatus,
+                followersCount: newFollowStatus 
+                  ? user.followersCount + 1 
+                  : Math.max(0, user.followersCount - 1)
+              }
+            : user
+        );
+      };
+
       if (searchResults.users.length > 0) {
         setSearchResults(prev => ({
           ...prev,
@@ -199,6 +221,13 @@ const SearchPage = ({ user, onLogout }) => {
       if (error.response) {
         console.error("Response error:", error.response.data);
       }
+    } finally {
+      // Remove from following in progress
+      setFollowingInProgress(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(targetUserId);
+        return newSet;
+      });
     }
   };
 
