@@ -1397,34 +1397,9 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
 @api_router.get("/search/trending")
 async def get_trending_content(current_user: User = Depends(get_current_user)):
     """
-    Get trending users and hashtags
+    Get trending hashtags from recent posts
     """
-    # Get users with most followers (trending users)
-    trending_users = []
-    users = await db.users.find({
-        "$and": [
-            {"id": {"$ne": current_user.id}},
-            {"id": {"$nin": current_user.blockedUsers}},
-            {"appearInSearch": True}
-        ]
-    }).to_list(1000)
-    
-    # Sort by followers count
-    users_with_followers = [(user, len(user.get("followers", []))) for user in users]
-    users_with_followers.sort(key=lambda x: x[1], reverse=True)
-    
-    for user, follower_count in users_with_followers[:10]:
-        trending_users.append({
-            "id": user["id"],
-            "fullName": user["fullName"],
-            "username": user["username"],
-            "profileImage": user.get("profileImage"),
-            "followersCount": follower_count,
-            "isFollowing": current_user.id in user.get("followers", []),
-            "isPremium": user.get("isPremium", False)
-        })
-    
-    # Get trending hashtags from recent posts
+    # Get trending hashtags from recent posts (last 7 days)
     recent_posts = await db.posts.find({
         "$and": [
             {"userId": {"$nin": current_user.blockedUsers}},
@@ -1442,11 +1417,10 @@ async def get_trending_content(current_user: User = Depends(get_current_user)):
             hashtag = hashtag.lower()
             hashtag_count[hashtag] = hashtag_count.get(hashtag, 0) + 1
     
-    # Sort hashtags by frequency
-    trending_hashtags = sorted(hashtag_count.items(), key=lambda x: x[1], reverse=True)[:10]
+    # Sort hashtags by frequency and return top 20
+    trending_hashtags = sorted(hashtag_count.items(), key=lambda x: x[1], reverse=True)[:20]
     
     return {
-        "trending_users": trending_users,
         "trending_hashtags": [{"hashtag": hashtag, "count": count} for hashtag, count in trending_hashtags]
     }
 
