@@ -506,9 +506,9 @@ const SearchPage = ({ user, onLogout }) => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-pink-600" />
-                Discover & Trending
+                Discover & Search
               </h2>
-              <p className="text-gray-600">Explore trending users and hashtags</p>
+              <p className="text-gray-600">Explore trending hashtags and discover content</p>
             </div>
 
             {/* Trending Hashtags */}
