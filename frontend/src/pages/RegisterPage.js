@@ -119,40 +119,105 @@ const RegisterPage = ({ onLogin }) => {
     setTelegramLoading(true);
     
     try {
-      // TODO: Replace with real Telegram Login Widget
-      // For production, implement secure Telegram authentication with hash verification
-      
+      // Show info about secure registration
       toast({
-        title: "Telegram Authentication",
-        description: "Please configure Telegram bot to enable secure authentication. Using demo mode.",
-        variant: "default"
+        title: "Secure Registration",
+        description: "Creating account with Telegram authentication via @Loveekisssbot",
       });
-      
-      // Mock data for development - REMOVE in production
-      const mockTelegramData = {
-        id: Math.floor(Math.random() * 1000000000),
-        first_name: "Telegram",
-        last_name: "User", 
-        username: "tguser" + Math.floor(Math.random() * 1000),
-        photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
-        auth_date: Math.floor(Date.now() / 1000),
-        hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
-      };
 
-      const response = await axios.post(`${API}/auth/telegram`, mockTelegramData);
-      onLogin(response.data.access_token, response.data.user);
-      toast({
-        title: "Success!",
-        description: "Successfully registered with Telegram",
-      });
-      navigate("/home");
+      // Create a div to hold the Telegram Login Widget
+      const widgetContainer = document.createElement('div');
+      widgetContainer.id = 'telegram-register-widget';
+      widgetContainer.style.position = 'fixed';
+      widgetContainer.style.top = '50%';
+      widgetContainer.style.left = '50%';
+      widgetContainer.style.transform = 'translate(-50%, -50%)';
+      widgetContainer.style.zIndex = '9999';
+      widgetContainer.style.backgroundColor = 'white';
+      widgetContainer.style.padding = '20px';
+      widgetContainer.style.borderRadius = '10px';
+      widgetContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+      
+      // Add close button
+      const closeButton = document.createElement('button');
+      closeButton.innerHTML = '×';
+      closeButton.style.position = 'absolute';
+      closeButton.style.top = '5px';
+      closeButton.style.right = '10px';
+      closeButton.style.background = 'none';
+      closeButton.style.border = 'none';
+      closeButton.style.fontSize = '20px';
+      closeButton.style.cursor = 'pointer';
+      closeButton.onclick = () => {
+        document.body.removeChild(widgetContainer);
+        setTelegramLoading(false);
+      };
+      
+      widgetContainer.appendChild(closeButton);
+      
+      // Add title
+      const title = document.createElement('h3');
+      title.textContent = 'Register with Telegram';
+      title.style.marginBottom = '15px';
+      title.style.textAlign = 'center';
+      widgetContainer.appendChild(title);
+
+      // Create Telegram Login Widget script
+      const telegramScript = document.createElement('script');
+      telegramScript.async = true;
+      telegramScript.src = 'https://telegram.org/js/telegram-widget.js?22';
+      telegramScript.setAttribute('data-telegram-login', 'Loveekisssbot');
+      telegramScript.setAttribute('data-size', 'large');
+      telegramScript.setAttribute('data-radius', '10');
+      telegramScript.setAttribute('data-request-access', 'write');
+      telegramScript.setAttribute('data-onauth', 'onTelegramRegister(user)');
+      
+      widgetContainer.appendChild(telegramScript);
+      document.body.appendChild(widgetContainer);
+
+      // Global callback function for Telegram registration
+      window.onTelegramRegister = async (user) => {
+        try {
+          // Remove widget
+          if (document.getElementById('telegram-register-widget')) {
+            document.body.removeChild(widgetContainer);
+          }
+
+          // Send real Telegram data with hash for verification
+          const response = await axios.post(`${API}/auth/telegram`, {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name || "",
+            username: user.username || "",
+            photo_url: user.photo_url || "",
+            auth_date: user.auth_date,
+            hash: user.hash
+          });
+          
+          onLogin(response.data.access_token, response.data.user);
+          toast({
+            title: "Success!",
+            description: "Successfully registered with Telegram",
+          });
+          navigate("/home");
+          
+        } catch (error) {
+          toast({
+            title: "Telegram Registration Failed", 
+            description: error.response?.data?.detail || "Telegram authentication failed",
+            variant: "destructive"
+          });
+        } finally {
+          setTelegramLoading(false);
+        }
+      };
+      
     } catch (error) {
       toast({
         title: "Telegram Registration Failed",
         description: error.response?.data?.detail || "Telegram authentication failed",
         variant: "destructive"
       });
-    } finally {
       setTelegramLoading(false);
     }
   };
