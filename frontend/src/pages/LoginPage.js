@@ -166,6 +166,41 @@ const LoginPage = ({ onLogin }) => {
             >
               {loading ? "Signing In..." : "Sign In"}
             </Button>
+
+          {/* Forgot Password Link */}
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+            >
+              Forgot your password?
+            </button>
+          </div>
+
+          {/* OR Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-gray-300"></div>
+            <span className="px-4 text-gray-500 text-sm">or</span>
+            <div className="flex-1 border-t border-gray-300"></div>
+          </div>
+
+          {/* Telegram Login Button */}
+          <Button
+            type="button"
+            onClick={handleTelegramAuth}
+            disabled={telegramLoading}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 text-lg rounded-xl shadow-lg flex items-center justify-center gap-2"
+          >
+            {telegramLoading ? (
+              "Connecting..."
+            ) : (
+              <>
+                <span className="text-xl">📱</span>
+                Continue with Telegram
+              </>
+            )}
+          </Button>
           </form>
 
           <div className="mt-6 text-center text-gray-600">
