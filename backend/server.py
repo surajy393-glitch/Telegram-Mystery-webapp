@@ -1372,18 +1372,29 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
             ]
         }
         
-        # First, search for exact matches (case-insensitive, whitespace-tolerant)
+        # First, search for exact matches using optimized queries
         exact_filter = {**base_filter}
-        exact_filter["$and"].append({
+        
+        # Use text search for better performance with indexing
+        text_search_filter = {**base_filter}
+        text_search_filter["$and"].append({
+            "$text": {"$search": f'"{query}"'}  # Exact phrase search
+        })
+        
+        # Fallback regex for exact matches if text search doesn't work
+        regex_filter = {**base_filter}
+        regex_filter["$and"].append({
             "$or": [
-                # Exact username match (handles whitespace)
                 {"username": {"$regex": f"^\\s*{escaped_query}\\s*$", "$options": "i"}},
-                # Exact full name match (handles whitespace) 
                 {"fullName": {"$regex": f"^\\s*{escaped_query}\\s*$", "$options": "i"}}
             ]
         })
         
-        exact_users = await db.users.find(exact_filter).limit(10).to_list(10)
+        # Try text search first, fallback to regex
+        try:
+            exact_users = await db.users.find(text_search_filter).limit(10).to_list(10)
+        except:
+            exact_users = await db.users.find(regex_filter).limit(10).to_list(10)
         user_ids_found = {user["id"] for user in exact_users}
         
         # Then, search for partial matches, excluding exact matches
