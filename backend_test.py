@@ -1076,6 +1076,27 @@ class LuvHiveAPITester:
         self.test_unblock_user()
         self.test_unblock_self()
         
+        print("Testing Search Functionality...")
+        # Create test posts first for search testing
+        self.create_test_posts()
+        
+        # Test search endpoints
+        self.test_search_all_content()
+        self.test_search_users_only()
+        self.test_search_posts_only()
+        self.test_search_hashtags_only()
+        self.test_search_empty_query()
+        self.test_search_blocked_users_excluded()
+        
+        # Test trending and suggestions
+        self.test_get_trending_content()
+        self.test_get_search_suggestions()
+        self.test_get_search_suggestions_hashtag()
+        self.test_get_search_suggestions_min_length()
+        
+        # Test authentication
+        self.test_search_authentication_required()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
