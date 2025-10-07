@@ -247,13 +247,13 @@ metadata:
   updated_settings_test: "2025-01-27 02:49:38"
 
 test_plan:
-  current_focus:
-    - "Replace discover section with search functionality"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: false
+  backend_testing_complete: true
   settings_testing_complete: true
+  search_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
