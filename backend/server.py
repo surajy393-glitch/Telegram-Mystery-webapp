@@ -270,7 +270,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "telegramLinked": current_user.telegramUserId is not None,
         
         # Privacy Controls
-        "publicProfile": current_user.publicProfile,
         "appearInSearch": current_user.appearInSearch,
         "allowDirectMessages": current_user.allowDirectMessages,
         "showOnlineStatus": current_user.showOnlineStatus,
