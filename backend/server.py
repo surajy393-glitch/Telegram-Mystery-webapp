@@ -351,20 +351,109 @@ async def update_profile(
     
     return {"message": "Profile updated successfully"}
 
-@api_router.put("/auth/privacy")
-async def update_privacy_setting(
+@api_router.put("/auth/settings")
+async def update_user_settings(
     request: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Update user's account privacy setting"""
-    is_private = request.get("isPrivate", False)
+    """Update user's settings"""
+    # Get the setting key and value from request
+    setting_updates = {}
+    
+    # Define allowed settings
+    allowed_settings = [
+        'isPrivate', 'publicProfile', 'appearInSearch', 'allowDirectMessages', 
+        'showOnlineStatus', 'allowTagging', 'allowStoryReplies', 'showVibeScore',
+        'pushNotifications', 'emailNotifications'
+    ]
+    
+    for key, value in request.items():
+        if key in allowed_settings and isinstance(value, bool):
+            setting_updates[key] = value
+    
+    if not setting_updates:
+        raise HTTPException(status_code=400, detail="No valid settings provided")
     
     await db.users.update_one(
         {"id": current_user.id},
-        {"$set": {"isPrivate": is_private}}
+        {"$set": setting_updates}
     )
     
-    return {"message": "Privacy setting updated successfully", "isPrivate": is_private}
+    return {"message": "Settings updated successfully", "updated": setting_updates}
+
+@api_router.get("/auth/download-data")
+async def download_user_data(current_user: User = Depends(get_current_user)):
+    """Download user's data in JSON format"""
+    # Get user data
+    user_data = await db.users.find_one({"id": current_user.id})
+    
+    # Get user's posts
+    posts = await db.posts.find({"userId": current_user.id}).to_list(1000)
+    
+    # Get user's stories
+    stories = await db.stories.find({"userId": current_user.id}).to_list(1000)
+    
+    # Get user's notifications
+    notifications = await db.notifications.find({"userId": current_user.id}).to_list(1000)
+    
+    # Prepare export data
+    export_data = {
+        "profile": {
+            "id": user_data["id"],
+            "fullName": user_data["fullName"],
+            "username": user_data["username"],
+            "age": user_data["age"],
+            "gender": user_data["gender"],
+            "bio": user_data.get("bio", ""),
+            "isPremium": user_data.get("isPremium", False),
+            "createdAt": user_data["createdAt"].isoformat(),
+            "followers": len(user_data.get("followers", [])),
+            "following": len(user_data.get("following", []))
+        },
+        "posts": [
+            {
+                "id": post["id"],
+                "caption": post.get("caption", ""),
+                "mediaType": post["mediaType"],
+                "likes": len(post.get("likes", [])),
+                "comments": len(post.get("comments", [])),
+                "createdAt": post["createdAt"].isoformat()
+            } for post in posts
+        ],
+        "stories": [
+            {
+                "id": story["id"],
+                "caption": story.get("caption", ""),
+                "mediaType": story["mediaType"],
+                "createdAt": story["createdAt"].isoformat(),
+                "expiresAt": story["expiresAt"].isoformat()
+            } for story in stories
+        ],
+        "notifications": [
+            {
+                "type": notif["type"],
+                "fromUsername": notif["fromUsername"],
+                "createdAt": notif["createdAt"].isoformat()
+            } for notif in notifications
+        ],
+        "exportedAt": datetime.now(timezone.utc).isoformat(),
+        "totalPosts": len(posts),
+        "totalStories": len(stories),
+        "totalNotifications": len(notifications)
+    }
+    
+    import json
+    from fastapi.responses import Response
+    
+    json_data = json.dumps(export_data, indent=2)
+    
+    return Response(
+        content=json_data,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f"attachment; filename=luvhive-data-{current_user.username}.json"
+        }
+    )
 
 @api_router.get("/auth/can-change-username")
 async def can_change_username(current_user: User = Depends(get_current_user)):
