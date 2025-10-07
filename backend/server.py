@@ -1524,6 +1524,26 @@ async def get_search_suggestions(q: str = "", current_user: User = Depends(get_c
     
     return {"suggestions": suggestions}
 
+# Health check endpoint
+@api_router.get("/health")
+async def health_check():
+    try:
+        # Test database connection
+        user_count = await db.users.count_documents({})
+        return {
+            "status": "healthy",
+            "database": db_name,
+            "user_count": user_count,
+            "mongo_url": mongo_url.replace(mongo_url.split('@')[-1] if '@' in mongo_url else '', '***') if mongo_url else None
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "database": db_name
+        }
+
 # Include the router in the main app
 app.include_router(api_router)
 
