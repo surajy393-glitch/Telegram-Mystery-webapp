@@ -118,18 +118,27 @@ const RegisterPage = ({ onLogin }) => {
   const handleTelegramAuth = async () => {
     setTelegramLoading(true);
     
-    // Simulate Telegram authentication (in production, use real Telegram Login Widget)
-    const mockTelegramData = {
-      id: Math.floor(Math.random() * 1000000000),
-      first_name: "Telegram",
-      last_name: "User", 
-      username: "tguser" + Math.floor(Math.random() * 1000),
-      photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
-      auth_date: Math.floor(Date.now() / 1000),
-      hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
-    };
-
     try {
+      // TODO: Replace with real Telegram Login Widget
+      // For production, implement secure Telegram authentication with hash verification
+      
+      toast({
+        title: "Telegram Authentication",
+        description: "Please configure Telegram bot to enable secure authentication. Using demo mode.",
+        variant: "default"
+      });
+      
+      // Mock data for development - REMOVE in production
+      const mockTelegramData = {
+        id: Math.floor(Math.random() * 1000000000),
+        first_name: "Telegram",
+        last_name: "User", 
+        username: "tguser" + Math.floor(Math.random() * 1000),
+        photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
+      };
+
       const response = await axios.post(`${API}/auth/telegram`, mockTelegramData);
       onLogin(response.data.access_token, response.data.user);
       toast({
