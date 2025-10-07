@@ -138,10 +138,10 @@ function App() {
             } 
           />
           <Route 
-            path="/profile" 
+            path="/search" 
             element={
               isAuthenticated ? (
-                <ProfilePage user={user} onLogout={handleLogout} />
+                <SearchPage user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/" replace />
               )
