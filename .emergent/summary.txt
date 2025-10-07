@@ -1,76 +1,98 @@
 <analysis>
-The previous AI engineer initiated a full-stack LuvHive application (React, FastAPI, MongoDB), handling initial features like user authentication, posts, and stories, using Telegram's  for media. Following a transfer of work, the current AI engineer was tasked with enhancing profile and chat features with AI integration and detailed profile management.
+The previous AI engineer developed the initial LuvHive full-stack application. The current engineer was initially tasked with improving profile, chat, and settings features, including displaying profile pictures in comments, enhancing user profiles with AI Vibe Compatibility, and creating a comprehensive settings page with Blocked Users management. All these initial tasks were successfully completed and thoroughly tested.
 
-The engineer addressed explicit user requests to: 1) **Display profile pictures in comments**, correcting frontend logic to store and display the commenter's actual profile image. 2) **Enhance other users' profile pages**, refactoring routing and  to dynamically display individual profiles with placeholders for Vibe Compatibility and a 3-dot menu. Backend endpoints for fetching user profiles, blocking, hiding stories, and Vibe Compatibility (with OpenAI GPT-5 via ) were implemented. 3) **Implement a comprehensive Settings page**, creating  and an associated route. This evolved from a simple Public/Private Account toggle to a multi-category settings page (Privacy, Interaction, Notifications, Account Actions) and finally included Blocked Users management. Backend  models and API endpoints were continuously updated.
+Subsequently, the user requested to replace the discover functionality with a search feature. The engineer implemented backend search endpoints for users, posts, and hashtags, created a dedicated frontend , and updated navigation. User feedback then highlighted issues with clickable hashtags (which were copying text instead of navigating) and the trending users section. These were fixed by introducing a  component for proper navigation and removing redundant trending user displays.
 
-Backend and frontend automated tests were conducted at various stages, confirming functionality. The immediate task before this summary was the finalization and testing of the Blocked Users management within the settings page.
+Further user feedback pointed out a non-functional Follow button and inaccurate search results for users. Troubleshooting identified duplicate usernames (due to trailing spaces) and incorrect  logic in the backend. These were resolved by implementing robust username validation (trimming whitespace) in registration/login, manually cleaning database duplicates, correcting  logic, and enhancing the search algorithm for better accuracy and case-insensitivity. Performance was addressed with optimistic UI updates for follow actions, debounced search, loading skeletons, lazy image loading, caching, database indexing, response compression, and pagination.
+
+Finally, the user inquired about converting the web app to a mobile app and integrating Telegram payments/login. The engineer recommended a Telegram-first authentication strategy with email backup, then initiated a React Native conversion, setting up the basic mobile app structure and implementing Telegram authentication and forgot password functionality in the backend. The immediate task before this summary is to integrate these Telegram authentication and forgot password features into the existing **web app**'s  and .
 </analysis>
 
 <product_requirements>
-The LuvHive application is a Telegram-connected, Instagram-like social media platform for dating and anonymous chat. It features user content posting, 24-hour stories, and premium chat monetized via a Telegram bot. The UI uses a light pink/white theme. Core functionalities include user registration/login, media handling through Telegram CDN using  for scalability, and MongoDB for data storage.
-
-Key Instagram-like features implemented include: user profile pages (own, saved, archived posts), followers/following system, interactive stories with 3-dot menu, comprehensive edit profile page, relative timestamp display for posts, 3-dot menu for *other users'* posts (save, unfollow, report), 3-dot menu for *own* posts (archive, hide like count, turn off commenting, edit caption, delete, pin), notifications, and working like/comment/share buttons.
-
-Recent and current enhancements, based on explicit user requests, involve:
--   Displaying actual profile pictures in comments.
--   Replacing Send Spark with Vibe Compatibility on other user profiles, leveraging AI integration (OpenAI GPT-5).
--   Adding a 3-dot menu to other users' profile pages with Block, Report, Hide your story, Copy profile URL, and Share this profile options.
--   Developing a comprehensive, functional Settings page with Public/Private Account toggle, and sections for Privacy Controls, Interaction Preferences, Notifications, Account Actions, and Blocked Users management.
+LuvHive is a Telegram-integrated, Instagram-like social media platform focused on dating and anonymous chat. It supports user posts, 24-hour stories, and premium chat monetized via a Telegram bot, all within a light pink/white UI. Core features include user authentication, media handling via Telegram CDN (using ), and MongoDB data storage. Implemented Instagram-like functionalities encompass user profiles (own, saved, archived posts), follower/following systems, interactive stories, comprehensive profile editing, timestamped posts, and various 3-dot menus for posts (save, unfollow, report, archive, hide likes, turn off comments, edit, delete, pin) and notifications. Recent enhancements included displaying profile pictures in comments, replacing Send Spark with Vibe Compatibility on other user profiles using OpenAI GPT-5, and adding a 3-dot menu to other user profiles with Block, Report, Hide your story, Copy profile URL, and Share this profile. A comprehensive Settings page with privacy, interaction, notifications, account actions, and blocked user management was also developed.
+The user's current explicit requests involve:
+1.  Replacing the discover page with a search functionality for public content (users, posts, hashtags).
+2.  Making hashtags clickable in posts and search results, navigating to filtered search results.
+3.  Ensuring the Follow button works correctly and provides immediate feedback.
+4.  Improving search accuracy to show correct user profiles (especially with similar names).
+5.  Optimizing app performance to reduce loading times and improve responsiveness.
+6.  Converting the web app to a mobile app, specifically integrating Telegram-first authentication and forgot password functionality, considering Telegram Stars for payments, and addressing platform risks.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack**: React (frontend), FastAPI (backend), MongoDB (database).
--   **UI/UX**: Tailwind CSS, Shadcn UI components, .
--   **Authentication**: JWT, .
+-   **UI/UX**: Tailwind CSS, Shadcn UI components, , React Native.
+-   **Authentication**: JWT, , Telegram Login Widget.
 -   **Media Storage**: Telegram CDN via .
--   **Time Handling**:  (UTC), .
--   **AI Integration**: OpenAI GPT-5 via  and .
--   **Routing**: React Router DOM (frontend).
+-   **AI Integration**: OpenAI GPT-5 via .
+-   **Routing**: React Router DOM (web), React Navigation (React Native).
+-   **Performance**: Optimistic UI, Debouncing, Loading Skeletons, Lazy Loading, Client-side Caching, Database Indexing, Response Compression, Pagination.
 </key_technical_concepts>
 
 <code_architecture>
 
+
 -   **/app/backend/server.py**: Main FastAPI application.
-    -   **Importance**: Handles all backend logic, API endpoints, database interactions, and authentication.
-    -   **Changes**: Updated  and  models with new fields for comments, profile actions (blocking, hiding stories), and comprehensive settings. Added new endpoints for fetching user profiles, blocking/unblocking, hiding stories, AI vibe compatibility, and comprehensive user settings management. Modified  to return all user settings and blocked user count.
+    -   **Importance**: Centralizes all backend logic, API endpoints, database interactions, authentication.
+    -   **Changes**: Updated User, UserRegister models for email/Telegram auth. Added search endpoints (), health check, and admin endpoints. Implemented robust username validation (trimming whitespace), improved search accuracy (exact/case-insensitive matching, pagination), and added database indexing, response compression, and payload reduction for performance. Added Telegram login, forgot password, and reset password endpoints.
 -   **/app/frontend/src/App.js**: Main React component and router configuration.
-    -   **Importance**: Defines the application's routes.
-    -   **Changes**: Added routes for  (individual user profiles) and .
--   **/app/frontend/src/pages/HomePage.js**: Displays the main feed of posts and stories.
+    -   **Importance**: Defines application routes.
+    -   **Changes**: Added route for  to .
+-   **/app/frontend/src/pages/HomePage.js**: Displays the main feed.
     -   **Importance**: Central hub for user activity.
-    -   **Changes**: Modified to store and display commenter's profile pictures in comments. Made usernames in posts clickable to navigate to individual user profiles.
+    -   **Changes**: Updated navigation to link to . Integrated  for clickable hashtags in captions. Applied performance optimizations ().
 -   **/app/frontend/src/pages/ProfilePage.js**: Displays another user's profile.
     -   **Importance**: Shows other users' posts and allows interaction.
-    -   **Changes**: Refactored to dynamically handle both a discovery page and individual user profiles (). Implemented logic to fetch specific user data, restructured the rendering to include profile details, posts, a Vibe Compatibility button, and a 3-dot menu for actions like Block, Report, Hide story, Copy URL, and Share.
--   **/app/frontend/src/pages/MyProfilePage.js**: Displays the logged-in user's profile.
-    -   **Importance**: User's personal profile view.
-    -   **Changes**: Updated the Settings button to link to the new  route.
--   **/app/frontend/src/pages/SettingsPage.js**: **New File**. Dedicated page for user settings.
-    -   **Importance**: Centralized management of user privacy and preferences.
-    -   **Changes**: Created from scratch. It was iteratively expanded from a single Public/Private Account toggle to a comprehensive page with multiple categories (Privacy, Interaction, Notifications, Account Actions). It now includes a Blocked Users section with a dialog to view and unblock users, and integrates state management and API calls for all settings.
+    -   **Changes**: Implemented optimistic UI updates for follow/unfollow actions, including loading states.
+-   **/app/frontend/src/pages/LoginPage.js**: User login page.
+    -   **Importance**: Handles user authentication.
+    -   **Changes**: Currently being updated to include Telegram login and forgot password UI/logic.
+-   **/app/frontend/src/pages/RegistrationPage.js**: User registration page.
+    -   **Importance**: Handles new user sign-ups.
+    -   **Changes**: Currently being updated to include an email field and Telegram registration.
+-   **/app/frontend/src/pages/SearchPage.js**: **New File**. Dedicated page for searching.
+    -   **Importance**: Replaces the old discover functionality, allowing search for users, posts, and hashtags.
+    -   **Changes**: Created from scratch. Includes search input, tabs (All, Users, Posts, Tags), displays search results, handles URL parameters for initial hashtag searches. Implemented debounced search, loading skeletons, , and client-side caching. Displays clickable hashtags via  component. Optimistic UI for follow buttons.
+-   **/app/frontend/src/components/HashtagText.js**: **New File**. Component for rendering clickable hashtags.
+    -   **Importance**: Parses text to make hashtags navigable.
+    -   **Changes**: Created to correctly identify, style, and handle clicks on hashtags, navigating to the search page with the corresponding query. Includes robust error handling.
+-   **/app/frontend/src/components/LazyImage.js**: **New File**. Component for lazy loading images.
+    -   **Importance**: Improves perceived performance by loading images only when they enter the viewport.
+    -   **Changes**: Created for image optimization.
+-   **/app/frontend/src/components/LoadingSkeleton.js**: **New File**. Component for displaying loading placeholders.
+    -   **Importance**: Enhances perceived performance by showing content structure during data fetching.
+    -   **Changes**: Created to provide visual feedback during loading.
+-   **/app/frontend/src/utils/cache.js**: **New File**. Utility for client-side response caching.
+    -   **Importance**: Reduces redundant API calls for frequently accessed data, improving responsiveness.
+    -   **Changes**: Created to implement simple in-memory caching.
 -   **/app/backend/.env**: Backend environment variables.
     -   **Importance**: Stores critical configuration.
-    -   **Changes**: Added  for AI integration.
+    -   **Changes**: Added  to ensure correct database selection.
 -   **/app/backend/requirements.txt**: Python dependencies.
     -   **Importance**: Manages Python packages.
     -   **Changes**: Added .
+-   **/app/LuvHiveMobile/**: **New Directory**. React Native mobile application.
+    -   **Importance**: Houses the mobile version of the LuvHive app.
+    -   **Changes**: Initialized with basic React Native project structure. Includes  for backend communication,  for auth state management,  for navigation, and placeholder screens for all major features (Welcome, Login, Register, Home, Search, Profile, Settings, Chat). Contains  for Telegram authentication.
 </code_architecture>
 
 <pending_tasks>
--   Thorough frontend testing and UI verification of the Vibe Compatibility feature on other users' profile pages.
--   Thorough frontend testing and UI verification of the 3-dot menu actions (Block, Report, Hide your story, Copy profile URL, Share this profile) on other users' profile pages.
+-   Complete the implementation of Telegram authentication and forgot password functionality in the web app's .
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer was finalizing and testing comprehensive enhancements to the user's settings functionality. This involved:
-1.  **Refining the Settings Page UI**: Based on user feedback, the  was modified to keep only one Public/Private Account toggle (the  setting) within the Privacy Controls section.
-2.  **Implementing Blocked Users Management**: A new Blocked Users section was added to the , including a dialog for users to view and unblock previously blocked accounts. This involved adding necessary state, imports, and functionality (, ) to the frontend.
-3.  **Backend Support for Blocked Users**: New backend endpoints (, ) were added to  to support fetching and managing blocked users.
-4.  **Backend Model and API Updates**: The  model and the  endpoint in  were updated to remove the redundant  field and to include  in the user's profile data. The  endpoint was also adjusted to reflect these changes.
+Immediately before this summary request, the AI engineer was addressing user feedback that the Telegram login and forgot password features, recently implemented in the React Native mobile app backend, were not visible in the existing **web app**. The user had provided screenshots showing the web app's login/registration pages, which lacked these new functionalities.
 
-The backend changes were tested using , which confirmed that the updated settings page, including the blocked user management and the refined privacy toggle, is fully functional. The AI engineer was in the process of generating a final summary of these recent improvements.
+The AI engineer acknowledged this and began integrating the Telegram-first authentication system into the **web app's frontend**.
+The  () has been modified to:
+1.  Manage a  state for a dialog.
+2.  Include , , and  functions to manage authentication flows.
+3.  Render a Telegram login button and a Forgot Password link in the UI.
+4.  Integrate an  component for the forgot password feature, which allows users to request a password reset link via email.
+
+The last action recorded was the engineer stating the intention to update the  to include the email field and Telegram registration, which is the immediate next step.
 </current_work>
 
 <optional_next_step>
-Initiate automated frontend testing for the Vibe Compatibility and 3-dot menu features on other users' profile pages.
+Update the  in the web app to include the email field and Telegram registration.
 </optional_next_step>
