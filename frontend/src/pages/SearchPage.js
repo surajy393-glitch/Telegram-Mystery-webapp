@@ -568,7 +568,9 @@ const SearchPage = ({ user, onLogout }) => {
 
                 <TabsContent value="users" className="mt-6">
                   <div className="space-y-4">
-                    {searchResults.users.length > 0 ? (
+                    {loading ? (
+                      <SearchSkeleton count={5} type="user" />
+                    ) : searchResults.users.length > 0 ? (
                       searchResults.users.map(renderUserCard)
                     ) : (
                       <p className="text-center text-gray-600 py-8">No users found for "{searchResults.query}"</p>
