@@ -95,7 +95,8 @@ const SearchPage = ({ user, onLogout }) => {
     }
   };
 
-  const fetchSuggestions = async (query) => {
+  // Debounced search suggestions to reduce API calls
+  const fetchSuggestions = useCallback(async (query) => {
     if (query.length < 2) {
       setSuggestions([]);
       return;
@@ -110,7 +111,7 @@ const SearchPage = ({ user, onLogout }) => {
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
-  };
+  }, []);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
