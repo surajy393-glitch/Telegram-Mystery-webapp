@@ -44,6 +44,7 @@ const SearchPage = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [followingInProgress, setFollowingInProgress] = useState(new Set());
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   useEffect(() => {
     fetchTrendingContent();
