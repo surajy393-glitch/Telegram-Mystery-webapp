@@ -51,18 +51,62 @@ const LoginPage = ({ onLogin }) => {
   const handleTelegramAuth = async () => {
     setTelegramLoading(true);
     
-    // Simulate Telegram authentication (in production, use real Telegram Login Widget)
-    const mockTelegramData = {
-      id: Math.floor(Math.random() * 1000000000),
-      first_name: "Telegram",
-      last_name: "User", 
-      username: "tguser" + Math.floor(Math.random() * 1000),
-      photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
-      auth_date: Math.floor(Date.now() / 1000),
-      hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
-    };
-
     try {
+      // Create secure Telegram Login Widget
+      const telegramWidget = document.createElement('script');
+      telegramWidget.src = 'https://telegram.org/js/telegram-widget.js?22';
+      telegramWidget.setAttribute('data-telegram-login', 'LuvHiveBot'); // Replace with your bot username
+      telegramWidget.setAttribute('data-size', 'large');
+      telegramWidget.setAttribute('data-radius', '10');
+      telegramWidget.setAttribute('data-request-access', 'write');
+      telegramWidget.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      
+      // Add callback function to window
+      window.onTelegramAuth = async (user) => {
+        try {
+          // Send real Telegram data with hash for verification
+          const response = await axios.post(`${API}/auth/telegram`, {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name || "",
+            username: user.username || "",
+            photo_url: user.photo_url || "",
+            auth_date: user.auth_date,
+            hash: user.hash
+          });
+          
+          onLogin(response.data.access_token, response.data.user);
+          toast({
+            title: "Success!",
+            description: "Successfully logged in with Telegram",
+          });
+          navigate("/home");
+          
+          // Clean up widget
+          document.body.removeChild(telegramWidget);
+        } catch (error) {
+          toast({
+            title: "Telegram Login Failed", 
+            description: error.response?.data?.detail || "Telegram authentication failed",
+            variant: "destructive"
+          });
+        } finally {
+          setTelegramLoading(false);
+        }
+      };
+      
+      // For now, use mock data until bot is configured
+      // TODO: Replace with actual Telegram Login Widget
+      const mockTelegramData = {
+        id: Math.floor(Math.random() * 1000000000),
+        first_name: "Telegram",
+        last_name: "User", 
+        username: "tguser" + Math.floor(Math.random() * 1000),
+        photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
+      };
+
       const response = await axios.post(`${API}/auth/telegram`, mockTelegramData);
       onLogin(response.data.access_token, response.data.user);
       toast({
@@ -70,6 +114,7 @@ const LoginPage = ({ onLogin }) => {
         description: "Successfully logged in with Telegram",
       });
       navigate("/home");
+      
     } catch (error) {
       toast({
         title: "Telegram Login Failed",
