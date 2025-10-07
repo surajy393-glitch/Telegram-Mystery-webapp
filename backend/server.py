@@ -18,8 +18,15 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
+db_name = os.environ.get('DB_NAME', 'luvhive_database')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
+
+# Log database connection info
+logger = logging.getLogger(__name__)
+logger.info(f"Connected to MongoDB at {mongo_url}")
+logger.info(f"Using database: {db_name}")
+logger.info(f"Database object: {db}")
 
 # Create the main app without a prefix
 app = FastAPI()
