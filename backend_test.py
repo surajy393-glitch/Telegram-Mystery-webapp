@@ -422,26 +422,30 @@ class LuvHiveAPITester:
             self.log_result("Update Bulk Settings", False, "Exception occurred", str(e))
     
     def test_invalid_settings_validation(self):
-        """Test PUT /api/auth/settings endpoint with invalid settings"""
+        """Test PUT /api/auth/settings endpoint rejects publicProfile and other invalid settings"""
         try:
-            # Test with invalid setting names and values
+            # Test with publicProfile (should be rejected) and other invalid settings
             invalid_update = {
+                "publicProfile": True,  # This should be rejected as it's removed
                 "invalidSetting": True,
-                "publicProfile": "not_a_boolean",
                 "anotherInvalidSetting": 123
             }
             
             response = self.session.put(f"{API_BASE}/auth/settings", json=invalid_update)
             
             if response.status_code == 400:
-                self.log_result("Invalid Settings Validation", True, "Correctly rejected invalid settings")
+                self.log_result("Invalid Settings Validation", True, "✅ Correctly rejected publicProfile and invalid settings")
             elif response.status_code == 200:
                 # Check if only valid settings were updated
                 data = response.json()
                 if 'updated' in data and len(data['updated']) == 0:
-                    self.log_result("Invalid Settings Validation", True, "No invalid settings were processed")
+                    self.log_result("Invalid Settings Validation", True, "✅ No invalid settings were processed (including publicProfile)")
                 else:
-                    self.log_result("Invalid Settings Validation", False, f"Invalid settings were processed: {data.get('updated', {})}")
+                    # Check if publicProfile was processed (it shouldn't be)
+                    if 'publicProfile' in data.get('updated', {}):
+                        self.log_result("Invalid Settings Validation", False, "❌ publicProfile was processed but should be rejected")
+                    else:
+                        self.log_result("Invalid Settings Validation", True, f"✅ publicProfile rejected, other invalid settings ignored: {data.get('updated', {})}")
             else:
                 self.log_result("Invalid Settings Validation", False, f"Unexpected status: {response.status_code}", response.text)
                 
