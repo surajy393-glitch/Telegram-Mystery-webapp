@@ -193,14 +193,81 @@ const ProfilePage = ({ user, onLogout }) => {
   const handleFollowToggle = async (targetUserId, isFollowing) => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No authentication token found");
+        return;
+      }
+
+      // OPTIMISTIC UI UPDATE - Update immediately before API call
+      
+      // Update main viewing user if it's the target
+      if (viewingUser && viewingUser.id === targetUserId) {
+        setViewingUser(prev => ({
+          ...prev,
+          isFollowing: !isFollowing,
+          followersCount: !isFollowing 
+            ? prev.followersCount + 1 
+            : Math.max(0, prev.followersCount - 1)
+        }));
+      }
+
+      // Update users list
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === targetUserId 
+            ? { 
+                ...user, 
+                isFollowing: !isFollowing,
+                followersCount: !isFollowing 
+                  ? user.followersCount + 1 
+                  : Math.max(0, user.followersCount - 1)
+              }
+            : user
+        )
+      );
+
+      // Make API call in background
       const endpoint = isFollowing ? "unfollow" : "follow";
-      await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
+      console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
+      
+      const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchUsers(); // Refresh users list
-      fetchProfile(); // Update followers count
+      
+      console.log("Follow action response:", response.data);
+      
     } catch (error) {
       console.error("Error toggling follow:", error);
+      
+      // ROLLBACK optimistic update on error
+      if (viewingUser && viewingUser.id === targetUserId) {
+        setViewingUser(prev => ({
+          ...prev,
+          isFollowing: isFollowing, // Revert back
+          followersCount: isFollowing 
+            ? prev.followersCount + 1 
+            : Math.max(0, prev.followersCount - 1)
+        }));
+      }
+
+      // Rollback users list
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === targetUserId 
+            ? { 
+                ...user, 
+                isFollowing: isFollowing, // Revert back
+                followersCount: isFollowing 
+                  ? user.followersCount + 1 
+                  : Math.max(0, user.followersCount - 1)
+              }
+            : user
+        )
+      );
+
+      if (error.response) {
+        console.error("Response error:", error.response.data);
+      }
     }
   };
 
