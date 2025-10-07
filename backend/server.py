@@ -259,7 +259,7 @@ async def get_current_user(authorization: str = Header(None)):
             raise HTTPException(status_code=401, detail="Invalid token")
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     
     user = await db.users.find_one({"id": user_id})
@@ -482,7 +482,7 @@ async def reset_password(request: ResetPasswordRequest):
         
         return {"message": "Password reset successful"}
         
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
 @api_router.get("/auth/me")
