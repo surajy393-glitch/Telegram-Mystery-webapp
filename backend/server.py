@@ -1397,7 +1397,7 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
 @api_router.get("/search/trending")
 async def get_trending_content(current_user: User = Depends(get_current_user)):
     """
-    Get trending hashtags from recent posts
+    Get trending hashtags and users from recent posts
     """
     # Get trending hashtags from recent posts (last 7 days)
     recent_posts = await db.posts.find({
@@ -1420,7 +1420,34 @@ async def get_trending_content(current_user: User = Depends(get_current_user)):
     # Sort hashtags by frequency and return top 20
     trending_hashtags = sorted(hashtag_count.items(), key=lambda x: x[1], reverse=True)[:20]
     
+    # Get trending users (users with most followers)
+    trending_users_cursor = await db.users.find({
+        "$and": [
+            {"id": {"$ne": current_user.id}},
+            {"id": {"$nin": current_user.blockedUsers}},
+            {"appearInSearch": True}
+        ]
+    }).to_list(100)
+    
+    # Sort by follower count and take top 10
+    trending_users_cursor.sort(key=lambda x: len(x.get("followers", [])), reverse=True)
+    trending_users = trending_users_cursor[:10]
+    
+    trending_users_list = []
+    for user in trending_users:
+        trending_users_list.append({
+            "id": user["id"],
+            "fullName": user["fullName"],
+            "username": user["username"],
+            "profileImage": user.get("profileImage"),
+            "bio": user.get("bio", ""),
+            "followersCount": len(user.get("followers", [])),
+            "isFollowing": user["id"] in current_user.following,
+            "isPremium": user.get("isPremium", False)
+        })
+    
     return {
+        "trending_users": trending_users_list,
         "trending_hashtags": [{"hashtag": hashtag, "count": count} for hashtag, count in trending_hashtags]
     }
 
