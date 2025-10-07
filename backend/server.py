@@ -398,7 +398,7 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
         return {
             "message": "Telegram registration successful",
             "access_token": access_token,
-            "user": {k: v for k, v in user_dict.items() if k != "password_hash"}
+            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
         }
 
 @api_router.get("/auth/me")
