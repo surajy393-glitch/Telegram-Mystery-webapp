@@ -105,9 +105,46 @@ const RegisterPage = ({ onLogin }) => {
       }, 2000);
       
     } catch (error) {
-      alert(error.response?.data?.detail || "Registration failed");
+      toast({
+        title: "Registration Failed",
+        description: error.response?.data?.detail || "Registration failed",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTelegramAuth = async () => {
+    setTelegramLoading(true);
+    
+    // Simulate Telegram authentication (in production, use real Telegram Login Widget)
+    const mockTelegramData = {
+      id: Math.floor(Math.random() * 1000000000),
+      first_name: "Telegram",
+      last_name: "User", 
+      username: "tguser" + Math.floor(Math.random() * 1000),
+      photo_url: "https://via.placeholder.com/150/0088cc/FFFFFF?text=TG",
+      auth_date: Math.floor(Date.now() / 1000),
+      hash: "demo_hash_" + Math.random().toString(36).substr(2, 9)
+    };
+
+    try {
+      const response = await axios.post(`${API}/auth/telegram`, mockTelegramData);
+      onLogin(response.data.access_token, response.data.user);
+      toast({
+        title: "Success!",
+        description: "Successfully registered with Telegram",
+      });
+      navigate("/home");
+    } catch (error) {
+      toast({
+        title: "Telegram Registration Failed",
+        description: error.response?.data?.detail || "Telegram authentication failed",
+        variant: "destructive"
+      });
+    } finally {
+      setTelegramLoading(false);
     }
   };
 
