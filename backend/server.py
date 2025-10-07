@@ -258,8 +258,9 @@ async def register(user_data: UserRegister):
 async def login(user_data: UserLogin):
     # Find user with case-insensitive username (handles whitespace issues)
     clean_username = user_data.username.strip()
+    escaped_username = clean_username.replace('.', r'\.')
     user = await db.users.find_one({
-        "username": {"$regex": f"^{clean_username.replace('.', r'\.')}$", "$options": "i"}
+        "username": {"$regex": f"^{escaped_username}$", "$options": "i"}
     })
     if not user or not verify_password(user_data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
