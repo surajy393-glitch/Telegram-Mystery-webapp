@@ -1505,6 +1505,71 @@ async def get_trending_content(current_user: User = Depends(get_current_user)):
         "trending_hashtags": [{"hashtag": hashtag, "count": count} for hashtag, count in trending_hashtags]
     }
 
+@api_router.post("/admin/fix-duplicate-usernames")
+async def fix_duplicate_usernames():
+    """
+    Admin endpoint to fix duplicate usernames caused by whitespace
+    """
+    try:
+        # Find users with whitespace in usernames
+        users_with_whitespace = await db.users.find({
+            "$or": [
+                {"username": {"$regex": "^\\s+|\\s+$"}},  # Leading or trailing spaces
+                {"fullName": {"$regex": "^\\s+|\\s+$"}}   # Leading or trailing spaces in fullName
+            ]
+        }).to_list(1000)
+        
+        fixed_count = 0
+        for user in users_with_whitespace:
+            clean_username = user["username"].strip()
+            clean_fullname = user["fullName"].strip()
+            
+            # Check if cleaned username already exists
+            existing_clean = await db.users.find_one({
+                "username": clean_username,
+                "id": {"$ne": user["id"]}
+            })
+            
+            if existing_clean:
+                # If clean version exists, we need to handle the duplicate
+                # Option 1: Delete the whitespace version if it has no activity
+                user_posts = await db.posts.count_documents({"userId": user["id"]})
+                user_followers = len(user.get("followers", []))
+                
+                if user_posts == 0 and user_followers == 0:
+                    # Delete the inactive duplicate
+                    await db.users.delete_one({"id": user["id"]})
+                    fixed_count += 1
+                else:
+                    # Rename the duplicate by adding a number
+                    counter = 1
+                    new_username = f"{clean_username}{counter}"
+                    while await db.users.find_one({"username": new_username}):
+                        counter += 1
+                        new_username = f"{clean_username}{counter}"
+                    
+                    await db.users.update_one(
+                        {"id": user["id"]},
+                        {"$set": {"username": new_username, "fullName": clean_fullname}}
+                    )
+                    fixed_count += 1
+            else:
+                # Just clean the whitespace
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"username": clean_username, "fullName": clean_fullname}}
+                )
+                fixed_count += 1
+        
+        return {
+            "message": f"Fixed {fixed_count} duplicate usernames",
+            "fixed_count": fixed_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fixing duplicates: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fixing duplicates: {str(e)}")
+
 @api_router.get("/search/suggestions")
 async def get_search_suggestions(q: str = "", current_user: User = Depends(get_current_user)):
     """
