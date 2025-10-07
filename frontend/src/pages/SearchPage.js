@@ -137,6 +137,37 @@ const SearchPage = ({ user, onLogout }) => {
         return;
       }
 
+      // OPTIMISTIC UI UPDATE - Update immediately before API call
+      const updateUserFollowStatus = (users, userId, newFollowStatus) => {
+        return users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                isFollowing: newFollowStatus,
+                followersCount: newFollowStatus 
+                  ? user.followersCount + 1 
+                  : Math.max(0, user.followersCount - 1)
+              }
+            : user
+        );
+      };
+
+      // Immediately update the UI
+      if (searchResults.users.length > 0) {
+        setSearchResults(prev => ({
+          ...prev,
+          users: updateUserFollowStatus(prev.users, targetUserId, !isFollowing)
+        }));
+      }
+
+      if (trendingContent.trending_users && trendingContent.trending_users.length > 0) {
+        setTrendingContent(prev => ({
+          ...prev,
+          trending_users: updateUserFollowStatus(prev.trending_users, targetUserId, !isFollowing)
+        }));
+      }
+
+      // Make API call in background
       const endpoint = isFollowing ? "unfollow" : "follow";
       console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
       
@@ -146,14 +177,24 @@ const SearchPage = ({ user, onLogout }) => {
       
       console.log("Follow action response:", response.data);
       
-      // Update the results immediately to show the change
-      if (searchResults.users.length > 0) {
-        await handleSearch(searchResults.query, activeTab);
-      } else {
-        await fetchTrendingContent();
-      }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      
+      // ROLLBACK optimistic update on error
+      if (searchResults.users.length > 0) {
+        setSearchResults(prev => ({
+          ...prev,
+          users: updateUserFollowStatus(prev.users, targetUserId, isFollowing) // Revert back
+        }));
+      }
+
+      if (trendingContent.trending_users && trendingContent.trending_users.length > 0) {
+        setTrendingContent(prev => ({
+          ...prev,
+          trending_users: updateUserFollowStatus(prev.trending_users, targetUserId, isFollowing) // Revert back
+        }));
+      }
+
       if (error.response) {
         console.error("Response error:", error.response.data);
       }
