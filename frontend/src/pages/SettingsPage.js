@@ -52,7 +52,6 @@ const SettingsPage = ({ user, onLogout }) => {
       // Load all settings from profile
       setSettings({
         isPrivate: response.data.isPrivate || false,
-        publicProfile: response.data.publicProfile !== false,
         appearInSearch: response.data.appearInSearch !== false,
         allowDirectMessages: response.data.allowDirectMessages !== false,
         showOnlineStatus: response.data.showOnlineStatus !== false,
@@ -62,6 +61,11 @@ const SettingsPage = ({ user, onLogout }) => {
         pushNotifications: response.data.pushNotifications !== false,
         emailNotifications: response.data.emailNotifications !== false
       });
+      
+      // Fetch blocked users if dialog is opened
+      if (showBlockedUsers) {
+        fetchBlockedUsers();
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
