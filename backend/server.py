@@ -63,6 +63,9 @@ asyncio.create_task(create_indexes())
 # Create the main app without a prefix
 app = FastAPI()
 
+# Add compression middleware for better performance
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
