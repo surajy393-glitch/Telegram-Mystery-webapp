@@ -267,7 +267,22 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "profileImage": current_user.profileImage,
         "isPremium": current_user.isPremium,
         "isPrivate": current_user.isPrivate,
-        "telegramLinked": current_user.telegramUserId is not None
+        "telegramLinked": current_user.telegramUserId is not None,
+        
+        # Privacy Controls
+        "publicProfile": current_user.publicProfile,
+        "appearInSearch": current_user.appearInSearch,
+        "allowDirectMessages": current_user.allowDirectMessages,
+        "showOnlineStatus": current_user.showOnlineStatus,
+        
+        # Interaction Preferences
+        "allowTagging": current_user.allowTagging,
+        "allowStoryReplies": current_user.allowStoryReplies,
+        "showVibeScore": current_user.showVibeScore,
+        
+        # Notifications
+        "pushNotifications": current_user.pushNotifications,
+        "emailNotifications": current_user.emailNotifications
     }
 
 @api_router.put("/auth/profile")
