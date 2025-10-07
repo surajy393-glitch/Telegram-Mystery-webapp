@@ -283,12 +283,20 @@ const SearchPage = ({ user, onLogout }) => {
           onClick={() => handleFollowToggle(userItem.id, userItem.isFollowing)}
           size="sm"
           variant={userItem.isFollowing ? "outline" : "default"}
+          disabled={followingInProgress.has(userItem.id)}
           className={userItem.isFollowing 
-            ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full" 
-            : "bg-pink-500 hover:bg-pink-600 text-white rounded-full"
+            ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full min-w-[80px]" 
+            : "bg-pink-500 hover:bg-pink-600 text-white rounded-full min-w-[80px]"
           }
         >
-          {userItem.isFollowing ? "Following" : "Follow"}
+          {followingInProgress.has(userItem.id) ? (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs">{userItem.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+            </div>
+          ) : (
+            userItem.isFollowing ? "Following" : "Follow"
+          )}
         </Button>
         <Link to={`/chat/${userItem.id}`}>
           <Button
