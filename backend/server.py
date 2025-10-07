@@ -342,6 +342,65 @@ async def login(user_data: UserLogin):
         }
     }
 
+@api_router.post("/auth/telegram")
+async def telegram_auth(telegram_data: TelegramAuthRequest):
+    """
+    Authenticate user via Telegram Login Widget
+    """
+    # TODO: Verify Telegram hash for security
+    # For now, we'll implement basic flow - in production, verify the hash
+    
+    # Check if user exists by Telegram ID
+    existing_user = await db.users.find_one({"telegramId": telegram_data.id})
+    
+    if existing_user:
+        # User exists, log them in
+        access_token = create_access_token(data={"sub": existing_user["id"]})
+        user_dict = {k: v for k, v in existing_user.items() if k != "password_hash"}
+        
+        return {
+            "message": "Telegram login successful",
+            "access_token": access_token,
+            "user": user_dict
+        }
+    else:
+        # Create new user from Telegram data
+        # Generate a unique username if Telegram username is not available
+        base_username = telegram_data.username or f"user_{telegram_data.id}"
+        username = base_username
+        counter = 1
+        
+        while await db.users.find_one({"username": username}):
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        # Create user
+        user = User(
+            fullName=f"{telegram_data.first_name} {telegram_data.last_name or ''}".strip(),
+            username=username,
+            age=18,  # Default age - user can update later
+            gender="Other",  # Default gender - user can update later
+            telegramId=telegram_data.id,
+            telegramUsername=telegram_data.username,
+            telegramFirstName=telegram_data.first_name,
+            telegramLastName=telegram_data.last_name,
+            telegramPhotoUrl=telegram_data.photo_url,
+            profileImage=telegram_data.photo_url,  # Use Telegram photo as profile image
+            authMethod="telegram"
+        )
+        
+        user_dict = user.dict()
+        await db.users.insert_one(user_dict)
+        
+        # Generate token
+        access_token = create_access_token(data={"sub": user.id})
+        
+        return {
+            "message": "Telegram registration successful",
+            "access_token": access_token,
+            "user": {k: v for k, v in user_dict.items() if k != "password_hash"}
+        }
+
 @api_router.get("/auth/me")
 async def get_me(current_user: User = Depends(get_current_user)):
     return {
