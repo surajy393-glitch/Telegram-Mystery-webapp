@@ -216,6 +216,35 @@ const LoginPage = ({ onLogin }) => {
           </Link>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="forgot-email" className="text-gray-700 font-medium">Email Address</Label>
+            <Input
+              id="forgot-email"
+              type="email"
+              placeholder="Enter your email"
+              value={forgotPasswordEmail}
+              onChange={(e) => setForgotPasswordEmail(e.target.value)}
+              className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button onClick={handleForgotPassword} className="bg-pink-500 hover:bg-pink-600">
+              Send Reset Link
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
