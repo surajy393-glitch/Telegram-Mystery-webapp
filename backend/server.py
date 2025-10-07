@@ -1,5 +1,8 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header
 from dotenv import load_dotenv
+
+# Load environment variables from .env file explicitly
+load_dotenv()
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
