@@ -84,11 +84,20 @@ class User(BaseModel):
     username: str
     age: int
     gender: str
-    password_hash: str
+    password_hash: Optional[str] = None  # Optional for Telegram-only users
+    email: Optional[str] = None  # For password recovery
     bio: Optional[str] = ""
     profileImage: Optional[str] = None  # Base64 or file_id
-    telegramCode: Optional[str] = None
-    telegramUserId: Optional[str] = None
+    
+    # Telegram Integration
+    telegramId: Optional[int] = None  # Telegram user ID
+    telegramUsername: Optional[str] = None  # @username from Telegram
+    telegramFirstName: Optional[str] = None
+    telegramLastName: Optional[str] = None
+    telegramPhotoUrl: Optional[str] = None
+    authMethod: str = "password"  # "password", "telegram", or "both"
+    
+    # Premium & Settings
     isPremium: bool = False
     isPrivate: bool = False  # Privacy setting for the account
     
