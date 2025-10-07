@@ -263,6 +263,31 @@ const RegisterPage = ({ onLogin }) => {
                 Next Step
               </Button>
             </form>
+
+            {/* OR Divider */}
+            <div className="flex items-center my-6">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="px-4 text-gray-500 text-sm">or</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+
+            {/* Telegram Registration Button */}
+            <Button
+              type="button"
+              onClick={handleTelegramAuth}
+              disabled={telegramLoading}
+              data-testid="telegram-register-btn"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 text-lg rounded-xl shadow-lg flex items-center justify-center gap-2"
+            >
+              {telegramLoading ? (
+                "Connecting..."
+              ) : (
+                <>
+                  <span className="text-xl">📱</span>
+                  Register with Telegram
+                </>
+              )}
+            </Button>
           ) : (
             <form onSubmit={handleFinalSubmit} className="space-y-5">
               <div>
