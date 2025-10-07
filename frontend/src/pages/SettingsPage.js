@@ -139,69 +139,197 @@ const SettingsPage = ({ user, onLogout }) => {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Profile Header */}
-        <div className="glass-effect rounded-3xl p-8 mb-6 shadow-xl animate-fadeIn">
-          <div className="flex items-center gap-4 mb-6">
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl animate-fadeIn">
+          <div className="flex items-center gap-4">
             <img
               src={profile?.profileImage || "https://via.placeholder.com/80"}
               alt={profile?.username}
-              className="w-20 h-20 rounded-full object-cover border-4 border-pink-200 shadow-lg"
+              className="w-16 h-16 rounded-full object-cover border-4 border-pink-200 shadow-lg"
             />
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">{profile?.fullName}</h2>
-              <p className="text-lg text-gray-600">@{profile?.username}</p>
+              <h2 className="text-xl font-bold text-gray-800">{profile?.fullName}</h2>
+              <p className="text-gray-600">@{profile?.username}</p>
             </div>
           </div>
+        </div>
 
-          {/* Privacy Setting */}
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-800">Account Privacy</h3>
+        {/* Account Privacy Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className={`p-3 rounded-full ${settings.isPrivate ? 'bg-purple-100' : 'bg-green-100'}`}>
+              {settings.isPrivate ? (
+                <Shield className="w-6 h-6 text-purple-600" />
+              ) : (
+                <ShieldCheck className="w-6 h-6 text-green-600" />
+              )}
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">
+              {settings.isPrivate ? 'Private Account' : 'Public Account'}
+            </h3>
+          </div>
+          
+          <SettingToggle
+            label="Private Account"
+            description="Only approved followers can see your posts and stories"
+            isOn={settings.isPrivate}
+            onToggle={() => handleSettingToggle('isPrivate')}
+            loading={updating.isPrivate}
+          />
+        </div>
+
+        {/* Privacy Controls Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-yellow-100">
+              <Shield className="w-6 h-6 text-yellow-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">Privacy Controls</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <SettingToggle
+              icon={<Eye className="w-5 h-5" />}
+              label="Public Profile"
+              description="Allow anyone to view your profile and posts"
+              isOn={settings.publicProfile}
+              onToggle={() => handleSettingToggle('publicProfile')}
+              loading={updating.publicProfile}
+            />
             
-            <div 
-              className="flex items-center justify-between p-6 bg-white rounded-2xl border-2 border-pink-100 hover:border-pink-200 transition-colors cursor-pointer"
-              onClick={handlePrivacyToggle}
-              data-testid="privacy-toggle"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-full ${isPrivate ? 'bg-purple-100' : 'bg-green-100'}`}>
-                  {isPrivate ? (
-                    <Shield className="w-6 h-6 text-purple-600" />
-                  ) : (
-                    <ShieldCheck className="w-6 h-6 text-green-600" />
-                  )}
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-800">
-                    {isPrivate ? 'Private Account' : 'Public Account'}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {isPrivate 
-                      ? 'Only followers you approve can see your posts and stories'
-                      : 'Anyone can see your posts and stories'
-                    }
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                  isPrivate ? 'bg-purple-600' : 'bg-gray-300'
-                }`}>
-                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                    isPrivate ? 'translate-x-7' : 'translate-x-1'
-                  }`} />
-                </div>
-                {updating && (
-                  <div className="ml-3 animate-spin w-5 h-5 border-2 border-pink-500 border-t-transparent rounded-full"></div>
-                )}
-              </div>
-            </div>
+            <SettingToggle
+              icon={<Search className="w-5 h-5" />}
+              label="Appear in Search"
+              description="Let others discover you in search results"
+              isOn={settings.appearInSearch}
+              onToggle={() => handleSettingToggle('appearInSearch')}
+              loading={updating.appearInSearch}
+            />
+            
+            <SettingToggle
+              icon={<MessageCircle className="w-5 h-5" />}
+              label="Allow Direct Messages"
+              description="Let other users send you private messages"
+              isOn={settings.allowDirectMessages}
+              onToggle={() => handleSettingToggle('allowDirectMessages')}
+              loading={updating.allowDirectMessages}
+            />
+            
+            <SettingToggle
+              icon={<Wifi className="w-5 h-5" />}
+              label="Show Online Status"
+              description="Display when you're active on LuvHive"
+              isOn={settings.showOnlineStatus}
+              onToggle={() => handleSettingToggle('showOnlineStatus')}
+              loading={updating.showOnlineStatus}
+            />
+          </div>
+        </div>
 
-            <div className="bg-pink-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-700">
-                <strong>Note:</strong> When your account is private, new followers will need your approval. 
-                Your current followers will still be able to see your content.
-              </p>
+        {/* Interaction Preferences Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-blue-100">
+              <Zap className="w-6 h-6 text-blue-600" />
             </div>
+            <h3 className="text-xl font-bold text-gray-800">Interaction Preferences</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <SettingToggle
+              icon={<Tag className="w-5 h-5" />}
+              label="Allow Tagging"
+              description="Let others tag you in posts and stories"
+              isOn={settings.allowTagging}
+              onToggle={() => handleSettingToggle('allowTagging')}
+              loading={updating.allowTagging}
+            />
+            
+            <SettingToggle
+              icon={<MessageSquare className="w-5 h-5" />}
+              label="Story Replies"
+              description="Allow others to reply to your stories"
+              isOn={settings.allowStoryReplies}
+              onToggle={() => handleSettingToggle('allowStoryReplies')}
+              loading={updating.allowStoryReplies}
+            />
+            
+            <SettingToggle
+              icon={<Zap className="w-5 h-5" />}
+              label="Show Vibe Score"
+              description="Display your vibe compatibility score"
+              isOn={settings.showVibeScore}
+              onToggle={() => handleSettingToggle('showVibeScore')}
+              loading={updating.showVibeScore}
+            />
+          </div>
+        </div>
+
+        {/* Notifications Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-purple-100">
+              <Bell className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">Notifications</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <SettingToggle
+              icon={settings.pushNotifications ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+              label="Push Notifications"
+              description="Receive notifications for sparks, glows, and messages"
+              isOn={settings.pushNotifications}
+              onToggle={() => handleSettingToggle('pushNotifications')}
+              loading={updating.pushNotifications}
+            />
+            
+            <SettingToggle
+              icon={settings.emailNotifications ? <Mail className="w-5 h-5" /> : <MailX className="w-5 h-5" />}
+              label="Email Notifications"
+              description="Get email updates about your LuvHive activity"
+              isOn={settings.emailNotifications}
+              onToggle={() => handleSettingToggle('emailNotifications')}
+              loading={updating.emailNotifications}
+            />
+          </div>
+        </div>
+
+        {/* Account Actions Section */}
+        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-red-100">
+              <LogOut className="w-6 h-6 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">Account Actions</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <ActionButton
+              icon={<Download className="w-5 h-5" />}
+              label="Download Data"
+              description="Export your LuvHive data"
+              onClick={handleDownloadData}
+              bgColor="bg-blue-50 hover:bg-blue-100"
+              textColor="text-blue-600"
+            />
+            
+            <ActionButton
+              icon={<HelpCircle className="w-5 h-5" />}
+              label="Help & Support"
+              description="Get help with LuvHive"
+              onClick={() => window.open('mailto:support@luvhive.com', '_blank')}
+              bgColor="bg-green-50 hover:bg-green-100"
+              textColor="text-green-600"
+            />
+            
+            <ActionButton
+              icon={<LogOut className="w-5 h-5" />}
+              label="Logout"
+              description="Sign out of LuvHive"
+              onClick={handleLogout}
+              bgColor="bg-red-50 hover:bg-red-100"
+              textColor="text-red-600"
+            />
           </div>
         </div>
       </div>
