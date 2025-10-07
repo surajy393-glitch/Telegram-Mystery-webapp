@@ -511,55 +511,42 @@ const SearchPage = ({ user, onLogout }) => {
               <p className="text-gray-600">Explore trending users and hashtags</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Trending Users */}
-              <div className="glass-effect rounded-3xl p-6 shadow-xl">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-pink-600" />
-                  Trending Users
-                </h3>
-                <div className="space-y-4">
-                  {trendingContent.trending_users.length > 0 ? (
-                    trendingContent.trending_users.map(renderUserCard)
-                  ) : (
-                    <p className="text-center text-gray-600 py-4">No trending users found</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Trending Hashtags */}
-              <div className="glass-effect rounded-3xl p-6 shadow-xl">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Hash className="w-5 h-5 text-pink-600" />
-                  Trending Hashtags
-                </h3>
-                <div className="space-y-3">
-                  {trendingContent.trending_hashtags.length > 0 ? (
-                    trendingContent.trending_hashtags.map((item, index) => (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          setSearchQuery(item.hashtag);
-                          handleSearch(item.hashtag, "posts");
-                        }}
-                        className="flex items-center justify-between p-3 rounded-xl hover:bg-pink-50 transition-colors cursor-pointer border border-pink-100"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-                            <Hash className="w-5 h-5 text-pink-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-800">{item.hashtag}</p>
-                            <p className="text-sm text-gray-600">{item.count} posts</p>
-                          </div>
+            {/* Trending Hashtags */}
+            <div className="glass-effect rounded-3xl p-6 shadow-xl max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Hash className="w-5 h-5 text-pink-600" />
+                Trending Hashtags
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {trendingContent.trending_hashtags.length > 0 ? (
+                  trendingContent.trending_hashtags.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSearchQuery(item.hashtag);
+                        handleSearch(item.hashtag, "posts");
+                      }}
+                      className="flex items-center justify-between p-4 rounded-xl hover:bg-pink-50 transition-colors cursor-pointer border border-pink-100 bg-white"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
+                          <Hash className="w-5 h-5 text-pink-600" />
                         </div>
-                        <TrendingUp className="w-4 h-4 text-pink-600" />
+                        <div>
+                          <p className="font-medium text-gray-800">{item.hashtag}</p>
+                          <p className="text-sm text-gray-600">{item.count} posts</p>
+                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-gray-600 py-4">No trending hashtags found</p>
-                  )}
-                </div>
+                      <TrendingUp className="w-4 h-4 text-pink-600" />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center text-gray-600 py-8">
+                    <Hash className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <p>No trending hashtags found</p>
+                    <p className="text-sm">Start exploring and discover trending topics!</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
