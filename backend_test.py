@@ -296,6 +296,223 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Authentication Required", False, "Exception occurred", str(e))
     
+    def test_get_user_profile_with_settings(self):
+        """Test GET /api/auth/me endpoint returns all new setting fields"""
+        try:
+            response = self.session.get(f"{API_BASE}/auth/me")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check for all required setting fields
+                privacy_fields = ['publicProfile', 'appearInSearch', 'allowDirectMessages', 'showOnlineStatus']
+                interaction_fields = ['allowTagging', 'allowStoryReplies', 'showVibeScore']
+                notification_fields = ['pushNotifications', 'emailNotifications']
+                
+                all_setting_fields = privacy_fields + interaction_fields + notification_fields + ['isPrivate']
+                missing_fields = [field for field in all_setting_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Get User Profile with Settings", False, f"Missing setting fields: {missing_fields}")
+                else:
+                    # Verify field types are boolean
+                    invalid_types = []
+                    for field in all_setting_fields:
+                        if not isinstance(data[field], bool):
+                            invalid_types.append(f"{field}: {type(data[field])}")
+                    
+                    if invalid_types:
+                        self.log_result("Get User Profile with Settings", False, f"Invalid field types: {invalid_types}")
+                    else:
+                        self.log_result("Get User Profile with Settings", True, 
+                                      f"All setting fields present with correct types. Privacy: {len(privacy_fields)}, Interaction: {len(interaction_fields)}, Notification: {len(notification_fields)}")
+            else:
+                self.log_result("Get User Profile with Settings", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get User Profile with Settings", False, "Exception occurred", str(e))
+    
+    def test_update_individual_settings(self):
+        """Test PUT /api/auth/settings endpoint for updating individual settings"""
+        try:
+            # Test updating privacy settings
+            privacy_update = {
+                "publicProfile": False,
+                "appearInSearch": False
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/settings", json=privacy_update)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'updated' in data:
+                    # Verify the settings were updated
+                    me_response = self.session.get(f"{API_BASE}/auth/me")
+                    if me_response.status_code == 200:
+                        me_data = me_response.json()
+                        if me_data['publicProfile'] == False and me_data['appearInSearch'] == False:
+                            self.log_result("Update Individual Settings", True, 
+                                          f"Successfully updated privacy settings: {data['updated']}")
+                        else:
+                            self.log_result("Update Individual Settings", False, 
+                                          f"Settings not persisted correctly. Expected: {privacy_update}, Got: publicProfile={me_data['publicProfile']}, appearInSearch={me_data['appearInSearch']}")
+                    else:
+                        self.log_result("Update Individual Settings", False, "Could not verify settings persistence")
+                else:
+                    self.log_result("Update Individual Settings", False, f"Unexpected response format: {data}")
+            else:
+                self.log_result("Update Individual Settings", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Update Individual Settings", False, "Exception occurred", str(e))
+    
+    def test_update_bulk_settings(self):
+        """Test PUT /api/auth/settings endpoint for bulk settings updates"""
+        try:
+            # Test updating multiple settings at once
+            bulk_update = {
+                "allowDirectMessages": False,
+                "showOnlineStatus": False,
+                "allowTagging": False,
+                "allowStoryReplies": False,
+                "pushNotifications": False,
+                "emailNotifications": False
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/settings", json=bulk_update)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'updated' in data:
+                    # Verify all settings were updated
+                    me_response = self.session.get(f"{API_BASE}/auth/me")
+                    if me_response.status_code == 200:
+                        me_data = me_response.json()
+                        all_correct = all(me_data[key] == value for key, value in bulk_update.items())
+                        
+                        if all_correct:
+                            self.log_result("Update Bulk Settings", True, 
+                                          f"Successfully updated {len(bulk_update)} settings: {list(bulk_update.keys())}")
+                        else:
+                            mismatches = {k: f"expected {v}, got {me_data[k]}" for k, v in bulk_update.items() if me_data[k] != v}
+                            self.log_result("Update Bulk Settings", False, 
+                                          f"Settings not persisted correctly: {mismatches}")
+                    else:
+                        self.log_result("Update Bulk Settings", False, "Could not verify settings persistence")
+                else:
+                    self.log_result("Update Bulk Settings", False, f"Unexpected response format: {data}")
+            else:
+                self.log_result("Update Bulk Settings", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Update Bulk Settings", False, "Exception occurred", str(e))
+    
+    def test_invalid_settings_validation(self):
+        """Test PUT /api/auth/settings endpoint with invalid settings"""
+        try:
+            # Test with invalid setting names and values
+            invalid_update = {
+                "invalidSetting": True,
+                "publicProfile": "not_a_boolean",
+                "anotherInvalidSetting": 123
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/settings", json=invalid_update)
+            
+            if response.status_code == 400:
+                self.log_result("Invalid Settings Validation", True, "Correctly rejected invalid settings")
+            elif response.status_code == 200:
+                # Check if only valid settings were updated
+                data = response.json()
+                if 'updated' in data and len(data['updated']) == 0:
+                    self.log_result("Invalid Settings Validation", True, "No invalid settings were processed")
+                else:
+                    self.log_result("Invalid Settings Validation", False, f"Invalid settings were processed: {data.get('updated', {})}")
+            else:
+                self.log_result("Invalid Settings Validation", False, f"Unexpected status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Invalid Settings Validation", False, "Exception occurred", str(e))
+    
+    def test_empty_settings_update(self):
+        """Test PUT /api/auth/settings endpoint with empty request"""
+        try:
+            response = self.session.put(f"{API_BASE}/auth/settings", json={})
+            
+            if response.status_code == 400:
+                self.log_result("Empty Settings Update", True, "Correctly rejected empty settings update")
+            else:
+                self.log_result("Empty Settings Update", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Empty Settings Update", False, "Exception occurred", str(e))
+    
+    def test_data_download(self):
+        """Test GET /api/auth/download-data endpoint for exporting user data"""
+        try:
+            response = self.session.get(f"{API_BASE}/auth/download-data")
+            
+            if response.status_code == 200:
+                # Check if response is JSON
+                try:
+                    data = response.json()
+                    
+                    # Check for required sections in export
+                    required_sections = ['profile', 'posts', 'stories', 'notifications', 'exportedAt', 'totalPosts', 'totalStories', 'totalNotifications']
+                    missing_sections = [section for section in required_sections if section not in data]
+                    
+                    if missing_sections:
+                        self.log_result("Data Download", False, f"Missing sections in export: {missing_sections}")
+                    else:
+                        # Check profile section has required fields
+                        profile = data['profile']
+                        profile_fields = ['id', 'fullName', 'username', 'age', 'gender', 'createdAt', 'followers', 'following']
+                        missing_profile_fields = [field for field in profile_fields if field not in profile]
+                        
+                        if missing_profile_fields:
+                            self.log_result("Data Download", False, f"Missing profile fields: {missing_profile_fields}")
+                        else:
+                            # Check Content-Disposition header for filename
+                            content_disposition = response.headers.get('Content-Disposition', '')
+                            has_filename = 'filename=' in content_disposition and 'luvhive-data-' in content_disposition
+                            
+                            if has_filename:
+                                self.log_result("Data Download", True, 
+                                              f"Successfully exported data with {data['totalPosts']} posts, {data['totalStories']} stories, {data['totalNotifications']} notifications")
+                            else:
+                                self.log_result("Data Download", False, "Missing or incorrect Content-Disposition header")
+                        
+                except json.JSONDecodeError:
+                    self.log_result("Data Download", False, "Response is not valid JSON")
+            else:
+                self.log_result("Data Download", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Data Download", False, "Exception occurred", str(e))
+    
+    def test_settings_authentication_required(self):
+        """Test that settings endpoints require authentication"""
+        try:
+            # Create session without auth token
+            unauth_session = requests.Session()
+            
+            # Test settings update without auth
+            response = unauth_session.put(f"{API_BASE}/auth/settings", json={"publicProfile": False})
+            
+            if response.status_code == 401:
+                # Test data download without auth
+                response2 = unauth_session.get(f"{API_BASE}/auth/download-data")
+                
+                if response2.status_code == 401:
+                    self.log_result("Settings Authentication Required", True, "Both settings endpoints correctly require authentication")
+                else:
+                    self.log_result("Settings Authentication Required", False, f"Data download endpoint: expected 401, got {response2.status_code}")
+            else:
+                self.log_result("Settings Authentication Required", False, f"Settings update endpoint: expected 401, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Settings Authentication Required", False, "Exception occurred", str(e))
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
