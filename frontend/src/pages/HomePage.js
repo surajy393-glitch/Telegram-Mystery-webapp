@@ -550,9 +550,10 @@ const HomePage = ({ user, onLogout }) => {
                 <UserIcon className="w-5 h-5 text-pink-600" />
               </Button>
             </Link>
-            <Link to="/profile">
+            <Link to="/search">
               <Button variant="ghost" className="hover:bg-pink-50 text-sm text-gray-600">
-                Discover
+                <Search className="w-4 h-4 mr-2" />
+                Search
               </Button>
             </Link>
             <Button 
