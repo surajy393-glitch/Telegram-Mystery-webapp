@@ -409,10 +409,38 @@ async def login(user_data: UserLogin):
 @api_router.post("/auth/telegram")
 async def telegram_auth(telegram_data: TelegramAuthRequest):
     """
-    Authenticate user via Telegram Login Widget
+    Authenticate user via Telegram Login Widget with secure hash verification
     """
-    # TODO: Verify Telegram hash for security
-    # For now, we'll implement basic flow - in production, verify the hash
+    # Get Telegram bot token from environment
+    telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    
+    if not telegram_bot_token:
+        raise HTTPException(status_code=500, detail="Telegram bot not configured")
+    
+    # Verify Telegram hash for security
+    auth_data_dict = {
+        "id": str(telegram_data.id),
+        "first_name": telegram_data.first_name,
+        "auth_date": str(telegram_data.auth_date),
+        "hash": telegram_data.hash
+    }
+    
+    # Add optional fields if present
+    if telegram_data.last_name:
+        auth_data_dict["last_name"] = telegram_data.last_name
+    if telegram_data.username:
+        auth_data_dict["username"] = telegram_data.username
+    if telegram_data.photo_url:
+        auth_data_dict["photo_url"] = telegram_data.photo_url
+    
+    # Verify the hash
+    if not verify_telegram_hash(auth_data_dict.copy(), telegram_bot_token):
+        raise HTTPException(status_code=401, detail="Invalid Telegram authentication data")
+    
+    # Check auth_date is not too old (within 24 hours)
+    current_time = int(datetime.now(timezone.utc).timestamp())
+    if current_time - telegram_data.auth_date > 86400:  # 24 hours
+        raise HTTPException(status_code=401, detail="Telegram authentication data expired")
     
     # Check if user exists by Telegram ID
     existing_user = await db.users.find_one({"telegramId": telegram_data.id})
