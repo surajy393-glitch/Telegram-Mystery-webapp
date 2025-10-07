@@ -63,17 +63,29 @@ const SearchPage = ({ user, onLogout }) => {
     }
   }, [location]);
 
-  const fetchTrendingContent = async () => {
+  const fetchTrendingContent = useCallback(async () => {
+    const cacheKey = 'trending_content';
+    
+    // Check cache first
+    const cachedResult = trendingCache.get(cacheKey);
+    if (cachedResult) {
+      setTrendingContent(cachedResult);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(`${API}/search/trending`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Cache the result
+      trendingCache.set(cacheKey, response.data);
       setTrendingContent(response.data);
     } catch (error) {
       console.error("Error fetching trending content:", error);
     }
-  };
+  }, []);
 
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
