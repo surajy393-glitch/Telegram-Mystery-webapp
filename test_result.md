@@ -171,6 +171,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Story hiding endpoint (/api/users/{userId}/hide-story) working correctly. Prevents hiding own stories (400 status), updates user's hiddenStoryUsers list. Authentication required and working."
 
+  - task: "Comprehensive settings functionality"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Comprehensive settings functionality working perfectly. All 7 test scenarios passed: 1) /api/auth/me endpoint returns all new setting fields (Privacy Controls: publicProfile, appearInSearch, allowDirectMessages, showOnlineStatus; Interaction Preferences: allowTagging, allowStoryReplies, showVibeScore; Notifications: pushNotifications, emailNotifications), 2) /api/auth/settings endpoint successfully updates individual settings with proper persistence, 3) Bulk settings updates working correctly for multiple settings simultaneously, 4) Invalid settings validation properly rejects invalid setting names and non-boolean values, 5) Empty settings requests correctly rejected with 400 status, 6) /api/auth/download-data endpoint exports comprehensive user data in JSON format with proper Content-Disposition headers, 7) All settings endpoints require authentication as expected. Settings persistence verified through GET /api/auth/me after updates."
+
 frontend:
   - task: "Fix comment profile pictures display"
     implemented: false
