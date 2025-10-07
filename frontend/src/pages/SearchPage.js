@@ -27,6 +27,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const SearchPage = ({ user, onLogout }) => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
     users: [],
@@ -45,7 +46,18 @@ const SearchPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     fetchTrendingContent();
-  }, []);
+    
+    // Check for URL parameters
+    const params = new URLSearchParams(location.search);
+    const query = params.get('q');
+    const type = params.get('type') || 'all';
+    
+    if (query) {
+      setSearchQuery(query);
+      setActiveTab(type);
+      handleSearch(query, type);
+    }
+  }, [location]);
 
   const fetchTrendingContent = async () => {
     try {
