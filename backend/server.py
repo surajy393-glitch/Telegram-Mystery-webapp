@@ -15,6 +15,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 import jwt
+from jwt import JWTError
 import base64
 
 ROOT_DIR = Path(__file__).parent
