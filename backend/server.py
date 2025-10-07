@@ -31,6 +31,34 @@ logger.info(f"Connected to MongoDB at {mongo_url}")
 logger.info(f"Using database: {db_name}")
 logger.info(f"Database object: {db}")
 
+# Create database indexes for better performance
+async def create_indexes():
+    """Create database indexes for better performance"""
+    try:
+        # Index for user search
+        await db.users.create_index([
+            ("username", "text"),
+            ("fullName", "text"),
+            ("bio", "text")
+        ], name="user_search_index")
+        
+        # Index for user lookup
+        await db.users.create_index("username")
+        await db.users.create_index("id")
+        
+        # Index for posts
+        await db.posts.create_index([("userId", 1), ("createdAt", -1)])
+        await db.posts.create_index([("caption", "text")], name="post_search_index")
+        await db.posts.create_index("createdAt")
+        
+        logger.info("Database indexes created successfully")
+    except Exception as e:
+        logger.error(f"Error creating indexes: {e}")
+
+# Initialize indexes on startup
+import asyncio
+asyncio.create_task(create_indexes())
+
 # Create the main app without a prefix
 app = FastAPI()
 
