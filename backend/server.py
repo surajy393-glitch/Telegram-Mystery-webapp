@@ -1236,6 +1236,47 @@ async def hide_user_story(userId: str, current_user: User = Depends(get_current_
     
     return {"message": "Stories hidden successfully"}
 
+@api_router.get("/users/blocked")
+async def get_blocked_users(current_user: User = Depends(get_current_user)):
+    """Get list of blocked users with their profile information"""
+    blocked_user_ids = current_user.blockedUsers
+    
+    if not blocked_user_ids:
+        return {"blockedUsers": []}
+    
+    # Get blocked users information
+    blocked_users = await db.users.find({"id": {"$in": blocked_user_ids}}).to_list(100)
+    
+    blocked_users_list = []
+    for user in blocked_users:
+        blocked_users_list.append({
+            "id": user["id"],
+            "username": user["username"],
+            "fullName": user["fullName"],
+            "profileImage": user.get("profileImage"),
+            "blockedAt": user.get("blockedAt", "Unknown")
+        })
+    
+    return {"blockedUsers": blocked_users_list}
+
+@api_router.post("/users/{userId}/unblock")
+async def unblock_user(userId: str, current_user: User = Depends(get_current_user)):
+    """Unblock a user"""
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot unblock yourself")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Remove from blocked users list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$pull": {"blockedUsers": userId}}
+    )
+    
+    return {"message": "User unblocked successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
