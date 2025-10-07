@@ -12,7 +12,11 @@ const API = `${BACKEND_URL}/api`;
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     password: ""
