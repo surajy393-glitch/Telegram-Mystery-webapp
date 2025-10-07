@@ -277,7 +277,9 @@ const SearchPage = ({ user, onLogout }) => {
           </Button>
         </div>
         {post.caption && (
-          <p className="text-sm text-gray-700">{post.caption}</p>
+          <p className="text-sm text-gray-700">
+            <HashtagText text={post.caption} />
+          </p>
         )}
       </div>
     </div>
