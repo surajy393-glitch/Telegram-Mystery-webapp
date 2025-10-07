@@ -41,7 +41,20 @@ const SettingsPage = ({ user, onLogout }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfile(response.data);
-      setIsPrivate(response.data.isPrivate || false);
+      
+      // Load all settings from profile
+      setSettings({
+        isPrivate: response.data.isPrivate || false,
+        publicProfile: response.data.publicProfile !== false,
+        appearInSearch: response.data.appearInSearch !== false,
+        allowDirectMessages: response.data.allowDirectMessages !== false,
+        showOnlineStatus: response.data.showOnlineStatus !== false,
+        allowTagging: response.data.allowTagging !== false,
+        allowStoryReplies: response.data.allowStoryReplies !== false,
+        showVibeScore: response.data.showVibeScore !== false,
+        pushNotifications: response.data.pushNotifications !== false,
+        emailNotifications: response.data.emailNotifications !== false
+      });
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
