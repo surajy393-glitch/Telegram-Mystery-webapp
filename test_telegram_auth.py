@@ -4,13 +4,42 @@ Test script for Telegram authentication hash verification
 """
 import hashlib
 import hmac
-import sys
-import os
 
-# Add the backend directory to the path
-sys.path.append('/app/backend')
-
-from server import verify_telegram_hash
+def verify_telegram_hash(auth_data: dict, bot_token: str) -> bool:
+    """
+    Verify Telegram Login Widget hash for security
+    https://core.telegram.org/widgets/login#checking-authorization
+    """
+    try:
+        # Extract hash from auth_data
+        received_hash = auth_data.pop('hash', None)
+        if not received_hash:
+            return False
+        
+        # Create data check string
+        data_check_arr = []
+        for key, value in sorted(auth_data.items()):
+            if key != 'hash':
+                data_check_arr.append(f"{key}={value}")
+        
+        data_check_string = '\n'.join(data_check_arr)
+        
+        # Create secret key from bot token
+        secret_key = hashlib.sha256(bot_token.encode()).digest()
+        
+        # Calculate hash
+        calculated_hash = hmac.new(
+            secret_key,
+            data_check_string.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        # Compare hashes
+        return hmac.compare_digest(calculated_hash, received_hash)
+        
+    except Exception as e:
+        print(f"Error verifying Telegram hash: {e}")
+        return False
 
 def test_telegram_hash_verification():
     """Test the Telegram hash verification function"""
