@@ -52,97 +52,119 @@ const LoginPage = ({ onLogin }) => {
     setTelegramLoading(true);
     
     try {
-      // Show info that we're implementing secure authentication
+      // For preview domains, we'll use a server-side authentication approach
+      // that doesn't require domain verification with @BotFather
+      
       toast({
-        title: "Secure Authentication",
-        description: "Implementing real Telegram Login Widget with bot: @Loveekisssbot",
+        title: "Telegram Authentication",
+        description: "Redirecting to secure Telegram authentication...",
       });
 
-      // Create a div to hold the Telegram Login Widget
-      const widgetContainer = document.createElement('div');
-      widgetContainer.id = 'telegram-login-widget';
-      widgetContainer.style.position = 'fixed';
-      widgetContainer.style.top = '50%';
-      widgetContainer.style.left = '50%';
-      widgetContainer.style.transform = 'translate(-50%, -50%)';
-      widgetContainer.style.zIndex = '9999';
-      widgetContainer.style.backgroundColor = 'white';
-      widgetContainer.style.padding = '20px';
-      widgetContainer.style.borderRadius = '10px';
-      widgetContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+      // Generate a secure authentication request
+      const authRequest = {
+        timestamp: Math.floor(Date.now() / 1000),
+        nonce: Math.random().toString(36).substr(2, 15)
+      };
+
+      // Create Telegram deep link for authentication
+      const botUsername = 'Loveekisssbot';
+      const authPayload = btoa(JSON.stringify(authRequest));
+      const telegramUrl = `https://t.me/${botUsername}?start=auth_${authPayload}`;
       
-      // Add close button
-      const closeButton = document.createElement('button');
-      closeButton.innerHTML = '×';
-      closeButton.style.position = 'absolute';
-      closeButton.style.top = '5px';
-      closeButton.style.right = '10px';
-      closeButton.style.background = 'none';
-      closeButton.style.border = 'none';
-      closeButton.style.fontSize = '20px';
-      closeButton.style.cursor = 'pointer';
-      closeButton.onclick = () => {
-        document.body.removeChild(widgetContainer);
+      // Show authentication dialog
+      const authDialog = document.createElement('div');
+      authDialog.style.position = 'fixed';
+      authDialog.style.top = '0';
+      authDialog.style.left = '0';
+      authDialog.style.width = '100%';
+      authDialog.style.height = '100%';
+      authDialog.style.backgroundColor = 'rgba(0,0,0,0.8)';
+      authDialog.style.zIndex = '9999';
+      authDialog.style.display = 'flex';
+      authDialog.style.alignItems = 'center';
+      authDialog.style.justifyContent = 'center';
+      
+      const dialogContent = document.createElement('div');
+      dialogContent.style.backgroundColor = 'white';
+      dialogContent.style.padding = '30px';
+      dialogContent.style.borderRadius = '15px';
+      dialogContent.style.maxWidth = '400px';
+      dialogContent.style.textAlign = 'center';
+      dialogContent.innerHTML = `
+        <h3 style="color: #1f2937; margin-bottom: 20px;">Secure Telegram Login</h3>
+        <p style="color: #6b7280; margin-bottom: 25px;">To authenticate securely with your Telegram account:</p>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+          <p style="margin: 10px 0; color: #374151;"><strong>1.</strong> Click "Open Telegram" below</p>
+          <p style="margin: 10px 0; color: #374151;"><strong>2.</strong> Send any message to @Loveekisssbot</p>
+          <p style="margin: 10px 0; color: #374151;"><strong>3.</strong> Return here and click "Complete Login"</p>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <a href="${telegramUrl}" target="_blank" style="
+            background: #0088cc; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            text-decoration: none;
+            display: inline-block;
+          ">📱 Open Telegram</a>
+          <button id="completeLogin" style="
+            background: #22c55e; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer;
+          ">✅ Complete Login</button>
+          <button id="cancelAuth" style="
+            background: #ef4444; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer;
+          ">❌ Cancel</button>
+        </div>
+      `;
+      
+      authDialog.appendChild(dialogContent);
+      document.body.appendChild(authDialog);
+      
+      // Handle complete login
+      document.getElementById('completeLogin').onclick = async () => {
+        try {
+          // Check with backend if user has authenticated via Telegram
+          const response = await axios.post(`${API}/auth/telegram-check`, authRequest);
+          
+          if (response.data.authenticated) {
+            onLogin(response.data.access_token, response.data.user);
+            toast({
+              title: "Success!",
+              description: "Successfully logged in with Telegram",
+            });
+            navigate("/home");
+          } else {
+            toast({
+              title: "Authentication Pending",
+              description: "Please make sure you've sent a message to @Loveekisssbot",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Authentication Failed",
+            description: "Please try again or contact support",
+            variant: "destructive"
+          });
+        }
+        
+        document.body.removeChild(authDialog);
         setTelegramLoading(false);
       };
       
-      widgetContainer.appendChild(closeButton);
-      
-      // Add title
-      const title = document.createElement('h3');
-      title.textContent = 'Login with Telegram';
-      title.style.marginBottom = '15px';
-      title.style.textAlign = 'center';
-      widgetContainer.appendChild(title);
-
-      // Create Telegram Login Widget script
-      const telegramScript = document.createElement('script');
-      telegramScript.async = true;
-      telegramScript.src = 'https://telegram.org/js/telegram-widget.js?22';
-      telegramScript.setAttribute('data-telegram-login', 'Loveekisssbot');
-      telegramScript.setAttribute('data-size', 'large');
-      telegramScript.setAttribute('data-radius', '10');
-      telegramScript.setAttribute('data-request-access', 'write');
-      telegramScript.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      
-      widgetContainer.appendChild(telegramScript);
-      document.body.appendChild(widgetContainer);
-
-      // Global callback function for Telegram auth
-      window.onTelegramAuth = async (user) => {
-        try {
-          // Remove widget
-          if (document.getElementById('telegram-login-widget')) {
-            document.body.removeChild(widgetContainer);
-          }
-
-          // Send real Telegram data with hash for verification
-          const response = await axios.post(`${API}/auth/telegram`, {
-            id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name || "",
-            username: user.username || "",
-            photo_url: user.photo_url || "",
-            auth_date: user.auth_date,
-            hash: user.hash
-          });
-          
-          onLogin(response.data.access_token, response.data.user);
-          toast({
-            title: "Success!",
-            description: "Successfully logged in with Telegram",
-          });
-          navigate("/home");
-          
-        } catch (error) {
-          toast({
-            title: "Telegram Login Failed", 
-            description: error.response?.data?.detail || "Telegram authentication failed",
-            variant: "destructive"
-          });
-        } finally {
-          setTelegramLoading(false);
-        }
+      // Handle cancel
+      document.getElementById('cancelAuth').onclick = () => {
+        document.body.removeChild(authDialog);
+        setTelegramLoading(false);
       };
       
     } catch (error) {
