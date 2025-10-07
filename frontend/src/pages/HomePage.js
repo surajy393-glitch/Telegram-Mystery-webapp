@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, MessageCircle, Send, Plus, LogOut, User as UserIcon, Bookmark, X, MoreVertical, Trash2, Download, Link2, Share2, AlertCircle, Bell, Search } from "lucide-react";
+import HashtagText from "@/components/HashtagText";
 import axios from "axios";
 import {
   Dialog,
