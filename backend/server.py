@@ -268,6 +268,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "isPremium": current_user.isPremium,
         "isPrivate": current_user.isPrivate,
         "telegramLinked": current_user.telegramUserId is not None,
+        "blockedUsers": current_user.blockedUsers,
         
         # Privacy Controls
         "appearInSearch": current_user.appearInSearch,
