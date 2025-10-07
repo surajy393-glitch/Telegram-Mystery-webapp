@@ -78,6 +78,15 @@ const SearchPage = ({ user, onLogout }) => {
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
 
+    const cacheKey = `search_${query.trim()}_${type}`;
+    
+    // Check cache first
+    const cachedResult = searchCache.get(cacheKey);
+    if (cachedResult) {
+      setSearchResults(cachedResult);
+      return;
+    }
+
     setLoading(true);
     setShowSuggestions(false);
 
@@ -89,6 +98,9 @@ const SearchPage = ({ user, onLogout }) => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Cache the result
+      searchCache.set(cacheKey, response.data);
       setSearchResults(response.data);
     } catch (error) {
       console.error("Error searching:", error);
