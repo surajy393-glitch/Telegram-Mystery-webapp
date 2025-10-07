@@ -208,8 +208,20 @@ async def get_current_user(authorization: str = Header(None)):
 # Authentication Routes
 @api_router.post("/auth/register")
 async def register(user_data: UserRegister):
-    # Check if username exists
-    existing_user = await db.users.find_one({"username": user_data.username})
+    # Validate and clean username
+    clean_username = user_data.username.strip()
+    clean_fullname = user_data.fullName.strip()
+    
+    if not clean_username:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+    
+    if len(clean_username) < 3:
+        raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+    
+    # Check if username exists (case-insensitive and trimmed)
+    existing_user = await db.users.find_one({
+        "username": {"$regex": f"^{clean_username.replace('.', r'\.')}$", "$options": "i"}
+    })
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
