@@ -41,6 +41,12 @@ const SettingsPage = ({ user, onLogout }) => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    if (showBlockedUsers) {
+      fetchBlockedUsers();
+    }
+  }, [showBlockedUsers]);
+
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("token");
