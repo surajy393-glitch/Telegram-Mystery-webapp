@@ -219,8 +219,9 @@ async def register(user_data: UserRegister):
         raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
     
     # Check if username exists (case-insensitive and trimmed)
+    escaped_username = clean_username.replace('.', r'\.')
     existing_user = await db.users.find_one({
-        "username": {"$regex": f"^{clean_username.replace('.', r'\.')}$", "$options": "i"}
+        "username": {"$regex": f"^{escaped_username}$", "$options": "i"}
     })
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
