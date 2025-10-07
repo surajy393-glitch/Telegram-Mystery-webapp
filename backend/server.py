@@ -318,6 +318,21 @@ async def update_profile(
     
     return {"message": "Profile updated successfully"}
 
+@api_router.put("/auth/privacy")
+async def update_privacy_setting(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Update user's account privacy setting"""
+    is_private = request.get("isPrivate", False)
+    
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"isPrivate": is_private}}
+    )
+    
+    return {"message": "Privacy setting updated successfully", "isPrivate": is_private}
+
 @api_router.get("/auth/can-change-username")
 async def can_change_username(current_user: User = Depends(get_current_user)):
     if not current_user.lastUsernameChange:
