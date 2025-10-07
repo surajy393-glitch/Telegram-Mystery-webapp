@@ -1569,6 +1569,27 @@ class LuvHiveAPITester:
         # Test authentication
         self.test_search_authentication_required()
         
+        print("Testing Telegram Authentication...")
+        self.test_telegram_registration_new_user()
+        self.test_telegram_login_existing_user()
+        self.test_telegram_username_generation()
+        
+        print("Testing Updated Traditional Registration...")
+        self.test_traditional_registration_with_email()
+        self.test_traditional_registration_email_validation()
+        self.test_traditional_registration_duplicate_email()
+        
+        print("Testing Forgot Password Functionality...")
+        self.test_forgot_password_valid_email()
+        self.test_forgot_password_nonexistent_email()
+        self.test_forgot_password_empty_email()
+        self.test_forgot_password_telegram_user()
+        
+        print("Testing Password Reset Functionality...")
+        self.test_password_reset_valid_token()
+        self.test_password_reset_invalid_token()
+        self.test_password_reset_weak_password()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
