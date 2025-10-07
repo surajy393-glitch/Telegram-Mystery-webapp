@@ -74,7 +74,7 @@ const SearchPage = ({ user, onLogout }) => {
     }
   };
 
-  const handleSearch = async (query = searchQuery, type = activeTab) => {
+  const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
 
     setLoading(true);
@@ -94,7 +94,7 @@ const SearchPage = ({ user, onLogout }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, activeTab]);
 
   // Debounced search suggestions to reduce API calls
   const fetchSuggestions = useCallback(async (query) => {
