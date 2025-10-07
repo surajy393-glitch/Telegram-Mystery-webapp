@@ -304,9 +304,23 @@ test_plan:
         agent: "testing"
         comment: "❌ HASHTAG FUNCTIONALITY TESTING BLOCKED: Unable to complete comprehensive testing due to authentication requirements. CODE ANALYSIS CONFIRMS PROPER IMPLEMENTATION: 1) ✅ HashtagText component correctly implemented with blue clickable styling (text-blue-600 hover:text-blue-800 cursor-pointer), regex hashtag detection (#\w+), navigation to /search?q=%23hashtag&type=posts using useNavigate, and proper event handling with stopPropagation(), 2) ✅ HomePage.js uses HashtagText component in post captions (line 809), 3) ✅ SearchPage.js properly handles URL parameters with useLocation and URLSearchParams, has trending hashtags section, supports search tabs (All, Users, Posts, Tags), and includes proper navigation, 4) ❌ AUTHENTICATION BARRIER: All attempts to access /search page redirect to landing page, preventing testing of: clickable hashtags in posts, hashtag navigation, search query pre-filling, trending hashtag clicks, and URL parameter handling, 5) ✅ BACKEND INTEGRATION CONFIRMED: Backend logs show successful API calls to /api/search and /api/search/trending from authenticated users. REQUIRES: Valid test credentials or authentication bypass to complete end-to-end hashtag functionality testing."
 
+  - task: "Integrate Telegram authentication and forgot password into web app RegistrationPage"
+    implemented: false
+    working: false
+    file: "RegistrationPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Need to add email field and Telegram registration functionality to RegistrationPage. Telegram login and forgot password backend endpoints exist, LoginPage updated, RegistrationPage pending."
+
 agent_communication:
   - agent: "main"
     message: "Replaced discover functionality with comprehensive search system. Created SearchPage.js with advanced search capabilities including users, posts, hashtags, trending content, and auto-complete suggestions. Added backend endpoints for search (/api/search), trending content (/api/search/trending), and search suggestions (/api/search/suggestions). Updated navigation from 'Discover' to 'Search' throughout the app. Ready for testing."
+  - agent: "main"
+    message: "Starting integration of Telegram authentication and forgot password functionality into web app RegistrationPage. Will add email field, Telegram Login Widget, and proper form validation for both traditional and Telegram registration flows."
   - agent: "testing"
     message: "✅ BACKEND TESTING COMPLETE: All newly implemented backend endpoints are working correctly. Tested 12 scenarios with 100% pass rate. Key findings: 1) AI vibe compatibility with OpenAI GPT-5 integration working perfectly, 2) User profile and posts endpoints returning proper data, 3) User blocking and story hiding functionality working with proper validation, 4) All endpoints require authentication as expected, 5) Error handling working correctly for invalid inputs. Backend implementation is solid and ready for frontend integration."
   - agent: "testing"
