@@ -1335,7 +1335,7 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     # Search posts (if type is "posts" or "all")
     if search_type in ["posts", "all"]:
         # Find posts from non-blocked users and public accounts
-        blocked_users = current_user.blockedUsers + [current_user.id]  # Exclude own posts
+        blocked_users = current_user.blockedUsers  # Don't exclude own posts
         
         post_filter = {
             "$and": [
