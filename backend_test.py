@@ -1057,16 +1057,24 @@ class LuvHiveAPITester:
                     if missing_telegram_fields:
                         self.log_result("Telegram Registration (New User)", False, f"Missing Telegram fields: {missing_telegram_fields}")
                     else:
+                        # Debug: Print actual user data to see what's missing
+                        print(f"DEBUG - User data received: {user}")
+                        print(f"DEBUG - Expected telegramId: {telegram_data['id']}, Got: {user.get('telegramId')}")
+                        print(f"DEBUG - Expected telegramUsername: {telegram_data['username']}, Got: {user.get('telegramUsername')}")
+                        print(f"DEBUG - Expected telegramFirstName: {telegram_data['first_name']}, Got: {user.get('telegramFirstName')}")
+                        print(f"DEBUG - Expected authMethod: telegram, Got: {user.get('authMethod')}")
+                        
                         # Verify Telegram-specific values
-                        if (user['telegramId'] == telegram_data['id'] and 
-                            user['telegramUsername'] == telegram_data['username'] and
-                            user['telegramFirstName'] == telegram_data['first_name'] and
-                            user['authMethod'] == 'telegram'):
+                        if (user.get('telegramId') == telegram_data['id'] and 
+                            user.get('telegramUsername') == telegram_data['username'] and
+                            user.get('telegramFirstName') == telegram_data['first_name'] and
+                            user.get('authMethod') == 'telegram'):
                             
                             self.log_result("Telegram Registration (New User)", True, 
                                           f"Successfully registered Telegram user: {user['username']} (ID: {user['telegramId']})")
                         else:
-                            self.log_result("Telegram Registration (New User)", False, "Telegram data not properly stored")
+                            self.log_result("Telegram Registration (New User)", False, 
+                                          f"Telegram data not properly stored. Expected: telegramId={telegram_data['id']}, telegramUsername={telegram_data['username']}, telegramFirstName={telegram_data['first_name']}, authMethod=telegram")
             else:
                 self.log_result("Telegram Registration (New User)", False, f"Status: {response.status_code}", response.text)
                 
