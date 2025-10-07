@@ -48,6 +48,7 @@ class User(BaseModel):
     telegramCode: Optional[str] = None
     telegramUserId: Optional[str] = None
     isPremium: bool = False
+    isPrivate: bool = False  # Privacy setting for the account
     followers: List[str] = []  # List of user IDs
     following: List[str] = []  # List of user IDs
     savedPosts: List[str] = []  # List of post IDs
