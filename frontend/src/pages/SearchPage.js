@@ -37,7 +37,6 @@ const SearchPage = ({ user, onLogout }) => {
     query: ""
   });
   const [trendingContent, setTrendingContent] = useState({
-    trending_users: [],
     trending_hashtags: []
   });
   const [suggestions, setSuggestions] = useState([]);
