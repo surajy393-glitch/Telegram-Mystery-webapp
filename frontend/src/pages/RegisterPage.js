@@ -73,6 +73,7 @@ const RegisterPage = ({ onLogin }) => {
       const response = await axios.post(`${API}/auth/register`, {
         fullName: formData.fullName,
         username: formData.username,
+        email: formData.email,
         age: parseInt(formData.age),
         gender: formData.gender,
         password: formData.password
