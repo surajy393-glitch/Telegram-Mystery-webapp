@@ -1343,6 +1343,8 @@ async def unblock_user(userId: str, current_user: User = Depends(get_current_use
 class SearchRequest(BaseModel):
     query: str
     type: Optional[str] = "all"  # "users", "posts", "hashtags", "all"
+    page: Optional[int] = 1
+    limit: Optional[int] = 10
 
 @api_router.post("/search")
 async def search_content(search_request: SearchRequest, current_user: User = Depends(get_current_user)):
