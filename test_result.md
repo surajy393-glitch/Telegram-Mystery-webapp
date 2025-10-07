@@ -245,13 +245,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix comment profile pictures display"
-    - "Replace Send Spark with Vibe Compatibility"
-    - "Add 3-dot menu to other users' profiles"
+    - "Replace discover section with search functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: true
+  backend_testing_complete: false
   settings_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
