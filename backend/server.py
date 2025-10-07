@@ -482,7 +482,7 @@ async def reset_password(request: ResetPasswordRequest):
         
         return {"message": "Password reset successful"}
         
-    except jwt.JWTError:
+    except JWTError:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
 @api_router.get("/auth/me")
