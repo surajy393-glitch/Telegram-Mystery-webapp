@@ -19,13 +19,16 @@ const API = `${BACKEND_URL}/api`;
 
 const RegisterPage = ({ onLogin }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [telegramLoading, setTelegramLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
+    email: "",
     age: "",
     gender: "",
     password: "",
