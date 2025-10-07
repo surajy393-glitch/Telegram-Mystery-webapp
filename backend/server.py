@@ -49,6 +49,22 @@ class User(BaseModel):
     telegramUserId: Optional[str] = None
     isPremium: bool = False
     isPrivate: bool = False  # Privacy setting for the account
+    
+    # Privacy Controls
+    publicProfile: bool = True
+    appearInSearch: bool = True
+    allowDirectMessages: bool = True
+    showOnlineStatus: bool = True
+    
+    # Interaction Preferences
+    allowTagging: bool = True
+    allowStoryReplies: bool = True
+    showVibeScore: bool = True
+    
+    # Notifications
+    pushNotifications: bool = True
+    emailNotifications: bool = True
+    
     followers: List[str] = []  # List of user IDs
     following: List[str] = []  # List of user IDs
     savedPosts: List[str] = []  # List of post IDs
