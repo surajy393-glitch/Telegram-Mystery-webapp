@@ -515,7 +515,7 @@ class LuvHiveAPITester:
             unauth_session = requests.Session()
             
             # Test settings update without auth
-            response = unauth_session.put(f"{API_BASE}/auth/settings", json={"publicProfile": False})
+            response = unauth_session.put(f"{API_BASE}/auth/settings", json={"appearInSearch": False})
             
             if response.status_code == 401:
                 # Test data download without auth
@@ -530,6 +530,124 @@ class LuvHiveAPITester:
                 
         except Exception as e:
             self.log_result("Settings Authentication Required", False, "Exception occurred", str(e))
+    
+    def test_get_blocked_users(self):
+        """Test GET /api/users/blocked endpoint returns list of blocked users"""
+        try:
+            response = self.session.get(f"{API_BASE}/users/blocked")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'blockedUsers' in data and isinstance(data['blockedUsers'], list):
+                    self.log_result("Get Blocked Users", True, 
+                                  f"Successfully retrieved blocked users list with {len(data['blockedUsers'])} users")
+                else:
+                    self.log_result("Get Blocked Users", False, "Response missing 'blockedUsers' array")
+            else:
+                self.log_result("Get Blocked Users", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Blocked Users", False, "Exception occurred", str(e))
+    
+    def test_unblock_user(self):
+        """Test POST /api/users/{userId}/unblock endpoint"""
+        if not self.test_user_id:
+            self.log_result("Unblock User", False, "No test user ID available")
+            return
+        
+        try:
+            # First ensure the user is blocked
+            block_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/block")
+            
+            if block_response.status_code == 200:
+                # Now test unblocking
+                response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/unblock")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'message' in data and 'unblock' in data['message'].lower():
+                        # Verify user is removed from blocked list
+                        me_response = self.session.get(f"{API_BASE}/auth/me")
+                        if me_response.status_code == 200:
+                            me_data = me_response.json()
+                            if self.test_user_id not in me_data.get('blockedUsers', []):
+                                self.log_result("Unblock User", True, f"Successfully unblocked user: {data['message']}")
+                            else:
+                                self.log_result("Unblock User", False, "User still in blocked list after unblocking")
+                        else:
+                            self.log_result("Unblock User", False, "Could not verify unblock operation")
+                    else:
+                        self.log_result("Unblock User", False, f"Unexpected response: {data}")
+                else:
+                    self.log_result("Unblock User", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Unblock User", False, "Could not block user first for testing")
+                
+        except Exception as e:
+            self.log_result("Unblock User", False, "Exception occurred", str(e))
+    
+    def test_unblock_self(self):
+        """Test POST /api/users/{userId}/unblock with own user ID"""
+        try:
+            response = self.session.post(f"{API_BASE}/users/{self.current_user_id}/unblock")
+            
+            if response.status_code == 400:
+                self.log_result("Unblock Self", True, "Correctly prevented self-unblocking")
+            else:
+                self.log_result("Unblock Self", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Unblock Self", False, "Exception occurred", str(e))
+    
+    def test_remaining_9_settings_persistence(self):
+        """Test that all 9 remaining settings (excluding publicProfile) work correctly"""
+        try:
+            # Test all 9 remaining settings
+            all_settings = {
+                "isPrivate": True,
+                "appearInSearch": False,
+                "allowDirectMessages": True,
+                "showOnlineStatus": False,
+                "allowTagging": True,
+                "allowStoryReplies": False,
+                "showVibeScore": True,
+                "pushNotifications": False,
+                "emailNotifications": True
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/settings", json=all_settings)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'updated' in data:
+                    # Verify all 9 settings were updated and persisted
+                    me_response = self.session.get(f"{API_BASE}/auth/me")
+                    if me_response.status_code == 200:
+                        me_data = me_response.json()
+                        
+                        # Check each setting
+                        mismatches = []
+                        for key, expected_value in all_settings.items():
+                            if key not in me_data:
+                                mismatches.append(f"{key}: missing")
+                            elif me_data[key] != expected_value:
+                                mismatches.append(f"{key}: expected {expected_value}, got {me_data[key]}")
+                        
+                        if mismatches:
+                            self.log_result("Remaining 9 Settings Persistence", False, 
+                                          f"Settings not persisted correctly: {mismatches}")
+                        else:
+                            self.log_result("Remaining 9 Settings Persistence", True, 
+                                          f"✅ All 9 remaining settings work correctly: {list(all_settings.keys())}")
+                    else:
+                        self.log_result("Remaining 9 Settings Persistence", False, "Could not verify settings persistence")
+                else:
+                    self.log_result("Remaining 9 Settings Persistence", False, f"Unexpected response format: {data}")
+            else:
+                self.log_result("Remaining 9 Settings Persistence", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Remaining 9 Settings Persistence", False, "Exception occurred", str(e))
     
     def run_all_tests(self):
         """Run all backend tests"""
