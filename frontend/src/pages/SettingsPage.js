@@ -188,15 +188,6 @@ const SettingsPage = ({ user, onLogout }) => {
           
           <div className="space-y-4">
             <SettingToggle
-              icon={<Eye className="w-5 h-5" />}
-              label="Public Profile"
-              description="Allow anyone to view your profile and posts"
-              isOn={settings.publicProfile}
-              onToggle={() => handleSettingToggle('publicProfile')}
-              loading={updating.publicProfile}
-            />
-            
-            <SettingToggle
               icon={<Search className="w-5 h-5" />}
               label="Appear in Search"
               description="Let others discover you in search results"
