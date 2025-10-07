@@ -117,6 +117,16 @@ function App() {
             } 
           />
           <Route 
+            path="/settings" 
+            element={
+              isAuthenticated ? (
+                <SettingsPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/notifications" 
             element={
               isAuthenticated ? (
