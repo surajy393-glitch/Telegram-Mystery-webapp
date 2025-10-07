@@ -404,6 +404,86 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
         }
 
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """
+    Send password reset email or suggest Telegram recovery
+    """
+    if not request.email or not request.email.strip():
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Find user by email
+    user = await db.users.find_one({"email": request.email.lower().strip()})
+    
+    if not user:
+        # Don't reveal if email exists, but return success for security
+        return {"message": "If an account with this email exists, a reset link has been sent"}
+    
+    # Check if user has Telegram auth
+    if user.get("telegramId"):
+        return {
+            "message": "Password reset available via Telegram",
+            "hasTelegram": True,
+            "suggestion": "You can reset your password through your Telegram bot or use the traditional email reset"
+        }
+    
+    # Generate reset token (24 hours expiry)
+    reset_token = create_access_token(
+        data={"sub": user["id"], "type": "password_reset"}, 
+        expires_delta=timedelta(hours=24)
+    )
+    
+    # In production, send email with reset link
+    # For now, return the token (in production, this should be sent via email)
+    reset_link = f"https://your-app.com/reset-password?token={reset_token}"
+    
+    return {
+        "message": "Password reset link sent to your email",
+        "hasTelegram": False,
+        # TODO: Remove this in production - only for testing
+        "reset_link": reset_link  
+    }
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """
+    Reset password using token from email
+    """
+    try:
+        # Verify reset token
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        token_type = payload.get("type")
+        
+        if token_type != "password_reset":
+            raise HTTPException(status_code=400, detail="Invalid token type")
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="Invalid token")
+        
+        # Find user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Validate new password
+        if len(request.new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        # Hash new password
+        hashed_password = get_password_hash(request.new_password)
+        
+        # Update password in database
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"password_hash": hashed_password}}
+        )
+        
+        return {"message": "Password reset successful"}
+        
+    except jwt.JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
 @api_router.get("/auth/me")
 async def get_me(current_user: User = Depends(get_current_user)):
     return {
