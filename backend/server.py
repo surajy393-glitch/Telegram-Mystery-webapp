@@ -356,7 +356,7 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
     if existing_user:
         # User exists, log them in
         access_token = create_access_token(data={"sub": existing_user["id"]})
-        user_dict = {k: v for k, v in existing_user.items() if k != "password_hash"}
+        user_dict = {k: v for k, v in existing_user.items() if k not in ["password_hash", "_id"]}
         
         return {
             "message": "Telegram login successful",
