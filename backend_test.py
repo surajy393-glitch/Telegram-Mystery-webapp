@@ -1920,8 +1920,42 @@ class LuvHiveAPITester:
                     print(f"  Error: {error['error']}")
         
         return self.results['failed'] == 0
+    
+    def run_telegram_tests_only(self):
+        """Run only Telegram authentication tests"""
+        print("=" * 60)
+        print("TELEGRAM AUTHENTICATION TESTING WITH REAL BOT TOKEN")
+        print("=" * 60)
+        print(f"Testing against: {API_BASE}")
+        print()
+        
+        print("Testing Telegram Bot Configuration...")
+        self.test_telegram_bot_token_configuration()
+        
+        print("Testing Telegram Hash Verification...")
+        self.test_telegram_hash_verification_function()
+        
+        print("Testing Telegram Authentication Endpoint...")
+        self.test_telegram_authentication_endpoint_with_realistic_data()
+        
+        print("Testing Telegram Security Features...")
+        self.test_telegram_timestamp_validation()
+        self.test_telegram_invalid_hash_rejection()
+        self.test_telegram_missing_bot_token_error_handling()
+        
+        print("Testing Telegram User Registration...")
+        self.test_telegram_registration_new_user()
+        
+        return self.print_summary()
 
 if __name__ == "__main__":
+    import sys
     tester = LuvHiveAPITester()
-    success = tester.run_all_tests()
+    
+    # Check if we should run only Telegram tests
+    if len(sys.argv) > 1 and sys.argv[1] == "telegram":
+        success = tester.run_telegram_tests_only()
+    else:
+        success = tester.run_all_tests()
+    
     sys.exit(0 if success else 1)
