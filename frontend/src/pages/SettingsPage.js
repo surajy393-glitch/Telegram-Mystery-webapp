@@ -8,10 +8,27 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const SettingsPage = ({ user, onLogout }) => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [settings, setSettings] = useState({
+    // Privacy Controls
+    isPrivate: false,
+    publicProfile: true,
+    appearInSearch: true,
+    allowDirectMessages: true,
+    showOnlineStatus: true,
+    
+    // Interaction Preferences
+    allowTagging: true,
+    allowStoryReplies: true,
+    showVibeScore: true,
+    
+    // Notifications
+    pushNotifications: true,
+    emailNotifications: true
+  });
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
+  const [updating, setUpdating] = useState({});
 
   useEffect(() => {
     fetchProfile();
