@@ -619,9 +619,17 @@ const ProfilePage = ({ user, onLogout }) => {
                       data-testid={`follow-btn-${u.id}`}
                       size="sm"
                       variant={u.isFollowing ? "outline" : "default"}
-                      className={u.isFollowing ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full" : "bg-pink-500 hover:bg-pink-600 text-white rounded-full"}
+                      disabled={followingInProgress.has(u.id)}
+                      className={u.isFollowing ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full min-w-[80px]" : "bg-pink-500 hover:bg-pink-600 text-white rounded-full min-w-[80px]"}
                     >
-                      {u.isFollowing ? "Following" : "Follow"}
+                      {followingInProgress.has(u.id) ? (
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-xs">{u.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                        </div>
+                      ) : (
+                        u.isFollowing ? "Following" : "Follow"
+                      )}
                     </Button>
                     <Link to={`/chat/${u.id}`}>
                       <Button
