@@ -262,6 +262,7 @@ metadata:
   updated_settings_test: "2025-01-27 02:49:38"
   search_functionality_test: "2025-01-27 03:22:40"
   telegram_auth_test: "2025-01-27 16:53:06"
+  telegram_auth_real_bot_token_test: "2025-01-27 17:47:00"
   forgot_password_test: "2025-01-27 16:53:06"
 
 test_plan:
