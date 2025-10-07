@@ -182,6 +182,21 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Comprehensive settings functionality working perfectly. All 7 test scenarios passed: 1) /api/auth/me endpoint returns all new setting fields (Privacy Controls: publicProfile, appearInSearch, allowDirectMessages, showOnlineStatus; Interaction Preferences: allowTagging, allowStoryReplies, showVibeScore; Notifications: pushNotifications, emailNotifications), 2) /api/auth/settings endpoint successfully updates individual settings with proper persistence, 3) Bulk settings updates working correctly for multiple settings simultaneously, 4) Invalid settings validation properly rejects invalid setting names and non-boolean values, 5) Empty settings requests correctly rejected with 400 status, 6) /api/auth/download-data endpoint exports comprehensive user data in JSON format with proper Content-Disposition headers, 7) All settings endpoints require authentication as expected. Settings persistence verified through GET /api/auth/me after updates."
+      - working: true
+        agent: "testing"
+        comment: "✅ UPDATED SETTINGS TESTING COMPLETE: Verified updated Settings functionality with publicProfile removal and blocked users management. COMPREHENSIVE TEST RESULTS (23/23 PASSED): 1) ✅ GET /api/auth/me - publicProfile setting REMOVED as requested, blockedUsers array present, all 9 remaining settings valid (isPrivate, appearInSearch, allowDirectMessages, showOnlineStatus, allowTagging, allowStoryReplies, showVibeScore, pushNotifications, emailNotifications), 2) ✅ PUT /api/auth/settings - correctly REJECTS publicProfile as invalid setting, processes only valid settings, 3) ✅ GET /api/users/blocked - returns blocked users list with profile info (fixed routing conflict), 4) ✅ POST /api/users/{userId}/unblock - successfully removes users from blocked list with proper validation, 5) ✅ All 9 remaining settings work correctly with proper persistence verification, 6) ✅ Blocked users management fully functional with authentication and validation. Settings update successfully implemented - publicProfile completely removed, blocked users endpoints working correctly."
+
+  - task: "Updated Settings with publicProfile removal and blocked users management"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE UPDATED SETTINGS TESTING COMPLETE: All requested changes verified working correctly. KEY FINDINGS: 1) ✅ publicProfile setting COMPLETELY REMOVED from /api/auth/me endpoint (no longer returned), 2) ✅ /api/auth/settings correctly REJECTS publicProfile as invalid setting (400 status or ignored), 3) ✅ blockedUsers array present in /api/auth/me response, 4) ✅ GET /api/users/blocked endpoint working (fixed routing conflict by moving before /users/{userId}), 5) ✅ POST /api/users/{userId}/unblock endpoint working with proper validation, 6) ✅ All 9 remaining settings persist correctly: isPrivate, appearInSearch, allowDirectMessages, showOnlineStatus, allowTagging, allowStoryReplies, showVibeScore, pushNotifications, emailNotifications. TESTING SUMMARY: 23/23 tests passed including AI vibe compatibility, user blocking/unblocking, story hiding, authentication, and comprehensive settings validation. Updated functionality is production-ready."
 
 frontend:
   - task: "Fix comment profile pictures display"
