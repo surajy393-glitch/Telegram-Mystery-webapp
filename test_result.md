@@ -229,7 +229,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Settings page with privacy toggle functionality"
     - "Fix comment profile pictures display"
     - "Replace Send Spark with Vibe Compatibility"
     - "Add 3-dot menu to other users' profiles"
@@ -237,6 +236,7 @@ test_plan:
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
+  settings_testing_complete: true
 
   - task: "Settings page with privacy toggle functionality"
     implemented: true
