@@ -225,10 +225,10 @@ async def register(user_data: UserRegister):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    # Create user
+    # Create user with cleaned data
     user = User(
-        fullName=user_data.fullName,
-        username=user_data.username,
+        fullName=clean_fullname,
+        username=clean_username,
         age=user_data.age,
         gender=user_data.gender,
         password_hash=get_password_hash(user_data.password)
