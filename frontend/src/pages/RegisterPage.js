@@ -290,7 +290,6 @@ const RegisterPage = ({ onLogin }) => {
                 )}
               </Button>
             </>
-          )
           ) : (
             <form onSubmit={handleFinalSubmit} className="space-y-5">
               <div>
