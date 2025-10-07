@@ -806,7 +806,7 @@ const HomePage = ({ user, onLogout }) => {
                   {post.caption && (
                     <p className="text-gray-800">
                       <span className="font-semibold mr-2">{post.username}</span>
-                      {post.caption}
+                      <HashtagText text={post.caption} />
                     </p>
                   )}
                 </div>
