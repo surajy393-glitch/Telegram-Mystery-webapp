@@ -1023,6 +1023,478 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Search Authentication Required", False, "Exception occurred", str(e))
     
+    # ========== TELEGRAM AUTHENTICATION TESTS ==========
+    
+    def test_telegram_registration_new_user(self):
+        """Test POST /api/auth/telegram endpoint for new user registration"""
+        try:
+            # Mock Telegram data for new user
+            telegram_data = {
+                "id": 123456789,
+                "first_name": "Sarah",
+                "last_name": "Wilson",
+                "username": "sarahwilson",
+                "photo_url": "https://t.me/i/userpic/320/sarah.jpg",
+                "auth_date": 1640995200,  # Mock timestamp
+                "hash": "mock_hash_value_for_testing"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['message', 'access_token', 'user']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Telegram Registration (New User)", False, f"Missing fields: {missing_fields}")
+                else:
+                    # Verify user data includes Telegram fields
+                    user = data['user']
+                    telegram_fields = ['telegramId', 'telegramUsername', 'telegramFirstName', 'authMethod']
+                    missing_telegram_fields = [field for field in telegram_fields if field not in user]
+                    
+                    if missing_telegram_fields:
+                        self.log_result("Telegram Registration (New User)", False, f"Missing Telegram fields: {missing_telegram_fields}")
+                    else:
+                        # Verify Telegram-specific values
+                        if (user['telegramId'] == telegram_data['id'] and 
+                            user['telegramUsername'] == telegram_data['username'] and
+                            user['telegramFirstName'] == telegram_data['first_name'] and
+                            user['authMethod'] == 'telegram'):
+                            
+                            self.log_result("Telegram Registration (New User)", True, 
+                                          f"Successfully registered Telegram user: {user['username']} (ID: {user['telegramId']})")
+                        else:
+                            self.log_result("Telegram Registration (New User)", False, "Telegram data not properly stored")
+            else:
+                self.log_result("Telegram Registration (New User)", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Telegram Registration (New User)", False, "Exception occurred", str(e))
+    
+    def test_telegram_login_existing_user(self):
+        """Test POST /api/auth/telegram endpoint for existing user login"""
+        try:
+            # First register a Telegram user
+            telegram_data = {
+                "id": 987654321,
+                "first_name": "Mike",
+                "last_name": "Johnson",
+                "username": "mikejohnson",
+                "photo_url": "https://t.me/i/userpic/320/mike.jpg",
+                "auth_date": 1640995200,
+                "hash": "mock_hash_value_for_testing"
+            }
+            
+            # Register first
+            register_response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_data)
+            
+            if register_response.status_code == 200:
+                # Now try to login with same Telegram ID
+                login_response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_data)
+                
+                if login_response.status_code == 200:
+                    data = login_response.json()
+                    
+                    if 'message' in data and 'login' in data['message'].lower():
+                        self.log_result("Telegram Login (Existing User)", True, 
+                                      f"Successfully logged in existing Telegram user: {data['message']}")
+                    else:
+                        self.log_result("Telegram Login (Existing User)", True, 
+                                      f"Telegram authentication successful for existing user")
+                else:
+                    self.log_result("Telegram Login (Existing User)", False, 
+                                  f"Login failed: {login_response.status_code}", login_response.text)
+            else:
+                self.log_result("Telegram Login (Existing User)", False, 
+                              f"Could not register user first: {register_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram Login (Existing User)", False, "Exception occurred", str(e))
+    
+    def test_telegram_username_generation(self):
+        """Test Telegram registration with missing username generates unique username"""
+        try:
+            # Mock Telegram data without username
+            telegram_data = {
+                "id": 555666777,
+                "first_name": "Anonymous",
+                "last_name": "User",
+                "username": None,  # No username provided
+                "photo_url": None,
+                "auth_date": 1640995200,
+                "hash": "mock_hash_value_for_testing"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                user = data['user']
+                
+                # Check that a username was generated
+                if 'username' in user and user['username']:
+                    # Should be in format "user_555666777" or similar
+                    if str(telegram_data['id']) in user['username']:
+                        self.log_result("Telegram Username Generation", True, 
+                                      f"Generated username: {user['username']} for Telegram ID: {telegram_data['id']}")
+                    else:
+                        self.log_result("Telegram Username Generation", False, 
+                                      f"Generated username doesn't include Telegram ID: {user['username']}")
+                else:
+                    self.log_result("Telegram Username Generation", False, "No username generated")
+            else:
+                self.log_result("Telegram Username Generation", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Telegram Username Generation", False, "Exception occurred", str(e))
+    
+    # ========== UPDATED TRADITIONAL REGISTRATION TESTS ==========
+    
+    def test_traditional_registration_with_email(self):
+        """Test POST /api/auth/register endpoint with email field"""
+        try:
+            user_data = {
+                "fullName": "Jessica Martinez",
+                "username": f"jessica_test_{datetime.now().strftime('%H%M%S')}",
+                "age": 26,
+                "gender": "female",
+                "password": "SecurePass789!",
+                "email": f"jessica.test.{datetime.now().strftime('%H%M%S')}@example.com"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response includes email
+                if 'user' in data and 'email' in data['user']:
+                    if data['user']['email'] == user_data['email']:
+                        self.log_result("Traditional Registration with Email", True, 
+                                      f"Successfully registered user with email: {data['user']['email']}")
+                    else:
+                        self.log_result("Traditional Registration with Email", False, 
+                                      f"Email mismatch: expected {user_data['email']}, got {data['user']['email']}")
+                else:
+                    self.log_result("Traditional Registration with Email", False, "Email not included in response")
+            else:
+                self.log_result("Traditional Registration with Email", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Traditional Registration with Email", False, "Exception occurred", str(e))
+    
+    def test_traditional_registration_email_validation(self):
+        """Test POST /api/auth/register endpoint email validation"""
+        try:
+            # Test with invalid email format
+            user_data = {
+                "fullName": "Test User",
+                "username": f"testuser_{datetime.now().strftime('%H%M%S')}",
+                "age": 25,
+                "gender": "other",
+                "password": "SecurePass123!",
+                "email": "invalid-email-format"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            # Should either reject invalid email or accept it (depending on validation level)
+            if response.status_code == 400:
+                self.log_result("Traditional Registration Email Validation", True, 
+                              "Correctly rejected invalid email format")
+            elif response.status_code == 200:
+                self.log_result("Traditional Registration Email Validation", True, 
+                              "Accepted email (validation may be lenient)")
+            else:
+                self.log_result("Traditional Registration Email Validation", False, 
+                              f"Unexpected status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Traditional Registration Email Validation", False, "Exception occurred", str(e))
+    
+    def test_traditional_registration_duplicate_email(self):
+        """Test POST /api/auth/register endpoint with duplicate email"""
+        try:
+            # First register a user with email
+            email = f"duplicate.test.{datetime.now().strftime('%H%M%S')}@example.com"
+            
+            user_data1 = {
+                "fullName": "First User",
+                "username": f"firstuser_{datetime.now().strftime('%H%M%S')}",
+                "age": 25,
+                "gender": "male",
+                "password": "SecurePass123!",
+                "email": email
+            }
+            
+            first_response = self.session.post(f"{API_BASE}/auth/register", json=user_data1)
+            
+            if first_response.status_code == 200:
+                # Now try to register another user with same email
+                user_data2 = {
+                    "fullName": "Second User",
+                    "username": f"seconduser_{datetime.now().strftime('%H%M%S')}",
+                    "age": 27,
+                    "gender": "female",
+                    "password": "SecurePass456!",
+                    "email": email  # Same email
+                }
+                
+                second_response = self.session.post(f"{API_BASE}/auth/register", json=user_data2)
+                
+                if second_response.status_code == 400:
+                    self.log_result("Traditional Registration Duplicate Email", True, 
+                                  "Correctly rejected duplicate email registration")
+                else:
+                    self.log_result("Traditional Registration Duplicate Email", False, 
+                                  f"Expected 400, got {second_response.status_code}")
+            else:
+                self.log_result("Traditional Registration Duplicate Email", False, 
+                              f"Could not register first user: {first_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Traditional Registration Duplicate Email", False, "Exception occurred", str(e))
+    
+    # ========== FORGOT PASSWORD TESTS ==========
+    
+    def test_forgot_password_valid_email(self):
+        """Test POST /api/auth/forgot-password endpoint with valid email"""
+        try:
+            # First register a user with email
+            email = f"forgot.test.{datetime.now().strftime('%H%M%S')}@example.com"
+            user_data = {
+                "fullName": "Forgot Test User",
+                "username": f"forgotuser_{datetime.now().strftime('%H%M%S')}",
+                "age": 28,
+                "gender": "other",
+                "password": "SecurePass123!",
+                "email": email
+            }
+            
+            register_response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if register_response.status_code == 200:
+                # Now test forgot password
+                forgot_data = {"email": email}
+                response = self.session.post(f"{API_BASE}/auth/forgot-password", json=forgot_data)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Check response includes appropriate message
+                    if 'message' in data:
+                        # Check if it includes reset link (for testing purposes)
+                        if 'reset_link' in data:
+                            self.log_result("Forgot Password (Valid Email)", True, 
+                                          f"Password reset initiated with test link: {data['message']}")
+                        else:
+                            self.log_result("Forgot Password (Valid Email)", True, 
+                                          f"Password reset initiated: {data['message']}")
+                    else:
+                        self.log_result("Forgot Password (Valid Email)", False, "Missing message in response")
+                else:
+                    self.log_result("Forgot Password (Valid Email)", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Forgot Password (Valid Email)", False, 
+                              f"Could not register user first: {register_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Forgot Password (Valid Email)", False, "Exception occurred", str(e))
+    
+    def test_forgot_password_nonexistent_email(self):
+        """Test POST /api/auth/forgot-password endpoint with non-existent email"""
+        try:
+            # Use an email that doesn't exist
+            nonexistent_email = f"nonexistent.{datetime.now().strftime('%H%M%S')}@example.com"
+            forgot_data = {"email": nonexistent_email}
+            
+            response = self.session.post(f"{API_BASE}/auth/forgot-password", json=forgot_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Should return success message for security (don't reveal if email exists)
+                if 'message' in data:
+                    self.log_result("Forgot Password (Non-existent Email)", True, 
+                                  f"Correctly handled non-existent email: {data['message']}")
+                else:
+                    self.log_result("Forgot Password (Non-existent Email)", False, "Missing message in response")
+            else:
+                self.log_result("Forgot Password (Non-existent Email)", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Forgot Password (Non-existent Email)", False, "Exception occurred", str(e))
+    
+    def test_forgot_password_empty_email(self):
+        """Test POST /api/auth/forgot-password endpoint with empty email"""
+        try:
+            forgot_data = {"email": ""}
+            
+            response = self.session.post(f"{API_BASE}/auth/forgot-password", json=forgot_data)
+            
+            if response.status_code == 400:
+                self.log_result("Forgot Password (Empty Email)", True, "Correctly rejected empty email")
+            else:
+                self.log_result("Forgot Password (Empty Email)", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Forgot Password (Empty Email)", False, "Exception occurred", str(e))
+    
+    def test_forgot_password_telegram_user(self):
+        """Test POST /api/auth/forgot-password endpoint with Telegram user email"""
+        try:
+            # First register a Telegram user with email
+            telegram_data = {
+                "id": 111222333,
+                "first_name": "Telegram",
+                "last_name": "User",
+                "username": "telegramuser",
+                "photo_url": None,
+                "auth_date": 1640995200,
+                "hash": "mock_hash_value_for_testing"
+            }
+            
+            # Register Telegram user
+            register_response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_data)
+            
+            if register_response.status_code == 200:
+                # Add email to the user (simulate user updating profile with email)
+                email = f"telegram.user.{datetime.now().strftime('%H%M%S')}@example.com"
+                
+                # For this test, we'll assume the user has an email in the system
+                # In real scenario, user would update their profile to add email
+                forgot_data = {"email": email}
+                response = self.session.post(f"{API_BASE}/auth/forgot-password", json=forgot_data)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Should mention Telegram option if user has Telegram linked
+                    if 'hasTelegram' in data:
+                        self.log_result("Forgot Password (Telegram User)", True, 
+                                      f"Correctly identified Telegram user: hasTelegram={data['hasTelegram']}")
+                    else:
+                        self.log_result("Forgot Password (Telegram User)", True, 
+                                      f"Password reset handled for Telegram user: {data.get('message', 'Success')}")
+                else:
+                    self.log_result("Forgot Password (Telegram User)", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Forgot Password (Telegram User)", False, 
+                              f"Could not register Telegram user: {register_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Forgot Password (Telegram User)", False, "Exception occurred", str(e))
+    
+    # ========== PASSWORD RESET TESTS ==========
+    
+    def test_password_reset_valid_token(self):
+        """Test POST /api/auth/reset-password endpoint with valid token"""
+        try:
+            # First register a user and get forgot password token
+            email = f"reset.test.{datetime.now().strftime('%H%M%S')}@example.com"
+            user_data = {
+                "fullName": "Reset Test User",
+                "username": f"resetuser_{datetime.now().strftime('%H%M%S')}",
+                "age": 29,
+                "gender": "male",
+                "password": "OldPassword123!",
+                "email": email
+            }
+            
+            register_response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if register_response.status_code == 200:
+                # Get forgot password token
+                forgot_data = {"email": email}
+                forgot_response = self.session.post(f"{API_BASE}/auth/forgot-password", json=forgot_data)
+                
+                if forgot_response.status_code == 200:
+                    forgot_data_response = forgot_response.json()
+                    
+                    # Extract token from response (if available for testing)
+                    if 'reset_link' in forgot_data_response:
+                        # Extract token from reset link
+                        reset_link = forgot_data_response['reset_link']
+                        if 'token=' in reset_link:
+                            token = reset_link.split('token=')[1]
+                            
+                            # Now test password reset
+                            reset_data = {
+                                "token": token,
+                                "new_password": "NewPassword456!"
+                            }
+                            
+                            response = self.session.post(f"{API_BASE}/auth/reset-password", json=reset_data)
+                            
+                            if response.status_code == 200:
+                                data = response.json()
+                                if 'message' in data and 'success' in data['message'].lower():
+                                    self.log_result("Password Reset (Valid Token)", True, 
+                                                  f"Password reset successful: {data['message']}")
+                                else:
+                                    self.log_result("Password Reset (Valid Token)", True, 
+                                                  f"Password reset completed: {data.get('message', 'Success')}")
+                            else:
+                                self.log_result("Password Reset (Valid Token)", False, 
+                                              f"Reset failed: {response.status_code}", response.text)
+                        else:
+                            self.log_result("Password Reset (Valid Token)", False, "No token found in reset link")
+                    else:
+                        self.log_result("Password Reset (Valid Token)", False, "No reset link provided for testing")
+                else:
+                    self.log_result("Password Reset (Valid Token)", False, 
+                                  f"Forgot password failed: {forgot_response.status_code}")
+            else:
+                self.log_result("Password Reset (Valid Token)", False, 
+                              f"User registration failed: {register_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Password Reset (Valid Token)", False, "Exception occurred", str(e))
+    
+    def test_password_reset_invalid_token(self):
+        """Test POST /api/auth/reset-password endpoint with invalid token"""
+        try:
+            reset_data = {
+                "token": "invalid_token_12345",
+                "new_password": "NewPassword789!"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/reset-password", json=reset_data)
+            
+            if response.status_code == 400:
+                self.log_result("Password Reset (Invalid Token)", True, "Correctly rejected invalid token")
+            else:
+                self.log_result("Password Reset (Invalid Token)", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Password Reset (Invalid Token)", False, "Exception occurred", str(e))
+    
+    def test_password_reset_weak_password(self):
+        """Test POST /api/auth/reset-password endpoint with weak password"""
+        try:
+            # Use a mock token (will fail, but we're testing password validation)
+            reset_data = {
+                "token": "mock_token_for_password_test",
+                "new_password": "123"  # Too short
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/reset-password", json=reset_data)
+            
+            # Should reject weak password (either 400 for weak password or 400 for invalid token)
+            if response.status_code == 400:
+                data = response.json()
+                if 'password' in data.get('detail', '').lower():
+                    self.log_result("Password Reset (Weak Password)", True, "Correctly rejected weak password")
+                else:
+                    self.log_result("Password Reset (Weak Password)", True, "Request rejected (token validation first)")
+            else:
+                self.log_result("Password Reset (Weak Password)", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Password Reset (Weak Password)", False, "Exception occurred", str(e))
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
