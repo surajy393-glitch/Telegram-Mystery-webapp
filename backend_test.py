@@ -649,6 +649,380 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Remaining 9 Settings Persistence", False, "Exception occurred", str(e))
     
+    # ========== SEARCH FUNCTIONALITY TESTS ==========
+    
+    def create_test_posts(self):
+        """Create test posts with hashtags for search testing"""
+        try:
+            # Create posts with different content for search testing
+            test_posts = [
+                {
+                    "mediaType": "image",
+                    "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                    "caption": "Beautiful sunset at the beach! #sunset #beach #nature #photography"
+                },
+                {
+                    "mediaType": "image", 
+                    "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                    "caption": "Coffee time! ☕ #coffee #morning #lifestyle #cafe"
+                },
+                {
+                    "mediaType": "image",
+                    "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                    "caption": "Working out at the gym 💪 #fitness #gym #workout #health"
+                }
+            ]
+            
+            created_posts = []
+            for post_data in test_posts:
+                response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+                if response.status_code == 200:
+                    created_posts.append(response.json())
+            
+            self.log_result("Create Test Posts", len(created_posts) == len(test_posts), 
+                          f"Created {len(created_posts)}/{len(test_posts)} test posts")
+            return len(created_posts) > 0
+            
+        except Exception as e:
+            self.log_result("Create Test Posts", False, "Exception occurred", str(e))
+            return False
+    
+    def test_search_all_content(self):
+        """Test POST /api/search endpoint with type 'all'"""
+        try:
+            search_request = {
+                "query": "beach",
+                "type": "all"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_request)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['users', 'posts', 'hashtags', 'query']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Search All Content", False, f"Missing fields: {missing_fields}")
+                else:
+                    # Verify data structure
+                    if (isinstance(data['users'], list) and 
+                        isinstance(data['posts'], list) and 
+                        isinstance(data['hashtags'], list) and
+                        data['query'] == search_request['query']):
+                        
+                        self.log_result("Search All Content", True, 
+                                      f"Found {len(data['users'])} users, {len(data['posts'])} posts, {len(data['hashtags'])} hashtags")
+                    else:
+                        self.log_result("Search All Content", False, "Invalid data structure in response")
+            else:
+                self.log_result("Search All Content", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Search All Content", False, "Exception occurred", str(e))
+    
+    def test_search_users_only(self):
+        """Test POST /api/search endpoint with type 'users'"""
+        try:
+            search_request = {
+                "query": "alex",
+                "type": "users"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_request)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'users' in data and isinstance(data['users'], list):
+                    # Check if users have required fields
+                    if data['users']:
+                        user = data['users'][0]
+                        required_user_fields = ['id', 'fullName', 'username', 'followersCount', 'isFollowing']
+                        missing_user_fields = [field for field in required_user_fields if field not in user]
+                        
+                        if missing_user_fields:
+                            self.log_result("Search Users Only", False, f"Missing user fields: {missing_user_fields}")
+                        else:
+                            self.log_result("Search Users Only", True, f"Found {len(data['users'])} users matching 'alex'")
+                    else:
+                        self.log_result("Search Users Only", True, "No users found matching 'alex' (expected)")
+                else:
+                    self.log_result("Search Users Only", False, "Response missing 'users' array")
+            else:
+                self.log_result("Search Users Only", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Search Users Only", False, "Exception occurred", str(e))
+    
+    def test_search_posts_only(self):
+        """Test POST /api/search endpoint with type 'posts'"""
+        try:
+            search_request = {
+                "query": "coffee",
+                "type": "posts"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_request)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'posts' in data and isinstance(data['posts'], list):
+                    # Check if posts have required fields
+                    if data['posts']:
+                        post = data['posts'][0]
+                        required_post_fields = ['id', 'userId', 'username', 'mediaType', 'caption', 'likes', 'comments']
+                        missing_post_fields = [field for field in required_post_fields if field not in post]
+                        
+                        if missing_post_fields:
+                            self.log_result("Search Posts Only", False, f"Missing post fields: {missing_post_fields}")
+                        else:
+                            self.log_result("Search Posts Only", True, f"Found {len(data['posts'])} posts matching 'coffee'")
+                    else:
+                        self.log_result("Search Posts Only", True, "No posts found matching 'coffee' (may be expected)")
+                else:
+                    self.log_result("Search Posts Only", False, "Response missing 'posts' array")
+            else:
+                self.log_result("Search Posts Only", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Search Posts Only", False, "Exception occurred", str(e))
+    
+    def test_search_hashtags_only(self):
+        """Test POST /api/search endpoint with type 'hashtags'"""
+        try:
+            search_request = {
+                "query": "#beach",
+                "type": "hashtags"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_request)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'hashtags' in data and isinstance(data['hashtags'], list):
+                    self.log_result("Search Hashtags Only", True, f"Found {len(data['hashtags'])} hashtags matching '#beach'")
+                else:
+                    self.log_result("Search Hashtags Only", False, "Response missing 'hashtags' array")
+            else:
+                self.log_result("Search Hashtags Only", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Search Hashtags Only", False, "Exception occurred", str(e))
+    
+    def test_search_empty_query(self):
+        """Test POST /api/search endpoint with empty query"""
+        try:
+            search_request = {
+                "query": "",
+                "type": "all"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_request)
+            
+            if response.status_code == 400:
+                self.log_result("Search Empty Query", True, "Correctly rejected empty search query")
+            else:
+                self.log_result("Search Empty Query", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Search Empty Query", False, "Exception occurred", str(e))
+    
+    def test_search_blocked_users_excluded(self):
+        """Test that blocked users are excluded from search results"""
+        try:
+            # First block the test user
+            if self.test_user_id:
+                block_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/block")
+                
+                if block_response.status_code == 200:
+                    # Now search for the blocked user
+                    search_request = {
+                        "query": "alex",
+                        "type": "users"
+                    }
+                    
+                    response = self.session.post(f"{API_BASE}/search", json=search_request)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        
+                        # Check if blocked user is excluded
+                        blocked_user_found = any(user['id'] == self.test_user_id for user in data.get('users', []))
+                        
+                        if not blocked_user_found:
+                            self.log_result("Search Blocked Users Excluded", True, "Blocked users correctly excluded from search")
+                        else:
+                            self.log_result("Search Blocked Users Excluded", False, "Blocked user found in search results")
+                    else:
+                        self.log_result("Search Blocked Users Excluded", False, f"Search failed: {response.status_code}")
+                else:
+                    self.log_result("Search Blocked Users Excluded", False, "Could not block user for testing")
+            else:
+                self.log_result("Search Blocked Users Excluded", False, "No test user ID available")
+                
+        except Exception as e:
+            self.log_result("Search Blocked Users Excluded", False, "Exception occurred", str(e))
+    
+    def test_get_trending_content(self):
+        """Test GET /api/search/trending endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/search/trending")
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['trending_users', 'trending_hashtags']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Get Trending Content", False, f"Missing fields: {missing_fields}")
+                else:
+                    # Verify data structure
+                    if (isinstance(data['trending_users'], list) and 
+                        isinstance(data['trending_hashtags'], list)):
+                        
+                        # Check trending users structure
+                        if data['trending_users']:
+                            user = data['trending_users'][0]
+                            required_user_fields = ['id', 'fullName', 'username', 'followersCount', 'isFollowing']
+                            missing_user_fields = [field for field in required_user_fields if field not in user]
+                            
+                            if missing_user_fields:
+                                self.log_result("Get Trending Content", False, f"Missing trending user fields: {missing_user_fields}")
+                                return
+                        
+                        # Check trending hashtags structure
+                        if data['trending_hashtags']:
+                            hashtag = data['trending_hashtags'][0]
+                            required_hashtag_fields = ['hashtag', 'count']
+                            missing_hashtag_fields = [field for field in required_hashtag_fields if field not in hashtag]
+                            
+                            if missing_hashtag_fields:
+                                self.log_result("Get Trending Content", False, f"Missing trending hashtag fields: {missing_hashtag_fields}")
+                                return
+                        
+                        self.log_result("Get Trending Content", True, 
+                                      f"Retrieved {len(data['trending_users'])} trending users, {len(data['trending_hashtags'])} trending hashtags")
+                    else:
+                        self.log_result("Get Trending Content", False, "Invalid data structure in response")
+            else:
+                self.log_result("Get Trending Content", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Trending Content", False, "Exception occurred", str(e))
+    
+    def test_get_search_suggestions(self):
+        """Test GET /api/search/suggestions endpoint"""
+        try:
+            # Test with user query
+            response = self.session.get(f"{API_BASE}/search/suggestions?q=em")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'suggestions' in data and isinstance(data['suggestions'], list):
+                    # Check suggestions structure
+                    if data['suggestions']:
+                        suggestion = data['suggestions'][0]
+                        required_fields = ['type', 'text', 'value']
+                        missing_fields = [field for field in required_fields if field not in suggestion]
+                        
+                        if missing_fields:
+                            self.log_result("Get Search Suggestions", False, f"Missing suggestion fields: {missing_fields}")
+                        else:
+                            self.log_result("Get Search Suggestions", True, 
+                                          f"Retrieved {len(data['suggestions'])} suggestions for 'em'")
+                    else:
+                        self.log_result("Get Search Suggestions", True, "No suggestions found for 'em' (may be expected)")
+                else:
+                    self.log_result("Get Search Suggestions", False, "Response missing 'suggestions' array")
+            else:
+                self.log_result("Get Search Suggestions", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Search Suggestions", False, "Exception occurred", str(e))
+    
+    def test_get_search_suggestions_hashtag(self):
+        """Test GET /api/search/suggestions endpoint with hashtag query"""
+        try:
+            # Test with hashtag query
+            response = self.session.get(f"{API_BASE}/search/suggestions?q=%23beach")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'suggestions' in data and isinstance(data['suggestions'], list):
+                    # Check if hashtag suggestions are returned
+                    hashtag_suggestions = [s for s in data['suggestions'] if s.get('type') == 'hashtag']
+                    self.log_result("Get Search Suggestions Hashtag", True, 
+                                  f"Retrieved {len(hashtag_suggestions)} hashtag suggestions for '#beach'")
+                else:
+                    self.log_result("Get Search Suggestions Hashtag", False, "Response missing 'suggestions' array")
+            else:
+                self.log_result("Get Search Suggestions Hashtag", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Search Suggestions Hashtag", False, "Exception occurred", str(e))
+    
+    def test_get_search_suggestions_min_length(self):
+        """Test GET /api/search/suggestions endpoint with query less than 2 characters"""
+        try:
+            # Test with single character (should return empty)
+            response = self.session.get(f"{API_BASE}/search/suggestions?q=a")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'suggestions' in data and isinstance(data['suggestions'], list):
+                    if len(data['suggestions']) == 0:
+                        self.log_result("Get Search Suggestions Min Length", True, 
+                                      "Correctly returned empty suggestions for query < 2 characters")
+                    else:
+                        self.log_result("Get Search Suggestions Min Length", False, 
+                                      f"Expected empty suggestions, got {len(data['suggestions'])}")
+                else:
+                    self.log_result("Get Search Suggestions Min Length", False, "Response missing 'suggestions' array")
+            else:
+                self.log_result("Get Search Suggestions Min Length", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Search Suggestions Min Length", False, "Exception occurred", str(e))
+    
+    def test_search_authentication_required(self):
+        """Test that search endpoints require authentication"""
+        try:
+            # Create session without auth token
+            unauth_session = requests.Session()
+            
+            # Test search endpoint
+            search_response = unauth_session.post(f"{API_BASE}/search", json={"query": "test", "type": "all"})
+            
+            if search_response.status_code == 401:
+                # Test trending endpoint
+                trending_response = unauth_session.get(f"{API_BASE}/search/trending")
+                
+                if trending_response.status_code == 401:
+                    # Test suggestions endpoint
+                    suggestions_response = unauth_session.get(f"{API_BASE}/search/suggestions?q=test")
+                    
+                    if suggestions_response.status_code == 401:
+                        self.log_result("Search Authentication Required", True, 
+                                      "All search endpoints correctly require authentication")
+                    else:
+                        self.log_result("Search Authentication Required", False, 
+                                      f"Suggestions endpoint: expected 401, got {suggestions_response.status_code}")
+                else:
+                    self.log_result("Search Authentication Required", False, 
+                                  f"Trending endpoint: expected 401, got {trending_response.status_code}")
+            else:
+                self.log_result("Search Authentication Required", False, 
+                              f"Search endpoint: expected 401, got {search_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Search Authentication Required", False, "Exception occurred", str(e))
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
