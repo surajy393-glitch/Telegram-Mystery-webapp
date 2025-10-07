@@ -132,19 +132,31 @@ const SearchPage = ({ user, onLogout }) => {
   const handleFollowToggle = async (targetUserId, isFollowing) => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No authentication token found");
+        return;
+      }
+
       const endpoint = isFollowing ? "unfollow" : "follow";
-      await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
+      console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
+      
+      const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Update the results
+      console.log("Follow action response:", response.data);
+      
+      // Update the results immediately to show the change
       if (searchResults.users.length > 0) {
-        handleSearch(searchResults.query, activeTab);
+        await handleSearch(searchResults.query, activeTab);
       } else {
-        fetchTrendingContent();
+        await fetchTrendingContent();
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      if (error.response) {
+        console.error("Response error:", error.response.data);
+      }
     }
   };
 
