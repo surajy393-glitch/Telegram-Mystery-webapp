@@ -551,6 +551,15 @@ class LuvHiveAPITester:
         print("Testing Authentication...")
         self.test_authentication_required()
         
+        print("Testing Settings Functionality...")
+        self.test_get_user_profile_with_settings()
+        self.test_update_individual_settings()
+        self.test_update_bulk_settings()
+        self.test_invalid_settings_validation()
+        self.test_empty_settings_update()
+        self.test_data_download()
+        self.test_settings_authentication_required()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
