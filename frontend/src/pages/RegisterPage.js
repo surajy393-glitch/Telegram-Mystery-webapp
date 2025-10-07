@@ -160,134 +160,137 @@ const RegisterPage = ({ onLogin }) => {
 
         <div className="glass-effect rounded-3xl p-8 shadow-xl animate-scaleIn">
           {step === 1 ? (
-            <form onSubmit={handleStep1Submit} className="space-y-5">
-              <div>
-                <Label htmlFor="fullName" className="text-gray-700 font-medium">Full Name</Label>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  data-testid="fullname-input"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-                />
-              </div>
+            <>
+              <form onSubmit={handleStep1Submit} className="space-y-5">
+                <div>
+                  <Label htmlFor="fullName" className="text-gray-700 font-medium">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    data-testid="fullname-input"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="username" className="text-gray-700 font-medium">Username</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  data-testid="username-input"
-                  type="text"
-                  placeholder="Choose a unique username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="username" className="text-gray-700 font-medium">Username</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    data-testid="username-input"
+                    type="text"
+                    placeholder="Choose a unique username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  data-testid="email-input"
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    data-testid="email-input"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="age" className="text-gray-700 font-medium">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  data-testid="age-input"
-                  type="number"
-                  placeholder="Your age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  required
-                  min="18"
-                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="age" className="text-gray-700 font-medium">Age</Label>
+                  <Input
+                    id="age"
+                    name="age"
+                    data-testid="age-input"
+                    type="number"
+                    placeholder="Your age"
+                    value={formData.age}
+                    onChange={handleChange}
+                    required
+                    min="18"
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="gender" className="text-gray-700 font-medium">Gender</Label>
-                <select
-                  id="gender"
-                  name="gender"
-                  data-testid="gender-select"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 w-full border border-gray-300 rounded-xl px-4 py-2 focus:border-pink-500 focus:outline-none"
+                <div>
+                  <Label htmlFor="gender" className="text-gray-700 font-medium">Gender</Label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    data-testid="gender-select"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 w-full border border-gray-300 rounded-xl px-4 py-2 focus:border-pink-500 focus:outline-none"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    data-testid="password-input"
+                    type="password"
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
+
+                <Button 
+                  type="submit"
+                  data-testid="next-step-btn"
+                  className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white py-6 rounded-xl text-lg btn-hover"
                 >
-                  <option value="">Select gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
+                  Next Step
+                </Button>
+              </form>
+
+              {/* OR Divider */}
+              <div className="flex items-center my-6">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="px-4 text-gray-500 text-sm">or</span>
+                <div className="flex-1 border-t border-gray-300"></div>
               </div>
 
-              <div>
-                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  data-testid="password-input"
-                  type="password"
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-                />
-              </div>
-
-              <Button 
-                type="submit"
-                data-testid="next-step-btn"
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white py-6 rounded-xl text-lg btn-hover"
+              {/* Telegram Registration Button */}
+              <Button
+                type="button"
+                onClick={handleTelegramAuth}
+                disabled={telegramLoading}
+                data-testid="telegram-register-btn"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 text-lg rounded-xl shadow-lg flex items-center justify-center gap-2"
               >
-                Next Step
+                {telegramLoading ? (
+                  "Connecting..."
+                ) : (
+                  <>
+                    <span className="text-xl">📱</span>
+                    Register with Telegram
+                  </>
+                )}
               </Button>
-            </form>
-
-            {/* OR Divider */}
-            <div className="flex items-center my-6">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="px-4 text-gray-500 text-sm">or</span>
-              <div className="flex-1 border-t border-gray-300"></div>
-            </div>
-
-            {/* Telegram Registration Button */}
-            <Button
-              type="button"
-              onClick={handleTelegramAuth}
-              disabled={telegramLoading}
-              data-testid="telegram-register-btn"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 text-lg rounded-xl shadow-lg flex items-center justify-center gap-2"
-            >
-              {telegramLoading ? (
-                "Connecting..."
-              ) : (
-                <>
-                  <span className="text-xl">📱</span>
-                  Register with Telegram
-                </>
-              )}
-            </Button>
+            </>
+          )
           ) : (
             <form onSubmit={handleFinalSubmit} className="space-y-5">
               <div>
