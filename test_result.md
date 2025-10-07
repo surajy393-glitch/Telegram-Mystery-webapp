@@ -273,6 +273,8 @@ test_plan:
   settings_testing_complete: true
   search_testing_complete: true
   hashtag_testing_blocked: true
+  telegram_auth_testing_complete: true
+  forgot_password_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
