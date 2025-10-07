@@ -248,13 +248,16 @@ metadata:
   search_functionality_test: "2025-01-27 03:22:40"
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Hashtag functionality with clickable hashtags and search integration"
+  stuck_tasks:
+    - "Hashtag functionality with clickable hashtags and search integration"
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
   settings_testing_complete: true
   search_testing_complete: true
+  hashtag_testing_blocked: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
