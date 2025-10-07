@@ -675,7 +675,7 @@ async def get_users(current_user: User = Depends(get_current_user)):
             "bio": user.get("bio", ""),
             "followersCount": len(user.get("followers", [])),
             "followingCount": len(user.get("following", [])),
-            "isFollowing": current_user.id in user.get("followers", [])
+            "isFollowing": user["id"] in current_user.following
         })
     
     return {"users": users_list}
