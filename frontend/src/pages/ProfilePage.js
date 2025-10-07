@@ -404,12 +404,20 @@ const ProfilePage = ({ user, onLogout }) => {
                   onClick={() => handleFollowToggle(viewingUser?.id, viewingUser?.isFollowing)}
                   data-testid="follow-user-btn"
                   variant={viewingUser?.isFollowing ? "outline" : "default"}
+                  disabled={followingInProgress.has(viewingUser?.id)}
                   className={viewingUser?.isFollowing 
                     ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-4" 
                     : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-4"
                   }
                 >
-                  {viewingUser?.isFollowing ? "Following" : "Follow"}
+                  {followingInProgress.has(viewingUser?.id) ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      <span>{viewingUser?.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                    </div>
+                  ) : (
+                    viewingUser?.isFollowing ? "Following" : "Follow"
+                  )}
                 </Button>
                 
                 <Button
