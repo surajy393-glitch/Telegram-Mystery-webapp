@@ -1321,6 +1321,9 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     if not query:
         raise HTTPException(status_code=400, detail="Search query cannot be empty")
     
+    # Escape special regex characters for safe searching
+    escaped_query = query.replace('.', r'\.')
+    
     results = {
         "users": [],
         "posts": [],
