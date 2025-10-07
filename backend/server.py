@@ -1362,9 +1362,9 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
             {"id": {"$nin": list(user_ids_found)}},  # Exclude already found users
             {
                 "$or": [
-                    {"fullName": {"$regex": query, "$options": "i"}},
-                    {"username": {"$regex": query, "$options": "i"}},
-                    {"bio": {"$regex": query, "$options": "i"}}
+                    {"fullName": {"$regex": escaped_query, "$options": "i"}},
+                    {"username": {"$regex": escaped_query, "$options": "i"}},
+                    {"bio": {"$regex": escaped_query, "$options": "i"}}
                 ]
             }
         ])
