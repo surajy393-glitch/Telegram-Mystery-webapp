@@ -1353,6 +1353,9 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     """
     query = search_request.query.strip()
     search_type = search_request.type
+    page = max(1, search_request.page)
+    limit = min(50, max(1, search_request.limit))  # Limit between 1-50
+    skip = (page - 1) * limit
     
     if not query:
         raise HTTPException(status_code=400, detail="Search query cannot be empty")
