@@ -271,15 +271,23 @@ async def get_current_user(authorization: str = Header(None)):
 # Authentication Routes
 @api_router.post("/auth/register")
 async def register(user_data: UserRegister):
-    # Validate and clean username
+    # Validate and clean input
     clean_username = user_data.username.strip()
     clean_fullname = user_data.fullName.strip()
+    clean_email = user_data.email.strip().lower() if user_data.email else None
     
     if not clean_username:
         raise HTTPException(status_code=400, detail="Username cannot be empty")
     
     if len(clean_username) < 3:
         raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+    
+    # Validate auth method and required fields
+    if user_data.authMethod == "password":
+        if not user_data.password:
+            raise HTTPException(status_code=400, detail="Password is required for password authentication")
+        if len(user_data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
     
     # Check if username exists (case-insensitive and trimmed)
     escaped_username = clean_username.replace('.', r'\.')
@@ -289,32 +297,35 @@ async def register(user_data: UserRegister):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
+    # Check if email already exists
+    if clean_email:
+        existing_email = await db.users.find_one({"email": clean_email})
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Hash password if provided
+    hashed_password = get_password_hash(user_data.password) if user_data.password else None
+    
     # Create user with cleaned data
     user = User(
         fullName=clean_fullname,
         username=clean_username,
         age=user_data.age,
         gender=user_data.gender,
-        password_hash=get_password_hash(user_data.password)
+        password_hash=hashed_password,
+        email=clean_email,
+        authMethod=user_data.authMethod,
     )
     
-    await db.users.insert_one(user.dict())
+    user_dict = user.dict()
+    await db.users.insert_one(user_dict)
     
-    # Create token
     access_token = create_access_token(data={"sub": user.id})
     
     return {
         "message": "Registration successful",
         "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "fullName": user.fullName,
-            "username": user.username,
-            "age": user.age,
-            "gender": user.gender,
-            "isPremium": user.isPremium
-        }
+        "user": {k: v for k, v in user_dict.items() if k != "password_hash"}
     }
 
 @api_router.post("/auth/login")
