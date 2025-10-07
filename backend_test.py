@@ -297,15 +297,29 @@ class LuvHiveAPITester:
             self.log_result("Authentication Required", False, "Exception occurred", str(e))
     
     def test_get_user_profile_with_settings(self):
-        """Test GET /api/auth/me endpoint returns all new setting fields"""
+        """Test GET /api/auth/me endpoint - should NOT include publicProfile, should include blockedUsers"""
         try:
             response = self.session.get(f"{API_BASE}/auth/me")
             
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check for all required setting fields
-                privacy_fields = ['publicProfile', 'appearInSearch', 'allowDirectMessages', 'showOnlineStatus']
+                # Check that publicProfile is NOT included (removed setting)
+                if 'publicProfile' in data:
+                    self.log_result("Get User Profile with Settings", False, "publicProfile should be removed but is still present")
+                    return
+                
+                # Check that blockedUsers array is included
+                if 'blockedUsers' not in data:
+                    self.log_result("Get User Profile with Settings", False, "blockedUsers array is missing")
+                    return
+                
+                if not isinstance(data['blockedUsers'], list):
+                    self.log_result("Get User Profile with Settings", False, f"blockedUsers should be array, got {type(data['blockedUsers'])}")
+                    return
+                
+                # Check for remaining 9 required setting fields (excluding publicProfile)
+                privacy_fields = ['appearInSearch', 'allowDirectMessages', 'showOnlineStatus']
                 interaction_fields = ['allowTagging', 'allowStoryReplies', 'showVibeScore']
                 notification_fields = ['pushNotifications', 'emailNotifications']
                 
@@ -325,7 +339,7 @@ class LuvHiveAPITester:
                         self.log_result("Get User Profile with Settings", False, f"Invalid field types: {invalid_types}")
                     else:
                         self.log_result("Get User Profile with Settings", True, 
-                                      f"All setting fields present with correct types. Privacy: {len(privacy_fields)}, Interaction: {len(interaction_fields)}, Notification: {len(notification_fields)}")
+                                      f"✅ publicProfile removed, blockedUsers present, 9 remaining settings valid. Privacy: {len(privacy_fields)}, Interaction: {len(interaction_fields)}, Notification: {len(notification_fields)}")
             else:
                 self.log_result("Get User Profile with Settings", False, f"Status: {response.status_code}", response.text)
                 
