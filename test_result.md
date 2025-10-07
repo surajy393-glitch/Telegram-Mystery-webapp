@@ -225,8 +225,22 @@ test_plan:
   test_priority: "high_first"
   backend_testing_complete: true
 
+  - task: "Settings page with privacy toggle functionality"
+    implemented: true
+    working: "NA"
+    file: "SettingsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Settings page implemented with privacy toggle, backend endpoint exists at /api/auth/privacy. Need to test full functionality including navigation from MyProfile, toggle behavior, backend integration, and persistence."
+
 agent_communication:
   - agent: "main"
     message: "Completed implementation of comment profile pictures fix, AI vibe compatibility with OpenAI GPT-5, and 3-dot menu features. Added new backend endpoints for user profiles, posts, AI compatibility, user blocking, and story hiding. Frontend ProfilePage.js completely updated to handle individual user profiles with all requested features. Ready for backend testing."
   - agent: "testing"
     message: "✅ BACKEND TESTING COMPLETE: All newly implemented backend endpoints are working correctly. Tested 12 scenarios with 100% pass rate. Key findings: 1) AI vibe compatibility with OpenAI GPT-5 integration working perfectly, 2) User profile and posts endpoints returning proper data, 3) User blocking and story hiding functionality working with proper validation, 4) All endpoints require authentication as expected, 5) Error handling working correctly for invalid inputs. Backend implementation is solid and ready for frontend integration."
+  - agent: "testing"
+    message: "Starting comprehensive testing of Settings page functionality as requested. Will test: 1) Navigation from MyProfile gear icon to /settings, 2) Settings page layout and privacy toggle, 3) Toggle functionality with visual feedback, 4) Backend integration for privacy setting persistence, 5) Navigation back to MyProfile. Testing will include screenshots and full user flow validation."
