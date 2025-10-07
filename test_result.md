@@ -256,11 +256,13 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 5
   run_ui: false
-  last_backend_test: "2025-01-27 03:22:40"
+  last_backend_test: "2025-01-27 16:53:06"
   updated_settings_test: "2025-01-27 02:49:38"
   search_functionality_test: "2025-01-27 03:22:40"
+  telegram_auth_test: "2025-01-27 16:53:06"
+  forgot_password_test: "2025-01-27 16:53:06"
 
 test_plan:
   current_focus:
