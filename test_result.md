@@ -217,6 +217,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Settings page with privacy toggle functionality"
     - "Fix comment profile pictures display"
     - "Replace Send Spark with Vibe Compatibility"
     - "Add 3-dot menu to other users' profiles"
