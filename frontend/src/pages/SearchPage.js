@@ -255,7 +255,8 @@ const SearchPage = ({ user, onLogout }) => {
     }
   };
 
-  const renderUserCard = (userItem) => (
+  // Memoized user card component for better performance
+  const UserCard = memo(({ userItem }) => (
     <div
       key={userItem.id}
       className="flex items-center gap-3 p-4 rounded-xl hover:bg-pink-50 transition-colors bg-white shadow-sm border border-pink-100"
