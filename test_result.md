@@ -223,9 +223,9 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
-  last_backend_test: "2025-10-06 20:37:56"
+  last_backend_test: "2025-01-27 02:28:49"
 
 test_plan:
   current_focus:
