@@ -192,6 +192,21 @@ const RegisterPage = ({ onLogin }) => {
               </div>
 
               <div>
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  data-testid="email-input"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="age" className="text-gray-700 font-medium">Age</Label>
                 <Input
                   id="age"
