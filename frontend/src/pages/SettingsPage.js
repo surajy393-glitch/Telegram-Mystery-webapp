@@ -123,6 +123,41 @@ const SettingsPage = ({ user, onLogout }) => {
     navigate('/');
   };
 
+  const fetchBlockedUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/blocked`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBlockedUsers(response.data.blockedUsers || []);
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+    }
+  };
+
+  const handleUnblockUser = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${userId}/unblock`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Remove from blocked users list
+      setBlockedUsers(prev => prev.filter(user => user.id !== userId));
+      
+      // Update profile data
+      setProfile(prev => ({
+        ...prev,
+        blockedUsers: (prev?.blockedUsers || []).filter(id => id !== userId)
+      }));
+      
+      alert("User unblocked successfully");
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      alert("Failed to unblock user");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-50 to-white">
