@@ -192,12 +192,20 @@ const ProfilePage = ({ user, onLogout }) => {
   };
 
   const handleFollowToggle = async (targetUserId, isFollowing) => {
+    // Prevent multiple simultaneous follow actions on same user
+    if (followingInProgress.has(targetUserId)) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No authentication token found");
         return;
       }
+
+      // Add to following in progress
+      setFollowingInProgress(prev => new Set(prev).add(targetUserId));
 
       // OPTIMISTIC UI UPDATE - Update immediately before API call
       
@@ -269,6 +277,13 @@ const ProfilePage = ({ user, onLogout }) => {
       if (error.response) {
         console.error("Response error:", error.response.data);
       }
+    } finally {
+      // Remove from following in progress
+      setFollowingInProgress(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(targetUserId);
+        return newSet;
+      });
     }
   };
 
