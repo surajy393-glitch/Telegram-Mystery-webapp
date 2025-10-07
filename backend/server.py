@@ -325,7 +325,17 @@ async def register(user_data: UserRegister):
     return {
         "message": "Registration successful",
         "access_token": access_token,
-        "user": {k: v for k, v in user_dict.items() if k != "password_hash"}
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "fullName": user.fullName,
+            "username": user.username,
+            "age": user.age,
+            "gender": user.gender,
+            "email": user.email,
+            "authMethod": user.authMethod,
+            "isPremium": user.isPremium
+        }
     }
 
 @api_router.post("/auth/login")
