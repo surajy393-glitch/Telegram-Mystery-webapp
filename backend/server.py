@@ -533,6 +533,19 @@ async def forgot_password(request: ForgotPasswordRequest):
         "reset_link": reset_link  
     }
 
+@api_router.post("/auth/telegram-check")
+async def check_telegram_auth(auth_request: dict):
+    """Check if user has authenticated via Telegram bot"""
+    try:
+        # This is a simplified implementation
+        # In production, you would check against actual Telegram messages
+        return {
+            "authenticated": False,
+            "message": "Telegram bot authentication not fully implemented yet. Please use traditional login."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.post("/auth/reset-password")
 async def reset_password(request: ResetPasswordRequest):
     """
