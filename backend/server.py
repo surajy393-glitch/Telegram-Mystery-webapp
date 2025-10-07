@@ -680,6 +680,29 @@ async def get_users(current_user: User = Depends(get_current_user)):
     
     return {"users": users_list}
 
+@api_router.get("/users/blocked")
+async def get_blocked_users(current_user: User = Depends(get_current_user)):
+    """Get list of blocked users with their profile information"""
+    blocked_user_ids = current_user.blockedUsers
+    
+    if not blocked_user_ids:
+        return {"blockedUsers": []}
+    
+    # Get blocked users information
+    blocked_users = await db.users.find({"id": {"$in": blocked_user_ids}}).to_list(100)
+    
+    blocked_users_list = []
+    for user in blocked_users:
+        blocked_users_list.append({
+            "id": user["id"],
+            "username": user["username"],
+            "fullName": user["fullName"],
+            "profileImage": user.get("profileImage"),
+            "blockedAt": user.get("blockedAt", "Unknown")
+        })
+    
+    return {"blockedUsers": blocked_users_list}
+
 @api_router.get("/users/{userId}")
 async def get_user_profile(userId: str, current_user: User = Depends(get_current_user)):
     user = await db.users.find_one({"id": userId})
