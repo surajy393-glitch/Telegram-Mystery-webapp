@@ -310,7 +310,11 @@ const SearchPage = ({ user, onLogout }) => {
         </Link>
       </div>
     </div>
-  );
+  ));
+
+  const renderUserCard = useCallback((userItem) => (
+    <UserCard key={userItem.id} userItem={userItem} />
+  ), []);
 
   const renderPostCard = (post) => (
     <div key={post.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-pink-100">
