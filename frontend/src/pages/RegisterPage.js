@@ -59,7 +59,7 @@ const RegisterPage = ({ onLogin }) => {
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
-    if (formData.fullName && formData.username && formData.age && formData.gender && formData.password) {
+    if (formData.fullName && formData.username && formData.email && formData.age && formData.gender && formData.password) {
       setStep(2);
     }
   };
