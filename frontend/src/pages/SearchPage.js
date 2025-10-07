@@ -139,7 +139,7 @@ const SearchPage = ({ user, onLogout }) => {
       
       // Update the results
       if (searchResults.users.length > 0) {
-        handleSearch();
+        handleSearch(searchResults.query, activeTab);
       } else {
         fetchTrendingContent();
       }
