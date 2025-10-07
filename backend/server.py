@@ -255,7 +255,11 @@ async def register(user_data: UserRegister):
 
 @api_router.post("/auth/login")
 async def login(user_data: UserLogin):
-    user = await db.users.find_one({"username": user_data.username})
+    # Find user with case-insensitive username (handles whitespace issues)
+    clean_username = user_data.username.strip()
+    user = await db.users.find_one({
+        "username": {"$regex": f"^{clean_username.replace('.', r'\.')}$", "$options": "i"}
+    })
     if not user or not verify_password(user_data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
