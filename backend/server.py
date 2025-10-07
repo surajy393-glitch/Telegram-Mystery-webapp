@@ -1279,6 +1279,240 @@ async def unblock_user(userId: str, current_user: User = Depends(get_current_use
     
     return {"message": "User unblocked successfully"}
 
+# Search functionality
+class SearchRequest(BaseModel):
+    query: str
+    type: Optional[str] = "all"  # "users", "posts", "hashtags", "all"
+
+@api_router.post("/search")
+async def search_content(search_request: SearchRequest, current_user: User = Depends(get_current_user)):
+    """
+    Search for users, posts, and hashtags
+    """
+    query = search_request.query.strip()
+    search_type = search_request.type
+    
+    if not query:
+        raise HTTPException(status_code=400, detail="Search query cannot be empty")
+    
+    results = {
+        "users": [],
+        "posts": [],
+        "hashtags": [],
+        "query": query
+    }
+    
+    # Search users (if type is "users" or "all")
+    if search_type in ["users", "all"]:
+        user_filter = {
+            "$and": [
+                {"id": {"$ne": current_user.id}},  # Exclude current user
+                {"id": {"$nin": current_user.blockedUsers}},  # Exclude blocked users
+                {"appearInSearch": True},  # Only users who appear in search
+                {
+                    "$or": [
+                        {"fullName": {"$regex": query, "$options": "i"}},
+                        {"username": {"$regex": query, "$options": "i"}},
+                        {"bio": {"$regex": query, "$options": "i"}}
+                    ]
+                }
+            ]
+        }
+        
+        users = await db.users.find(user_filter).limit(20).to_list(20)
+        for user in users:
+            results["users"].append({
+                "id": user["id"],
+                "fullName": user["fullName"],
+                "username": user["username"],
+                "profileImage": user.get("profileImage"),
+                "bio": user.get("bio", ""),
+                "followersCount": len(user.get("followers", [])),
+                "isFollowing": current_user.id in user.get("followers", []),
+                "isPremium": user.get("isPremium", False)
+            })
+    
+    # Search posts (if type is "posts" or "all")
+    if search_type in ["posts", "all"]:
+        # Find posts from non-blocked users and public accounts
+        blocked_users = current_user.blockedUsers + [current_user.id]  # Exclude own posts
+        
+        post_filter = {
+            "$and": [
+                {"userId": {"$nin": blocked_users}},
+                {"isArchived": {"$ne": True}},
+                {
+                    "$or": [
+                        {"caption": {"$regex": query, "$options": "i"}},
+                        {"username": {"$regex": query, "$options": "i"}}
+                    ]
+                }
+            ]
+        }
+        
+        posts = await db.posts.find(post_filter).sort("createdAt", -1).limit(20).to_list(20)
+        for post in posts:
+            results["posts"].append({
+                "id": post["id"],
+                "userId": post["userId"],
+                "username": post["username"],
+                "userProfileImage": post.get("userProfileImage"),
+                "mediaType": post["mediaType"],
+                "mediaUrl": post["mediaUrl"],
+                "caption": post.get("caption", ""),
+                "likes": len(post.get("likes", [])),
+                "comments": len(post.get("comments", [])),
+                "createdAt": post["createdAt"].isoformat(),
+                "isLiked": current_user.id in post.get("likes", []),
+                "isSaved": post["id"] in current_user.savedPosts
+            })
+    
+    # Extract hashtags from posts (if type is "hashtags" or "all")
+    if search_type in ["hashtags", "all"] and query.startswith("#"):
+        hashtag_query = query[1:]  # Remove # symbol
+        hashtag_filter = {
+            "$and": [
+                {"userId": {"$nin": current_user.blockedUsers}},
+                {"isArchived": {"$ne": True}},
+                {"caption": {"$regex": f"#{hashtag_query}", "$options": "i"}}
+            ]
+        }
+        
+        hashtag_posts = await db.posts.find(hashtag_filter).sort("createdAt", -1).limit(10).to_list(10)
+        hashtags_found = set()
+        
+        for post in hashtag_posts:
+            caption = post.get("caption", "")
+            # Extract hashtags from caption
+            import re
+            hashtags = re.findall(r'#\w+', caption, re.IGNORECASE)
+            for hashtag in hashtags:
+                if hashtag_query.lower() in hashtag.lower():
+                    hashtags_found.add(hashtag.lower())
+        
+        results["hashtags"] = list(hashtags_found)[:10]
+    
+    return results
+
+@api_router.get("/search/trending")
+async def get_trending_content(current_user: User = Depends(get_current_user)):
+    """
+    Get trending users and hashtags
+    """
+    # Get users with most followers (trending users)
+    trending_users = []
+    users = await db.users.find({
+        "$and": [
+            {"id": {"$ne": current_user.id}},
+            {"id": {"$nin": current_user.blockedUsers}},
+            {"appearInSearch": True}
+        ]
+    }).to_list(1000)
+    
+    # Sort by followers count
+    users_with_followers = [(user, len(user.get("followers", []))) for user in users]
+    users_with_followers.sort(key=lambda x: x[1], reverse=True)
+    
+    for user, follower_count in users_with_followers[:10]:
+        trending_users.append({
+            "id": user["id"],
+            "fullName": user["fullName"],
+            "username": user["username"],
+            "profileImage": user.get("profileImage"),
+            "followersCount": follower_count,
+            "isFollowing": current_user.id in user.get("followers", []),
+            "isPremium": user.get("isPremium", False)
+        })
+    
+    # Get trending hashtags from recent posts
+    recent_posts = await db.posts.find({
+        "$and": [
+            {"userId": {"$nin": current_user.blockedUsers}},
+            {"isArchived": {"$ne": True}},
+            {"createdAt": {"$gte": datetime.now(timezone.utc) - timedelta(days=7)}}
+        ]
+    }).to_list(1000)
+    
+    hashtag_count = {}
+    import re
+    for post in recent_posts:
+        caption = post.get("caption", "")
+        hashtags = re.findall(r'#\w+', caption, re.IGNORECASE)
+        for hashtag in hashtags:
+            hashtag = hashtag.lower()
+            hashtag_count[hashtag] = hashtag_count.get(hashtag, 0) + 1
+    
+    # Sort hashtags by frequency
+    trending_hashtags = sorted(hashtag_count.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    return {
+        "trending_users": trending_users,
+        "trending_hashtags": [{"hashtag": hashtag, "count": count} for hashtag, count in trending_hashtags]
+    }
+
+@api_router.get("/search/suggestions")
+async def get_search_suggestions(q: str = "", current_user: User = Depends(get_current_user)):
+    """
+    Get search suggestions based on partial query
+    """
+    if not q or len(q) < 2:
+        return {"suggestions": []}
+    
+    suggestions = []
+    
+    # User suggestions
+    user_filter = {
+        "$and": [
+            {"id": {"$ne": current_user.id}},
+            {"id": {"$nin": current_user.blockedUsers}},
+            {"appearInSearch": True},
+            {
+                "$or": [
+                    {"fullName": {"$regex": f"^{q}", "$options": "i"}},
+                    {"username": {"$regex": f"^{q}", "$options": "i"}}
+                ]
+            }
+        ]
+    }
+    
+    users = await db.users.find(user_filter).limit(5).to_list(5)
+    for user in users:
+        suggestions.append({
+            "type": "user",
+            "text": f"{user['fullName']} (@{user['username']})",
+            "value": user["username"],
+            "avatar": user.get("profileImage")
+        })
+    
+    # Hashtag suggestions
+    if q.startswith("#"):
+        hashtag_query = q[1:]
+        recent_posts = await db.posts.find({
+            "$and": [
+                {"userId": {"$nin": current_user.blockedUsers}},
+                {"isArchived": {"$ne": True}},
+                {"caption": {"$regex": f"#{hashtag_query}", "$options": "i"}}
+            ]
+        }).limit(20).to_list(20)
+        
+        hashtags_found = set()
+        import re
+        for post in recent_posts:
+            caption = post.get("caption", "")
+            hashtags = re.findall(r'#\w+', caption, re.IGNORECASE)
+            for hashtag in hashtags:
+                if hashtag_query.lower() in hashtag.lower():
+                    hashtags_found.add(hashtag)
+        
+        for hashtag in list(hashtags_found)[:5]:
+            suggestions.append({
+                "type": "hashtag",
+                "text": hashtag,
+                "value": hashtag
+            })
+    
+    return {"suggestions": suggestions}
+
 # Include the router in the main app
 app.include_router(api_router)
 
