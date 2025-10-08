@@ -600,7 +600,9 @@ const RegisterPage = ({ onLogin }) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                  <Label htmlFor="email" className="text-gray-700 font-medium">
+                    Email {mobileVerified ? <span className="text-gray-500">(optional)</span> : ""}
+                  </Label>
                   <Input
                     id="email"
                     name="email"
