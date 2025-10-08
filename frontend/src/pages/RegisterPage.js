@@ -178,6 +178,77 @@ const RegisterPage = ({ onLogin }) => {
     }
   };
 
+  const sendMobileOtp = async () => {
+    if (!formData.mobileNumber || !formData.mobileNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your mobile number first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMobileOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/send-mobile-otp`, {
+        mobileNumber: formData.mobileNumber
+      });
+      
+      if (response.data.otpSent) {
+        setMobileOtpSent(true);
+        toast({
+          title: "OTP Sent! 📱",
+          description: "Check your mobile for the verification code",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send mobile OTP",
+        variant: "destructive"
+      });
+    } finally {
+      setMobileOtpLoading(false);
+    }
+  };
+
+  const verifyMobileOtp = async () => {
+    if (!mobileOtp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the mobile OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMobileOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-mobile-otp`, {
+        mobileNumber: formData.mobileNumber,
+        otp: mobileOtp.trim()
+      });
+      
+      if (response.data.verified) {
+        setMobileVerified(true);
+        toast({
+          title: "Mobile Verified! ✅",
+          description: "Mobile number verified successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "Mobile OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
+      setMobileOtpLoading(false);
+    }
+  };
+
   const checkEmailAvailability = async (email) => {
     if (!email || !email.includes('@')) {
       setEmailStatus(null);
