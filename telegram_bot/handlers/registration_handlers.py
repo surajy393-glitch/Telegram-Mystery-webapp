@@ -9,7 +9,7 @@ def register(app):
     app.add_handler(
         CallbackQueryHandler(
             reg.on_callback,
-            pattern=r"^(gender_(male|female)|int:[^:]+|act:(all|none)|save|back|age_agree)$"
+            pattern=r"^(gender_(male|female)|int:[^:]+|act:(all|none)|save|back|age_agree|privacy_accept|privacy_read|privacy_decline)$"
         ),
         group=-10,    # MUST be earliest
     )
