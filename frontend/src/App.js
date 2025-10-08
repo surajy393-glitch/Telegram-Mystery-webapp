@@ -12,6 +12,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SearchPage from "@/pages/SearchPage";
 import ChatPage from "@/pages/ChatPage";
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
