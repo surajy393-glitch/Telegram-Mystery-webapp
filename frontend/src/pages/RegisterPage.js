@@ -33,6 +33,10 @@ const RegisterPage = ({ onLogin }) => {
   const [emailOtp, setEmailOtp] = useState("");
   const [emailVerified, setEmailVerified] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
+  const [mobileOtpSent, setMobileOtpSent] = useState(false);
+  const [mobileOtp, setMobileOtp] = useState("");
+  const [mobileVerified, setMobileVerified] = useState(false);
+  const [mobileOtpLoading, setMobileOtpLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     fullName: "",
