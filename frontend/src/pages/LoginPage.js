@@ -120,19 +120,44 @@ const LoginPage = ({ onLogin }) => {
             description: "Verifying your Telegram authentication"
           });
           
-          // For now, we'll use a simple check - in production this would check the database
-          // for users who authenticated via the bot
-          setTimeout(() => {
-            toast({
-              title: "Bot Active!",
-              description: "Bot is working! Complete authentication in Telegram, then use traditional login for now.",
-            });
-            // Safely remove dialog if it exists
-            if (authDialog && authDialog.parentNode) {
-              authDialog.parentNode.removeChild(authDialog);
+          // Check if user authenticated via Telegram bot
+          const checkAuth = async () => {
+            try {
+              const response = await axios.post(`${API}/auth/telegram-bot-check`, {
+                timestamp: Date.now()
+              });
+              
+              if (response.data.authenticated && response.data.user) {
+                // User successfully authenticated via bot
+                onLogin(response.data.access_token, response.data.user);
+                toast({
+                  title: "Success!",
+                  description: "Successfully authenticated via Telegram bot!",
+                });
+                navigate("/home");
+                
+                // Safely remove dialog
+                if (authDialog && authDialog.parentNode) {
+                  authDialog.parentNode.removeChild(authDialog);
+                }
+              } else {
+                toast({
+                  title: "Still Waiting...",
+                  description: "Please make sure you've sent /start to @Loveekisssbot and try again.",
+                  variant: "destructive"
+                });
+              }
+            } catch (error) {
+              toast({
+                title: "Authentication Check Failed",
+                description: "Please try the traditional login for now.",
+                variant: "destructive"
+              });
             }
             setTelegramLoading(false);
-          }, 2000);
+          };
+          
+          checkAuth();
           
         } catch (error) {
           toast({
