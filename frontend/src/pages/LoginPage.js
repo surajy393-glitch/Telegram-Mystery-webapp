@@ -124,7 +124,7 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       const response = await axios.post(`${API}/auth/verify-telegram-otp`, {
-        telegramId: parseInt(telegramId),
+        telegramId: parseInt(String(telegramId).trim()),
         otp: otp.trim()
       });
       
