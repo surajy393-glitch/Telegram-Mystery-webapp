@@ -302,7 +302,7 @@ const RegisterPage = ({ onLogin }) => {
       return;
     }
     
-    if (formData.fullName && formData.username && formData.email && formData.age && formData.gender && formData.password) {
+    if (formData.fullName && formData.username && (formData.email || mobileVerified) && formData.age && formData.gender && formData.password) {
       setStep(2);
     }
   };
