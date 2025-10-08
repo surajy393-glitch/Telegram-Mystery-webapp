@@ -2526,8 +2526,8 @@ class LuvHiveAPITester:
     def test_username_availability_available(self):
         """Test GET /api/auth/check-username/{username} with available username"""
         try:
-            # Use a unique username that should be available
-            unique_username = f"available_user_{datetime.now().strftime('%H%M%S%f')}"
+            # Use a unique username that should be available (keep it short)
+            unique_username = f"avail_{datetime.now().strftime('%H%M%S')}"
             
             response = self.session.get(f"{API_BASE}/auth/check-username/{unique_username}")
             
