@@ -1359,6 +1359,41 @@ async def check_email_availability(email: str):
             "message": "Error checking email availability"
         }
 
+@api_router.post("/auth/verify-email")
+async def verify_email(token: str):
+    """
+    Verify email address with token
+    """
+    try:
+        # Find user with this verification token
+        user = await db.users.find_one({"emailVerificationToken": token})
+        
+        if not user:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or expired verification link"
+            )
+        
+        # Mark email as verified and remove token
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {
+                "emailVerified": True,
+                "emailVerificationToken": None
+            }}
+        )
+        
+        return {
+            "message": "Email verified successfully! You can now sign in to your account.",
+            "verified": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Email verification error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.get("/auth/check-username/{username}")
 async def check_username_availability(username: str):
     """
