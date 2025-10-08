@@ -320,7 +320,9 @@ const RegisterPage = ({ onLogin }) => {
         mobileNumber: formData.mobileNumber || null,
         age: parseInt(formData.age),
         gender: formData.gender,
-        password: formData.password
+        password: formData.password,
+        profileImage: formData.profileImage || null,
+        bio: formData.bio || ""
       });
 
       // Check if email verification is required
