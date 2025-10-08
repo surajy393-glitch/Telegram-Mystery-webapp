@@ -427,10 +427,10 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("You're in a chat. Use /next or /stop first.")
         return
 
-    # Not registered? kick off registration with privacy consent
+    # Not registered? kick off registration
     try:
         if not reg.is_registered(uid):
-            await reg.start_with_consent(update, context)
+            await reg.start_registration(update, context)
             return
     except Exception:
         # Soft-degrade: show the menu instead of crashing the update
