@@ -170,6 +170,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </div>
   );
 }
