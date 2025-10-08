@@ -306,6 +306,87 @@ def verify_telegram_hash(auth_data: dict, bot_token: str) -> bool:
         logger.error(f"Error verifying Telegram hash: {e}")
         return False
 
+# OTP Helper Functions
+import random
+import asyncio
+
+# In-memory OTP storage (in production, use Redis or database)
+otp_storage = {}
+
+def generate_otp(length: int = 6) -> str:
+    """Generate a random OTP"""
+    return ''.join([str(random.randint(0, 9)) for _ in range(length)])
+
+async def store_otp(telegram_id: int, otp: str, expires_in_minutes: int = 10):
+    """Store OTP with expiration"""
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
+    otp_storage[telegram_id] = {
+        'otp': otp,
+        'expires_at': expires_at,
+        'attempts': 0
+    }
+    
+    # Schedule cleanup
+    async def cleanup():
+        await asyncio.sleep(expires_in_minutes * 60)
+        otp_storage.pop(telegram_id, None)
+    
+    asyncio.create_task(cleanup())
+
+async def verify_otp(telegram_id: int, provided_otp: str) -> bool:
+    """Verify OTP and cleanup if successful"""
+    if telegram_id not in otp_storage:
+        return False
+    
+    otp_data = otp_storage[telegram_id]
+    
+    # Check expiration
+    if datetime.now(timezone.utc) > otp_data['expires_at']:
+        otp_storage.pop(telegram_id, None)
+        return False
+    
+    # Check attempts (max 3)
+    if otp_data['attempts'] >= 3:
+        otp_storage.pop(telegram_id, None)
+        return False
+    
+    # Check OTP
+    if otp_data['otp'] == provided_otp:
+        otp_storage.pop(telegram_id, None)
+        return True
+    else:
+        otp_data['attempts'] += 1
+        return False
+
+async def send_telegram_otp(telegram_id: int, otp: str):
+    """Send OTP via Telegram bot"""
+    try:
+        # Import here to avoid circular imports
+        import aiohttp
+        
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+        if not bot_token:
+            raise Exception("Telegram bot token not configured")
+        
+        message = f"🔐 Your LuvHive login code is: *{otp}*\n\nThis code will expire in 10 minutes.\nDo not share this code with anyone!"
+        
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        data = {
+            "chat_id": telegram_id,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=data) as response:
+                if response.status != 200:
+                    raise Exception(f"Failed to send Telegram message: {response.status}")
+                return True
+                
+    except Exception as e:
+        logger.error(f"Error sending Telegram OTP: {e}")
+        return False
+
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
