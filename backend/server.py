@@ -1313,6 +1313,42 @@ async def can_change_username(current_user: User = Depends(get_current_user)):
         "lastChanged": current_user.lastUsernameChange.isoformat()
     }
 
+@api_router.get("/auth/check-email/{email}")
+async def check_email_availability(email: str):
+    """
+    Check email availability
+    """
+    try:
+        # Clean and validate the email
+        clean_email = email.strip().lower()
+        
+        if '@' not in clean_email or '.' not in clean_email:
+            return {
+                "available": False,
+                "message": "Invalid email format"
+            }
+        
+        # Check if email is already registered
+        existing_user = await db.users.find_one({"email": clean_email})
+        
+        if existing_user:
+            return {
+                "available": False,
+                "message": "Email is already registered - please use a different email"
+            }
+        else:
+            return {
+                "available": True,
+                "message": "Email is available!"
+            }
+        
+    except Exception as e:
+        logger.error(f"Email check error: {e}")
+        return {
+            "available": False,
+            "message": "Error checking email availability"
+        }
+
 @api_router.get("/auth/check-username/{username}")
 async def check_username_availability(username: str):
     """
