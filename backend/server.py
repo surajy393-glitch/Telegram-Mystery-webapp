@@ -1015,32 +1015,15 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         # Generate access token for successful registration
         access_token = create_access_token(data={"sub": user_dict["id"]})
         
-        if clean_mobile and not clean_email:
-            # Mobile-only registration - auto verified and logged in
-            return {
-                "message": "Registration successful! Welcome to LuvHive!",
-                "access_token": access_token,
-                "token_type": "bearer",
-                "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id", "emailVerificationToken"]},
-                "auto_login": True
-            }
-        elif clean_email and not user_dict.get("emailVerified", False):
-            # Email registration but not verified yet
-            return {
-                "message": "Registration successful! Please check your email to verify your account before signing in.",
-                "email_sent": True,
-                "user_id": user_dict["id"],
-                "email_verification_required": True
-            }
-        else:
-            # Both email and mobile provided, or email already verified
-            return {
-                "message": "Registration successful! Welcome to LuvHive!",
-                "access_token": access_token,
-                "token_type": "bearer", 
-                "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id", "emailVerificationToken"]},
-                "auto_login": True
-            }
+        # ALL successful registrations should auto-login immediately
+        # Email verification is optional and can be done later for additional security
+        return {
+            "message": "Registration successful! Welcome to LuvHive!",
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id", "emailVerificationToken"]},
+            "auto_login": True
+        }
         
     except HTTPException:
         raise
