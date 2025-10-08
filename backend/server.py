@@ -654,7 +654,7 @@ async def check_telegram_bot_auth(auth_request: dict):
                 "user_id": user["id"],
                 "username": user["username"], 
                 "exp": datetime.now(timezone.utc) + timedelta(days=7)
-            }, JWT_SECRET, algorithm="HS256")
+            }, SECRET_KEY, algorithm="HS256")
             
             return {
                 "authenticated": True,
