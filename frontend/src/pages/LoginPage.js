@@ -17,6 +17,11 @@ const LoginPage = ({ onLogin }) => {
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordMobile, setForgotPasswordMobile] = useState("");
+  const [forgotPasswordMethod, setForgotPasswordMethod] = useState("email"); // "email" or "mobile"
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetOtp, setResetOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [showTelegramLogin, setShowTelegramLogin] = useState(false);
   const [telegramId, setTelegramId] = useState("");
   const [otp, setOtp] = useState("");
