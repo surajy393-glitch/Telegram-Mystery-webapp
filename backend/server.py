@@ -945,8 +945,8 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "age": user_data.age,
             "gender": user_data.gender,
             "password_hash": hashed_password,
-            "bio": "",
-            "profileImage": None,
+            "bio": clean_bio,
+            "profileImage": clean_profile_image,
             "authMethod": "password",
             "emailVerified": bool(clean_mobile),  # Auto-verify if mobile provided
             "emailVerificationToken": str(uuid4()) if clean_email else None,
