@@ -926,11 +926,22 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             if existing_email:
                 raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Check if mobile number already exists (if provided)
+        # Check if mobile number already exists (if provided) - with multiple format checks
         if clean_mobile:
-            existing_mobile = await db.users.find_one({"mobileNumber": clean_mobile})
-            if existing_mobile:
-                raise HTTPException(status_code=400, detail="Mobile number already registered")
+            # Check various mobile number formats
+            mobile_patterns = [
+                clean_mobile,  # Digits only
+                f"+91{clean_mobile}",  # With +91
+                f"91{clean_mobile}",   # With 91
+            ]
+            
+            for pattern in mobile_patterns:
+                existing_mobile = await db.users.find_one({"mobileNumber": pattern})
+                if existing_mobile:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Mobile number already registered with another account"
+                    )
         
         # Hash password
         hashed_password = get_password_hash(user_data.password)
