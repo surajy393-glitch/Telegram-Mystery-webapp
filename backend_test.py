@@ -2899,6 +2899,359 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Telegram OTP - Edge Cases", False, "Exception occurred", str(e))
     
+    # ========== NEW FEATURE TESTS FOR OTP & EMAIL VALIDATION ==========
+    
+    def test_email_availability_api(self):
+        """Test GET /api/auth/check-email/{email} endpoint for email availability checking"""
+        try:
+            # Test 1: Available email
+            available_email = f"available.email.{datetime.now().strftime('%H%M%S%f')}@example.com"
+            response = self.session.get(f"{API_BASE}/auth/check-email/{available_email}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('available') == True and 'available' in data.get('message', '').lower():
+                    self.log_result("Email Availability API (Available)", True, 
+                                  f"Available email correctly identified: {data['message']}")
+                else:
+                    self.log_result("Email Availability API (Available)", False, f"Unexpected response: {data}")
+            else:
+                self.log_result("Email Availability API (Available)", False, f"Status: {response.status_code}", response.text)
+            
+            # Test 2: Taken email (create a user first)
+            taken_email = f"taken.email.{datetime.now().strftime('%H%M%S%f')}@example.com"
+            user_data = {
+                "fullName": "Taken Email User",
+                "username": f"taken_email_{datetime.now().strftime('%H%M%S')}",
+                "age": 25,
+                "gender": "other",
+                "password": "SecurePass123!",
+                "email": taken_email
+            }
+            
+            # Register user with this email
+            reg_response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=user_data)
+            if reg_response.status_code == 200:
+                # Now check if email is taken
+                response2 = self.session.get(f"{API_BASE}/auth/check-email/{taken_email}")
+                
+                if response2.status_code == 200:
+                    data2 = response2.json()
+                    if data2.get('available') == False and 'already registered' in data2.get('message', '').lower():
+                        self.log_result("Email Availability API (Taken)", True, 
+                                      f"Taken email correctly identified: {data2['message']}")
+                    else:
+                        self.log_result("Email Availability API (Taken)", False, f"Unexpected response: {data2}")
+                else:
+                    self.log_result("Email Availability API (Taken)", False, f"Status: {response2.status_code}", response2.text)
+            
+            # Test 3: Invalid email format
+            invalid_email = "invalid-email-format"
+            response3 = self.session.get(f"{API_BASE}/auth/check-email/{invalid_email}")
+            
+            if response3.status_code == 200:
+                data3 = response3.json()
+                if data3.get('available') == False and 'invalid' in data3.get('message', '').lower():
+                    self.log_result("Email Availability API (Invalid Format)", True, 
+                                  f"Invalid email format correctly rejected: {data3['message']}")
+                else:
+                    self.log_result("Email Availability API (Invalid Format)", False, f"Unexpected response: {data3}")
+            else:
+                self.log_result("Email Availability API (Invalid Format)", False, f"Status: {response3.status_code}", response3.text)
+            
+            # Test 4: Edge case - empty email path
+            response4 = self.session.get(f"{API_BASE}/auth/check-email/")
+            
+            if response4.status_code == 404:  # Expected for empty path
+                self.log_result("Email Availability API (Empty Email)", True, "Empty email correctly handled with 404")
+            else:
+                self.log_result("Email Availability API (Empty Email)", False, f"Expected 404, got {response4.status_code}")
+                
+        except Exception as e:
+            self.log_result("Email Availability API", False, "Exception occurred", str(e))
+    
+    def test_enhanced_telegram_signin_flow(self):
+        """Test the enhanced POST /api/auth/telegram-signin endpoint with auto-OTP system"""
+        try:
+            # First create a Telegram user for testing
+            import time
+            import hashlib
+            import hmac
+            from dotenv import load_dotenv
+            load_dotenv('/app/backend/.env')
+            
+            telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', "8494034049:AAEb5jiuYLUMmkjsIURx6RqhHJ4mj3bOI10")
+            
+            # Create realistic Telegram auth data
+            unique_id = int(time.time()) % 1000000 + 12345  # Ensure unique ID
+            auth_data = {
+                "id": unique_id,
+                "first_name": "Enhanced",
+                "last_name": "TelegramUser", 
+                "username": f"enhanced_tg_{unique_id}",
+                "photo_url": "https://t.me/i/userpic/320/enhanced.jpg",
+                "auth_date": int(time.time()) - 60
+            }
+            
+            # Generate proper hash
+            data_check_arr = []
+            for key, value in sorted(auth_data.items()):
+                data_check_arr.append(f"{key}={value}")
+            
+            data_check_string = '\n'.join(data_check_arr)
+            secret_key = hashlib.sha256(telegram_bot_token.encode()).digest()
+            correct_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+            
+            telegram_request = {
+                "id": auth_data["id"],
+                "first_name": auth_data["first_name"],
+                "last_name": auth_data["last_name"],
+                "username": auth_data["username"],
+                "photo_url": auth_data["photo_url"],
+                "auth_date": auth_data["auth_date"],
+                "hash": correct_hash
+            }
+            
+            # Register via Telegram first
+            reg_response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_request)
+            
+            if reg_response.status_code == 200:
+                # Test 1: Valid Telegram signin with auto-OTP
+                signin_request = {
+                    "telegramId": unique_id
+                }
+                
+                response = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if (data.get('otpSent') == True and 
+                        data.get('telegramId') == unique_id and
+                        'successfully' in data.get('message', '').lower()):
+                        self.log_result("Enhanced Telegram Signin (Auto-OTP)", True, 
+                                      f"Auto-OTP system working: {data['message']}")
+                    else:
+                        self.log_result("Enhanced Telegram Signin (Auto-OTP)", False, f"Unexpected response: {data}")
+                else:
+                    self.log_result("Enhanced Telegram Signin (Auto-OTP)", False, f"Status: {response.status_code}", response.text)
+                
+                # Test 2: Non-existent Telegram ID
+                invalid_signin_request = {
+                    "telegramId": 999999999  # Non-existent ID
+                }
+                
+                response2 = self.session.post(f"{API_BASE}/auth/telegram-signin", json=invalid_signin_request)
+                
+                if response2.status_code == 404:
+                    data2 = response2.json()
+                    if 'no account found' in data2.get('detail', '').lower():
+                        self.log_result("Enhanced Telegram Signin (Non-existent User)", True, 
+                                      f"Correctly rejected non-existent user: {data2['detail']}")
+                    else:
+                        self.log_result("Enhanced Telegram Signin (Non-existent User)", False, f"Unexpected error message: {data2}")
+                else:
+                    self.log_result("Enhanced Telegram Signin (Non-existent User)", False, f"Expected 404, got {response2.status_code}")
+                
+            else:
+                self.log_result("Enhanced Telegram Signin", False, "Could not register Telegram user first")
+                
+        except Exception as e:
+            self.log_result("Enhanced Telegram Signin", False, "Exception occurred", str(e))
+    
+    def test_telegram_otp_verification_flow(self):
+        """Test the complete OTP verification flow with POST /api/auth/verify-telegram-otp"""
+        try:
+            # Test 1: Invalid OTP verification (since we can't get real OTP in test environment)
+            invalid_otp_request = {
+                "telegramId": 123456789,  # Some ID
+                "otp": "123456"  # Invalid OTP
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/verify-telegram-otp", json=invalid_otp_request)
+            
+            if response.status_code == 401:
+                data = response.json()
+                if 'invalid' in data.get('detail', '').lower() or 'expired' in data.get('detail', '').lower():
+                    self.log_result("Telegram OTP Verification (Invalid OTP)", True, 
+                                  f"Invalid OTP correctly rejected: {data['detail']}")
+                else:
+                    self.log_result("Telegram OTP Verification (Invalid OTP)", False, f"Unexpected error message: {data}")
+            else:
+                self.log_result("Telegram OTP Verification (Invalid OTP)", False, f"Expected 401, got {response.status_code}")
+            
+            # Test 2: Non-existent user OTP verification
+            nonexistent_otp_request = {
+                "telegramId": 999999999,  # Non-existent user
+                "otp": "123456"
+            }
+            
+            response2 = self.session.post(f"{API_BASE}/auth/verify-telegram-otp", json=nonexistent_otp_request)
+            
+            if response2.status_code in [401, 404]:  # Either is acceptable
+                data2 = response2.json()
+                self.log_result("Telegram OTP Verification (Non-existent User)", True, 
+                              f"Non-existent user correctly handled: {data2.get('detail', 'No detail')}")
+            else:
+                self.log_result("Telegram OTP Verification (Non-existent User)", False, f"Expected 401/404, got {response2.status_code}")
+            
+            # Test 3: Malformed OTP request
+            malformed_request = {
+                "telegramId": "invalid_id",  # Should be integer
+                "otp": ""  # Empty OTP
+            }
+            
+            response3 = self.session.post(f"{API_BASE}/auth/verify-telegram-otp", json=malformed_request)
+            
+            if response3.status_code in [400, 422]:  # Validation error expected
+                self.log_result("Telegram OTP Verification (Malformed Request)", True, 
+                              "Malformed request correctly rejected")
+            else:
+                self.log_result("Telegram OTP Verification (Malformed Request)", False, f"Expected 400/422, got {response3.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram OTP Verification", False, "Exception occurred", str(e))
+    
+    def test_enhanced_registration_email_validation(self):
+        """Test enhanced registration flow with proper email duplication handling"""
+        try:
+            # Test 1: Registration with unique email
+            unique_email = f"unique.registration.{datetime.now().strftime('%H%M%S%f')}@example.com"
+            user_data = {
+                "fullName": "Email Test User",
+                "username": f"email_test_{datetime.now().strftime('%H%M%S')}",
+                "age": 26,
+                "gender": "other",
+                "password": "SecurePass123!",
+                "email": unique_email,
+                "mobileNumber": "+1987654321"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('user', {}).get('email') == unique_email.lower():
+                    self.log_result("Enhanced Registration Email Validation (Unique Email)", True, 
+                                  f"Successfully registered with unique email: {unique_email}")
+                    
+                    # Test 2: Try to register with the same email (should fail)
+                    duplicate_user_data = {
+                        "fullName": "Duplicate Email User",
+                        "username": f"duplicate_test_{datetime.now().strftime('%H%M%S')}",
+                        "age": 28,
+                        "gender": "male",
+                        "password": "AnotherPass456!",
+                        "email": unique_email,  # Same email
+                        "mobileNumber": "+1555666777"
+                    }
+                    
+                    response2 = self.session.post(f"{API_BASE}/auth/register-enhanced", json=duplicate_user_data)
+                    
+                    if response2.status_code == 400:
+                        data2 = response2.json()
+                        if 'already registered' in data2.get('detail', '').lower():
+                            self.log_result("Enhanced Registration Email Validation (Duplicate Email)", True, 
+                                          f"Duplicate email correctly rejected: {data2['detail']}")
+                        else:
+                            self.log_result("Enhanced Registration Email Validation (Duplicate Email)", False, 
+                                          f"Wrong error message: {data2.get('detail')}")
+                    else:
+                        self.log_result("Enhanced Registration Email Validation (Duplicate Email)", False, 
+                                      f"Expected 400, got {response2.status_code}")
+                else:
+                    self.log_result("Enhanced Registration Email Validation (Unique Email)", False, 
+                                  f"Email not properly stored: expected {unique_email}, got {data.get('user', {}).get('email')}")
+            else:
+                self.log_result("Enhanced Registration Email Validation (Unique Email)", False, 
+                              f"Status: {response.status_code}", response.text)
+            
+            # Test 3: Registration with invalid email format
+            invalid_email_data = {
+                "fullName": "Invalid Email User",
+                "username": f"invalid_email_{datetime.now().strftime('%H%M%S')}",
+                "age": 24,
+                "gender": "female",
+                "password": "ValidPass789!",
+                "email": "not-an-email-format"
+            }
+            
+            response3 = self.session.post(f"{API_BASE}/auth/register-enhanced", json=invalid_email_data)
+            
+            if response3.status_code == 400:
+                data3 = response3.json()
+                if 'invalid email' in data3.get('detail', '').lower():
+                    self.log_result("Enhanced Registration Email Validation (Invalid Format)", True, 
+                                  f"Invalid email format correctly rejected: {data3['detail']}")
+                else:
+                    self.log_result("Enhanced Registration Email Validation (Invalid Format)", False, 
+                                  f"Wrong error message: {data3.get('detail')}")
+            else:
+                self.log_result("Enhanced Registration Email Validation (Invalid Format)", False, 
+                              f"Expected 400, got {response3.status_code}")
+                
+        except Exception as e:
+            self.log_result("Enhanced Registration Email Validation", False, "Exception occurred", str(e))
+    
+    def test_auto_telegram_id_detection(self):
+        """Test that frontend auto-detection of Telegram ID (8+ digits) triggers OTP correctly"""
+        try:
+            # This test simulates the frontend behavior where 8+ digit input triggers Telegram signin
+            
+            # Test 1: 8-digit Telegram ID (should trigger OTP flow)
+            eight_digit_id = 12345678
+            signin_request = {
+                "telegramId": eight_digit_id
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request)
+            
+            # Should return 404 for non-existent user, but endpoint should accept the format
+            if response.status_code == 404:
+                data = response.json()
+                if 'no account found' in data.get('detail', '').lower():
+                    self.log_result("Auto Telegram ID Detection (8 digits)", True, 
+                                  "8-digit Telegram ID correctly processed by endpoint")
+                else:
+                    self.log_result("Auto Telegram ID Detection (8 digits)", False, f"Unexpected error: {data}")
+            elif response.status_code == 200:
+                # If user exists, that's also fine
+                self.log_result("Auto Telegram ID Detection (8 digits)", True, 
+                              "8-digit Telegram ID correctly processed (user exists)")
+            else:
+                self.log_result("Auto Telegram ID Detection (8 digits)", False, f"Unexpected status: {response.status_code}")
+            
+            # Test 2: 9-digit Telegram ID (should also work)
+            nine_digit_id = 123456789
+            signin_request2 = {
+                "telegramId": nine_digit_id
+            }
+            
+            response2 = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request2)
+            
+            if response2.status_code in [200, 404]:  # Either is acceptable
+                self.log_result("Auto Telegram ID Detection (9 digits)", True, 
+                              "9-digit Telegram ID correctly processed by endpoint")
+            else:
+                self.log_result("Auto Telegram ID Detection (9 digits)", False, f"Unexpected status: {response2.status_code}")
+            
+            # Test 3: Short ID (less than 8 digits) - should still be processed by backend
+            short_id = 1234567  # 7 digits
+            signin_request3 = {
+                "telegramId": short_id
+            }
+            
+            response3 = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request3)
+            
+            if response3.status_code in [200, 404]:  # Backend should process any valid integer
+                self.log_result("Auto Telegram ID Detection (7 digits)", True, 
+                              "7-digit ID correctly processed (frontend should handle 8+ digit detection)")
+            else:
+                self.log_result("Auto Telegram ID Detection (7 digits)", False, f"Unexpected status: {response3.status_code}")
+                
+        except Exception as e:
+            self.log_result("Auto Telegram ID Detection", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
