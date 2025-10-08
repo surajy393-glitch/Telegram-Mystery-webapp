@@ -443,11 +443,13 @@ async def send_email_otp(email: str, otp: str):
         from sendgrid import SendGridAPIClient
         from sendgrid.helpers.mail import Mail
         
-        # SendGrid configuration
+        # Try Twilio Email API first, then SendGrid
+        twilio_account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        twilio_auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
         sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
-        sender_email = "noreply@luvhive.com"  # You can use any verified sender
+        sender_email = "noreply@luvhive.com"
         
-        if not sendgrid_api_key:
+        if not twilio_account_sid and not sendgrid_api_key:
             logger.error("SENDGRID_API_KEY not configured, using mock email")
             logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
             return True
