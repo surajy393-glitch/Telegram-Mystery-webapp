@@ -52,11 +52,6 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  const [showTelegramLogin, setShowTelegramLogin] = useState(false);
-  const [telegramId, setTelegramId] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-
   const handleTelegramAuth = () => {
     setShowTelegramLogin(true);
   };
