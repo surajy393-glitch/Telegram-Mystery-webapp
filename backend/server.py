@@ -1821,6 +1821,73 @@ async def verify_email_otp_endpoint(request: VerifyEmailOTPRequest):
         logger.error(f"Verify email OTP error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/auth/send-mobile-otp")
+async def send_mobile_otp_endpoint(request: SendMobileOTPRequest):
+    """
+    Send OTP to mobile number for verification
+    """
+    try:
+        clean_mobile = request.mobileNumber.strip()
+        
+        # Basic mobile number validation
+        mobile_digits = ''.join(filter(str.isdigit, clean_mobile))
+        if len(mobile_digits) < 10 or len(mobile_digits) > 15:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid mobile number format"
+            )
+        
+        # Send OTP
+        otp_sent = await send_mobile_otp(clean_mobile)
+        
+        if not otp_sent:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send SMS OTP"
+            )
+        
+        return {
+            "message": "OTP sent to your mobile number",
+            "mobileNumber": clean_mobile,
+            "otpSent": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Send mobile OTP error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/verify-mobile-otp")
+async def verify_mobile_otp_endpoint(request: VerifyMobileOTPRequest):
+    """
+    Verify mobile OTP
+    """
+    try:
+        clean_mobile = request.mobileNumber.strip()
+        clean_otp = request.otp.strip()
+        
+        # Verify OTP
+        is_valid = await verify_mobile_otp(clean_mobile, clean_otp)
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired OTP"
+            )
+        
+        return {
+            "message": "Mobile number verified successfully",
+            "verified": True,
+            "mobileNumber": clean_mobile
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Verify mobile OTP error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
