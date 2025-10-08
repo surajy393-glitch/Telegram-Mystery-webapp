@@ -21,6 +21,11 @@ const LoginPage = ({ onLogin }) => {
   const [telegramId, setTelegramId] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [showVerifyExisting, setShowVerifyExisting] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
+  const [verifyOtp, setVerifyOtp] = useState("");
+  const [verifyOtpSent, setVerifyOtpSent] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: ""
