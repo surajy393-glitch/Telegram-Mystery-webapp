@@ -264,10 +264,11 @@ metadata:
   telegram_auth_test: "2025-01-27 16:53:06"
   telegram_auth_real_bot_token_test: "2025-01-27 17:47:00"
   forgot_password_test: "2025-01-27 16:53:06"
+  comprehensive_telegram_auth_test: "2025-01-27 18:15:00"
 
 test_plan:
   current_focus:
-    - "Hashtag functionality with clickable hashtags and search integration"
+    - "Comprehensive Telegram Authentication Tests"
   stuck_tasks:
     - "Hashtag functionality with clickable hashtags and search integration"
   test_all: false
@@ -279,6 +280,7 @@ test_plan:
   telegram_auth_testing_complete: true
   telegram_auth_real_bot_token_testing_complete: true
   forgot_password_testing_complete: true
+  comprehensive_telegram_auth_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
