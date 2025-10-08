@@ -2164,7 +2164,8 @@ async def reset_password_mobile(request: ResetPasswordMobileRequest):
         clean_mobile = request.mobileNumber.strip()
         
         # Verify OTP
-        is_valid = await verify_email_otp(f"mobile_{clean_mobile}", request.otp.strip())
+        mobile_key = f"mobile_{clean_mobile}"
+        is_valid = await verify_email_otp(mobile_key, request.otp.strip())
         
         if not is_valid:
             raise HTTPException(
