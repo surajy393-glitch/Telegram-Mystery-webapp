@@ -564,6 +564,72 @@ const RegisterPage = ({ onLogin }) => {
                       </p>
                     </div>
                   )}
+                  
+                  {/* EMAIL OTP VERIFICATION */}
+                  {emailStatus === 'available' && !emailVerified && (
+                    <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm font-medium text-blue-800 mb-3">
+                        🔐 Email Verification Required
+                      </p>
+                      
+                      {!emailOtpSent ? (
+                        <div>
+                          <p className="text-sm text-blue-700 mb-3">
+                            Click below to send verification code to your email
+                          </p>
+                          <button
+                            type="button"
+                            onClick={sendEmailOtp}
+                            disabled={otpLoading}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            {otpLoading ? "Sending..." : "Send OTP to Email"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-blue-700">
+                            Enter the 6-digit code sent to your email:
+                          </p>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Enter OTP"
+                              value={emailOtp}
+                              onChange={(e) => setEmailOtp(e.target.value)}
+                              className="flex-1 text-center text-lg tracking-widest"
+                              maxLength="6"
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyEmailOtp}
+                              disabled={otpLoading || !emailOtp.trim()}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {otpLoading ? "Verifying..." : "Verify"}
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendEmailOtp}
+                            disabled={otpLoading}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* EMAIL VERIFIED SUCCESS */}
+                  {emailVerified && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-800 flex items-center gap-2">
+                        ✅ Email verified successfully! You can now proceed to next step.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
