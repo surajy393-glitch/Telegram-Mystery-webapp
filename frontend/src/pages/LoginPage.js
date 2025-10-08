@@ -89,7 +89,7 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       const response = await axios.post(`${API}/auth/telegram-signin`, {
-        telegramId: parseInt(idToUse)
+        telegramId: parseInt(idString)
       });
       
       if (response.data.otpSent) {
