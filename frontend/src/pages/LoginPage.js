@@ -379,6 +379,18 @@ const LoginPage = ({ onLogin }) => {
               </>
             )}
           </Button>
+
+          {/* Verify Existing Account Button */}
+          {showVerifyExisting && (
+            <Button
+              type="button"
+              onClick={() => setShowVerifyExisting(true)}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 text-base rounded-xl shadow-lg flex items-center justify-center gap-2 mt-3"
+            >
+              <span className="text-lg">✉️</span>
+              Verify Existing Account
+            </Button>
+          )}
           </form>
 
           <div className="mt-6 text-center text-gray-600">
