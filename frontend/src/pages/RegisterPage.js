@@ -606,10 +606,10 @@ const RegisterPage = ({ onLogin }) => {
                     name="email"
                     data-testid="email-input"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder={mobileVerified ? "Email (optional)" : "Enter your email address"}
                     value={formData.email}
                     onChange={handleChange}
-                    required
+                    required={!mobileVerified}
                     className={`mt-2 rounded-xl ${
                       emailStatus === 'available' ? 'border-green-500 focus:border-green-500' :
                       emailStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
