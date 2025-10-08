@@ -70,11 +70,12 @@ const RegisterPage = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      // First register the user
-      const response = await axios.post(`${API}/auth/register`, {
+      // First register the user with enhanced endpoint
+      const response = await axios.post(`${API}/auth/register-enhanced`, {
         fullName: formData.fullName,
         username: formData.username,
         email: formData.email,
+        mobileNumber: formData.mobileNumber || null,
         age: parseInt(formData.age),
         gender: formData.gender,
         password: formData.password
