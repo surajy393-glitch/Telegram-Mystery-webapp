@@ -395,6 +395,62 @@ async def send_telegram_otp(telegram_id: int, otp: str):
         logger.error(f"Error sending Telegram OTP: {e}")
         return False
 
+async def store_email_otp(email: str, otp: str, expires_in_minutes: int = 10):
+    """Store email OTP with expiration"""
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
+    email_otp_storage[email.lower()] = {
+        'otp': otp,
+        'expires_at': expires_at,
+        'attempts': 0
+    }
+    
+    # Schedule cleanup
+    async def cleanup():
+        await asyncio.sleep(expires_in_minutes * 60)
+        email_otp_storage.pop(email.lower(), None)
+    
+    asyncio.create_task(cleanup())
+
+async def verify_email_otp(email: str, provided_otp: str) -> bool:
+    """Verify email OTP and cleanup if successful"""
+    email_key = email.lower()
+    if email_key not in email_otp_storage:
+        return False
+    
+    otp_data = email_otp_storage[email_key]
+    
+    # Check expiration
+    if datetime.now(timezone.utc) > otp_data['expires_at']:
+        email_otp_storage.pop(email_key, None)
+        return False
+    
+    # Check attempts (max 3)
+    if otp_data['attempts'] >= 3:
+        email_otp_storage.pop(email_key, None)
+        return False
+    
+    # Check OTP
+    if otp_data['otp'] == provided_otp:
+        email_otp_storage.pop(email_key, None)
+        return True
+    else:
+        otp_data['attempts'] += 1
+        return False
+
+async def send_email_otp(email: str, otp: str):
+    """Send OTP via email - MOCK for now"""
+    try:
+        # MOCK EMAIL SENDING - In production, use SendGrid/AWS SES
+        logger.info(f"MOCK EMAIL: Sending OTP {otp} to {email}")
+        
+        # For demo purposes, always return True
+        # In production, implement actual email sending here
+        return True
+                
+    except Exception as e:
+        logger.error(f"Error sending email OTP: {e}")
+        return False
+
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
