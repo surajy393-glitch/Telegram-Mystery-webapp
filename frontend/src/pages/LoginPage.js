@@ -100,9 +100,13 @@ const LoginPage = ({ onLogin }) => {
         });
       }
     } catch (error) {
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : JSON.stringify(error.response?.data?.detail) || "Failed to send OTP";
+      
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to send OTP",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
