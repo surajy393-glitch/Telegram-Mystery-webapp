@@ -180,6 +180,13 @@ class VerifyEmailOTPRequest(BaseModel):
     email: str
     otp: str
 
+class SendMobileOTPRequest(BaseModel):
+    mobileNumber: str
+
+class VerifyMobileOTPRequest(BaseModel):
+    mobileNumber: str
+    otp: str
+
 class UserProfile(BaseModel):
     fullName: str
     username: str
