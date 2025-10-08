@@ -663,7 +663,7 @@ async def send_email_otp(email: str, otp: str):
         
         # Create SendGrid message
         message = Mail(
-            from_email=sender_email,
+            from_email="noreply@luvhive.com",
             to_emails=email,
             subject="Your LuvHive Verification Code 🔐",
             html_content=html_content,
