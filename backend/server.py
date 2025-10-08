@@ -1890,6 +1890,97 @@ async def verify_mobile_otp_endpoint(request: VerifyMobileOTPRequest):
         logger.error(f"Verify mobile OTP error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/auth/verify-existing-account")
+async def verify_existing_account(request: EmailOTPRequest):
+    """
+    Send verification email to existing unverified accounts
+    """
+    try:
+        clean_email = request.email.strip().lower()
+        
+        # Find existing user with this email
+        user = await db.users.find_one({"email": clean_email})
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="No account found with this email"
+            )
+        
+        # Check if already verified
+        if user.get("emailVerified", False):
+            return {
+                "message": "Account is already verified",
+                "verified": True
+            }
+        
+        # Generate OTP for existing account
+        otp = generate_otp()
+        
+        # Store OTP
+        await store_email_otp(clean_email, otp)
+        
+        # Send OTP via email
+        otp_sent = await send_email_otp(clean_email, otp)
+        
+        if not otp_sent:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send verification email"
+            )
+        
+        return {
+            "message": "Verification email sent to your registered email address",
+            "email": clean_email,
+            "otpSent": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Verify existing account error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/verify-existing-otp")
+async def verify_existing_otp(request: VerifyEmailOTPRequest):
+    """
+    Verify OTP for existing account and mark as verified
+    """
+    try:
+        clean_email = request.email.strip().lower()
+        
+        # Verify OTP
+        is_valid = await verify_email_otp(clean_email, request.otp.strip())
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired OTP"
+            )
+        
+        # Mark account as verified
+        result = await db.users.update_one(
+            {"email": clean_email},
+            {"$set": {"emailVerified": True}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Account not found"
+            )
+        
+        return {
+            "message": "Account verified successfully! You can now sign in.",
+            "verified": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Verify existing OTP error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
