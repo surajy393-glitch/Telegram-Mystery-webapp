@@ -2192,6 +2192,33 @@ async def reset_password_mobile(request: ResetPasswordMobileRequest):
         logger.error(f"Mobile password reset error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.delete("/auth/wipe-all-data")
+async def wipe_all_database():
+    """
+    ADMIN ENDPOINT: Delete ALL users, posts, and comments (DANGER!)
+    """
+    try:
+        # Delete all users
+        users_result = await db.users.delete_many({})
+        
+        # Delete all posts  
+        posts_result = await db.posts.delete_many({})
+        
+        # Delete all comments
+        comments_result = await db.comments.delete_many({})
+        
+        return {
+            "message": "🗑️ Database completely wiped clean!",
+            "users_deleted": users_result.deleted_count,
+            "posts_deleted": posts_result.deleted_count,
+            "comments_deleted": comments_result.deleted_count,
+            "total_deleted": users_result.deleted_count + posts_result.deleted_count + comments_result.deleted_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Database wipe error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
