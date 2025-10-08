@@ -162,7 +162,7 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       const response = await axios.post(`${API}/auth/verify-telegram-otp`, {
-        telegramId: parseInt(String(telegramId).trim()),
+        telegramId: parseInt(telegramId),
         otp: otp.trim()
       });
       
@@ -173,17 +173,89 @@ const LoginPage = ({ onLogin }) => {
       });
       navigate("/home");
     } catch (error) {
-      const errorMessage = typeof error.response?.data?.detail === 'string' 
-        ? error.response.data.detail 
-        : JSON.stringify(error.response?.data?.detail) || "OTP verification failed";
-      
       toast({
         title: "Invalid OTP",
-        description: errorMessage,
+        description: error.response?.data?.detail || "OTP verification failed",
         variant: "destructive"
       });
     } finally {
       setTelegramLoading(false);
+    }
+  };
+
+  const handleVerifyExistingAccount = async () => {
+    if (!verifyEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVerifyLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-existing-account`, {
+        email: verifyEmail.trim()
+      });
+      
+      if (response.data.otpSent) {
+        setVerifyOtpSent(true);
+        toast({
+          title: "Verification Email Sent! 📧",
+          description: "Check your email for the verification code",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send verification email",
+        variant: "destructive"
+      });
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleVerifyExistingOtp = async () => {
+    if (!verifyOtp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVerifyLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-existing-otp`, {
+        email: verifyEmail.trim(),
+        otp: verifyOtp.trim()
+      });
+      
+      if (response.data.verified) {
+        toast({
+          title: "Account Verified! ✅",
+          description: "You can now sign in to your account",
+        });
+        
+        // Close dialog and reset
+        setShowVerifyExisting(false);
+        setVerifyOtpSent(false);
+        setVerifyEmail("");
+        setVerifyOtp("");
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
