@@ -437,8 +437,35 @@ const RegisterPage = ({ onLogin }) => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                    className={`mt-2 rounded-xl ${
+                      emailStatus === 'available' ? 'border-green-500 focus:border-green-500' :
+                      emailStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
+                      'border-gray-300 focus:border-pink-500'
+                    }`}
                   />
+                  
+                  {/* Email Status Display */}
+                  {emailStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        emailStatus === 'available' ? 'text-green-600' :
+                        emailStatus === 'taken' ? 'text-red-600' :
+                        emailStatus === 'checking' ? 'text-blue-600' :
+                        'text-gray-600'
+                      }`}>
+                        {emailStatus === 'checking' && (
+                          <span className="animate-spin">⏳</span>
+                        )}
+                        {emailStatus === 'available' && (
+                          <span>✅</span>
+                        )}
+                        {emailStatus === 'taken' && (
+                          <span>❌</span>
+                        )}
+                        {emailMessage}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
