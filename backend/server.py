@@ -1986,10 +1986,10 @@ async def verify_existing_otp(request: VerifyEmailOTPRequest):
 @api_router.delete("/auth/cleanup-account/{identifier}")
 async def cleanup_account_data(identifier: str):
     """
-    ADMIN ENDPOINT: Delete all account data by username or email
+    ADMIN ENDPOINT: Delete all account data by username, email, or mobile number
     """
     try:
-        # Find users by username or email
+        # Find users by username, email, or mobile
         users_to_delete = []
         
         # Search by username (case insensitive)
@@ -2000,11 +2000,30 @@ async def cleanup_account_data(identifier: str):
             users_to_delete.append(user_by_username)
         
         # Search by email (case insensitive)  
-        user_by_email = await db.users.find_one({
-            "email": {"$regex": f"^{identifier}$", "$options": "i"}
-        })
-        if user_by_email and user_by_email not in users_to_delete:
-            users_to_delete.append(user_by_email)
+        if "@" in identifier:
+            user_by_email = await db.users.find_one({
+                "email": {"$regex": f"^{identifier}$", "$options": "i"}
+            })
+            if user_by_email and user_by_email not in users_to_delete:
+                users_to_delete.append(user_by_email)
+        
+        # Search by mobile number (clean digits only)
+        if identifier.isdigit() or "+" in identifier:
+            # Clean mobile number for search
+            clean_mobile = ''.join(filter(str.isdigit, identifier))
+            mobile_patterns = [
+                identifier,  # Original format
+                clean_mobile,  # Digits only
+                f"+91{clean_mobile}",  # With +91
+                f"91{clean_mobile}",  # With 91
+            ]
+            
+            for pattern in mobile_patterns:
+                user_by_mobile = await db.users.find_one({
+                    "mobileNumber": {"$regex": f"^{pattern}$", "$options": "i"}
+                })
+                if user_by_mobile and user_by_mobile not in users_to_delete:
+                    users_to_delete.append(user_by_mobile)
         
         # Delete all found users and related data
         deleted_users = []
