@@ -127,7 +127,10 @@ const LoginPage = ({ onLogin }) => {
               title: "Bot Active!",
               description: "Bot is working! Complete authentication in Telegram, then use traditional login for now.",
             });
-            document.body.removeChild(authDialog);
+            // Safely remove dialog if it exists
+            if (authDialog && authDialog.parentNode) {
+              authDialog.parentNode.removeChild(authDialog);
+            }
             setTelegramLoading(false);
           }, 2000);
           
