@@ -851,6 +851,11 @@ def main():
     # Block/Unblock callbacks
     app.add_handler(CallbackQueryHandler(blk_add, pattern="^blk:add:"), group=1)
     app.add_handler(CallbackQueryHandler(blk_del, pattern="^blk:del:"), group=1)
+    
+    # Registration callbacks (including age verification)
+    import registration
+    app.add_handler(CallbackQueryHandler(registration.on_callback), group=0)
+    
     # Fun & Games button - handled by funhub.register(app) at group=-10 (high priority)
 
     # Left menu handlers (/quit routing) - after handlers are registered
