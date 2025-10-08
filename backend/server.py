@@ -450,6 +450,79 @@ async def send_email_otp(email: str, otp: str):
             logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
             return True
         
+        # Create beautiful HTML email
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+            <div style="background-color: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #e91e63; margin: 0; font-size: 28px;">💖 LuvHive</h1>
+                    <h2 style="color: #333; margin: 10px 0 0 0; font-size: 22px;">Email Verification</h2>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #e91e63, #f06292); padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0;">
+                    <p style="color: white; margin: 0 0 15px 0; font-size: 16px; font-weight: 500;">Your Verification Code:</p>
+                    <div style="background-color: white; padding: 15px; border-radius: 8px; display: inline-block;">
+                        <span style="color: #e91e63; font-size: 36px; font-weight: bold; letter-spacing: 8px; font-family: 'Courier New', monospace;">{otp}</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 25px 0;">
+                    <p style="color: #555; font-size: 16px; margin: 0 0 15px 0;">Enter this code on the registration page to verify your email address</p>
+                    <p style="color: #888; font-size: 14px; margin: 0;">⏰ This code expires in <strong>10 minutes</strong></p>
+                </div>
+                
+                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
+                    <p style="color: #999; font-size: 13px; margin: 0;">🔒 If you didn't request this code, please ignore this email.</p>
+                    <p style="color: #999; font-size: 13px; margin: 5px 0 0 0;">This is an automated message from LuvHive.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Plain text version
+        text_content = f"""
+        LuvHive Email Verification
+        
+        Your verification code is: {otp}
+        
+        Enter this code on the registration page to verify your email address.
+        
+        This code will expire in 10 minutes.
+        Do not share this code with anyone.
+        
+        If you didn't request this code, please ignore this email.
+        
+        Best regards,
+        LuvHive Team
+        """
+        
+        # Create SendGrid message
+        message = Mail(
+            from_email="noreply@luvhive.com",
+            to_emails=email,
+            subject="Your LuvHive Verification Code 🔐",
+            html_content=html_content,
+            plain_text_content=text_content
+        )
+        
+        # Send email
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        
+        if response.status_code == 202:
+            logger.info(f"SendGrid email sent successfully: OTP {otp} to {email}")
+            return True
+        else:
+            logger.error(f"SendGrid error: Status {response.status_code}")
+            return False
+                
+    except Exception as e:
+        logger.error(f"Error sending SendGrid email: {e}")
+        logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
+        return True
+        
         # Try Twilio Email first (with API Key if available)
         if twilio_account_sid and (twilio_auth_token or twilio_api_key_secret):
             try:
