@@ -1296,8 +1296,11 @@ async def forgot_password(request: ForgotPasswordRequest):
     user = await db.users.find_one({"email": request.email.lower().strip()})
     
     if not user:
-        # Don't reveal if email exists, but return success for security
-        return {"message": "If an account with this email exists, a reset link has been sent"}
+        # Return proper error - user should know if email doesn't exist
+        raise HTTPException(
+            status_code=404, 
+            detail="No account found with this email address. Please check your email or register a new account."
+        )
     
     # Check if user has Telegram auth
     if user.get("telegramId"):
