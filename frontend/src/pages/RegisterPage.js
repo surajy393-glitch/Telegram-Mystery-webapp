@@ -850,14 +850,16 @@ const RegisterPage = ({ onLogin }) => {
                 <Button 
                   type="submit"
                   data-testid="next-step-btn"
-                  disabled={!emailVerified}
+                  disabled={!emailVerified || (formData.mobileNumber && !mobileVerified)}
                   className={`w-full py-6 rounded-xl text-lg btn-hover ${
-                    emailVerified 
+                    emailVerified && (!formData.mobileNumber || mobileVerified)
                       ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {emailVerified ? 'Next Step' : 'Verify Email First'}
+                  {!emailVerified ? 'Verify Email First' : 
+                   (formData.mobileNumber && !mobileVerified) ? 'Verify Mobile First' : 
+                   'Next Step'}
                 </Button>
               </form>
 
