@@ -124,14 +124,14 @@ def user_info(tg_id: int) -> Optional[dict]:
 
 def reset_user_metrics(tg_id: int) -> None:
     """
-    Make the user 'fresh' again for registration while preserving premium.
-    Clears profile fields, interests and all counters; keeps is_premium intact.
+    COMPLETELY WIPE ALL USER DATA - Make them fresh for re-registration.
+    Preserves only premium status.
     """
     # preserve premium
     row = q_one("SELECT is_premium FROM users WHERE tg_user_id=%s;", (tg_id,))
     premium_flag = row[0] if row else False
 
-    # clear profile + counters, keep premium
+    # WIPE ALL USER DATA - make them completely fresh
     q_exec("""
         UPDATE users
         SET gender=NULL, age=NULL, country=NULL, city=NULL,
@@ -139,6 +139,10 @@ def reset_user_metrics(tg_id: int) -> None:
             messages_sent=0, messages_recv=0,
             rating_up=0, rating_down=0, report_count=0,
             search_pref='any',
+            privacy_consent=FALSE,
+            privacy_consent_date=NULL,
+            age_verified=FALSE,
+            age_agreement_date=NULL,
             is_premium=%s
         WHERE tg_user_id=%s;
     """, (premium_flag, tg_id))
