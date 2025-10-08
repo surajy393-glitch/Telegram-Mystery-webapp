@@ -68,7 +68,10 @@ const LoginPage = ({ onLogin }) => {
       // Special handling for email verification error
       if (error.response?.status === 403) {
         errorTitle = "Email Verification Required";
-        errorDescription = error.response.data.detail;
+        errorDescription = error.response.data.detail + " Click 'Verify Existing Account' below.";
+        
+        // Show verify existing account option
+        setShowVerifyExisting(true);
       }
       
       toast({
