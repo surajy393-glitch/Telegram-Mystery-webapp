@@ -287,12 +287,9 @@ async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.effective_message.reply_text(txt, parse_mode=ParseMode.HTML)
 
         elif mode == "reset":
-            # Debug: log the UID being reset
-            admin_id = update.effective_user.id
-            print(f"DEBUG: Admin {admin_id} resetting user {uid}")
             reset_user_metrics(uid)
             await update.effective_message.reply_text(
-                f"🧹 Metrics reset for user <code>{uid}</code> by admin <code>{admin_id}</code>.", parse_mode=ParseMode.HTML
+                f"🧹 Metrics reset for <code>{uid}</code>.", parse_mode=ParseMode.HTML
             )
             # (optional) nudge the user to /start again
             try:
