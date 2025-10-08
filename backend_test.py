@@ -2521,6 +2521,384 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Password Reset (Weak Password)", False, "Exception occurred", str(e))
     
+    # ========== USERNAME AVAILABILITY TESTS ==========
+    
+    def test_username_availability_available(self):
+        """Test GET /api/auth/check-username/{username} with available username"""
+        try:
+            # Use a unique username that should be available
+            unique_username = f"available_user_{datetime.now().strftime('%H%M%S%f')}"
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{unique_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get('available') == True and 'message' in data and 'suggestions' in data:
+                    if data['message'] == "Username is available!" and len(data['suggestions']) == 0:
+                        self.log_result("Username Availability - Available", True, 
+                                      f"Username '{unique_username}' correctly reported as available")
+                    else:
+                        self.log_result("Username Availability - Available", False, 
+                                      f"Unexpected response format: {data}")
+                else:
+                    self.log_result("Username Availability - Available", False, 
+                                  f"Missing required fields or incorrect available status: {data}")
+            else:
+                self.log_result("Username Availability - Available", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Available", False, "Exception occurred", str(e))
+    
+    def test_username_availability_taken(self):
+        """Test GET /api/auth/check-username/{username} with taken username"""
+        try:
+            # Use a common username that should be taken
+            taken_username = "luvsociety"
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{taken_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get('available') == False and 'message' in data and 'suggestions' in data:
+                    if isinstance(data['suggestions'], list) and len(data['suggestions']) > 0:
+                        self.log_result("Username Availability - Taken", True, 
+                                      f"Username '{taken_username}' correctly reported as taken with {len(data['suggestions'])} suggestions")
+                    else:
+                        self.log_result("Username Availability - Taken", False, 
+                                      f"Expected suggestions for taken username, got: {data['suggestions']}")
+                else:
+                    self.log_result("Username Availability - Taken", False, 
+                                  f"Missing required fields or incorrect available status: {data}")
+            else:
+                self.log_result("Username Availability - Taken", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Taken", False, "Exception occurred", str(e))
+    
+    def test_username_availability_too_short(self):
+        """Test GET /api/auth/check-username/{username} with username too short (< 3 characters)"""
+        try:
+            short_username = "ab"  # Only 2 characters
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{short_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if (data.get('available') == False and 
+                    'must be at least 3 characters' in data.get('message', '') and
+                    len(data.get('suggestions', [])) == 0):
+                    self.log_result("Username Availability - Too Short", True, 
+                                  f"Username '{short_username}' correctly rejected as too short")
+                else:
+                    self.log_result("Username Availability - Too Short", False, 
+                                  f"Unexpected response for short username: {data}")
+            else:
+                self.log_result("Username Availability - Too Short", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Too Short", False, "Exception occurred", str(e))
+    
+    def test_username_availability_too_long(self):
+        """Test GET /api/auth/check-username/{username} with username too long (> 20 characters)"""
+        try:
+            long_username = "a" * 25  # 25 characters, exceeds 20 limit
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{long_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if (data.get('available') == False and 
+                    'must be less than 20 characters' in data.get('message', '') and
+                    len(data.get('suggestions', [])) == 0):
+                    self.log_result("Username Availability - Too Long", True, 
+                                  f"Username '{long_username[:10]}...' correctly rejected as too long")
+                else:
+                    self.log_result("Username Availability - Too Long", False, 
+                                  f"Unexpected response for long username: {data}")
+            else:
+                self.log_result("Username Availability - Too Long", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Too Long", False, "Exception occurred", str(e))
+    
+    def test_username_availability_invalid_characters(self):
+        """Test GET /api/auth/check-username/{username} with invalid characters"""
+        try:
+            # Test username with spaces
+            invalid_username = "user name"
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{invalid_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if (data.get('available') == False and 
+                    'can only contain letters, numbers, and underscores' in data.get('message', '') and
+                    len(data.get('suggestions', [])) == 0):
+                    self.log_result("Username Availability - Invalid Characters (Space)", True, 
+                                  f"Username '{invalid_username}' correctly rejected for invalid characters")
+                else:
+                    self.log_result("Username Availability - Invalid Characters (Space)", False, 
+                                  f"Unexpected response for invalid username: {data}")
+            else:
+                self.log_result("Username Availability - Invalid Characters (Space)", False, f"Status: {response.status_code}", response.text)
+            
+            # Test username with special characters
+            special_username = "user@name"
+            
+            response2 = self.session.get(f"{API_BASE}/auth/check-username/{special_username}")
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                
+                if (data2.get('available') == False and 
+                    'can only contain letters, numbers, and underscores' in data2.get('message', '')):
+                    self.log_result("Username Availability - Invalid Characters (Special)", True, 
+                                  f"Username '{special_username}' correctly rejected for special characters")
+                else:
+                    self.log_result("Username Availability - Invalid Characters (Special)", False, 
+                                  f"Unexpected response for special username: {data2}")
+            else:
+                self.log_result("Username Availability - Invalid Characters (Special)", False, f"Status: {response2.status_code}", response2.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Invalid Characters", False, "Exception occurred", str(e))
+    
+    def test_username_availability_suggestions_quality(self):
+        """Test that username suggestions are meaningful and available"""
+        try:
+            # Use a common username that should be taken to get suggestions
+            common_username = "luvsociety"
+            
+            response = self.session.get(f"{API_BASE}/auth/check-username/{common_username}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get('available') == False and 'suggestions' in data:
+                    suggestions = data['suggestions']
+                    
+                    if len(suggestions) > 0:
+                        # Check that suggestions are reasonable
+                        valid_suggestions = []
+                        for suggestion in suggestions:
+                            if (len(suggestion) >= 3 and len(suggestion) <= 20 and
+                                suggestion.startswith(common_username[:3])):  # Should be related to original
+                                valid_suggestions.append(suggestion)
+                        
+                        if len(valid_suggestions) > 0:
+                            self.log_result("Username Availability - Suggestions Quality", True, 
+                                          f"Got {len(valid_suggestions)} quality suggestions: {valid_suggestions[:3]}")
+                        else:
+                            self.log_result("Username Availability - Suggestions Quality", False, 
+                                          f"No quality suggestions found: {suggestions}")
+                    else:
+                        self.log_result("Username Availability - Suggestions Quality", False, 
+                                      "No suggestions provided for taken username")
+                else:
+                    self.log_result("Username Availability - Suggestions Quality", False, 
+                                  f"Unexpected response structure: {data}")
+            else:
+                self.log_result("Username Availability - Suggestions Quality", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Username Availability - Suggestions Quality", False, "Exception occurred", str(e))
+    
+    # ========== FIXED TELEGRAM AUTHENTICATION TESTS ==========
+    
+    def test_telegram_signin_nonexistent_user(self):
+        """Test POST /api/auth/telegram-signin properly rejects users who don't exist"""
+        try:
+            # Use a Telegram ID that definitely doesn't exist
+            nonexistent_telegram_id = 999999999
+            
+            signin_request = {
+                "telegramId": nonexistent_telegram_id
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request)
+            
+            if response.status_code == 404:
+                data = response.json()
+                if 'No account found with this Telegram ID' in data.get('detail', ''):
+                    self.log_result("Telegram Signin - Nonexistent User", True, 
+                                  f"Correctly rejected nonexistent Telegram ID: {nonexistent_telegram_id}")
+                else:
+                    self.log_result("Telegram Signin - Nonexistent User", False, 
+                                  f"Wrong error message: {data.get('detail')}")
+            else:
+                self.log_result("Telegram Signin - Nonexistent User", False, 
+                              f"Expected 404, got {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Telegram Signin - Nonexistent User", False, "Exception occurred", str(e))
+    
+    def test_telegram_signin_email_registered_user(self):
+        """Test POST /api/auth/telegram-signin properly rejects users who registered with email/password"""
+        try:
+            # First register a user with email/password
+            email_user_data = {
+                "fullName": "Email User",
+                "username": f"email_user_{datetime.now().strftime('%H%M%S')}",
+                "age": 25,
+                "gender": "other",
+                "password": "SecurePass123!",
+                "email": f"email.user.{datetime.now().strftime('%H%M%S')}@example.com"
+            }
+            
+            reg_response = self.session.post(f"{API_BASE}/auth/register", json=email_user_data)
+            
+            if reg_response.status_code == 200:
+                # Now try to sign in via Telegram with a fake Telegram ID
+                fake_telegram_id = 123456789
+                
+                signin_request = {
+                    "telegramId": fake_telegram_id
+                }
+                
+                response = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request)
+                
+                if response.status_code == 404:
+                    # This is correct - the user doesn't exist with that Telegram ID
+                    self.log_result("Telegram Signin - Email Registered User", True, 
+                                  "Correctly rejected Telegram signin for email-registered user")
+                elif response.status_code == 400:
+                    data = response.json()
+                    if 'not registered via Telegram' in data.get('detail', ''):
+                        self.log_result("Telegram Signin - Email Registered User", True, 
+                                      "Correctly rejected email-registered user attempting Telegram signin")
+                    else:
+                        self.log_result("Telegram Signin - Email Registered User", False, 
+                                      f"Wrong error message: {data.get('detail')}")
+                else:
+                    self.log_result("Telegram Signin - Email Registered User", False, 
+                                  f"Expected 404 or 400, got {response.status_code}: {response.text}")
+            else:
+                self.log_result("Telegram Signin - Email Registered User", False, 
+                              "Could not register email user for testing")
+                
+        except Exception as e:
+            self.log_result("Telegram Signin - Email Registered User", False, "Exception occurred", str(e))
+    
+    def test_telegram_signin_legitimate_user_otp_flow(self):
+        """Test that Telegram signin works correctly for legitimate Telegram users"""
+        try:
+            # First create a legitimate Telegram user
+            import time
+            import hashlib
+            import hmac
+            from dotenv import load_dotenv
+            load_dotenv('/app/backend/.env')
+            
+            telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', "8494034049:AAEb5jiuYLUMmkjsIURx6RqhHJ4mj3bOI10")
+            
+            # Create realistic Telegram auth data
+            unique_id = int(time.time()) % 1000000 + 100000  # Ensure 6+ digits
+            auth_data = {
+                "id": unique_id,
+                "first_name": "LegitTelegram",
+                "last_name": "User", 
+                "username": f"legit_tg_{unique_id}",
+                "photo_url": "https://t.me/i/userpic/320/legit.jpg",
+                "auth_date": int(time.time()) - 60
+            }
+            
+            # Generate proper hash
+            data_check_arr = []
+            for key, value in sorted(auth_data.items()):
+                data_check_arr.append(f"{key}={value}")
+            
+            data_check_string = '\n'.join(data_check_arr)
+            secret_key = hashlib.sha256(telegram_bot_token.encode()).digest()
+            correct_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+            
+            telegram_request = {
+                "id": auth_data["id"],
+                "first_name": auth_data["first_name"],
+                "last_name": auth_data["last_name"],
+                "username": auth_data["username"],
+                "photo_url": auth_data["photo_url"],
+                "auth_date": auth_data["auth_date"],
+                "hash": correct_hash
+            }
+            
+            # Register via Telegram first
+            reg_response = self.session.post(f"{API_BASE}/auth/telegram", json=telegram_request)
+            
+            if reg_response.status_code == 200:
+                # Now test legitimate Telegram signin
+                signin_request = {
+                    "telegramId": unique_id
+                }
+                
+                response = self.session.post(f"{API_BASE}/auth/telegram-signin", json=signin_request)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if (data.get('otpSent') == True and 
+                        data.get('telegramId') == unique_id and
+                        'OTP sent successfully' in data.get('message', '')):
+                        self.log_result("Telegram Signin - Legitimate User OTP", True, 
+                                      f"OTP flow initiated successfully for Telegram ID: {unique_id}")
+                    else:
+                        self.log_result("Telegram Signin - Legitimate User OTP", False, 
+                                      f"Unexpected response format: {data}")
+                else:
+                    self.log_result("Telegram Signin - Legitimate User OTP", False, 
+                                  f"Status: {response.status_code}, Response: {response.text}")
+            else:
+                self.log_result("Telegram Signin - Legitimate User OTP", False, 
+                              f"Could not register Telegram user first: {reg_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram Signin - Legitimate User OTP", False, "Exception occurred", str(e))
+    
+    def test_telegram_otp_verification_edge_cases(self):
+        """Test OTP verification edge cases and error handling"""
+        try:
+            # Test OTP verification with invalid Telegram ID
+            invalid_otp_request = {
+                "telegramId": 999999999,
+                "otp": "123456"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/verify-telegram-otp", json=invalid_otp_request)
+            
+            if response.status_code == 404:
+                self.log_result("Telegram OTP - Invalid User", True, 
+                              "Correctly rejected OTP verification for nonexistent user")
+            else:
+                self.log_result("Telegram OTP - Invalid User", False, 
+                              f"Expected 404, got {response.status_code}")
+            
+            # Test OTP verification with invalid OTP format
+            invalid_format_request = {
+                "telegramId": 123456,
+                "otp": "invalid"
+            }
+            
+            response2 = self.session.post(f"{API_BASE}/auth/verify-telegram-otp", json=invalid_format_request)
+            
+            if response2.status_code == 401:
+                data = response2.json()
+                if 'Invalid or expired OTP' in data.get('detail', ''):
+                    self.log_result("Telegram OTP - Invalid Format", True, 
+                                  "Correctly rejected invalid OTP format")
+                else:
+                    self.log_result("Telegram OTP - Invalid Format", False, 
+                                  f"Wrong error message: {data.get('detail')}")
+            else:
+                self.log_result("Telegram OTP - Invalid Format", False, 
+                              f"Expected 401, got {response2.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram OTP - Edge Cases", False, "Exception occurred", str(e))
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
