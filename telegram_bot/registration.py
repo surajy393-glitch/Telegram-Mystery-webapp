@@ -1844,6 +1844,63 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> boo
         log.info(f"{uid} REG:age_verified=True")
         return True
 
+    # PRIVACY CONSENT HANDLERS
+    if data == "privacy_accept":
+        await q.answer()
+        # Save consent
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                INSERT INTO users (tg_user_id, privacy_consent, privacy_consent_date)
+                VALUES (%s, TRUE, NOW())
+                ON CONFLICT (tg_user_id) 
+                DO UPDATE SET privacy_consent=TRUE, privacy_consent_date=NOW()
+            """, (uid,))
+            con.commit()
+        
+        await q.edit_message_text("✅ Privacy policy accepted!\n\nLet's get started! 🚀")
+        # Now start registration
+        return await start_registration(update, context)
+    
+    elif data == "privacy_read":
+        await q.answer()
+        # Show full privacy policy
+        await q.edit_message_text(
+            "🔒 **LuvHive Privacy Policy**\n\n"
+            "**Data We Collect:**\n"
+            "• Profile information (age, interests)\n"
+            "• Messages and content in feeds\n"
+            "• Usage statistics\n\n"
+            "**How We Use Your Data:**\n"
+            "• Provide matching services\n"
+            "• Improve platform features\n"
+            "• Ensure safety and prevent abuse\n\n"
+            "**Your Rights:**\n"
+            "• View data: /my_data\n"
+            "• Delete data: /delete_me (24hr grace)\n"
+            "• Cancel deletion: /cancel_deletion\n\n"
+            "**Data Retention:**\n"
+            "• Active profiles: retained while active\n"
+            "• Deleted accounts: removed after 24hrs\n"
+            "• Chat logs: 90 days max\n"
+            "• Backups: 14 days for recovery\n\n"
+            "**Contact:** /support for privacy questions\n\n"
+            "Last updated: January 2025",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("✅ I Accept", callback_data="privacy_accept"),
+                InlineKeyboardButton("❌ I Decline", callback_data="privacy_decline")
+            ]])
+        )
+        return True
+    
+    elif data == "privacy_decline":
+        await q.answer()
+        await q.edit_message_text(
+            "❌ You must accept the Privacy Policy to use LuvHive.\n\n"
+            "To try again, send /start"
+        )
+        return True
+
     # INTERESTS screen (toggle / actions / save / back)
     if state == "INTERESTS" and data.startswith(("int:", "act:", "save", "back")):
         selected: Set[str] = set(context.user_data.get("sel_interests", set()))
