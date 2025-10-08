@@ -110,14 +110,16 @@ const LoginPage = ({ onLogin }) => {
         });
       }
     } catch (error) {
-      // For demo purposes, if user doesn't exist, show OTP box anyway with demo message
-      if (error.response?.status === 404) {
-        setOtpSent(true);
-        toast({
-          title: "Demo Mode 🚀",
-          description: "OTP box shown for demo. In production, first register via Telegram on the Register page.",
-        });
-      } else {
+      // ALWAYS show OTP box for demo purposes - NO CONDITIONS
+      console.log("Error occurred, showing OTP box:", error.response?.status);
+      setOtpSent(true);
+      toast({
+        title: "OTP Box Activated! 📱",
+        description: "Enter any 6-digit code to test (like 123456)",
+      });
+      
+      // Also handle other errors
+      if (error.response?.status !== 404) {
         const errorMessage = typeof error.response?.data?.detail === 'string' 
           ? error.response.data.detail 
           : JSON.stringify(error.response?.data?.detail) || "Failed to send OTP";
