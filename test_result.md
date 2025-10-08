@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix comment profile pictures (showing 'L' instead of actual user dp), replace 'Send Spark' with 'Vibe Compatibility' connected to AI, and add 3-dot menu to other users' profiles with Block, Report, Hide story, Copy profile URL, and Share profile options"
+user_problem_statement: "Fix Telegram authentication system: implement proper sign-in for Telegram users with OTP verification via Telegram bot, add mobile number to registration for enhanced security for upcoming mobile app integration"
 
 backend:
   - task: "Update comment system to include commenter profile pictures"
