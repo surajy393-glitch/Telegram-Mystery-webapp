@@ -959,8 +959,8 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "bio": clean_bio,
             "profileImage": clean_profile_image,
             "authMethod": "password",
-            "emailVerified": bool(clean_mobile),  # Auto-verify if mobile provided
-            "emailVerificationToken": str(uuid4()) if clean_email else None,
+            "emailVerified": True,  # All new registrations are auto-verified for better UX
+            "emailVerificationToken": None,  # No token needed for new registrations
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "followers": [],
             "following": [],
