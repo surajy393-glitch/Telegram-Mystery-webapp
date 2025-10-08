@@ -292,7 +292,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 6
+  test_sequence: 7
   run_ui: false
   last_backend_test: "2025-01-27 16:53:06"
   updated_settings_test: "2025-01-27 02:49:38"
@@ -304,6 +304,11 @@ metadata:
   enhanced_auth_test: "2025-01-27 19:52:00"
   username_availability_api_test: "2025-01-27 20:07:34"
   fixed_telegram_auth_test: "2025-01-27 20:07:34"
+  new_otp_email_features_test: "2025-01-28 06:22:40"
+  email_availability_api_test: "2025-01-28 06:22:40"
+  enhanced_telegram_signin_auto_otp_test: "2025-01-28 06:22:40"
+  otp_verification_flow_test: "2025-01-28 06:22:40"
+  enhanced_registration_email_validation_test: "2025-01-28 06:22:40"
 
 test_plan:
   current_focus:
