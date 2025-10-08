@@ -21,6 +21,8 @@ import base64
 import hmac
 import hashlib
 from urllib.parse import parse_qsl
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
