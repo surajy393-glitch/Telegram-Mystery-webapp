@@ -1780,6 +1780,24 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> boo
         log.info(f"{uid} REG:gender={g}")
         return True
 
+    # AGE AGREEMENT -> COUNTRY
+    if data == "age_agree":
+        await q.answer()
+        # Save age agreement to database
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                UPDATE users 
+                SET age_verified=TRUE, 
+                    age_agreement_date=NOW() 
+                WHERE tg_user_id=%s
+            """, (uid,))
+            con.commit()
+        
+        context.user_data["reg_state"] = "COUNTRY"
+        await q.edit_message_text("✅ Age verification complete.\n\nGreat! What's your **country**?")
+        log.info(f"{uid} REG:age_verified=True")
+        return True
+
     # INTERESTS screen (toggle / actions / save / back)
     if state == "INTERESTS" and data.startswith(("int:", "act:", "save", "back")):
         selected: Set[str] = set(context.user_data.get("sel_interests", set()))
