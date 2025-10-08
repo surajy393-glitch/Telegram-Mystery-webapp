@@ -217,6 +217,15 @@ const RegisterPage = ({ onLogin }) => {
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
+    // REQUIRE email verification before proceeding
+    if (!emailVerified) {
+      toast({
+        title: "Email Verification Required",
+        description: "Please verify your email with OTP before proceeding",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (formData.fullName && formData.username && formData.email && formData.age && formData.gender && formData.password) {
       setStep(2);
