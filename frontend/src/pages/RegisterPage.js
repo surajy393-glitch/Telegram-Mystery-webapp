@@ -725,11 +725,77 @@ const RegisterPage = ({ onLogin }) => {
                     name="mobileNumber"
                     data-testid="mobile-input"
                     type="tel"
-                    placeholder="Enter your mobile number"
+                    placeholder="Enter your mobile number (+91xxxxxxxxxx)"
                     value={formData.mobileNumber}
                     onChange={handleChange}
                     className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
                   />
+                  
+                  {/* MOBILE OTP VERIFICATION */}
+                  {formData.mobileNumber && formData.mobileNumber.trim() && !mobileVerified && (
+                    <div className="mt-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm font-medium text-green-800 mb-3">
+                        📱 Mobile Verification Required
+                      </p>
+                      
+                      {!mobileOtpSent ? (
+                        <div>
+                          <p className="text-sm text-green-700 mb-3">
+                            Click below to send verification code to your mobile
+                          </p>
+                          <button
+                            type="button"
+                            onClick={sendMobileOtp}
+                            disabled={mobileOtpLoading}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {mobileOtpLoading ? "Sending..." : "Send OTP to Mobile"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-green-700">
+                            Enter the 6-digit code sent to your mobile:
+                          </p>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Enter OTP"
+                              value={mobileOtp}
+                              onChange={(e) => setMobileOtp(e.target.value)}
+                              className="flex-1 text-center text-lg tracking-widest"
+                              maxLength="6"
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyMobileOtp}
+                              disabled={mobileOtpLoading || !mobileOtp.trim()}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {mobileOtpLoading ? "Verifying..." : "Verify"}
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendMobileOtp}
+                            disabled={mobileOtpLoading}
+                            className="text-sm text-green-600 hover:text-green-800"
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* MOBILE VERIFIED SUCCESS */}
+                  {mobileVerified && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-800 flex items-center gap-2">
+                        ✅ Mobile number verified successfully!
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
