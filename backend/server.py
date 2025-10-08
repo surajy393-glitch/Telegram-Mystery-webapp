@@ -607,9 +607,49 @@ async def send_email_otp(email: str, otp: str):
                 
     except Exception as e:
         logger.error(f"Error sending SendGrid email: {e}")
-        # If no email service configured, use mock
+        # If no email service configured, use mock but also try basic HTTP approach
         logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
-        return True
+        
+        # Also try a simple HTTP request to SendGrid API directly
+        try:
+            import requests
+            import base64
+            
+            # Basic Auth with Twilio credentials  
+            auth_string = f"{twilio_api_key_sid or twilio_account_sid}:{twilio_api_key_secret or twilio_auth_token}"
+            auth_header = base64.b64encode(auth_string.encode()).decode()
+            
+            # Simple text email via basic HTTP
+            response = requests.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers={
+                    "Authorization": f"Basic {auth_header}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "personalizations": [{
+                        "to": [{"email": email}],
+                        "subject": f"LuvHive OTP: {otp}"
+                    }],
+                    "from": {"email": "test@example.com"},
+                    "content": [{
+                        "type": "text/plain",
+                        "value": f"Your LuvHive verification code: {otp}"
+                    }]
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 202:
+                logger.info(f"HTTP SendGrid email sent successfully: {response.status_code}")
+                return True
+            else:
+                logger.error(f"HTTP SendGrid failed: {response.status_code} - {response.text}")
+        
+        except Exception as http_error:
+            logger.error(f"HTTP email attempt failed: {http_error}")
+        
+        return True  # Always return True to not block registration
 
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
