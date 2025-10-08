@@ -548,6 +548,8 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "bio": "",
             "profileImage": None,
             "authMethod": "password",
+            "emailVerified": False,  # CRITICAL: Block access until verified
+            "emailVerificationToken": str(uuid4()),
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "followers": [],
             "following": [],
