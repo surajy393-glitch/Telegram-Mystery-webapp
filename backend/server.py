@@ -443,14 +443,20 @@ async def send_email_otp(email: str, otp: str):
         # Try Twilio Email API first, then SendGrid
         twilio_account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
         twilio_auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        twilio_api_key_sid = os.environ.get("TWILIO_API_KEY_SID")
+        twilio_api_key_secret = os.environ.get("TWILIO_API_KEY_SECRET")
         sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
         
-        # Try Twilio Email first
-        if twilio_account_sid and twilio_auth_token:
+        # Try Twilio Email first (with API Key if available)
+        if twilio_account_sid and (twilio_auth_token or twilio_api_key_secret):
             try:
                 from twilio.rest import Client
                 
-                client = Client(twilio_account_sid, twilio_auth_token)
+                # Use API key if available, otherwise use auth token
+                if twilio_api_key_sid and twilio_api_key_secret:
+                    client = Client(twilio_api_key_sid, twilio_api_key_secret, twilio_account_sid)
+                else:
+                    client = Client(twilio_account_sid, twilio_auth_token)
                 
                 # Create HTML email content
                 html_content = f"""
