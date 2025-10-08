@@ -48,141 +48,81 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  const handleTelegramAuth = async () => {
+  const [showTelegramLogin, setShowTelegramLogin] = useState(false);
+  const [telegramId, setTelegramId] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  const handleTelegramAuth = () => {
+    setShowTelegramLogin(true);
+  };
+
+  const handleTelegramIdSubmit = async () => {
+    if (!telegramId.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your Telegram ID",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setTelegramLoading(true);
     
     try {
-      // Create Telegram bot authentication dialog
-      const authDialog = document.createElement('div');
-      authDialog.style.position = 'fixed';
-      authDialog.style.top = '0';
-      authDialog.style.left = '0';
-      authDialog.style.width = '100%';
-      authDialog.style.height = '100%';
-      authDialog.style.backgroundColor = 'rgba(0,0,0,0.8)';
-      authDialog.style.zIndex = '9999';
-      authDialog.style.display = 'flex';
-      authDialog.style.alignItems = 'center';
-      authDialog.style.justifyContent = 'center';
+      const response = await axios.post(`${API}/auth/telegram-signin`, {
+        telegramId: parseInt(telegramId)
+      });
       
-      const dialogContent = document.createElement('div');
-      dialogContent.style.backgroundColor = 'white';
-      dialogContent.style.padding = '30px';
-      dialogContent.style.borderRadius = '15px';
-      dialogContent.style.maxWidth = '400px';
-      dialogContent.style.textAlign = 'center';
-      dialogContent.innerHTML = `
-        <h3 style="color: #1f2937; margin-bottom: 20px;">🤖 Telegram Authentication</h3>
-        <p style="color: #6b7280; margin-bottom: 25px;">Your bot @Loveekisssbot is now active!</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-          <p style="margin: 10px 0; color: #374151;"><strong>1.</strong> Open Telegram</p>
-          <p style="margin: 10px 0; color: #374151;"><strong>2.</strong> Message @Loveekisssbot</p>
-          <p style="margin: 10px 0; color: #374151;"><strong>3.</strong> Send /start command</p>
-          <p style="margin: 10px 0; color: #374151;"><strong>4.</strong> Return here and click "Check Status"</p>
-        </div>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-          <a href="https://t.me/Loveekisssbot" target="_blank" style="
-            background: #0088cc; 
-            color: white; 
-            padding: 12px 20px; 
-            border-radius: 8px; 
-            text-decoration: none;
-            display: inline-block;
-          ">📱 Open Bot</a>
-          <button id="checkStatus" style="
-            background: #22c55e; 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 8px;
-            cursor: pointer;
-          ">✅ Check Status</button>
-          <button id="cancelAuth" style="
-            background: #ef4444; 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 8px;
-            cursor: pointer;
-          ">❌ Cancel</button>
-        </div>
-      `;
-      
-      authDialog.appendChild(dialogContent);
-      document.body.appendChild(authDialog);
-      
-      // Handle status check
-      document.getElementById('checkStatus').onclick = async () => {
-        try {
-          // Check if user authenticated via bot
-          toast({
-            title: "Checking...",
-            description: "Verifying your Telegram authentication"
-          });
-          
-          // Check if user authenticated via Telegram bot
-          const checkAuth = async () => {
-            try {
-              const response = await axios.post(`${API}/auth/telegram-bot-check`, {
-                timestamp: Date.now()
-              });
-              
-              if (response.data.authenticated && response.data.user) {
-                // User successfully authenticated via bot
-                onLogin(response.data.access_token, response.data.user);
-                toast({
-                  title: "Success!",
-                  description: "Successfully authenticated via Telegram bot!",
-                });
-                navigate("/home");
-                
-                // Safely remove dialog
-                if (authDialog && authDialog.parentNode) {
-                  authDialog.parentNode.removeChild(authDialog);
-                }
-              } else {
-                toast({
-                  title: "Still Waiting...",
-                  description: "Please make sure you've sent /start to @Loveekisssbot and try again.",
-                  variant: "destructive"
-                });
-              }
-            } catch (error) {
-              toast({
-                title: "Authentication Check Failed",
-                description: "Please try the traditional login for now.",
-                variant: "destructive"
-              });
-            }
-            setTelegramLoading(false);
-          };
-          
-          checkAuth();
-          
-        } catch (error) {
-          toast({
-            title: "Authentication Failed",
-            description: "Please make sure you've sent /start to @Loveekisssbot",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      // Handle cancel
-      document.getElementById('cancelAuth').onclick = () => {
-        // Safely remove dialog if it exists
-        if (authDialog && authDialog.parentNode) {
-          authDialog.parentNode.removeChild(authDialog);
-        }
-        setTelegramLoading(false);
-      };
-      
+      if (response.data.otpSent) {
+        setOtpSent(true);
+        toast({
+          title: "OTP Sent!",
+          description: "Check your Telegram for the verification code",
+        });
+      }
     } catch (error) {
       toast({
-        title: "Telegram Login Failed",
-        description: error.response?.data?.detail || "Telegram authentication failed",
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send OTP",
         variant: "destructive"
       });
+    } finally {
+      setTelegramLoading(false);
+    }
+  };
+
+  const handleOtpVerification = async () => {
+    if (!otp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setTelegramLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-telegram-otp`, {
+        telegramId: parseInt(telegramId),
+        otp: otp.trim()
+      });
+      
+      onLogin(response.data.access_token, response.data.user);
+      toast({
+        title: "Success!",
+        description: "Successfully logged in via Telegram!",
+      });
+      navigate("/home");
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
       setTelegramLoading(false);
     }
   };
