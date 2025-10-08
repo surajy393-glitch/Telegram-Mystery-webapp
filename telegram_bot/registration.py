@@ -385,6 +385,13 @@ def ensure_age_pref_columns():
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS max_age_pref INT DEFAULT 99;")
         con.commit()
 
+def ensure_age_verification_columns():
+    """Add age verification columns to users table."""
+    with _conn() as con, con.cursor() as cur:
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age_verified BOOLEAN DEFAULT FALSE;")
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age_agreement_date TIMESTAMPTZ;")
+        con.commit()
+
 def ensure_forward_column():
     with _conn() as con, con.cursor() as cur:
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS allow_forward BOOLEAN DEFAULT FALSE;")
