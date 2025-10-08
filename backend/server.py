@@ -621,6 +621,103 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
         }
 
+@api_router.post("/auth/telegram-signin")
+async def telegram_signin(request: TelegramSigninRequest):
+    """
+    Initiate Telegram sign-in for existing users by sending OTP
+    """
+    try:
+        # Check if user exists with this Telegram ID
+        user = await db.users.find_one({"telegramId": request.telegramId})
+        
+        if not user:
+            raise HTTPException(
+                status_code=404, 
+                detail="No account found with this Telegram ID. Please register first."
+            )
+        
+        # Check if user registered via Telegram
+        if user.get("authMethod") != "telegram":
+            raise HTTPException(
+                status_code=400,
+                detail="This account was not registered via Telegram. Please use email/password login."
+            )
+        
+        # Generate OTP
+        otp = generate_otp()
+        
+        # Store OTP
+        await store_otp(request.telegramId, otp)
+        
+        # Send OTP via Telegram
+        otp_sent = await send_telegram_otp(request.telegramId, otp)
+        
+        if not otp_sent:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send OTP. Please try again later."
+            )
+        
+        return {
+            "message": "OTP sent successfully to your Telegram account",
+            "telegramId": request.telegramId,
+            "otpSent": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Telegram signin error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/verify-telegram-otp")
+async def verify_telegram_otp(request: VerifyOTPRequest):
+    """
+    Verify OTP and complete Telegram sign-in
+    """
+    try:
+        # Verify OTP
+        is_valid = await verify_otp(request.telegramId, request.otp)
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired OTP. Please request a new one."
+            )
+        
+        # Get user
+        user = await db.users.find_one({"telegramId": request.telegramId})
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Generate access token
+        access_token = create_access_token(data={"sub": user["id"]})
+        
+        # Update last seen
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {
+                "isOnline": True,
+                "lastSeen": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "message": "Telegram login successful",
+            "access_token": access_token,
+            "user": {k: v for k, v in user.items() if k not in ["password_hash", "_id"]}
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OTP verification error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest):
     """
