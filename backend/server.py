@@ -2130,21 +2130,16 @@ async def forgot_password_mobile(request: ForgotPasswordMobileRequest):
                 detail="No account found with this mobile number"
             )
         
-        # Generate OTP for password reset
-        otp = generate_otp()
-        
-        # Store OTP with mobile number (use proper mobile OTP storage)
-        mobile_key = f"mobile_{clean_mobile}"
-        await store_email_otp(mobile_key, otp)
-        
-        # Send OTP via Twilio Verify service (like registration)
+        # Use Twilio Verify service for password reset (same as registration)
         otp_sent = await send_mobile_otp(clean_mobile)
         
         if not otp_sent:
-            # Fallback: log the OTP for testing
-            logger.info(f"MOBILE PASSWORD RESET OTP: {otp} for {clean_mobile}")
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send OTP to mobile"
+            )
             
-        logger.info(f"Mobile password reset OTP generated: {otp} for {clean_mobile}")
+        logger.info(f"Password reset OTP sent via Twilio Verify to {clean_mobile}")
         
         return {
             "message": "Password reset OTP sent to your mobile number",
