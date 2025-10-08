@@ -163,6 +163,19 @@ const RegisterPage = ({ onLogin }) => {
         password: formData.password
       });
 
+      // Check if email verification is required
+      if (response.data.email_verification_required) {
+        toast({
+          title: "Check Your Email! 📧",
+          description: response.data.message,
+        });
+        
+        // Show success popup with email verification message
+        setShowSuccess(true);
+        setLoading(false);
+        return;
+      }
+
       const token = response.data.access_token;
 
       // Then update profile with bio and image
