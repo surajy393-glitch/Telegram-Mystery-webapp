@@ -2020,7 +2020,7 @@ async def cleanup_account_data(identifier: str):
             
             for pattern in mobile_patterns:
                 user_by_mobile = await db.users.find_one({
-                    "mobileNumber": {"$regex": f"^{pattern}$", "$options": "i"}
+                    "mobileNumber": pattern
                 })
                 if user_by_mobile and user_by_mobile not in users_to_delete:
                     users_to_delete.append(user_by_mobile)
