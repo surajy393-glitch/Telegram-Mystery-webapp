@@ -1313,6 +1313,106 @@ async def can_change_username(current_user: User = Depends(get_current_user)):
         "lastChanged": current_user.lastUsernameChange.isoformat()
     }
 
+@api_router.get("/auth/check-username/{username}")
+async def check_username_availability(username: str):
+    """
+    Check username availability and provide suggestions if taken
+    """
+    try:
+        # Clean and validate the username
+        clean_username = username.strip().lower()
+        
+        if len(clean_username) < 3:
+            return {
+                "available": False,
+                "message": "Username must be at least 3 characters",
+                "suggestions": []
+            }
+        
+        if len(clean_username) > 20:
+            return {
+                "available": False,
+                "message": "Username must be less than 20 characters", 
+                "suggestions": []
+            }
+        
+        # Check if username contains only valid characters
+        import re
+        if not re.match("^[a-zA-Z0-9_]+$", clean_username):
+            return {
+                "available": False,
+                "message": "Username can only contain letters, numbers, and underscores",
+                "suggestions": []
+            }
+        
+        # Check if username is available (case-insensitive)
+        escaped_username = clean_username.replace('.', r'\.')
+        existing_user = await db.users.find_one({
+            "username": {"$regex": f"^{escaped_username}$", "$options": "i"}
+        })
+        
+        if not existing_user:
+            return {
+                "available": True,
+                "message": "Username is available!",
+                "suggestions": []
+            }
+        
+        # Generate suggestions
+        suggestions = []
+        base_username = clean_username
+        
+        # Try various suggestions
+        suggestion_patterns = [
+            f"{base_username}_",
+            f"{base_username}2025",
+            f"{base_username}123",
+            f"{base_username}2024", 
+            f"{base_username}_1",
+            f"{base_username}x",
+            f"{base_username}official",
+            f"{base_username}_real",
+            f"the_{base_username}",
+            f"{base_username}_official"
+        ]
+        
+        # Add underscore variations for long usernames
+        if len(base_username) > 5:
+            # Insert underscore in middle
+            mid = len(base_username) // 2
+            suggestion_patterns.extend([
+                f"{base_username[:mid]}_{base_username[mid:]}",
+                f"{base_username[:-2]}_{base_username[-2:]}",
+                f"{base_username[:3]}_{base_username[3:]}"
+            ])
+        
+        for suggestion in suggestion_patterns:
+            if len(suggestions) >= 5:  # Limit to 5 suggestions
+                break
+                
+            # Check if suggestion is available
+            escaped_suggestion = suggestion.replace('.', r'\.')
+            suggestion_exists = await db.users.find_one({
+                "username": {"$regex": f"^{escaped_suggestion}$", "$options": "i"}
+            })
+            
+            if not suggestion_exists and len(suggestion) <= 20:
+                suggestions.append(suggestion)
+        
+        return {
+            "available": False,
+            "message": f"Username '{username}' is not available",
+            "suggestions": suggestions
+        }
+        
+    except Exception as e:
+        logger.error(f"Username check error: {e}")
+        return {
+            "available": False,
+            "message": "Error checking username availability",
+            "suggestions": []
+        }
+
 # Telegram Linking
 @api_router.post("/telegram/link")
 async def link_telegram(code: str, current_user: User = Depends(get_current_user)):
