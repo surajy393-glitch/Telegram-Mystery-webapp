@@ -303,6 +303,7 @@
 
 ## test_plan:
   current_focus:
+    - "Telegram Bot Age Verification Implementation"
     - "Fix loading state stuck issue in SocialFeed"
     - "Fix modal state persistence for story and post creation"
     - "Replace localStorage with backend integration"
@@ -312,7 +313,7 @@
     - "Replace poll with music in posts"
     - "Fix JavaScript runtime errors and error overlay"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 ## agent_communication:
     - agent: "main"
