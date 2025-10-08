@@ -908,10 +908,11 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already exists")
         
-        # Check if email already exists
-        existing_email = await db.users.find_one({"email": clean_email})
-        if existing_email:
-            raise HTTPException(status_code=400, detail="Email already registered")
+        # Check if email already exists (only if email provided)
+        if clean_email:
+            existing_email = await db.users.find_one({"email": clean_email})
+            if existing_email:
+                raise HTTPException(status_code=400, detail="Email already registered")
         
         # Check if mobile number already exists (if provided)
         if clean_mobile:
