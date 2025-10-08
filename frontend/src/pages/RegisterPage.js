@@ -29,6 +29,7 @@ const RegisterPage = ({ onLogin }) => {
     fullName: "",
     username: "",
     email: "",
+    mobileNumber: "",
     age: "",
     gender: "",
     password: "",
