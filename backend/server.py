@@ -170,7 +170,7 @@ class EnhancedUserRegister(BaseModel):
     age: int
     gender: str
     password: str
-    email: str
+    email: Optional[str] = None  # Optional email
     mobileNumber: Optional[str] = None  # Optional mobile number
 
 class EmailOTPRequest(BaseModel):
