@@ -99,6 +99,49 @@ const RegisterPage = ({ onLogin }) => {
     checkUsernameAvailability(suggestion);
   };
 
+  const checkEmailAvailability = async (email) => {
+    if (!email || !email.includes('@')) {
+      setEmailStatus(null);
+      setEmailMessage("");
+      return;
+    }
+
+    setEmailStatus('checking');
+    setEmailMessage("Checking email...");
+    
+    try {
+      // Try to register with this email to see if it's taken
+      // We'll make a test call to the registration endpoint
+      const testData = {
+        fullName: "Test",
+        username: "test_temp_user",
+        age: 25,
+        gender: "other", 
+        password: "TempPass123!",
+        email: email.trim().toLowerCase()
+      };
+      
+      const response = await axios.post(`${API}/auth/register-enhanced`, testData);
+      
+      // If registration succeeds, email is available (but we won't keep this user)
+      setEmailStatus('available');
+      setEmailMessage("Email is available!");
+      
+    } catch (error) {
+      if (error.response?.status === 400 && error.response?.data?.detail?.includes('already registered')) {
+        setEmailStatus('taken');
+        setEmailMessage("Email is already registered - please use a different email");
+      } else if (error.response?.status === 400) {
+        // Other validation errors (invalid format, etc.)
+        setEmailStatus('error');
+        setEmailMessage(error.response?.data?.detail || "Invalid email format");
+      } else {
+        setEmailStatus('error');
+        setEmailMessage("Error checking email");
+      }
+    }
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
