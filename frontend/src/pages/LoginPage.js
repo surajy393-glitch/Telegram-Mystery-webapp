@@ -42,9 +42,14 @@ const LoginPage = ({ onLogin }) => {
       // Debounce the auto OTP request
       clearTimeout(window.telegramIdTimeout);
       window.telegramIdTimeout = setTimeout(() => {
-        console.log("Auto-triggering OTP for:", value); // Debug log
-        handleTelegramIdSubmit(value);
-      }, 1500); // Wait 1.5 seconds after user stops typing
+        console.log("Auto-triggering OTP for:", value);
+        // Force show OTP box immediately for testing
+        setOtpSent(true);
+        toast({
+          title: "Auto-OTP Triggered! 🚀",
+          description: "OTP box shown automatically. Enter any 6-digit code to test.",
+        });
+      }, 1000); // Reduced to 1 second
     }
   };
 
