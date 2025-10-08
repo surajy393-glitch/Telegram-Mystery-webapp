@@ -584,17 +584,105 @@ async def telegram_webhook(update: dict):
         logger.error(f"Webhook error: {e}")
         return {"status": "error", "message": str(e)}
 
-@api_router.post("/auth/telegram-check")
-async def check_telegram_auth(auth_request: dict):
-    """Check if user has authenticated via Telegram bot"""
+@api_router.post("/auth/telegram-bot-check") 
+async def check_telegram_bot_auth(auth_request: dict):
+    """Check if user has authenticated via Telegram bot (PostgreSQL database)"""
     try:
-        # For now, return not authenticated - will be replaced with proper implementation
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        
+        # Connect to the Telegram bot's PostgreSQL database
+        bot_conn = psycopg2.connect(
+            host="localhost",
+            port=5432,
+            database="luvhive", 
+            user="postgres",
+            password="luvhive123"
+        )
+        
+        # Get recent users from bot database (last 5 minutes)
+        with bot_conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT telegram_id, first_name, last_name, username, created_at 
+                FROM users 
+                WHERE created_at >= NOW() - INTERVAL '5 minutes'
+                ORDER BY created_at DESC 
+                LIMIT 1
+            """)
+            recent_user = cursor.fetchone()
+            
+        bot_conn.close()
+        
+        if recent_user:
+            # Create user in MongoDB (our main database) if not exists
+            telegram_id = recent_user['telegram_id']
+            existing_user = await db.users.find_one({"telegramId": telegram_id})
+            
+            if not existing_user:
+                # Create new user in MongoDB
+                user_data = {
+                    "id": str(uuid4()),
+                    "telegramId": telegram_id,
+                    "telegramUsername": recent_user.get('username', ''),
+                    "telegramFirstName": recent_user.get('first_name', ''),
+                    "telegramLastName": recent_user.get('last_name', ''),
+                    "fullName": f"{recent_user.get('first_name', '')} {recent_user.get('last_name', '')}".strip(),
+                    "username": recent_user.get('username') or f"tguser{telegram_id}",
+                    "email": f"tg{telegram_id}@telegram.local", 
+                    "authMethod": "telegram",
+                    "createdAt": datetime.now(timezone.utc).isoformat(),
+                    "age": 18,
+                    "gender": "Other", 
+                    "bio": "",
+                    "profileImage": "",
+                    "followers": [],
+                    "following": [],
+                    "posts": [],
+                    "isPremium": False,
+                    "isOnline": True,
+                    "lastSeen": datetime.now(timezone.utc).isoformat()
+                }
+                
+                await db.users.insert_one(user_data)
+                user = user_data
+            else:
+                user = existing_user
+            
+            # Generate JWT token
+            access_token = jwt.encode({
+                "user_id": user["id"],
+                "username": user["username"], 
+                "exp": datetime.now(timezone.utc) + timedelta(days=7)
+            }, JWT_SECRET, algorithm="HS256")
+            
+            return {
+                "authenticated": True,
+                "access_token": access_token,
+                "user": {
+                    "id": user["id"],
+                    "username": user["username"],
+                    "fullName": user["fullName"],
+                    "profileImage": user.get("profileImage", ""),
+                    "authMethod": user["authMethod"]
+                }
+            }
+        else:
+            return {
+                "authenticated": False,
+                "message": "No recent Telegram authentication found. Please send /start to @Loveekisssbot"
+            }
+            
+    except Exception as e:
+        logger.error(f"Telegram bot auth check error: {e}")
         return {
             "authenticated": False,
-            "message": "Please use the Telegram bot @Loveekisssbot to authenticate. Bot is now active!"
+            "message": f"Authentication check failed: {str(e)}"
         }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/auth/telegram-check")
+async def check_telegram_auth(auth_request: dict):
+    """Legacy endpoint for telegram check"""
+    return await check_telegram_bot_auth(auth_request)
 
 @api_router.post("/auth/reset-password")
 async def reset_password(request: ResetPasswordRequest):
