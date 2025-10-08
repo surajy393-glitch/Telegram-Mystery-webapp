@@ -3269,9 +3269,24 @@ class LuvHiveAPITester:
             print("❌ Cannot proceed without second test user")
             return
         
-        # ========== PRIORITY: NEW FEATURE TESTS ==========
-        print("🔥 PRIORITY: Testing New Features...")
-        print("-" * 40)
+        # ========== PRIORITY: NEW FEATURE TESTS FOR OTP & EMAIL VALIDATION ==========
+        print("🔥 PRIORITY: Testing NEW OTP & Email Validation Features...")
+        print("-" * 50)
+        
+        print("📧 Testing NEW Email Availability API...")
+        self.test_email_availability_api()
+        
+        print("📱 Testing ENHANCED Telegram Signin with Auto-OTP...")
+        self.test_enhanced_telegram_signin_flow()
+        
+        print("🔐 Testing OTP Verification Flow...")
+        self.test_telegram_otp_verification_flow()
+        
+        print("✉️ Testing Enhanced Registration with Email Validation...")
+        self.test_enhanced_registration_email_validation()
+        
+        print("🤖 Testing Auto Telegram ID Detection (8+ digits)...")
+        self.test_auto_telegram_id_detection()
         
         print("Testing Username Availability API...")
         self.test_username_availability_available()
