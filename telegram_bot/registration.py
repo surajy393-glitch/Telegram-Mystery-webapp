@@ -1697,8 +1697,12 @@ async def start_with_consent(update: Update, context: ContextTypes.DEFAULT_TYPE)
         cur.execute("SELECT privacy_consent FROM users WHERE tg_user_id=%s", (user_id,))
         row = cur.fetchone()
         
+        # Debug: log consent status
+        log.info(f"DEBUG: User {user_id} consent check - row: {row}, consent: {row[0] if row else 'None'}")
+        
         if row and row[0]:
             # Already consented, continue to normal registration/menu
+            log.info(f"DEBUG: User {user_id} already consented, skipping to registration")
             return await start_registration(update, context)
     
     # Show consent screen
