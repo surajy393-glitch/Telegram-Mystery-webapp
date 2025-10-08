@@ -173,6 +173,13 @@ class EnhancedUserRegister(BaseModel):
     email: str
     mobileNumber: Optional[str] = None  # Optional mobile number
 
+class EmailOTPRequest(BaseModel):
+    email: str
+
+class VerifyEmailOTPRequest(BaseModel):
+    email: str
+    otp: str
+
 class UserProfile(BaseModel):
     fullName: str
     username: str
