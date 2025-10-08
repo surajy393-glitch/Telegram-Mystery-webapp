@@ -307,8 +307,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Username Availability API Testing Complete"
-    - "Fixed Telegram Authentication Testing Complete"
+    - "NEW OTP & Email Validation Features Testing Complete"
+    - "Email Availability API Testing Complete"
+    - "Enhanced Telegram Signin Auto-OTP Testing Complete"
+    - "Complete OTP Verification Flow Testing Complete"
+    - "Enhanced Registration Email Validation Testing Complete"
   stuck_tasks:
     - "Hashtag functionality with clickable hashtags and search integration"
   test_all: false
@@ -324,6 +327,11 @@ test_plan:
   enhanced_auth_testing_complete: true
   username_availability_api_testing_complete: true
   fixed_telegram_auth_testing_complete: true
+  email_availability_api_testing_complete: true
+  enhanced_telegram_signin_auto_otp_testing_complete: true
+  otp_verification_flow_testing_complete: true
+  enhanced_registration_email_validation_testing_complete: true
+  new_otp_email_features_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
