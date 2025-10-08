@@ -223,17 +223,29 @@ backend:
         comment: "✅ COMPREHENSIVE UPDATED SETTINGS TESTING COMPLETE: All requested changes verified working correctly. KEY FINDINGS: 1) ✅ publicProfile setting COMPLETELY REMOVED from /api/auth/me endpoint (no longer returned), 2) ✅ /api/auth/settings correctly REJECTS publicProfile as invalid setting (400 status or ignored), 3) ✅ blockedUsers array present in /api/auth/me response, 4) ✅ GET /api/users/blocked endpoint working (fixed routing conflict by moving before /users/{userId}), 5) ✅ POST /api/users/{userId}/unblock endpoint working with proper validation, 6) ✅ All 9 remaining settings persist correctly: isPrivate, appearInSearch, allowDirectMessages, showOnlineStatus, allowTagging, allowStoryReplies, showVibeScore, pushNotifications, emailNotifications. TESTING SUMMARY: 23/23 tests passed including AI vibe compatibility, user blocking/unblocking, story hiding, authentication, and comprehensive settings validation. Updated functionality is production-ready."
 
 frontend:
-  - task: "Fix comment profile pictures display"
-    implemented: false
-    working: false
-    file: "HomePage.js"
+  - task: "Enhanced Login Page with Telegram OTP System"
+    implemented: true
+    working: "NA"
+    file: "LoginPage.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: false
+      - working: "NA"
         agent: "main"
-        comment: "Comments show initials 'L' instead of actual user profile pictures from line 1139-1150"
+        comment: "Implemented new Telegram sign-in flow with OTP verification. Users who registered via Telegram can now enter their Telegram ID, receive OTP via Telegram bot, and complete authentication. Added proper error handling and user guidance for finding Telegram ID."
+
+  - task: "Enhanced Registration with Mobile Number"
+    implemented: true
+    working: "NA"
+    file: "RegisterPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added mobile number field to registration form (optional) and updated to use enhanced registration endpoint. Mobile number field includes proper validation and user guidance. Registration now supports both traditional and enhanced flows with mobile number for future mobile app integration."
 
   - task: "Replace discover section with search functionality"
     implemented: true
