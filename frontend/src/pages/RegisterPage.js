@@ -729,7 +729,7 @@ const RegisterPage = ({ onLogin }) => {
                   {formData.mobileNumber && formData.mobileNumber.trim() && !mobileVerified && (
                     <div className="mt-3 p-4 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-sm font-medium text-green-800 mb-3">
-                        📱 Mobile Verification Required
+                        {emailVerified ? '📱 Mobile Verification (Optional)' : '📱 Mobile Verification Required'}
                       </p>
                       
                       {!mobileOtpSent ? (
