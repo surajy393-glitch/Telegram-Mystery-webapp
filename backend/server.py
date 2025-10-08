@@ -489,22 +489,35 @@ async def send_email_otp(email: str, otp: str):
                 </html>
                 """
                 
-                # Send email using Twilio SendGrid Email API
-                message = client.sendgrid.v3.mail.send.post(request_body={
-                    "personalizations": [
-                        {
-                            "to": [{"email": email}],
-                            "subject": "Your LuvHive Verification Code 🔐"
-                        }
-                    ],
-                    "from": {"email": "noreply@luvhive.com", "name": "LuvHive"},
-                    "content": [
-                        {
-                            "type": "text/html",
-                            "value": html_content
-                        }
-                    ]
-                })
+                # Try using Twilio's built-in email service
+                try:
+                    # Use Twilio's email service if available
+                    message = client.messages.create(
+                        body=f"Your LuvHive verification code is: {otp}. This code expires in 10 minutes.",
+                        from_='noreply@luvhive.com',
+                        to=email
+                    )
+                    logger.info(f"Twilio email sent via messages API: {message.sid}")
+                    return True
+                except Exception as msg_error:
+                    logger.error(f"Twilio messages API error: {msg_error}")
+                    
+                    # Try SendGrid API via Twilio
+                    message = client.sendgrid.v3.mail.send.post(request_body={
+                        "personalizations": [
+                            {
+                                "to": [{"email": email}],
+                                "subject": "Your LuvHive Verification Code 🔐"
+                            }
+                        ],
+                        "from": {"email": "noreply@luvhive.com", "name": "LuvHive"},
+                        "content": [
+                            {
+                                "type": "text/html",
+                                "value": html_content
+                            }
+                        ]
+                    })
                 
                 if message.status_code == 202:
                     logger.info(f"Twilio SendGrid email sent successfully: OTP {otp} to {email}")
