@@ -928,7 +928,7 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "id": str(uuid4()),
             "fullName": clean_fullname,
             "username": clean_username,
-            "email": clean_email,
+            "email": clean_email or None,
             "mobileNumber": clean_mobile,
             "age": user_data.age,
             "gender": user_data.gender,
