@@ -483,13 +483,22 @@ async def send_email_otp(email: str, otp: str):
                 </html>
                 """
                 
-                # Send email using Twilio SendGrid
-                message = client.messages.create(
-                    from_='noreply@luvhive.com',
-                    to=email,
-                    subject='Your LuvHive Verification Code 🔐',
-                    html=html_content
-                )
+                # Send email using Twilio SendGrid Email API
+                message = client.sendgrid.v3.mail.send.post(request_body={
+                    "personalizations": [
+                        {
+                            "to": [{"email": email}],
+                            "subject": "Your LuvHive Verification Code 🔐"
+                        }
+                    ],
+                    "from": {"email": "noreply@luvhive.com", "name": "LuvHive"},
+                    "content": [
+                        {
+                            "type": "text/html",
+                            "value": html_content
+                        }
+                    ]
+                })
                 
                 logger.info(f"Twilio email sent successfully: OTP {otp} to {email}, Message SID: {message.sid}")
                 return True
