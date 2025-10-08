@@ -139,9 +139,13 @@ const LoginPage = ({ onLogin }) => {
       });
       navigate("/home");
     } catch (error) {
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : JSON.stringify(error.response?.data?.detail) || "OTP verification failed";
+      
       toast({
         title: "Invalid OTP",
-        description: error.response?.data?.detail || "OTP verification failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
