@@ -715,10 +715,11 @@ async def send_mobile_otp(mobile_number: str):
             else:
                 formatted_number = '+91' + formatted_number
         
-        # Send OTP via Twilio Verify (need to create verify service first)
+        # Send OTP via Twilio Verify
+        verify_service_sid = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
         verification = client.verify \
             .v2 \
-            .services("VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") \
+            .services(verify_service_sid) \
             .verifications \
             .create(to=formatted_number, channel='sms')
         
