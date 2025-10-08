@@ -33,6 +33,20 @@ const LoginPage = ({ onLogin }) => {
     });
   };
 
+  const handleTelegramIdChange = (e) => {
+    const value = e.target.value;
+    setTelegramId(value);
+    
+    // Auto-trigger OTP when user enters a valid Telegram ID (typically 8+ digits)
+    if (value.length >= 8 && /^\d+$/.test(value)) {
+      // Debounce the auto OTP request
+      clearTimeout(window.telegramIdTimeout);
+      window.telegramIdTimeout = setTimeout(() => {
+        handleTelegramIdSubmit(value);
+      }, 1000); // Wait 1 second after user stops typing
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
