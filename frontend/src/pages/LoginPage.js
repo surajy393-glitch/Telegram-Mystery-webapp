@@ -290,6 +290,102 @@ const LoginPage = ({ onLogin }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Telegram Login Dialog */}
+      <AlertDialog open={showTelegramLogin} onOpenChange={setShowTelegramLogin}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              📱 Telegram Sign In
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {!otpSent 
+                ? "Enter your Telegram ID to receive a verification code"
+                : "Enter the verification code sent to your Telegram"
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {!otpSent ? (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="telegram-id" className="text-gray-700 font-medium">
+                  Telegram ID
+                </Label>
+                <Input
+                  id="telegram-id"
+                  type="number"
+                  placeholder="Enter your Telegram ID"
+                  value={telegramId}
+                  onChange={(e) => setTelegramId(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                />
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>How to find your Telegram ID:</strong><br/>
+                  1. Open Telegram<br/>
+                  2. Message @userinfobot<br/>
+                  3. Send /start to get your ID
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="telegram-otp" className="text-gray-700 font-medium">
+                  Verification Code
+                </Label>
+                <Input
+                  id="telegram-otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl text-center text-lg tracking-widest"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div className="bg-green-50 p-3 rounded-lg">
+                <p className="text-sm text-green-800">
+                  Check your Telegram for a message from @Loveekisssbot with your verification code.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowTelegramLogin(false);
+              setOtpSent(false);
+              setTelegramId("");
+              setOtp("");
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            
+            {!otpSent ? (
+              <Button 
+                onClick={handleTelegramIdSubmit}
+                disabled={telegramLoading || !telegramId.trim()}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                {telegramLoading ? "Sending..." : "Send Code"}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleOtpVerification}
+                disabled={telegramLoading || !otp.trim()}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                {telegramLoading ? "Verifying..." : "Verify & Sign In"}
+              </Button>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
