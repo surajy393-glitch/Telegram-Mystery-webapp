@@ -145,7 +145,10 @@ const LoginPage = ({ onLogin }) => {
       
       // Handle cancel
       document.getElementById('cancelAuth').onclick = () => {
-        document.body.removeChild(authDialog);
+        // Safely remove dialog if it exists
+        if (authDialog && authDialog.parentNode) {
+          authDialog.parentNode.removeChild(authDialog);
+        }
         setTelegramLoading(false);
       };
       
