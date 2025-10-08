@@ -650,7 +650,10 @@ const RegisterPage = ({ onLogin }) => {
                       {!emailOtpSent ? (
                         <div>
                           <p className="text-sm text-blue-700 mb-3">
-                            Click below to send verification code to your email
+                            {mobileVerified ? 
+                              'Optionally verify your email for additional security' :
+                              'Click below to send verification code to your email'
+                            }
                           </p>
                           <button
                             type="button"
