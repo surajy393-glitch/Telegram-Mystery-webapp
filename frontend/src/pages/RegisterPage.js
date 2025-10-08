@@ -27,6 +27,8 @@ const RegisterPage = ({ onLogin }) => {
   const [usernameStatus, setUsernameStatus] = useState(null); // null, 'checking', 'available', 'taken'
   const [usernameSuggestions, setUsernameSuggestions] = useState([]);
   const [usernameMessage, setUsernameMessage] = useState("");
+  const [emailStatus, setEmailStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [emailMessage, setEmailMessage] = useState("");
   
   const [formData, setFormData] = useState({
     fullName: "",
