@@ -37,6 +37,8 @@ const RegisterPage = ({ onLogin }) => {
   const [mobileOtp, setMobileOtp] = useState("");
   const [mobileVerified, setMobileVerified] = useState(false);
   const [mobileOtpLoading, setMobileOtpLoading] = useState(false);
+  const [mobileStatus, setMobileStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [mobileMessage, setMobileMessage] = useState("");
   
   const [formData, setFormData] = useState({
     fullName: "",
