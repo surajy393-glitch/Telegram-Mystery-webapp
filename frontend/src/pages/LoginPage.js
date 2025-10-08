@@ -420,13 +420,27 @@ const LoginPage = ({ onLogin }) => {
             </AlertDialogCancel>
             
             {!otpSent ? (
-              <Button 
-                onClick={handleTelegramIdSubmit}
-                disabled={telegramLoading || !telegramId.trim()}
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                {telegramLoading ? "Sending..." : "Send Code"}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleTelegramIdSubmit}
+                  disabled={telegramLoading || !telegramId.trim()}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  {telegramLoading ? "Sending..." : "Send Code"}
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setOtpSent(true);
+                    toast({
+                      title: "OTP Box Forced! 🎯",
+                      description: "Testing mode - enter any 6-digit code",
+                    });
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  Force OTP
+                </Button>
+              </div>
             ) : (
               <Button 
                 onClick={handleOtpVerification}
