@@ -195,6 +195,8 @@ def init_db():
         log.info("✅ users & user_interests ensured")
         # Ensure age verification columns exist
         ensure_age_verification_columns()
+        # Ensure privacy consent columns exist
+        ensure_privacy_consent_column()
     except Exception as e:
         log.error(f"❌ DB table error: {e}")
 
