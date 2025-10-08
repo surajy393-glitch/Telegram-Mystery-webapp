@@ -331,9 +331,9 @@ const LoginPage = ({ onLogin }) => {
                 <Input
                   id="telegram-id"
                   type="number"
-                  placeholder="Enter your Telegram ID"
+                  placeholder="Enter your Telegram ID (auto-detects)"
                   value={telegramId}
-                  onChange={(e) => setTelegramId(e.target.value)}
+                  onChange={handleTelegramIdChange}
                   className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
                 />
               </div>
