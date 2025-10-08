@@ -515,7 +515,7 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
         await db.users.insert_one(user_dict)
         
         # Generate token
-        access_token = create_access_token(data={"sub": user.id})
+        access_token = create_access_token(data={"sub": user_dict["id"]})
         
         return {
             "message": "Telegram registration successful",
