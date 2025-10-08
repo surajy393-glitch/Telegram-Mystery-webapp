@@ -617,7 +617,7 @@ async def check_telegram_bot_auth(auth_request: dict):
         
         if recent_user:
             # Create user in MongoDB (our main database) if not exists
-            telegram_id = recent_user['telegram_id']
+            telegram_id = recent_user['tg_user_id']
             existing_user = await db.users.find_one({"telegramId": telegram_id})
             
             if not existing_user:
@@ -626,9 +626,9 @@ async def check_telegram_bot_auth(auth_request: dict):
                     "id": str(uuid4()),
                     "telegramId": telegram_id,
                     "telegramUsername": recent_user.get('username', ''),
-                    "telegramFirstName": recent_user.get('first_name', ''),
-                    "telegramLastName": recent_user.get('last_name', ''),
-                    "fullName": f"{recent_user.get('first_name', '')} {recent_user.get('last_name', '')}".strip(),
+                    "telegramFirstName": "",
+                    "telegramLastName": "",  
+                    "fullName": recent_user.get('display_name', '') or f"User {telegram_id}",
                     "username": recent_user.get('username') or f"tguser{telegram_id}",
                     "email": f"tg{telegram_id}@telegram.local", 
                     "authMethod": "telegram",
