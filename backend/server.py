@@ -2130,8 +2130,9 @@ async def forgot_password_mobile(request: ForgotPasswordMobileRequest):
         # Generate OTP for password reset
         otp = generate_otp()
         
-        # Store OTP with mobile number
-        await store_email_otp(f"mobile_{clean_mobile}", otp)  # Using same storage with prefix
+        # Store OTP with mobile number (use proper mobile OTP storage)
+        mobile_key = f"mobile_{clean_mobile}"
+        await store_email_otp(mobile_key, otp)
         
         # Send OTP via SMS
         otp_sent = await send_mobile_otp(clean_mobile)
