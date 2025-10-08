@@ -885,6 +885,8 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         clean_fullname = user_data.fullName.strip()
         clean_email = user_data.email.strip().lower() if user_data.email else None
         clean_mobile = user_data.mobileNumber.strip() if user_data.mobileNumber else None
+        clean_bio = user_data.bio.strip() if user_data.bio else ""
+        clean_profile_image = user_data.profileImage if user_data.profileImage else None
         
         if not clean_username:
             raise HTTPException(status_code=400, detail="Username cannot be empty")
