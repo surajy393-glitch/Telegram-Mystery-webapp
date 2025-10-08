@@ -185,7 +185,35 @@ const RegisterPage = ({ onLogin }) => {
             document.body.removeChild(widgetContainer);
           }
 
-          // Send real Telegram data with hash for verification
+          // First check if user already exists
+          try {
+            const checkResponse = await axios.post(`${API}/auth/telegram-signin`, {
+              telegramId: user.id
+            });
+            
+            // If we get here, user already exists - redirect to login
+            toast({
+              title: "Account Already Exists",
+              description: "You already have an account! Please use the Login page with Telegram sign-in.",
+              variant: "destructive"
+            });
+            
+            // Redirect to login page after 2 seconds
+            setTimeout(() => {
+              navigate("/login");
+            }, 2000);
+            
+            setTelegramLoading(false);
+            return;
+            
+          } catch (error) {
+            // If user doesn't exist (404 error), proceed with registration
+            if (error.response?.status !== 404) {
+              throw error; // Re-throw if it's a different error
+            }
+          }
+
+          // User doesn't exist, proceed with registration
           const response = await axios.post(`${API}/auth/telegram`, {
             id: user.id,
             first_name: user.first_name,
