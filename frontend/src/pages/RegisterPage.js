@@ -110,35 +110,19 @@ const RegisterPage = ({ onLogin }) => {
     setEmailMessage("Checking email...");
     
     try {
-      // Try to register with this email to see if it's taken
-      // We'll make a test call to the registration endpoint
-      const testData = {
-        fullName: "Test",
-        username: "test_temp_user",
-        age: 25,
-        gender: "other", 
-        password: "TempPass123!",
-        email: email.trim().toLowerCase()
-      };
+      const response = await axios.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
+      const data = response.data;
       
-      const response = await axios.post(`${API}/auth/register-enhanced`, testData);
-      
-      // If registration succeeds, email is available (but we won't keep this user)
-      setEmailStatus('available');
-      setEmailMessage("Email is available!");
-      
-    } catch (error) {
-      if (error.response?.status === 400 && error.response?.data?.detail?.includes('already registered')) {
-        setEmailStatus('taken');
-        setEmailMessage("Email is already registered - please use a different email");
-      } else if (error.response?.status === 400) {
-        // Other validation errors (invalid format, etc.)
-        setEmailStatus('error');
-        setEmailMessage(error.response?.data?.detail || "Invalid email format");
+      if (data.available) {
+        setEmailStatus('available');
+        setEmailMessage(data.message);
       } else {
-        setEmailStatus('error');
-        setEmailMessage("Error checking email");
+        setEmailStatus('taken');
+        setEmailMessage(data.message);
       }
+    } catch (error) {
+      setEmailStatus('error');
+      setEmailMessage("Error checking email");
     }
   };
 
