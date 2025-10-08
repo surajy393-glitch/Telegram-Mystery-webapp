@@ -2161,9 +2161,8 @@ async def reset_password_mobile(request: ResetPasswordMobileRequest):
     try:
         clean_mobile = request.mobileNumber.strip()
         
-        # Verify OTP
-        mobile_key = f"mobile_{clean_mobile}"
-        is_valid = await verify_email_otp(mobile_key, request.otp.strip())
+        # Verify OTP using Twilio Verify service (same as registration)
+        is_valid = await verify_mobile_otp(clean_mobile, request.otp.strip())
         
         if not is_valid:
             raise HTTPException(
