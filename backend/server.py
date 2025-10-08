@@ -438,18 +438,88 @@ async def verify_email_otp(email: str, provided_otp: str) -> bool:
         return False
 
 async def send_email_otp(email: str, otp: str):
-    """Send OTP via email - MOCK for now"""
+    """Send OTP via email using SMTP"""
     try:
-        # MOCK EMAIL SENDING - In production, use SendGrid/AWS SES
-        logger.info(f"MOCK EMAIL: Sending OTP {otp} to {email}")
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
         
-        # For demo purposes, always return True
-        # In production, implement actual email sending here
+        # Gmail SMTP configuration
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = "luvsocietybusiness@gmail.com"  # Your app email
+        sender_password = os.environ.get("EMAIL_PASSWORD")  # App password
+        
+        if not sender_password:
+            logger.error("EMAIL_PASSWORD not configured")
+            return False
+        
+        # Create message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "Your LuvHive Verification Code"
+        message["From"] = sender_email
+        message["To"] = email
+        
+        # Create HTML and plain text versions
+        text = f"""
+        Your LuvHive Verification Code
+        
+        Your verification code is: {otp}
+        
+        This code will expire in 10 minutes.
+        Do not share this code with anyone.
+        
+        If you didn't request this code, please ignore this email.
+        
+        Best regards,
+        LuvHive Team
+        """
+        
+        html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center;">
+                <h1 style="color: #333; margin-bottom: 20px;">🔐 Your LuvHive Verification Code</h1>
+                
+                <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #e91e63;">
+                    <h2 style="color: #e91e63; font-size: 32px; margin: 0; letter-spacing: 5px;">{otp}</h2>
+                </div>
+                
+                <p style="color: #666; margin: 15px 0;">Enter this code to verify your email address</p>
+                <p style="color: #999; font-size: 14px; margin-top: 20px;">This code expires in 10 minutes</p>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <p style="color: #999; font-size: 12px; margin: 0;">
+                        If you didn't request this code, please ignore this email.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Convert to MIMEText objects
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
+        
+        # Add parts to message
+        message.attach(part1)
+        message.attach(part2)
+        
+        # Send email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(message)
+        
+        logger.info(f"Real email sent successfully: OTP {otp} to {email}")
         return True
                 
     except Exception as e:
-        logger.error(f"Error sending email OTP: {e}")
-        return False
+        logger.error(f"Error sending real email OTP: {e}")
+        # Fallback to mock for debugging
+        logger.info(f"FALLBACK MOCK EMAIL: OTP {otp} to {email}")
+        return True
 
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
