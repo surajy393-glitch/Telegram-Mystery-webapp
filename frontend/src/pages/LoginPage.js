@@ -100,15 +100,24 @@ const LoginPage = ({ onLogin }) => {
         });
       }
     } catch (error) {
-      const errorMessage = typeof error.response?.data?.detail === 'string' 
-        ? error.response.data.detail 
-        : JSON.stringify(error.response?.data?.detail) || "Failed to send OTP";
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      // For demo purposes, if user doesn't exist, show OTP box anyway with demo message
+      if (error.response?.status === 404) {
+        setOtpSent(true);
+        toast({
+          title: "Demo Mode 🚀",
+          description: "OTP box shown for demo. In production, first register via Telegram on the Register page.",
+        });
+      } else {
+        const errorMessage = typeof error.response?.data?.detail === 'string' 
+          ? error.response.data.detail 
+          : JSON.stringify(error.response?.data?.detail) || "Failed to send OTP";
+        
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      }
     } finally {
       setTelegramLoading(false);
     }
