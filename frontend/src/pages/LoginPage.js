@@ -478,30 +478,144 @@ const LoginPage = ({ onLogin }) => {
       </div>
 
       {/* Forgot Password Dialog */}
-      <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+      <AlertDialog open={showForgotPassword} onOpenChange={(open) => {
+        setShowForgotPassword(open);
+        if (!open) {
+          setShowResetForm(false);
+          setForgotPasswordMethod("email");
+          setForgotPasswordEmail("");
+          setForgotPasswordMobile("");
+          setResetOtp("");
+          setNewPassword("");
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Password</AlertDialogTitle>
             <AlertDialogDescription>
-              Enter your email address and we'll send you a link to reset your password.
+              {!showResetForm 
+                ? "Choose how you'd like to reset your password"
+                : "Enter the OTP and your new password"
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Label htmlFor="forgot-email" className="text-gray-700 font-medium">Email Address</Label>
-            <Input
-              id="forgot-email"
-              type="email"
-              placeholder="Enter your email"
-              value={forgotPasswordEmail}
-              onChange={(e) => setForgotPasswordEmail(e.target.value)}
-              className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
-            />
-          </div>
+          
+          {!showResetForm ? (
+            <div className="py-4 space-y-4">
+              {/* Method Selection */}
+              <div className="space-y-3">
+                <Label className="text-gray-700 font-medium">Reset Method:</Label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setForgotPasswordMethod("email")}
+                    className={`flex-1 p-3 rounded-lg border text-center ${
+                      forgotPasswordMethod === "email" 
+                        ? "border-pink-500 bg-pink-50 text-pink-700" 
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    📧 Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotPasswordMethod("mobile")}
+                    className={`flex-1 p-3 rounded-lg border text-center ${
+                      forgotPasswordMethod === "mobile" 
+                        ? "border-pink-500 bg-pink-50 text-pink-700" 
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    📱 Mobile
+                  </button>
+                </div>
+              </div>
+              
+              {/* Input Field */}
+              {forgotPasswordMethod === "email" ? (
+                <div>
+                  <Label htmlFor="forgot-email" className="text-gray-700 font-medium">Email Address</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="Enter your registered email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="forgot-mobile" className="text-gray-700 font-medium">Mobile Number</Label>
+                  <Input
+                    id="forgot-mobile"
+                    type="tel"
+                    placeholder="Enter your registered mobile number"
+                    value={forgotPasswordMobile}
+                    onChange={(e) => setForgotPasswordMobile(e.target.value)}
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="reset-otp" className="text-gray-700 font-medium">Verification Code</Label>
+                <Input
+                  id="reset-otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={resetOtp}
+                  onChange={(e) => setResetOtp(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl text-center text-lg tracking-widest"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="new-password" className="text-gray-700 font-medium">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                />
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Code sent to: {forgotPasswordMobile}
+                </p>
+              </div>
+            </div>
+          )}
+          
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button onClick={handleForgotPassword} className="bg-pink-500 hover:bg-pink-600">
-              Send Reset Link
-            </Button>
+            
+            {!showResetForm ? (
+              <Button 
+                onClick={handleForgotPassword} 
+                disabled={
+                  (forgotPasswordMethod === "email" && !forgotPasswordEmail.trim()) ||
+                  (forgotPasswordMethod === "mobile" && !forgotPasswordMobile.trim())
+                }
+                className="bg-pink-500 hover:bg-pink-600"
+              >
+                {forgotPasswordMethod === "email" ? "Send Reset Link" : "Send OTP"}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleMobilePasswordReset}
+                disabled={!resetOtp.trim() || !newPassword.trim()}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                Reset Password
+              </Button>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
