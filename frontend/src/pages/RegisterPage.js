@@ -292,11 +292,20 @@ const RegisterPage = ({ onLogin }) => {
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
-    // REQUIRE email verification before proceeding
+    // REQUIRE both email and mobile verification before proceeding
     if (!emailVerified) {
       toast({
         title: "Email Verification Required",
         description: "Please verify your email with OTP before proceeding",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (formData.mobileNumber && !mobileVerified) {
+      toast({
+        title: "Mobile Verification Required",
+        description: "Please verify your mobile number with OTP before proceeding",
         variant: "destructive"
       });
       return;
