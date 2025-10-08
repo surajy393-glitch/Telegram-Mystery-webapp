@@ -545,6 +545,101 @@ const LoginPage = ({ onLogin }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Verify Existing Account Dialog */}
+      <AlertDialog open={showVerifyExisting} onOpenChange={setShowVerifyExisting}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ✉️ Verify Existing Account
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {!verifyOtpSent 
+                ? "Enter your registered email address to receive a verification code"
+                : "Enter the verification code sent to your email"
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {!verifyOtpSent ? (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="verify-email" className="text-gray-700 font-medium">
+                  Email Address
+                </Label>
+                <Input
+                  id="verify-email"
+                  type="email"
+                  placeholder="Enter your registered email"
+                  value={verifyEmail}
+                  onChange={(e) => setVerifyEmail(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                />
+              </div>
+              
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <p className="text-sm text-orange-800">
+                  <strong>For existing accounts:</strong><br/>
+                  This will send a verification code to your registered email address.
+                  Once verified, you can sign in normally.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="verify-otp" className="text-gray-700 font-medium">
+                  Verification Code
+                </Label>
+                <Input
+                  id="verify-otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={verifyOtp}
+                  onChange={(e) => setVerifyOtp(e.target.value)}
+                  className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl text-center text-lg tracking-widest"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div className="bg-green-50 p-3 rounded-lg">
+                <p className="text-sm text-green-800">
+                  Check your email ({verifyEmail}) for a verification code from LuvHive.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowVerifyExisting(false);
+              setVerifyOtpSent(false);
+              setVerifyEmail("");
+              setVerifyOtp("");
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            
+            {!verifyOtpSent ? (
+              <Button 
+                onClick={handleVerifyExistingAccount}
+                disabled={verifyLoading || !verifyEmail.trim()}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                {verifyLoading ? "Sending..." : "Send Verification Code"}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleVerifyExistingOtp}
+                disabled={verifyLoading || !verifyOtp.trim()}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                {verifyLoading ? "Verifying..." : "Verify Account"}
+              </Button>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
