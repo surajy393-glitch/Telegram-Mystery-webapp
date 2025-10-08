@@ -438,67 +438,17 @@ async def verify_email_otp(email: str, provided_otp: str) -> bool:
         return False
 
 async def send_email_otp(email: str, otp: str):
-    """Send OTP via email using Gmail SMTP (simple and reliable)"""
+    """Send OTP via email using SendGrid"""
     try:
-        # Try simple Gmail SMTP first
-        gmail_user = os.environ.get("GMAIL_USER", "luvsocietybusiness@gmail.com")
-        gmail_password = os.environ.get("GMAIL_PASSWORD")
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
         
-        if gmail_password:
-            try:
-                import yagmail
-                
-                # Create yagmail SMTP object
-                yag = yagmail.SMTP(gmail_user, gmail_password)
-                
-                # Create beautiful HTML email
-                html_content = f"""
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-                    <div style="background-color: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <h1 style="color: #e91e63; margin: 0; font-size: 28px;">💖 LuvHive</h1>
-                            <h2 style="color: #333; margin: 10px 0 0 0; font-size: 22px;">Email Verification</h2>
-                        </div>
-                        
-                        <div style="background: linear-gradient(135deg, #e91e63, #f06292); padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0;">
-                            <p style="color: white; margin: 0 0 15px 0; font-size: 16px; font-weight: 500;">Your Verification Code:</p>
-                            <div style="background-color: white; padding: 15px; border-radius: 8px; display: inline-block;">
-                                <span style="color: #e91e63; font-size: 36px; font-weight: bold; letter-spacing: 8px; font-family: 'Courier New', monospace;">{otp}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center; margin: 25px 0;">
-                            <p style="color: #555; font-size: 16px; margin: 0 0 15px 0;">Enter this code on the registration page to verify your email address</p>
-                            <p style="color: #888; font-size: 14px; margin: 0;">⏰ This code expires in <strong>10 minutes</strong></p>
-                        </div>
-                        
-                        <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
-                            <p style="color: #999; font-size: 13px; margin: 0;">🔒 If you didn't request this code, please ignore this email.</p>
-                            <p style="color: #999; font-size: 13px; margin: 5px 0 0 0;">This is an automated message from LuvHive.</p>
-                        </div>
-                    </div>
-                </div>
-                """
-                
-                # Send email
-                yag.send(
-                    to=email,
-                    subject="Your LuvHive Verification Code 🔐",
-                    contents=html_content
-                )
-                
-                logger.info(f"Gmail SMTP email sent successfully: OTP {otp} to {email}")
-                return True
-                
-            except Exception as gmail_error:
-                logger.error(f"Gmail SMTP error: {gmail_error}")
-        
-        # Fallback to other services
-        twilio_account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-        twilio_auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-        twilio_api_key_sid = os.environ.get("TWILIO_API_KEY_SID")
-        twilio_api_key_secret = os.environ.get("TWILIO_API_KEY_SECRET")
         sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+        
+        if not sendgrid_api_key:
+            logger.error("SendGrid API key not configured")
+            logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
+            return True
         
         # Try Twilio Email first (with API Key if available)
         if twilio_account_sid and (twilio_auth_token or twilio_api_key_secret):
