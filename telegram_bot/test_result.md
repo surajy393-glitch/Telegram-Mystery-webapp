@@ -283,6 +283,18 @@
           agent: "main"
           comment: "Need to update bot messages that mention 'Instagram-style' to use LuvHive unique branding"
 
+  - task: "Telegram Bot Age Verification Implementation"
+    implemented: true
+    working: "NA"
+    file: "/app/telegram_bot/registration.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "✅ IMPLEMENTED: Added complete age verification system to Telegram bot registration flow. Features: 1) 18+ age check during registration (rejects users under 18), 2) Age agreement consent screen with legal text, 3) Database columns for age_verified and age_agreement_date, 4) Callback handler for 'I Agree (18+)' button, 5) Database updates with consent timestamp. All components tested successfully - imports work, functions exist, callback handlers present, database schema updated."
+
 ## metadata:
   created_by: "main_agent"
   version: "1.0"
