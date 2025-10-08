@@ -774,6 +774,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "fullName": current_user.fullName,
         "username": current_user.username,
+        "email": current_user.email,  # Added email field for EditProfile compatibility
         "age": current_user.age,
         "gender": current_user.gender,
         "bio": current_user.bio,
