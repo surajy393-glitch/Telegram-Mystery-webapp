@@ -93,6 +93,7 @@ class User(BaseModel):
     gender: str
     password_hash: Optional[str] = None  # Optional for Telegram-only users
     email: Optional[str] = None  # For password recovery
+    mobileNumber: Optional[str] = None  # Mobile number for enhanced security
     bio: Optional[str] = ""
     profileImage: Optional[str] = None  # Base64 or file_id
     
