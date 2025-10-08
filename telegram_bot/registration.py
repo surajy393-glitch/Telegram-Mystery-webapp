@@ -1955,10 +1955,26 @@ async def handle_registration_text(update: Update, context: ContextTypes.DEFAULT
         if age < 13 or age > 99:
             return await update.message.reply_text("Please send an age between 13 and 99.")
 
+        # Age verification check
+        if age < 18:
+            await update.message.reply_text("❌ 18+ only. You cannot use this bot.")
+            # Stop registration
+            return
+
         data["age"] = age
-        context.user_data["reg_state"] = "COUNTRY"
-        # ❌ No 'Age saved' line here
-        return await update.message.reply_text("Great! What's your **country**?")
+        # Show age agreement
+        await update.message.reply_text(
+            "⚠️ *AGE VERIFICATION*\n\n"
+            "✅ I confirm I am 18+ years old\n"
+            "✅ False age = Permanent ban\n"
+            "✅ My Telegram account will be verified\n\n"
+            "Click to continue:",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("I Agree (18+)", callback_data="age_agree")
+            ]])
+        )
+        return
 
     # ---- COUNTRY ----
     if state == "COUNTRY":
