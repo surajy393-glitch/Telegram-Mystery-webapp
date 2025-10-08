@@ -319,6 +319,7 @@ import asyncio
 
 # In-memory OTP storage (in production, use Redis or database)
 otp_storage = {}
+email_otp_storage = {}  # Separate storage for email OTPs
 
 def generate_otp(length: int = 6) -> str:
     """Generate a random OTP"""
