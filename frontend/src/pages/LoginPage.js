@@ -22,6 +22,8 @@ const LoginPage = ({ onLogin }) => {
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetOtp, setResetOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [showTelegramLogin, setShowTelegramLogin] = useState(false);
   const [telegramId, setTelegramId] = useState("");
   const [otp, setOtp] = useState("");
