@@ -2244,6 +2244,48 @@ async def verify_email(token: str):
         logger.error(f"Email verification error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.get("/auth/check-mobile/{mobile_number}")
+async def check_mobile_availability(mobile_number: str):
+    """
+    Check mobile number availability
+    """
+    try:
+        # Clean mobile number
+        clean_mobile = ''.join(filter(str.isdigit, mobile_number.strip()))
+        
+        if len(clean_mobile) < 10 or len(clean_mobile) > 15:
+            return {
+                "available": False,
+                "message": "Mobile number must be 10-15 digits"
+            }
+        
+        # Check various mobile number formats
+        mobile_patterns = [
+            clean_mobile,  # Digits only
+            f"+91{clean_mobile}",  # With +91
+            f"91{clean_mobile}",   # With 91
+        ]
+        
+        for pattern in mobile_patterns:
+            existing_mobile = await db.users.find_one({"mobileNumber": pattern})
+            if existing_mobile:
+                return {
+                    "available": False,
+                    "message": "Mobile number is already registered"
+                }
+        
+        return {
+            "available": True,
+            "message": "Mobile number is available!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Mobile check error: {e}")
+        return {
+            "available": False,
+            "message": "Error checking mobile number availability"
+        }
+
 @api_router.get("/auth/check-username/{username}")
 async def check_username_availability(username: str):
     """
