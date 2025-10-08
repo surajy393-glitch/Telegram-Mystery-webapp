@@ -187,6 +187,14 @@ class VerifyMobileOTPRequest(BaseModel):
     mobileNumber: str
     otp: str
 
+class ForgotPasswordMobileRequest(BaseModel):
+    mobileNumber: str
+
+class ResetPasswordMobileRequest(BaseModel):
+    mobileNumber: str
+    otp: str
+    new_password: str
+
 class UserProfile(BaseModel):
     fullName: str
     username: str
