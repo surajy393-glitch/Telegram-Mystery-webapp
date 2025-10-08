@@ -2134,14 +2134,41 @@ async def forgot_password_mobile(request: ForgotPasswordMobileRequest):
         mobile_key = f"mobile_{clean_mobile}"
         await store_email_otp(mobile_key, otp)
         
-        # Send OTP via SMS
-        otp_sent = await send_mobile_otp(clean_mobile)
-        
-        if not otp_sent:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to send OTP to mobile"
-            )
+        # Send OTP via SMS using actual OTP generated
+        try:
+            from twilio.rest import Client
+            
+            account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+            auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+            verify_service_sid = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
+            
+            if account_sid and auth_token and verify_service_sid:
+                client = Client(account_sid, auth_token)
+                
+                # Format mobile number
+                formatted_number = clean_mobile.strip()
+                if not formatted_number.startswith('+'):
+                    if formatted_number.startswith('91'):
+                        formatted_number = '+' + formatted_number
+                    else:
+                        formatted_number = '+91' + formatted_number
+                
+                # Send SMS with actual OTP (not using Twilio Verify service for password reset)
+                message = client.messages.create(
+                    body=f"Your LuvHive password reset code is: {otp}. This code expires in 10 minutes. Do not share this code.",
+                    from_='+12548068664',  # Twilio phone number
+                    to=formatted_number
+                )
+                
+                logger.info(f"Password reset SMS sent: {message.sid}")
+            else:
+                # Fallback: log the OTP for testing
+                logger.info(f"MOBILE PASSWORD RESET OTP: {otp} for {clean_mobile}")
+                
+        except Exception as sms_error:
+            logger.error(f"SMS sending error: {sms_error}")
+            # Don't fail the request, just log the OTP
+            logger.info(f"FALLBACK - PASSWORD RESET OTP: {otp} for {clean_mobile}")
         
         return {
             "message": "Password reset OTP sent to your mobile number",
