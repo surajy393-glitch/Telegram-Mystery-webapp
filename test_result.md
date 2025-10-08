@@ -105,17 +105,41 @@
 user_problem_statement: "Fix Telegram authentication system: implement proper sign-in for Telegram users with OTP verification via Telegram bot, add mobile number to registration for enhanced security for upcoming mobile app integration"
 
 backend:
-  - task: "Update comment system to include commenter profile pictures"
-    implemented: false
-    working: false
+  - task: "Enhanced Registration with Mobile Number Support"
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
-        agent: "main"
-        comment: "Comment system exists but doesn't properly fetch commenter profile images - shows default or initials instead"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Enhanced Registration with Mobile Number Support (POST /api/auth/register-enhanced) working perfectly with comprehensive validation. Supports optional mobile number field, email format validation, mobile number format validation, and all required field validation. Successfully tested with and without mobile number."
+
+  - task: "Telegram Sign-in with OTP System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Telegram Sign-in Flow (POST /api/auth/telegram-signin, POST /api/auth/verify-telegram-otp) working correctly. Properly validates Telegram-registered users, generates OTP codes, handles error cases (non-existent users, email-registered users), and provides secure OTP verification with expiration and attempt limits. OTP sending to actual Telegram works in production environment."
+
+  - task: "OTP Generation and Verification System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: OTP system working perfectly with proper security measures including 10-minute expiration, 3-attempt limit, automatic cleanup, and secure OTP generation. Verification endpoint properly handles invalid/expired OTPs and provides appropriate error messages."
 
   - task: "Add AI vibe compatibility endpoint"
     implemented: true
