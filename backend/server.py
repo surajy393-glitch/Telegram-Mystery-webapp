@@ -599,11 +599,12 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         # Generate access token
         access_token = create_access_token(data={"sub": user_dict["id"]})
         
+        # Don't give access token until email is verified
         return {
-            "message": "Registration successful",
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
+            "message": "Registration successful! Please check your email to verify your account before signing in.",
+            "email_sent": True,
+            "user_id": user_dict["id"],
+            "email_verification_required": True
         }
         
     except HTTPException:
