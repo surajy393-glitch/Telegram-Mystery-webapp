@@ -340,8 +340,27 @@ async def cmd_resetuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text(
             "Use command:\n<b>/resetuser &lt;telegram_id&gt;</b>", parse_mode=ParseMode.HTML
         ); return
-    uid = int(context.args[0]); reset_user_metrics(uid)
-    await update.effective_message.reply_text(f"🧹 Metrics reset for {uid}.")
+    uid = int(context.args[0])
+    
+    # Reset all user data
+    reset_user_metrics(uid)
+    
+    # Send notification to user
+    try:
+        await context.bot.send_message(uid, "🧹 Your profile was completely reset by admin. Send /start to register again.")
+    except Exception:
+        pass
+    
+    await update.effective_message.reply_text(
+        f"🧹 <b>COMPLETE DATA WIPE</b> for user <code>{uid}</code>\n"
+        f"✅ Profile data cleared\n"
+        f"✅ Privacy consent reset\n" 
+        f"✅ Age verification reset\n"
+        f"✅ Interests wiped\n"
+        f"✅ Chat history cleared\n"
+        f"User must re-register from scratch.",
+        parse_mode=ParseMode.HTML
+    )
 
 async def cmd_resetprivacy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Reset privacy consent for testing"""
