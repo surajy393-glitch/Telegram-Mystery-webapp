@@ -588,8 +588,8 @@ async def send_email_otp(email: str, otp: str):
                 
     except Exception as e:
         logger.error(f"Error sending SendGrid email: {e}")
-        # Fallback to mock for debugging
-        logger.info(f"FALLBACK MOCK EMAIL: OTP {otp} to {email}")
+        # If no email service configured, use mock
+        logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
         return True
 
 async def get_current_user(authorization: str = Header(None)):
