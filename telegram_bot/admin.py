@@ -3,27 +3,9 @@
 from __future__ import annotations
 from typing import List, Optional, Tuple
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from utils.display import safe_display_name
 
 # --- Admin IDs ---
-import os
-import logging
-
-log = logging.getLogger(__name__)
-
-def _parse_admins(s: str) -> set[int]:
-    out = set()
-    # Strip quotes and clean the string first
-    clean_s = (s or "").strip().strip('"').strip("'")
-    for x in clean_s.replace(",", " ").split():
-        if x.isdigit():
-            out.add(int(x))
-    return out
-
-ADMIN_IDS = _parse_admins(os.getenv("ADMIN_IDS", ""))
-if not ADMIN_IDS:
-    log.warning("ADMIN_IDS missing! Admin panel will be disabled for security.")
-    ADMIN_IDS = set()  # Empty set - no one has admin access
+ADMIN_IDS = {1437934486, 647778438}
 
 # --- Callback IDs ---
 CB_ADMIN         = "ad:root"
