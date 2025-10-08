@@ -394,6 +394,13 @@ def ensure_age_verification_columns():
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age_agreement_date TIMESTAMPTZ;")
         con.commit()
 
+def ensure_privacy_consent_column():
+    """Add privacy consent tracking"""
+    with _conn() as con, con.cursor() as cur:
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent BOOLEAN DEFAULT FALSE;")
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_date TIMESTAMPTZ;")
+        con.commit()
+
 def ensure_forward_column():
     with _conn() as con, con.cursor() as cur:
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS allow_forward BOOLEAN DEFAULT FALSE;")
