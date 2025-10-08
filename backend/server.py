@@ -500,8 +500,12 @@ async def send_email_otp(email: str, otp: str):
                     ]
                 })
                 
-                logger.info(f"Twilio email sent successfully: OTP {otp} to {email}, Message SID: {message.sid}")
-                return True
+                if message.status_code == 202:
+                    logger.info(f"Twilio SendGrid email sent successfully: OTP {otp} to {email}")
+                    return True
+                else:
+                    logger.error(f"Twilio SendGrid error: Status {message.status_code}")
+                    return False
                 
             except Exception as twilio_error:
                 logger.error(f"Twilio email error: {twilio_error}")
