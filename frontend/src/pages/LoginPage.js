@@ -42,8 +42,9 @@ const LoginPage = ({ onLogin }) => {
       // Debounce the auto OTP request
       clearTimeout(window.telegramIdTimeout);
       window.telegramIdTimeout = setTimeout(() => {
+        console.log("Auto-triggering OTP for:", value); // Debug log
         handleTelegramIdSubmit(value);
-      }, 1000); // Wait 1 second after user stops typing
+      }, 1500); // Wait 1.5 seconds after user stops typing
     }
   };
 
