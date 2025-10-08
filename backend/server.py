@@ -873,7 +873,7 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         # Validate and clean input
         clean_username = user_data.username.strip()
         clean_fullname = user_data.fullName.strip()
-        clean_email = user_data.email.strip().lower()
+        clean_email = user_data.email.strip().lower() if user_data.email else None
         clean_mobile = user_data.mobileNumber.strip() if user_data.mobileNumber else None
         
         if not clean_username:
