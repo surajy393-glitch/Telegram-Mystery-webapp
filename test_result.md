@@ -256,7 +256,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 5
+  test_sequence: 6
   run_ui: false
   last_backend_test: "2025-01-27 16:53:06"
   updated_settings_test: "2025-01-27 02:49:38"
@@ -265,6 +265,7 @@ metadata:
   telegram_auth_real_bot_token_test: "2025-01-27 17:47:00"
   forgot_password_test: "2025-01-27 16:53:06"
   comprehensive_telegram_auth_test: "2025-01-27 18:15:00"
+  enhanced_auth_test: "2025-01-27 19:52:00"
 
 test_plan:
   current_focus:
