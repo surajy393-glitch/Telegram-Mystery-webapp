@@ -2106,6 +2106,95 @@ async def cleanup_account_data(identifier: str):
         logger.error(f"Account cleanup error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/auth/forgot-password-mobile")
+async def forgot_password_mobile(request: ForgotPasswordMobileRequest):
+    """
+    Send OTP to mobile for password reset
+    """
+    try:
+        clean_mobile = request.mobileNumber.strip()
+        
+        # Find user by mobile number
+        user = await db.users.find_one({"mobileNumber": clean_mobile})
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="No account found with this mobile number"
+            )
+        
+        # Generate OTP for password reset
+        otp = generate_otp()
+        
+        # Store OTP with mobile number
+        await store_email_otp(f"mobile_{clean_mobile}", otp)  # Using same storage with prefix
+        
+        # Send OTP via SMS
+        otp_sent = await send_mobile_otp(clean_mobile)
+        
+        if not otp_sent:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send OTP to mobile"
+            )
+        
+        return {
+            "message": "Password reset OTP sent to your mobile number",
+            "mobileNumber": clean_mobile,
+            "otpSent": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Mobile forgot password error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/reset-password-mobile")
+async def reset_password_mobile(request: ResetPasswordMobileRequest):
+    """
+    Reset password using mobile OTP
+    """
+    try:
+        clean_mobile = request.mobileNumber.strip()
+        
+        # Verify OTP
+        is_valid = await verify_email_otp(f"mobile_{clean_mobile}", request.otp.strip())
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired OTP"
+            )
+        
+        # Find user
+        user = await db.users.find_one({"mobileNumber": clean_mobile})
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Hash new password
+        hashed_password = get_password_hash(request.new_password)
+        
+        # Update password
+        await db.users.update_one(
+            {"mobileNumber": clean_mobile},
+            {"$set": {"password_hash": hashed_password}}
+        )
+        
+        return {
+            "message": "Password reset successfully! You can now sign in with your new password."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Mobile password reset error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
