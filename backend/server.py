@@ -1423,6 +1423,84 @@ async def check_email_availability(email: str):
             "message": "Error checking email availability"
         }
 
+@api_router.post("/auth/send-email-otp")
+async def send_email_otp_endpoint(request: EmailOTPRequest):
+    """
+    Send OTP to email address for registration verification
+    """
+    try:
+        clean_email = request.email.strip().lower()
+        
+        if '@' not in clean_email or '.' not in clean_email:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid email format"
+            )
+        
+        # Check if email already exists
+        existing_user = await db.users.find_one({"email": clean_email})
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered"
+            )
+        
+        # Generate OTP
+        otp = generate_otp()
+        
+        # Store OTP
+        await store_email_otp(clean_email, otp)
+        
+        # Send OTP via email
+        otp_sent = await send_email_otp(clean_email, otp)
+        
+        if not otp_sent:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send OTP email"
+            )
+        
+        return {
+            "message": "OTP sent to your email address",
+            "email": clean_email,
+            "otpSent": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Send email OTP error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/verify-email-otp")
+async def verify_email_otp_endpoint(request: VerifyEmailOTPRequest):
+    """
+    Verify email OTP for registration
+    """
+    try:
+        clean_email = request.email.strip().lower()
+        
+        # Verify OTP
+        is_valid = await verify_email_otp(clean_email, request.otp.strip())
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired OTP"
+            )
+        
+        return {
+            "message": "Email verified successfully",
+            "verified": True,
+            "email": clean_email
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Verify email OTP error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
