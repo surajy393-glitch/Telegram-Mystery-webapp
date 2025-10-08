@@ -469,22 +469,49 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             username = f"{base_username}{counter}"
             counter += 1
         
-        # Create user
-        user = User(
-            fullName=f"{telegram_data.first_name} {telegram_data.last_name or ''}".strip(),
-            username=username,
-            age=18,  # Default age - user can update later
-            gender="Other",  # Default gender - user can update later
-            telegramId=telegram_data.id,
-            telegramUsername=telegram_data.username,
-            telegramFirstName=telegram_data.first_name,
-            telegramLastName=telegram_data.last_name,
-            telegramPhotoUrl=telegram_data.photo_url,
-            profileImage=telegram_data.photo_url,  # Use Telegram photo as profile image
-            authMethod="telegram"
-        )
+        # Create complete user with all required fields
+        user_dict = {
+            "id": str(uuid4()),
+            "fullName": f"{telegram_data.first_name} {telegram_data.last_name or ''}".strip(),
+            "username": username,
+            "email": f"tg{telegram_data.id}@luvhive.app",  # Valid email format
+            "age": 25,  # Better default age
+            "gender": "Other",  # Default gender - user can update later
+            "bio": "New LuvHive user from Telegram! 💬✨",  # Better default bio
+            "telegramId": telegram_data.id,
+            "telegramUsername": telegram_data.username,
+            "telegramFirstName": telegram_data.first_name,
+            "telegramLastName": telegram_data.last_name,
+            "telegramPhotoUrl": telegram_data.photo_url,
+            "profileImage": telegram_data.photo_url or "",  # Use Telegram photo as profile image
+            "authMethod": "telegram",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "followers": [],
+            "following": [],
+            "posts": [],
+            "isPremium": False,
+            "isOnline": True,
+            "lastSeen": datetime.now(timezone.utc).isoformat(),
+            "preferences": {  # Add fields that EditProfile expects
+                "showAge": True,
+                "showOnlineStatus": True, 
+                "allowMessages": True
+            },
+            "privacy": {
+                "profileVisibility": "public",
+                "showLastSeen": True
+            },
+            "socialLinks": {  # Initialize social links for EditProfile
+                "instagram": "",
+                "twitter": "",
+                "website": ""
+            },
+            "interests": [],  # Initialize interests array
+            "location": "",  # Initialize location
+            "appearInSearch": True,  # Make searchable by default
+            "lastUsernameChange": None
+        }
         
-        user_dict = user.dict()
         await db.users.insert_one(user_dict)
         
         # Generate token
