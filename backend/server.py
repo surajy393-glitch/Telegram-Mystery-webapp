@@ -620,7 +620,7 @@ async def check_telegram_bot_auth(auth_request: dict):
             existing_user = await db.users.find_one({"telegramId": telegram_id})
             
             if not existing_user:
-                # Create new user in MongoDB
+                # Create new user in MongoDB with ALL required fields
                 user_data = {
                     "id": str(uuid4()),
                     "telegramId": telegram_id,
@@ -629,19 +629,35 @@ async def check_telegram_bot_auth(auth_request: dict):
                     "telegramLastName": "",  
                     "fullName": recent_user.get('display_name', '') or f"User {telegram_id}",
                     "username": recent_user.get('username') or f"tguser{telegram_id}",
-                    "email": f"tg{telegram_id}@telegram.local", 
+                    "email": f"tg{telegram_id}@luvhive.app",  # Valid email format
                     "authMethod": "telegram",
                     "createdAt": datetime.now(timezone.utc).isoformat(),
-                    "age": 18,
+                    "age": 25,  # Changed from 18 to 25 (more realistic)
                     "gender": "Other", 
-                    "bio": "",
+                    "bio": "New LuvHive user from Telegram! 💬✨",  # Better default bio
                     "profileImage": "",
                     "followers": [],
                     "following": [],
                     "posts": [],
                     "isPremium": False,
                     "isOnline": True,
-                    "lastSeen": datetime.now(timezone.utc).isoformat()
+                    "lastSeen": datetime.now(timezone.utc).isoformat(),
+                    "preferences": {  # Add missing fields that EditProfile might expect
+                        "showAge": True,
+                        "showOnlineStatus": True, 
+                        "allowMessages": True
+                    },
+                    "privacy": {
+                        "profileVisibility": "public",
+                        "showLastSeen": True
+                    },
+                    "socialLinks": {  # Initialize social links
+                        "instagram": "",
+                        "twitter": "",
+                        "website": ""
+                    },
+                    "interests": [],  # Initialize interests array
+                    "location": ""  # Initialize location
                 }
                 
                 await db.users.insert_one(user_data)
