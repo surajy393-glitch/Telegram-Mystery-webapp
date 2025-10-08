@@ -438,33 +438,58 @@ async def verify_email_otp(email: str, provided_otp: str) -> bool:
         return False
 
 async def send_email_otp(email: str, otp: str):
-    """Send OTP via email using SMTP"""
+    """Send OTP via email using SendGrid"""
     try:
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
         
-        # Gmail SMTP configuration
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
-        sender_email = "luvsocietybusiness@gmail.com"  # Your app email
-        sender_password = os.environ.get("EMAIL_PASSWORD")  # App password
+        # SendGrid configuration
+        sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+        sender_email = "noreply@luvhive.com"  # You can use any verified sender
         
-        if not sender_password:
-            logger.error("EMAIL_PASSWORD not configured")
-            return False
+        if not sendgrid_api_key:
+            logger.error("SENDGRID_API_KEY not configured, using mock email")
+            logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
+            return True
         
-        # Create message
-        message = MIMEMultipart("alternative")
-        message["Subject"] = "Your LuvHive Verification Code"
-        message["From"] = sender_email
-        message["To"] = email
+        # Create HTML email content
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+            <div style="background-color: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #e91e63; margin: 0; font-size: 28px;">💖 LuvHive</h1>
+                    <h2 style="color: #333; margin: 10px 0 0 0; font-size: 22px;">Email Verification</h2>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #e91e63, #f06292); padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0;">
+                    <p style="color: white; margin: 0 0 15px 0; font-size: 16px; font-weight: 500;">Your Verification Code:</p>
+                    <div style="background-color: white; padding: 15px; border-radius: 8px; display: inline-block;">
+                        <span style="color: #e91e63; font-size: 36px; font-weight: bold; letter-spacing: 8px; font-family: 'Courier New', monospace;">{otp}</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 25px 0;">
+                    <p style="color: #555; font-size: 16px; margin: 0 0 15px 0;">Enter this code on the registration page to verify your email address</p>
+                    <p style="color: #888; font-size: 14px; margin: 0;">⏰ This code expires in <strong>10 minutes</strong></p>
+                </div>
+                
+                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
+                    <p style="color: #999; font-size: 13px; margin: 0;">🔒 If you didn't request this code, please ignore this email.</p>
+                    <p style="color: #999; font-size: 13px; margin: 5px 0 0 0;">This is an automated message from LuvHive.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
         
-        # Create HTML and plain text versions
-        text = f"""
-        Your LuvHive Verification Code
+        # Plain text version
+        text_content = f"""
+        LuvHive Email Verification
         
         Your verification code is: {otp}
+        
+        Enter this code on the registration page to verify your email address.
         
         This code will expire in 10 minutes.
         Do not share this code with anyone.
@@ -475,48 +500,28 @@ async def send_email_otp(email: str, otp: str):
         LuvHive Team
         """
         
-        html = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center;">
-                <h1 style="color: #333; margin-bottom: 20px;">🔐 Your LuvHive Verification Code</h1>
-                
-                <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #e91e63;">
-                    <h2 style="color: #e91e63; font-size: 32px; margin: 0; letter-spacing: 5px;">{otp}</h2>
-                </div>
-                
-                <p style="color: #666; margin: 15px 0;">Enter this code to verify your email address</p>
-                <p style="color: #999; font-size: 14px; margin-top: 20px;">This code expires in 10 minutes</p>
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <p style="color: #999; font-size: 12px; margin: 0;">
-                        If you didn't request this code, please ignore this email.
-                    </p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Convert to MIMEText objects
-        part1 = MIMEText(text, "plain")
-        part2 = MIMEText(html, "html")
-        
-        # Add parts to message
-        message.attach(part1)
-        message.attach(part2)
+        # Create SendGrid message
+        message = Mail(
+            from_email=sender_email,
+            to_emails=email,
+            subject="Your LuvHive Verification Code 🔐",
+            html_content=html_content,
+            plain_text_content=text_content
+        )
         
         # Send email
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(message)
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
         
-        logger.info(f"Real email sent successfully: OTP {otp} to {email}")
-        return True
+        if response.status_code == 202:
+            logger.info(f"SendGrid email sent successfully: OTP {otp} to {email}")
+            return True
+        else:
+            logger.error(f"SendGrid error: Status {response.status_code}")
+            return False
                 
     except Exception as e:
-        logger.error(f"Error sending real email OTP: {e}")
+        logger.error(f"Error sending SendGrid email: {e}")
         # Fallback to mock for debugging
         logger.info(f"FALLBACK MOCK EMAIL: OTP {otp} to {email}")
         return True
