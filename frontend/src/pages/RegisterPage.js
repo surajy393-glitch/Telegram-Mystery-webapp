@@ -24,6 +24,9 @@ const RegisterPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [usernameSuggestions, setUsernameSuggestions] = useState([]);
+  const [usernameMessage, setUsernameMessage] = useState("");
   
   const [formData, setFormData] = useState({
     fullName: "",
