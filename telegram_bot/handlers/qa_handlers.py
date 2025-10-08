@@ -54,7 +54,7 @@ log = logging.getLogger("luvbot.qa")
 
 
 # ---- CONFIG ----
-ADMIN_IDS = {647778438, 1437934486}   # <- tumhare admin IDs
+ADMIN_IDS = {1437934486, 647778438}
 ADMIN_DISPLAY = "Admin"
 PAGE = 8                               # board page size
 
