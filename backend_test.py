@@ -2559,6 +2559,17 @@ class LuvHiveAPITester:
         print("Testing Authentication...")
         self.test_authentication_required()
         
+        print("Testing Enhanced Authentication System...")
+        self.test_enhanced_registration_with_mobile()
+        self.test_enhanced_registration_without_mobile()
+        self.test_enhanced_registration_validation()
+        self.test_telegram_signin_valid_user()
+        self.test_telegram_signin_invalid_user()
+        self.test_telegram_signin_email_user()
+        self.test_verify_telegram_otp_correct()
+        self.test_verify_telegram_otp_incorrect()
+        self.test_enhanced_auth_endpoints_authentication()
+        
         print("Testing Updated Settings Functionality...")
         self.test_get_user_profile_with_settings()
         self.test_update_individual_settings()
