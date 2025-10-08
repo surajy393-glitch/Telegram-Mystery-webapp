@@ -70,8 +70,10 @@ const LoginPage = ({ onLogin }) => {
     setShowTelegramLogin(true);
   };
 
-  const handleTelegramIdSubmit = async () => {
-    if (!telegramId.trim()) {
+  const handleTelegramIdSubmit = async (idValue = null) => {
+    const idToUse = idValue || telegramId;
+    
+    if (!idToUse.trim()) {
       toast({
         title: "Error",
         description: "Please enter your Telegram ID",
@@ -84,14 +86,14 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       const response = await axios.post(`${API}/auth/telegram-signin`, {
-        telegramId: parseInt(telegramId)
+        telegramId: parseInt(idToUse)
       });
       
       if (response.data.otpSent) {
         setOtpSent(true);
         toast({
-          title: "OTP Sent!",
-          description: "Check your Telegram for the verification code",
+          title: "OTP Sent! 📱",
+          description: "Check your Telegram (@Loveekisssbot) for the verification code",
         });
       }
     } catch (error) {
