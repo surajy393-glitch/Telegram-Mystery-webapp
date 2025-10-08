@@ -755,9 +755,10 @@ async def verify_mobile_otp(mobile_number: str, otp_code: str):
                 formatted_number = '+91' + formatted_number
         
         # Verify OTP
+        verify_service_sid = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
         verification_check = client.verify \
             .v2 \
-            .services("VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") \
+            .services(verify_service_sid) \
             .verification_checks \
             .create(to=formatted_number, code=otp_code)
         
