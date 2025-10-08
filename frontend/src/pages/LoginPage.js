@@ -57,9 +57,18 @@ const LoginPage = ({ onLogin }) => {
       onLogin(response.data.access_token, response.data.user);
       navigate("/home");
     } catch (error) {
+      let errorTitle = "Login Failed";
+      let errorDescription = error.response?.data?.detail || "Login failed";
+      
+      // Special handling for email verification error
+      if (error.response?.status === 403) {
+        errorTitle = "Email Verification Required";
+        errorDescription = error.response.data.detail;
+      }
+      
       toast({
-        title: "Login Failed",
-        description: error.response?.data?.detail || "Login failed",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive"
       });
     } finally {
