@@ -1981,6 +1981,79 @@ async def verify_existing_otp(request: VerifyEmailOTPRequest):
         logger.error(f"Verify existing OTP error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.delete("/auth/cleanup-account/{identifier}")
+async def cleanup_account_data(identifier: str):
+    """
+    ADMIN ENDPOINT: Delete all account data by username or email
+    """
+    try:
+        # Find users by username or email
+        users_to_delete = []
+        
+        # Search by username (case insensitive)
+        user_by_username = await db.users.find_one({
+            "username": {"$regex": f"^{identifier}$", "$options": "i"}
+        })
+        if user_by_username:
+            users_to_delete.append(user_by_username)
+        
+        # Search by email (case insensitive)  
+        user_by_email = await db.users.find_one({
+            "email": {"$regex": f"^{identifier}$", "$options": "i"}
+        })
+        if user_by_email and user_by_email not in users_to_delete:
+            users_to_delete.append(user_by_email)
+        
+        # Delete all found users and related data
+        deleted_users = []
+        for user in users_to_delete:
+            user_id = user["id"]
+            username = user["username"]
+            email = user.get("email", "N/A")
+            
+            # Delete user posts
+            posts_deleted = await db.posts.delete_many({"userId": user_id})
+            
+            # Delete user comments
+            comments_deleted = await db.comments.delete_many({"userId": user_id})
+            
+            # Remove user from other users' followers/following lists
+            await db.users.update_many(
+                {"followers": user_id},
+                {"$pull": {"followers": user_id}}
+            )
+            await db.users.update_many(
+                {"following": user_id},
+                {"$pull": {"following": user_id}}
+            )
+            
+            # Delete the user account
+            user_deleted = await db.users.delete_one({"id": user_id})
+            
+            deleted_users.append({
+                "username": username,
+                "email": email,
+                "userId": user_id,
+                "posts_deleted": posts_deleted.deleted_count,
+                "comments_deleted": comments_deleted.deleted_count,
+                "account_deleted": user_deleted.deleted_count > 0
+            })
+        
+        if not deleted_users:
+            return {
+                "message": f"No accounts found with identifier: {identifier}",
+                "deleted_users": []
+            }
+        
+        return {
+            "message": f"Successfully cleaned up {len(deleted_users)} account(s)",
+            "deleted_users": deleted_users
+        }
+        
+    except Exception as e:
+        logger.error(f"Account cleanup error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/verify-email")
 async def verify_email(token: str):
     """
