@@ -68,6 +68,11 @@ const RegisterPage = ({ onLogin }) => {
     if (name === 'email') {
       checkEmailAvailability(value);
     }
+    
+    // Check mobile availability when mobile changes
+    if (name === 'mobileNumber') {
+      checkMobileAvailability(value);
+    }
   };
 
   const checkUsernameAvailability = async (username) => {
