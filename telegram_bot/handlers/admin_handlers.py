@@ -346,6 +346,23 @@ async def cmd_resetuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = int(context.args[0]); reset_user_metrics(uid)
     await update.effective_message.reply_text(f"🧹 Metrics reset for {uid}.")
 
+async def cmd_resetprivacy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Reset privacy consent for testing"""
+    if not _is_admin(update): return
+    if not context.args or not context.args[0].isdigit():
+        await update.effective_message.reply_text(
+            "Use command:\n<b>/resetprivacy &lt;telegram_id&gt;</b>", parse_mode=ParseMode.HTML
+        ); return
+    uid = int(context.args[0])
+    try:
+        import registration as reg
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("UPDATE users SET privacy_consent=FALSE, privacy_consent_date=NULL WHERE tg_user_id=%s", (uid,))
+            con.commit()
+        await update.effective_message.reply_text(f"🔒 Privacy consent reset for {uid}. They will see consent screen on next /start.")
+    except Exception as e:
+        await update.effective_message.reply_text(f"❌ Error: {e}")
+
 async def cmd_userinfo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _is_admin(update): return
     if not context.args or not context.args[0].isdigit():
