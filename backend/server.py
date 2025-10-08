@@ -172,6 +172,8 @@ class EnhancedUserRegister(BaseModel):
     password: str
     email: Optional[str] = None  # Optional email
     mobileNumber: Optional[str] = None  # Optional mobile number
+    profileImage: Optional[str] = None  # Optional profile image
+    bio: Optional[str] = None  # Optional bio
 
 class EmailOTPRequest(BaseModel):
     email: str
