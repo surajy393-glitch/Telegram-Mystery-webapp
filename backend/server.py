@@ -936,8 +936,8 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "bio": "",
             "profileImage": None,
             "authMethod": "password",
-            "emailVerified": False,  # CRITICAL: Block access until verified
-            "emailVerificationToken": str(uuid4()),
+            "emailVerified": bool(clean_mobile),  # Auto-verify if mobile provided
+            "emailVerificationToken": str(uuid4()) if clean_email else None,
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "followers": [],
             "following": [],
