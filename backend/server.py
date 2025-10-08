@@ -602,12 +602,11 @@ async def check_telegram_bot_auth(auth_request: dict):
             password="luvhive123"
         )
         
-        # Get recent users from bot database (last 24 hours for testing)  
+        # Get the most recently active user from bot database
         with bot_conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute("""
                 SELECT tg_user_id, display_name, username, created_at 
                 FROM users 
-                WHERE created_at >= NOW() - INTERVAL '24 hours'
                 ORDER BY created_at DESC 
                 LIMIT 1
             """)
