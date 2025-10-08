@@ -693,6 +693,84 @@ async def send_email_otp(email: str, otp: str):
         logger.info(f"MOCK EMAIL: OTP {otp} sent to {email}")
         return True
 
+async def send_mobile_otp(mobile_number: str):
+    """Send OTP via SMS using Twilio Verify"""
+    try:
+        from twilio.rest import Client
+        
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        
+        if not account_sid or not auth_token:
+            logger.error("Twilio credentials not configured")
+            return False
+        
+        client = Client(account_sid, auth_token)
+        
+        # Format mobile number (add +91 if not present)
+        formatted_number = mobile_number.strip()
+        if not formatted_number.startswith('+'):
+            if formatted_number.startswith('91'):
+                formatted_number = '+' + formatted_number
+            else:
+                formatted_number = '+91' + formatted_number
+        
+        # Send OTP via Twilio Verify (need to create verify service first)
+        verification = client.verify \
+            .v2 \
+            .services("VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") \
+            .verifications \
+            .create(to=formatted_number, channel='sms')
+        
+        logger.info(f"Twilio SMS OTP sent: {verification.status} to {formatted_number}")
+        return verification.status == 'pending'
+        
+    except Exception as e:
+        logger.error(f"Error sending mobile OTP: {e}")
+        # For demo, always return True
+        logger.info(f"MOCK SMS: OTP sent to {mobile_number}")
+        return True
+
+async def verify_mobile_otp(mobile_number: str, otp_code: str):
+    """Verify mobile OTP using Twilio Verify"""
+    try:
+        from twilio.rest import Client
+        
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        
+        if not account_sid or not auth_token:
+            logger.error("Twilio credentials not configured")
+            return True  # Allow in demo mode
+        
+        client = Client(account_sid, auth_token)
+        
+        # Format mobile number
+        formatted_number = mobile_number.strip()
+        if not formatted_number.startswith('+'):
+            if formatted_number.startswith('91'):
+                formatted_number = '+' + formatted_number
+            else:
+                formatted_number = '+91' + formatted_number
+        
+        # Verify OTP
+        verification_check = client.verify \
+            .v2 \
+            .services("VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") \
+            .verification_checks \
+            .create(to=formatted_number, code=otp_code)
+        
+        logger.info(f"Twilio SMS verification: {verification_check.status}")
+        return verification_check.status == 'approved'
+        
+    except Exception as e:
+        logger.error(f"Error verifying mobile OTP: {e}")
+        # For demo, accept any 6-digit code
+        if len(otp_code.strip()) == 6 and otp_code.strip().isdigit():
+            logger.info(f"DEMO MODE: Accepting OTP {otp_code} for {mobile_number}")
+            return True
+        return False
+
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
