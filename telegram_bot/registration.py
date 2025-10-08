@@ -193,6 +193,8 @@ def init_db():
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_until TIMESTAMPTZ;")
             conn.commit()
         log.info("✅ users & user_interests ensured")
+        # Ensure age verification columns exist
+        ensure_age_verification_columns()
     except Exception as e:
         log.error(f"❌ DB table error: {e}")
 
