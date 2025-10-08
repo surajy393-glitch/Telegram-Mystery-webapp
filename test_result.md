@@ -302,10 +302,13 @@ metadata:
   forgot_password_test: "2025-01-27 16:53:06"
   comprehensive_telegram_auth_test: "2025-01-27 18:15:00"
   enhanced_auth_test: "2025-01-27 19:52:00"
+  username_availability_api_test: "2025-01-27 20:07:34"
+  fixed_telegram_auth_test: "2025-01-27 20:07:34"
 
 test_plan:
   current_focus:
-    - "Enhanced Authentication System Testing Complete"
+    - "Username Availability API Testing Complete"
+    - "Fixed Telegram Authentication Testing Complete"
   stuck_tasks:
     - "Hashtag functionality with clickable hashtags and search integration"
   test_all: false
