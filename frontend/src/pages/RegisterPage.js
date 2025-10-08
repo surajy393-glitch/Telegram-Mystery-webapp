@@ -284,6 +284,22 @@ const RegisterPage = ({ onLogin }) => {
                 </div>
 
                 <div>
+                  <Label htmlFor="mobileNumber" className="text-gray-700 font-medium">
+                    Mobile Number <span className="text-gray-500">(optional)</span>
+                  </Label>
+                  <Input
+                    id="mobileNumber"
+                    name="mobileNumber"
+                    data-testid="mobile-input"
+                    type="tel"
+                    placeholder="Enter your mobile number"
+                    value={formData.mobileNumber}
+                    onChange={handleChange}
+                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="age" className="text-gray-700 font-medium">Age</Label>
                   <Input
                     id="age"
