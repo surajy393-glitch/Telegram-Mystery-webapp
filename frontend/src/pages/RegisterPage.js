@@ -644,7 +644,7 @@ const RegisterPage = ({ onLogin }) => {
                   {emailStatus === 'available' && !emailVerified && (
                     <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <p className="text-sm font-medium text-blue-800 mb-3">
-                        🔐 Email Verification Required
+                        {mobileVerified ? '🔐 Email Verification (Optional)' : '🔐 Email Verification Required'}
                       </p>
                       
                       {!emailOtpSent ? (
