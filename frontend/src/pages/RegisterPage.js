@@ -336,6 +336,22 @@ const RegisterPage = ({ onLogin }) => {
         return;
       }
 
+      // Check if auto-login is enabled (mobile-only registration)
+      if (response.data.auto_login && response.data.access_token) {
+        // Auto-login the user
+        onLogin(response.data.access_token, response.data.user);
+        
+        toast({
+          title: "Registration Successful! 🎉",
+          description: response.data.message,
+        });
+        
+        // Navigate to home
+        navigate("/home");
+        setLoading(false);
+        return;
+      }
+
       const token = response.data.access_token;
 
       // Then update profile with bio and image
