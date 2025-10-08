@@ -265,35 +265,100 @@ const LoginPage = ({ onLogin }) => {
   };
 
   const handleForgotPassword = async () => {
-    if (!forgotPasswordEmail.trim()) {
+    if (forgotPasswordMethod === "email") {
+      if (!forgotPasswordEmail.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your email address",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      try {
+        await axios.post(`${API}/auth/forgot-password`, {
+          email: forgotPasswordEmail.trim()
+        });
+
+        toast({
+          title: "Reset Link Sent!",
+          description: "Check your email for password reset instructions",
+        });
+
+        setShowForgotPassword(false);
+        setForgotPasswordEmail("");
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.detail || "Failed to send reset link",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // Mobile method
+      if (!forgotPasswordMobile.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your mobile number",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${API}/auth/forgot-password-mobile`, {
+          mobileNumber: forgotPasswordMobile.trim()
+        });
+
+        if (response.data.otpSent) {
+          setShowResetForm(true);
+          toast({
+            title: "OTP Sent! 📱",
+            description: "Check your mobile for the password reset code",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.detail || "Failed to send mobile OTP",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const handleMobilePasswordReset = async () => {
+    if (!resetOtp.trim() || !newPassword.trim()) {
       toast({
         title: "Error",
-        description: "Please enter your email address",
+        description: "Please enter both OTP and new password",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      const response = await axios.post(`${API}/auth/forgot-password`, {
-        email: forgotPasswordEmail.trim()
+      await axios.post(`${API}/auth/reset-password-mobile`, {
+        mobileNumber: forgotPasswordMobile.trim(),
+        otp: resetOtp.trim(),
+        new_password: newPassword
       });
-      
+
       toast({
-        title: "Reset Link Sent",
-        description: response.data.message + (response.data.reset_link ? `\n\nFor testing: Check console for reset link` : ''),
+        title: "Password Reset! ✅",
+        description: "Your password has been reset successfully. You can now sign in.",
       });
-      
-      if (response.data.reset_link) {
-        console.log("Password reset link (for testing):", response.data.reset_link);
-      }
-      
+
+      // Reset form and close
       setShowForgotPassword(false);
-      setForgotPasswordEmail("");
+      setShowResetForm(false);
+      setForgotPasswordMobile("");
+      setResetOtp("");
+      setNewPassword("");
     } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to send reset email",
+        description: error.response?.data?.detail || "Failed to reset password",
         variant: "destructive"
       });
     }
