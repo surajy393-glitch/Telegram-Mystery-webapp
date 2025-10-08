@@ -340,8 +340,56 @@ const RegisterPage = ({ onLogin }) => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                    className={`mt-2 rounded-xl ${
+                      usernameStatus === 'available' ? 'border-green-500 focus:border-green-500' :
+                      usernameStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
+                      'border-gray-300 focus:border-pink-500'
+                    }`}
                   />
+                  
+                  {/* Username Status Display */}
+                  {usernameStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        usernameStatus === 'available' ? 'text-green-600' :
+                        usernameStatus === 'taken' ? 'text-red-600' :
+                        usernameStatus === 'checking' ? 'text-blue-600' :
+                        'text-gray-600'
+                      }`}>
+                        {usernameStatus === 'checking' && (
+                          <span className="animate-spin">⏳</span>
+                        )}
+                        {usernameStatus === 'available' && (
+                          <span>✅</span>
+                        )}
+                        {usernameStatus === 'taken' && (
+                          <span>❌</span>
+                        )}
+                        {usernameMessage}
+                      </p>
+                      
+                      {/* Username Suggestions */}
+                      {usernameSuggestions.length > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm font-medium text-blue-800 mb-2">
+                            Available suggestions:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {usernameSuggestions.map((suggestion, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => selectSuggestion(suggestion)}
+                                className="px-3 py-1 text-sm bg-white border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
