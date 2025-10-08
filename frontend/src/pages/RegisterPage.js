@@ -776,8 +776,35 @@ const RegisterPage = ({ onLogin }) => {
                     placeholder="Enter your mobile number (+91xxxxxxxxxx)"
                     value={formData.mobileNumber}
                     onChange={handleChange}
-                    className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+                    className={`mt-2 rounded-xl ${
+                      mobileStatus === 'available' ? 'border-green-500 focus:border-green-500' :
+                      mobileStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
+                      'border-gray-300 focus:border-pink-500'
+                    }`}
                   />
+                  
+                  {/* Mobile Status Display */}
+                  {mobileStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        mobileStatus === 'available' ? 'text-green-600' :
+                        mobileStatus === 'taken' ? 'text-red-600' :
+                        mobileStatus === 'checking' ? 'text-blue-600' :
+                        'text-gray-600'
+                      }`}>
+                        {mobileStatus === 'checking' && (
+                          <span className="animate-spin">⏳</span>
+                        )}
+                        {mobileStatus === 'available' && (
+                          <span>✅</span>
+                        )}
+                        {mobileStatus === 'taken' && (
+                          <span>❌</span>
+                        )}
+                        {mobileMessage}
+                      </p>
+                    </div>
+                  )}
                   
                   {/* MOBILE OTP VERIFICATION */}
                   {formData.mobileNumber && formData.mobileNumber.trim() && !mobileVerified && (
