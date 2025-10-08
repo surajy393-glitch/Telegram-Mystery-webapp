@@ -322,6 +322,8 @@ test_plan:
   forgot_password_testing_complete: true
   comprehensive_telegram_auth_testing_complete: true
   enhanced_auth_testing_complete: true
+  username_availability_api_testing_complete: true
+  fixed_telegram_auth_testing_complete: true
 
   - task: "Comprehensive Settings page with 10+ toggles and categorized layout"
     implemented: true
