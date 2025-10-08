@@ -283,6 +283,33 @@ const RegisterPage = ({ onLogin }) => {
     }
   };
 
+  const checkMobileAvailability = async (mobile) => {
+    if (!mobile || mobile.length < 10) {
+      setMobileStatus(null);
+      setMobileMessage("");
+      return;
+    }
+
+    setMobileStatus('checking');
+    setMobileMessage("Checking mobile number...");
+    
+    try {
+      const response = await axios.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
+      const data = response.data;
+      
+      if (data.available) {
+        setMobileStatus('available');
+        setMobileMessage(data.message);
+      } else {
+        setMobileStatus('taken');
+        setMobileMessage(data.message);
+      }
+    } catch (error) {
+      setMobileStatus('error');
+      setMobileMessage("Error checking mobile number");
+    }
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
