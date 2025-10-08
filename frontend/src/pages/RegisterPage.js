@@ -41,10 +41,55 @@ const RegisterPage = ({ onLogin }) => {
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+    
+    // Check username availability when username changes
+    if (name === 'username') {
+      checkUsernameAvailability(value);
+    }
+  };
+
+  const checkUsernameAvailability = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameStatus(null);
+      setUsernameSuggestions([]);
+      setUsernameMessage("");
+      return;
+    }
+
+    setUsernameStatus('checking');
+    setUsernameMessage("Checking availability...");
+    
+    try {
+      const response = await axios.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
+      const data = response.data;
+      
+      if (data.available) {
+        setUsernameStatus('available');
+        setUsernameMessage(data.message);
+        setUsernameSuggestions([]);
+      } else {
+        setUsernameStatus('taken');
+        setUsernameMessage(data.message);
+        setUsernameSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      setUsernameStatus('error');
+      setUsernameMessage("Error checking username");
+      setUsernameSuggestions([]);
+    }
+  };
+
+  const selectSuggestion = (suggestion) => {
+    setFormData({
+      ...formData,
+      username: suggestion
+    });
+    checkUsernameAvailability(suggestion);
   };
 
   const handleImageUpload = (e) => {
