@@ -500,7 +500,7 @@ async def send_email_otp(email: str, otp: str):
         
         # Create SendGrid message
         message = Mail(
-            from_email="noreply@luvhive.com",
+            from_email="no-reply@luvhive.net",
             to_emails=email,
             subject="Your LuvHive Verification Code 🔐",
             html_content=html_content,
@@ -570,7 +570,7 @@ async def send_email_otp(email: str, otp: str):
                     # Use Twilio's email service if available
                     message = client.messages.create(
                         body=f"Your LuvHive verification code is: {otp}. This code expires in 10 minutes.",
-                        from_='noreply@luvhive.com',
+                        from_='no-reply@luvhive.net',
                         to=email
                     )
                     logger.info(f"Twilio email sent via messages API: {message.sid}")
@@ -586,7 +586,7 @@ async def send_email_otp(email: str, otp: str):
                                 "subject": "Your LuvHive Verification Code 🔐"
                             }
                         ],
-                        "from": {"email": "noreply@luvhive.com", "name": "LuvHive"},
+                        "from": {"email": "no-reply@luvhive.net", "name": "LuvHive"},
                         "content": [
                             {
                                 "type": "text/html",
@@ -611,7 +611,7 @@ async def send_email_otp(email: str, otp: str):
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail
             
-            sender_email = "noreply@luvhive.com"
+            sender_email = "no-reply@luvhive.net"
         
         # Create HTML email content
         html_content = f"""
@@ -663,7 +663,7 @@ async def send_email_otp(email: str, otp: str):
         
         # Create SendGrid message
         message = Mail(
-            from_email="noreply@luvhive.com",
+            from_email="no-reply@luvhive.net",
             to_emails=email,
             subject="Your LuvHive Verification Code 🔐",
             html_content=html_content,
