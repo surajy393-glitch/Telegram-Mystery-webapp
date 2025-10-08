@@ -955,6 +955,7 @@ def register(app):
     app.add_handler(CommandHandler("prem",      cmd_prem))
     app.add_handler(CommandHandler("unprem",    cmd_unprem))
     app.add_handler(CommandHandler("resetuser", cmd_resetuser))
+    app.add_handler(CommandHandler("resetprivacy", cmd_resetprivacy))
     app.add_handler(CommandHandler("userinfo",  cmd_userinfo))
     app.add_handler(CommandHandler("givecoin",  cmd_givecoin))
     app.add_handler(CommandHandler("coinbal",   cmd_coinbal))
