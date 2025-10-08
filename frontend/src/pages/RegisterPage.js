@@ -103,6 +103,77 @@ const RegisterPage = ({ onLogin }) => {
     checkUsernameAvailability(suggestion);
   };
 
+  const sendEmailOtp = async () => {
+    if (!formData.email || emailStatus !== 'available') {
+      toast({
+        title: "Error",
+        description: "Please enter a valid available email first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/send-email-otp`, {
+        email: formData.email
+      });
+      
+      if (response.data.otpSent) {
+        setEmailOtpSent(true);
+        toast({
+          title: "OTP Sent! 📧",
+          description: "Check your email for the verification code",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send OTP",
+        variant: "destructive"
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async () => {
+    if (!emailOtp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-email-otp`, {
+        email: formData.email,
+        otp: emailOtp.trim()
+      });
+      
+      if (response.data.verified) {
+        setEmailVerified(true);
+        toast({
+          title: "Email Verified! ✅",
+          description: "You can now proceed to the next step",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const checkEmailAvailability = async (email) => {
     if (!email || !email.includes('@')) {
       setEmailStatus(null);
