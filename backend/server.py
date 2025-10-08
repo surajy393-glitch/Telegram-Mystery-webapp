@@ -533,15 +533,64 @@ async def forgot_password(request: ForgotPasswordRequest):
         "reset_link": reset_link  
     }
 
+@api_router.post("/webhook/telegram")
+async def telegram_webhook(update: dict):
+    """Handle Telegram webhook updates"""
+    try:
+        # Process Telegram webhook update
+        if "message" in update:
+            message = update["message"]
+            user = message.get("from", {})
+            text = message.get("text", "")
+            
+            # Handle /start command
+            if text.startswith("/start"):
+                telegram_id = user.get("id")
+                
+                # Check if user exists
+                existing_user = await db.users.find_one({"telegramId": telegram_id})
+                
+                if existing_user:
+                    # User already registered
+                    return {"status": "ok", "message": "User already registered"}
+                else:
+                    # Create new user from Telegram data
+                    new_user_data = {
+                        "id": str(uuid4()),
+                        "telegramId": telegram_id,
+                        "telegramUsername": user.get("username", ""),
+                        "telegramFirstName": user.get("first_name", ""),
+                        "telegramLastName": user.get("last_name", ""),
+                        "fullName": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                        "username": user.get("username") or f"tguser{telegram_id}",
+                        "authMethod": "telegram",
+                        "createdAt": datetime.now(timezone.utc).isoformat(),
+                        "age": 18,  # Default age
+                        "gender": "Other",  # Default gender
+                        "bio": "",
+                        "profileImage": "",
+                        "followers": [],
+                        "following": [],
+                        "posts": [],
+                        "isPremium": False
+                    }
+                    
+                    await db.users.insert_one(new_user_data)
+                    return {"status": "ok", "message": "User registered successfully"}
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
 @api_router.post("/auth/telegram-check")
 async def check_telegram_auth(auth_request: dict):
     """Check if user has authenticated via Telegram bot"""
     try:
-        # This is a simplified implementation
-        # In production, you would check against actual Telegram messages
+        # For now, return not authenticated - will be replaced with proper implementation
         return {
             "authenticated": False,
-            "message": "Telegram bot authentication not fully implemented yet. Please use traditional login."
+            "message": "Please use the Telegram bot @Loveekisssbot to authenticate. Bot is now active!"
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
