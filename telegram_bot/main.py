@@ -133,7 +133,7 @@ from utils.db_integrity import apply_missing_constraints
 from utils.maintenance import maintenance_system
 from utils.privacy_compliance import privacy_manager
 from admin_commands import bulletproof_handlers
-# from profile_metrics import ensure_metric_columns  # Commented out - missing module
+from profile_metrics import ensure_metric_columns
 from handlers.settings_handlers import register as register_settings_handlers
 from handlers.profile_handlers import register as register_profile_handlers
 from handlers.premium_handlers import register as register_premium_handlers
