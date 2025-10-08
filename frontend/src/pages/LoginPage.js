@@ -73,7 +73,10 @@ const LoginPage = ({ onLogin }) => {
   const handleTelegramIdSubmit = async (idValue = null) => {
     const idToUse = idValue || telegramId;
     
-    if (!idToUse.trim()) {
+    // Convert to string and trim to handle both string and number inputs
+    const idString = String(idToUse).trim();
+    
+    if (!idString) {
       toast({
         title: "Error",
         description: "Please enter your Telegram ID",
