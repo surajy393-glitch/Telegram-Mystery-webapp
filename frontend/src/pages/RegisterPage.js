@@ -195,6 +195,24 @@ const RegisterPage = ({ onLogin }) => {
       return;
     }
 
+    if (mobileStatus === 'taken') {
+      toast({
+        title: "Error",
+        description: "This mobile number is already registered. Please use a different number.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (mobileStatus !== 'available') {
+      toast({
+        title: "Error",
+        description: "Please wait for mobile number validation to complete",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setMobileOtpLoading(true);
     
     try {
