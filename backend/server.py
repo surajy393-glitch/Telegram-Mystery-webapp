@@ -2054,6 +2054,7 @@ async def cleanup_account_data(identifier: str):
             deleted_users.append({
                 "username": username,
                 "email": email,
+                "mobileNumber": user.get("mobileNumber", "N/A"),
                 "userId": user_id,
                 "posts_deleted": posts_deleted.deleted_count,
                 "comments_deleted": comments_deleted.deleted_count,
