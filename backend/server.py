@@ -478,6 +478,140 @@ async def register(user_data: UserRegister):
         }
     }
 
+@api_router.post("/auth/register-enhanced")
+async def register_enhanced(user_data: EnhancedUserRegister):
+    """
+    Enhanced registration with mobile number support
+    """
+    try:
+        # Validate and clean input
+        clean_username = user_data.username.strip()
+        clean_fullname = user_data.fullName.strip()
+        clean_email = user_data.email.strip().lower()
+        clean_mobile = user_data.mobileNumber.strip() if user_data.mobileNumber else None
+        
+        if not clean_username:
+            raise HTTPException(status_code=400, detail="Username cannot be empty")
+        
+        if len(clean_username) < 3:
+            raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+        
+        if not user_data.password or len(user_data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        if not clean_email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        # Validate email format (basic)
+        if "@" not in clean_email or "." not in clean_email:
+            raise HTTPException(status_code=400, detail="Invalid email format")
+        
+        # Validate mobile number format if provided
+        if clean_mobile:
+            # Remove any spaces or special characters
+            clean_mobile = ''.join(filter(str.isdigit, clean_mobile))
+            if len(clean_mobile) < 10 or len(clean_mobile) > 15:
+                raise HTTPException(status_code=400, detail="Mobile number must be 10-15 digits")
+        
+        # Check if username exists (case-insensitive)
+        escaped_username = clean_username.replace('.', r'\.')
+        existing_user = await db.users.find_one({
+            "username": {"$regex": f"^{escaped_username}$", "$options": "i"}
+        })
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Check if email already exists
+        existing_email = await db.users.find_one({"email": clean_email})
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Check if mobile number already exists (if provided)
+        if clean_mobile:
+            existing_mobile = await db.users.find_one({"mobileNumber": clean_mobile})
+            if existing_mobile:
+                raise HTTPException(status_code=400, detail="Mobile number already registered")
+        
+        # Hash password
+        hashed_password = get_password_hash(user_data.password)
+        
+        # Create complete user
+        user_dict = {
+            "id": str(uuid4()),
+            "fullName": clean_fullname,
+            "username": clean_username,
+            "email": clean_email,
+            "mobileNumber": clean_mobile,
+            "age": user_data.age,
+            "gender": user_data.gender,
+            "password_hash": hashed_password,
+            "bio": "",
+            "profileImage": None,
+            "authMethod": "password",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "followers": [],
+            "following": [],
+            "posts": [],
+            "savedPosts": [],
+            "blockedUsers": [],
+            "hiddenStoryUsers": [],
+            "isPremium": False,
+            "isPrivate": False,
+            "isOnline": True,
+            "lastSeen": datetime.now(timezone.utc).isoformat(),
+            
+            # Privacy Controls
+            "publicProfile": True,
+            "appearInSearch": True,
+            "allowDirectMessages": True,
+            "showOnlineStatus": True,
+            
+            # Interaction Preferences
+            "allowTagging": True,
+            "allowStoryReplies": True,
+            "showVibeScore": True,
+            
+            # Notifications
+            "pushNotifications": True,
+            "emailNotifications": True,
+            
+            "preferences": {
+                "showAge": True,
+                "showOnlineStatus": True, 
+                "allowMessages": True
+            },
+            "privacy": {
+                "profileVisibility": "public",
+                "showLastSeen": True
+            },
+            "socialLinks": {
+                "instagram": "",
+                "twitter": "",
+                "website": ""
+            },
+            "interests": [],
+            "location": "",
+            "lastUsernameChange": None
+        }
+        
+        await db.users.insert_one(user_dict)
+        
+        # Generate access token
+        access_token = create_access_token(data={"sub": user_dict["id"]})
+        
+        return {
+            "message": "Registration successful",
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Enhanced registration error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.post("/auth/login")
 async def login(user_data: UserLogin):
     # Find user with case-insensitive username (handles whitespace issues)
