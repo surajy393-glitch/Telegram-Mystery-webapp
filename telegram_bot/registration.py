@@ -1686,6 +1686,43 @@ def persist_registration(tg_user_id: int, reg_data: dict, selected: Set[str]):
 #   sel_interests: set([...])
 #   premium: bool
 
+async def start_with_consent(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show privacy consent before allowing registration"""
+    user_id = update.effective_user.id
+    
+    # Check if user already consented
+    with _conn() as con, con.cursor() as cur:
+        cur.execute("SELECT privacy_consent FROM users WHERE tg_user_id=%s", (user_id,))
+        row = cur.fetchone()
+        
+        if row and row[0]:
+            # Already consented, continue to normal registration/menu
+            return await start_registration(update, context)
+    
+    # Show consent screen
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("✅ I Accept Privacy Policy", callback_data="privacy_accept")],
+        [InlineKeyboardButton("📋 Read Full Policy", callback_data="privacy_read")],
+        [InlineKeyboardButton("❌ I Decline", callback_data="privacy_decline")]
+    ])
+    
+    await update.message.reply_text(
+        "🔒 **PRIVACY CONSENT REQUIRED**\n\n"
+        "Before using LuvHive, you must accept our Privacy Policy.\n\n"
+        "**NECESSARY DATA (Required):**\n"
+        "• Telegram ID - authentication\n"
+        "• Age - legal compliance (18+)\n"
+        "• Gender - matching service\n\n"
+        "**OPTIONAL DATA (Enhances experience):**\n"
+        "• Photos - visual matching\n"
+        "• Audio/selfie - verification badge\n"
+        "• Interests - better matches\n\n"
+        "**Purpose:** Matching & safety moderation\n\n"
+        "You can delete your data anytime: /delete_me",
+        parse_mode="Markdown",
+        reply_markup=kb
+    )
+
 async def start_registration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     p = get_profile(uid)  # prefill
