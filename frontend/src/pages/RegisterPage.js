@@ -53,6 +53,11 @@ const RegisterPage = ({ onLogin }) => {
     if (name === 'username') {
       checkUsernameAvailability(value);
     }
+    
+    // Check email availability when email changes
+    if (name === 'email') {
+      checkEmailAvailability(value);
+    }
   };
 
   const checkUsernameAvailability = async (username) => {
