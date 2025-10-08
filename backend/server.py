@@ -157,6 +157,22 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
+class TelegramSigninRequest(BaseModel):
+    telegramId: int
+
+class VerifyOTPRequest(BaseModel):
+    telegramId: int
+    otp: str
+
+class EnhancedUserRegister(BaseModel):
+    fullName: str
+    username: str
+    age: int
+    gender: str
+    password: str
+    email: str
+    mobileNumber: Optional[str] = None  # Optional mobile number
+
 class UserProfile(BaseModel):
     fullName: str
     username: str
