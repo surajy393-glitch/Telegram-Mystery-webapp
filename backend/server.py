@@ -885,11 +885,12 @@ async def register_enhanced(user_data: EnhancedUserRegister):
         if not user_data.password or len(user_data.password) < 6:
             raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
         
-        if not clean_email:
-            raise HTTPException(status_code=400, detail="Email is required")
+        # Email is required only if no mobile number provided
+        if not clean_email and not clean_mobile:
+            raise HTTPException(status_code=400, detail="Either email or mobile number is required")
         
-        # Validate email format (basic)
-        if "@" not in clean_email or "." not in clean_email:
+        # Validate email format if provided
+        if clean_email and ("@" not in clean_email or "." not in clean_email):
             raise HTTPException(status_code=400, detail="Invalid email format")
         
         # Validate mobile number format if provided
