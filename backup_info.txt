@@ -1,0 +1,18 @@
+LuvHive Database Backup
+Tables: 115
+Export Date: Thu Oct  9 05:32:18 AM UTC 2025
+File: luvhive_complete_115_tables_20251009_053019.sql
+Size: 118K
+
+Missing Tables Restored:
+- post_reports
+- story_segments  
+- user_blocks
+- user_mutes
+
+Database Constraints Fixed:
+- Added UNIQUE constraint on users.tg_user_id
+- Added auto-increment sequence to users.id
+- Added PRIMARY KEY to vault_categories.id
+- Added UNIQUE constraint on vault_categories.name
+
