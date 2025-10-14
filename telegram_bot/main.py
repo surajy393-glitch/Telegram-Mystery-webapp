@@ -5,7 +5,7 @@ import asyncio
 import datetime
 import pytz
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters, ApplicationHandlerStop
 from telegram.error import TelegramError, TimedOut, RetryAfter, NetworkError, Forbidden
 import re  # Added re import for regex escaping
 
@@ -22,6 +22,7 @@ from menu import (
     BTN_FIND_PARTNER,
     BTN_MATCH_GIRLS,
     BTN_MATCH_BOYS,
+    BTN_MATCH_CITY,
     BTN_MY_PROFILE,
     BTN_SETTINGS,
     BTN_PREMIUM,
@@ -533,6 +534,60 @@ async def on_btn_match_boys(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reg.set_search_pref(uid, "m")
     await chat.start_search(update, context, mode="boys")
 
+async def on_btn_match_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if await _ban_gate(update, context):
+        return
+    uid = update.effective_user.id
+    if not reg.has_active_premium(uid):
+        await update.message.reply_text("🏙️💎 City matching is a premium feature!\n\n⚡ Upgrade to Premium to find matches in your city or any city in India.")
+        return
+    if not reg.is_registered(uid):
+        await update.message.reply_text("ℹ️ Please complete your profile first: open /settings and set gender, age and interests.")
+        return
+    
+    # Clear any existing search/chat state for continuous searching
+    if chat.in_chat(uid):
+        await chat._end_pair(uid, context, notify_partner=False)
+    await chat._remove_from_queue(uid)
+    
+    from handlers.text_framework import set_state
+    set_state(context, "city_match", "input_city", ttl_minutes=3)
+    await update.message.reply_text(
+        "🏙️ *City Matching*\n\n"
+        "Which city do you want to match from?\n\n"
+        "Type the city name (e.g., Mumbai, Delhi, Bangalore, Pune, Chennai, etc.)",
+        parse_mode="Markdown"
+    )
+    raise ApplicationHandlerStop  # Prevent button text from being processed as city input
+
+async def on_city_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    from handlers.text_framework import FEATURE_KEY, MODE_KEY, clear_state
+    
+    if context.user_data.get(FEATURE_KEY) != "city_match":
+        return
+    if context.user_data.get(MODE_KEY) != "input_city":
+        return
+    
+    city = (update.message.text or "").strip()
+    
+    if not city:
+        await update.message.reply_text("❌ Please enter a valid city name.")
+        return
+    
+    if len(city) < 2:
+        await update.message.reply_text("❌ City name too short. Please try again.")
+        return
+    
+    uid = update.effective_user.id
+    clear_state(context)
+    
+    chat._city_search[uid] = city.title()
+    
+    await update.message.reply_text(f"🔍 Searching for matches in {city.title()}...")
+    await chat.start_search(update, context, mode=chat.MODE_CITY)
+    
+    raise ApplicationHandlerStop  # Prevent city name from being relayed as message to partner
+
 async def cmd_ref(update: Update, context: ContextTypes.DEFAULT_TYPE):
     me = await context.bot.get_me()
     uid = update.effective_user.id
@@ -691,10 +746,11 @@ def main():
     posts_handlers.register(app)
 
     # TEXT FRAMEWORK - Register text handlers with proper priority order
-    # Priority: verification (-16) > fantasy_relay (-15) > afterdark_relay (-14) > fantasy_chat (-12) > vault_text (-11) > confession (-8) > qa (-6) > polls (-5) > stories (-4) > WYR (-3) > firewall (0) > text_router (9)
+    # Priority: verification (-16) > fantasy_relay (-15) > afterdark_relay (-14) > fantasy_chat (-12) > city_match (-10) > vault_text (-11) > confession (-8) > qa (-6) > polls (-5) > stories (-4) > WYR (-3) > firewall (0) > text_router (9)
     verification.register(app)      # Group -16: High priority verification (prevents collision)
     fantasy_relay.register(app)     # Group -15: Anonymous chat relay (highest priority)
     fantasy_chat.register(app)      # Group -12: Fantasy text input
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_city_input), group=-10)  # Group -10: City matching input
     vault_text.register(app)        # Group -11: Vault text input
     confession_roulette.register(app) # Group -8: Confession text input
     qa_handlers.register(app)         # Group -6: QA answer input
@@ -836,6 +892,7 @@ def main():
     app.add_handler(MessageHandler(_btn(BTN_PREMIUM), on_btn_premium), group=-25)
     app.add_handler(MessageHandler(_btn(BTN_MATCH_GIRLS), on_btn_match_girls), group=-25)
     app.add_handler(MessageHandler(_btn(BTN_MATCH_BOYS), on_btn_match_boys), group=-25)
+    app.add_handler(MessageHandler(_btn(BTN_MATCH_CITY), on_btn_match_city), group=-25)
     app.add_handler(MessageHandler(_btn(BTN_MY_PROFILE), on_btn_profile), group=-25)
     app.add_handler(MessageHandler(_btn(BTN_SETTINGS), on_btn_settings), group=-25)
     app.add_handler(MessageHandler(_btn(BTN_FRIENDS), handlers.menu_handlers.on_home_friends), group=-25)

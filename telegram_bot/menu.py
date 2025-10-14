@@ -5,6 +5,7 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 BTN_FIND_PARTNER = "💕⚡ Find a Partner"
 BTN_MATCH_GIRLS  = "💖👩 Match with girls"
 BTN_MATCH_BOYS   = "💙👨 Match with boys"
+BTN_MATCH_CITY   = "🏙️💎 Match by City"
 BTN_MY_PROFILE   = "✨👤 My Profile"
 BTN_SETTINGS     = "💫⚙️ Settings"
 BTN_PREMIUM      = "💎✨ Premium"
@@ -27,10 +28,10 @@ def main_menu_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
             [KeyboardButton(BTN_FIND_PARTNER), KeyboardButton(BTN_MATCH_GIRLS)],
-            [KeyboardButton(BTN_MATCH_BOYS),   KeyboardButton(BTN_FRIENDS)],
-            [KeyboardButton(BTN_PUBLIC_FEED),  KeyboardButton(BTN_MY_PROFILE)],
-            [KeyboardButton(BTN_SETTINGS),     KeyboardButton(BTN_PREMIUM)],
-            [KeyboardButton(BTN_FUN_GAMES)],
+            [KeyboardButton(BTN_MATCH_BOYS),   KeyboardButton(BTN_MATCH_CITY)],
+            [KeyboardButton(BTN_FRIENDS),      KeyboardButton(BTN_PUBLIC_FEED)],
+            [KeyboardButton(BTN_MY_PROFILE),   KeyboardButton(BTN_SETTINGS)],
+            [KeyboardButton(BTN_PREMIUM),      KeyboardButton(BTN_FUN_GAMES)],
         ],
         resize_keyboard=True
     )

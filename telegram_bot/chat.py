@@ -588,7 +588,9 @@ async def _end_pair(uid: int, context: ContextTypes.DEFAULT_TYPE, notify_partner
 MODE_RANDOM = "random"
 MODE_GIRLS  = "girls"
 MODE_BOYS   = "boys"
+MODE_CITY   = "city"
 _last_mode: dict[int, str] = {}
+_city_search: dict[int, str] = {}
 
 # --- NEW HELPERS: mutual preference checks ---
 def _user_mode(uid: int) -> str:
@@ -631,6 +633,26 @@ def _allows(viewer_id: int, cand_id: int) -> bool:
 
     mode = _user_mode(viewer_id)
 
+    # city filter - match by active search OR profile city
+    if mode == MODE_CITY:
+        viewer_city = _city_search.get(viewer_id, "").strip().lower()
+        if not viewer_city:
+            return False
+            
+        cand_mode = _user_mode(cand_id)
+        
+        # Check if candidate is also searching for same city
+        if cand_mode == MODE_CITY:
+            cand_city = _city_search.get(cand_id, "").strip().lower()
+            if viewer_city != cand_city:
+                return False
+        else:
+            # Candidate not in city mode - check their profile city
+            cand_profile = reg.get_profile(cand_id) or {}
+            cand_profile_city = (cand_profile.get("city") or "").strip().lower()
+            if viewer_city != cand_profile_city:
+                return False
+
     # gender filter from viewer mode (STRICT)
     if mode in (MODE_GIRLS, MODE_BOYS):
         need = "f" if mode == MODE_GIRLS else "m"
@@ -670,7 +692,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE, mode:
         return
 
     # Resolve mode
-    if mode in (MODE_RANDOM, MODE_GIRLS, MODE_BOYS):
+    if mode in (MODE_RANDOM, MODE_GIRLS, MODE_BOYS, MODE_CITY):
         _last_mode[uid] = mode
     mode = _last_mode.get(uid, MODE_RANDOM)
 
@@ -686,11 +708,25 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE, mode:
             return True
         try:
             cp = reg.get_profile(cand_id) or {}
-            g = (cp.get("gender") or "").strip().lower()
-            gkey = g[0] if g else ""
-            need = "f" if mode == MODE_GIRLS else "m"
-            if gkey != need:
-                return False
+            
+            # City filter (MODE_CITY)
+            if mode == MODE_CITY:
+                search_city = _city_search.get(uid, "").strip().lower()
+                cand_city = (cp.get("city") or "").strip().lower()
+                if not search_city or not cand_city:
+                    return False
+                if search_city != cand_city:
+                    return False
+            
+            # Gender filter (MODE_GIRLS/BOYS)
+            if mode in (MODE_GIRLS, MODE_BOYS):
+                g = (cp.get("gender") or "").strip().lower()
+                gkey = g[0] if g else ""
+                need = "f" if mode == MODE_GIRLS else "m"
+                if gkey != need:
+                    return False
+            
+            # Age filter (premium only)
             if is_premium and has_custom_age:
                 a = cp.get("age")
                 if a is None or not (min_age <= int(a) <= max_age):
@@ -767,7 +803,10 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE, mode:
 
         if partner is None:
             queue.append(uid)
-            if mode == MODE_GIRLS:
+            if mode == MODE_CITY:
+                city_name = _city_search.get(uid, "your city")
+                msg = f"🏙️ No one from {city_name} is online right now.\n\n💡 Try again later or use regular matching!"
+            elif mode == MODE_GIRLS:
                 msg = "🔎 Finding a girl partner soon...\nIf the search takes too long, try changing your settings (/settings)."
             elif mode == MODE_BOYS:
                 msg = "🔎 Finding a boy partner soon...\nIf the search takes too long, try changing your settings (/settings)."
