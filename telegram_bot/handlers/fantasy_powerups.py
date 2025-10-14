@@ -224,7 +224,9 @@ async def award_achievement(user_id: int, achievement_key: str) -> bool:
             RETURNING id
         """, (user_id, achievement_key, achievement["reward_stars"]))
         
-        return result and result is not True
+        if not result or result is True:
+            return False
+        return True
     except Exception as e:
         log.error(f"Failed to award achievement {achievement_key}: {e}")
         return False

@@ -791,6 +791,10 @@ def main():
     # Register Fantasy callback handlers for button interactions
     app.add_handler(CallbackQueryHandler(fantasy_match.handle_fantasy_callback, pattern=r"^fant:"), group=-1)
     
+    # Register admin fantasy review command
+    app.add_handler(CommandHandler("review_fantasies", fantasy_match.cmd_review_fantasies), group=0)
+    app.add_handler(CallbackQueryHandler(fantasy_match.handle_admin_fantasy_callback, pattern=r"^admin:"), group=-1)
+    
     # Register Fantasy Board system - NEW!
     from handlers.fantasy_integration import setup_fantasy_system
     setup_fantasy_system(app)

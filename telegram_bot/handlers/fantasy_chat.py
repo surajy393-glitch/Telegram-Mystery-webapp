@@ -27,6 +27,11 @@ async def start_fantasy_keywords(update, context: ContextTypes.DEFAULT_TYPE, vib
     text = f"✍️ **DESCRIBE YOUR {vibe_info['title'].upper()} FANTASY**\n\n"
     text += f"{vibe_info['emoji']} *{vibe_info['desc']}*\n\n"
     text += "Type your fantasy description (10-300 characters):\n\n"
+    text += "⚠️ **IMPORTANT GUIDELINES:**\n"
+    text += "• Keep it gentle and respectful\n"
+    text += "• No vulgar or explicit content\n"
+    text += "• Be safe and appropriate\n"
+    text += "• All fantasies are reviewed before approval\n\n"
     text += "📝 Be specific about what you want\n"
     text += "🔥 Our AI will find someone with the EXACT same desires\n"
     text += "💫 Make your dreams become reality\n"
@@ -79,9 +84,9 @@ async def on_fantasy_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     ok = _exec("""
       INSERT INTO fantasy_submissions
-        (user_id, gender, fantasy_text, vibe, keywords, active)
+        (user_id, gender, fantasy_text, vibe, keywords, active, status)
       VALUES
-        (%s,      %s,      %s,           %s,   %s::TEXT[], TRUE)
+        (%s,      %s,      %s,           %s,   %s::TEXT[], TRUE, 'pending')
     """, (uid, gender, text_in, vibe, _arr(kws)))
 
     if ok is None or ok is False:
@@ -89,10 +94,12 @@ async def on_fantasy_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     clear_state(context)
     
-    success_message = ("✅ **Fantasy Saved Successfully!** ✅\n\n"
-                      "🔮 Now go check the **Fantasy Board** to browse other fantasies you might like and connect with that person directly!\n\n"
-                      "💡 You can also wait for someone to discover and like your fantasy.\n\n"
-                      "🎯 Use /fantasy and tap **'🔮 Fantasy Board'** to explore amazing connections!")
+    success_message = ("✅ **Fantasy Submitted Successfully!** ✅\n\n"
+                      "⏳ Your fantasy is now **under review**\n"
+                      "📋 Our team will review it shortly for approval\n\n"
+                      "✨ Once approved, it will appear on the Fantasy Board!\n"
+                      "💫 You'll be notified when it's live\n\n"
+                      "🔮 Meanwhile, browse the **Fantasy Board** to connect with others!")
     
     await update.message.reply_text(success_message, parse_mode=ParseMode.MARKDOWN)
 

@@ -96,12 +96,12 @@ async def _show_page(chat_id: int, context: ContextTypes.DEFAULT_TYPE, page: int
     offset = page * PAGE_SIZE
     viewer_id = chat_id  # private chat => user_id == chat_id
 
-    # ✅ SELF-FILTER: apni fantasies exclude
+    # ✅ SELF-FILTER: apni fantasies exclude + only show approved
     rows = db_exec(
         """
         SELECT id, user_id, fantasy_text, vibe, gender
         FROM fantasy_submissions
-        WHERE active=TRUE AND user_id <> %s
+        WHERE active=TRUE AND user_id <> %s AND status='approved'
         ORDER BY id DESC
         LIMIT %s OFFSET %s
         """,
@@ -114,8 +114,19 @@ async def _show_page(chat_id: int, context: ContextTypes.DEFAULT_TYPE, page: int
             [InlineKeyboardButton("🔄 Refresh", callback_data="board:refresh")],
             [InlineKeyboardButton("🌟 Create Fantasy", callback_data="board:create")]
         ])
-        return await reply_any({"effective_chat": {"id": chat_id}}, context, header + "_No fantasies yet._",
-                              parse_mode=ParseMode.MARKDOWN, reply_markup=kb)
+        try:
+            return await context.bot.send_message(
+                chat_id=chat_id,
+                text=header + "_No fantasies yet._",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=kb
+            )
+        except Exception as e:
+            return await context.bot.send_message(
+                chat_id=chat_id,
+                text=header + "No fantasies yet.",
+                reply_markup=kb
+            )
 
     # Build numbered list
     lines = []

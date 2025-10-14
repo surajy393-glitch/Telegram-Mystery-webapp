@@ -145,6 +145,16 @@ def ensure_fantasy_tables():
       ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ,
       ADD COLUMN IF NOT EXISTS chat_id TEXT
     """)
+    # Add status column to fantasy_submissions for moderation
+    db_exec("""
+      ALTER TABLE fantasy_submissions
+      ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'
+    """)
+    # Ensure id column is linked to sequence for auto-increment
+    db_exec("""
+      ALTER TABLE fantasy_submissions 
+      ALTER COLUMN id SET DEFAULT nextval('fantasy_submissions_id_seq')
+    """)
     log.info("[fantasy] ensured tables")
 
 # ---------- IDEMPOTENT SENDER ----------
@@ -1526,6 +1536,181 @@ async def cmd_fantasy_notif_mode(update: Update, context: ContextTypes.DEFAULT_T
     current_mode = _get_notif_mode(context)
     await update.message.reply_text(f"✅ Fantasy notifications set to: *{current_mode}*", parse_mode="Markdown")
 
+async def cmd_review_fantasies(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to review pending fantasies"""
+    if update.effective_user.id not in ADMIN_IDS:
+        return await update.message.reply_text("❌ This command is only for admins.")
+    
+    # Get pending fantasies
+    rows = _exec("""
+        SELECT id, user_id, fantasy_text, vibe, gender, created_at
+        FROM fantasy_submissions
+        WHERE status = 'pending' AND active = TRUE
+        ORDER BY created_at ASC
+        LIMIT 10
+    """, (), fetch='all')
+    
+    if not rows or rows is True:
+        return await update.message.reply_text(
+            "✅ No pending fantasies to review!\n\nAll caught up! 🎉"
+        )
+    
+    # Show first pending fantasy
+    fid, uid, text, vibe, gender, created = rows[0]
+    
+    # Get user info
+    import registration as reg
+    profile = reg.get_profile(uid) or {}
+    username = profile.get('name', 'Unknown')
+    
+    gender_emoji = "👨" if gender == "m" else "👩"
+    vibe_emoji = {"romantic": "💕", "adventurous": "🔥", "playful": "✨", "mysterious": "🎭"}.get(vibe, "💫")
+    
+    msg = f"📋 **FANTASY REVIEW PANEL**\n\n"
+    msg += f"**Fantasy ID:** {fid}\n"
+    msg += f"**User:** {username} (ID: {uid})\n"
+    msg += f"**Gender:** {gender_emoji} {gender}\n"
+    msg += f"**Vibe:** {vibe_emoji} {vibe}\n"
+    msg += f"**Submitted:** {created.strftime('%Y-%m-%d %H:%M')}\n\n"
+    msg += f"**Fantasy Text:**\n\"{text}\"\n\n"
+    msg += f"⏳ **Pending:** {len(rows)} total"
+    
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ Approve", callback_data=f"admin:approve:{fid}"),
+            InlineKeyboardButton("❌ Reject", callback_data=f"admin:reject:{fid}")
+        ],
+        [InlineKeyboardButton("⏭️ Skip to Next", callback_data="admin:review:next")]
+    ]
+    
+    await update.message.reply_text(
+        msg,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def handle_admin_fantasy_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle admin fantasy review callbacks"""
+    query = update.callback_query
+    if not query or not query.data:
+        return
+    
+    if query.from_user.id not in ADMIN_IDS:
+        return await query.answer("❌ Admin only!", show_alert=True)
+    
+    data = query.data
+    await query.answer()
+    
+    if data.startswith("admin:approve:"):
+        fid = int(data.split(":")[2])
+        
+        # Get fantasy details before approval
+        row = _exec("SELECT user_id FROM fantasy_submissions WHERE id=%s", (fid,), fetch="one")
+        if not row:
+            return await query.edit_message_text("❌ Fantasy not found!")
+        
+        user_id = row[0]
+        
+        # Approve fantasy
+        _exec("UPDATE fantasy_submissions SET status='approved' WHERE id=%s", (fid,))
+        
+        # Notify user
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="✅ **Your fantasy has been approved!**\n\n🎉 It's now live on the Fantasy Board!\n\n"
+                     "Others can now see and connect with you based on this fantasy.",
+                parse_mode=ParseMode.MARKDOWN
+            )
+        except Exception as e:
+            log.error(f"Failed to notify user {user_id}: {e}")
+        
+        # Show next pending
+        await query.edit_message_text(f"✅ Fantasy #{fid} approved!\n\nLoading next...")
+        await _show_next_pending_fantasy(query, context)
+        
+    elif data.startswith("admin:reject:"):
+        fid = int(data.split(":")[2])
+        
+        # Get fantasy details before rejection
+        row = _exec("SELECT user_id FROM fantasy_submissions WHERE id=%s", (fid,), fetch="one")
+        if not row:
+            return await query.edit_message_text("❌ Fantasy not found!")
+        
+        user_id = row[0]
+        
+        # Reject fantasy (soft delete)
+        _exec("UPDATE fantasy_submissions SET status='rejected', active=FALSE WHERE id=%s", (fid,))
+        
+        # Notify user
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="❌ **Your fantasy was not approved**\n\n"
+                     "⚠️ Please follow our guidelines:\n"
+                     "• Keep it gentle and respectful\n"
+                     "• No vulgar or explicit content\n"
+                     "• Be safe and appropriate\n\n"
+                     "You can submit a new fantasy anytime with /fantasy",
+                parse_mode=ParseMode.MARKDOWN
+            )
+        except Exception as e:
+            log.error(f"Failed to notify user {user_id}: {e}")
+        
+        # Show next pending
+        await query.edit_message_text(f"❌ Fantasy #{fid} rejected!\n\nLoading next...")
+        await _show_next_pending_fantasy(query, context)
+        
+    elif data == "admin:review:next":
+        await _show_next_pending_fantasy(query, context)
+
+async def _show_next_pending_fantasy(query, context):
+    """Helper to show next pending fantasy"""
+    rows = _exec("""
+        SELECT id, user_id, fantasy_text, vibe, gender, created_at
+        FROM fantasy_submissions
+        WHERE status = 'pending' AND active = TRUE
+        ORDER BY created_at ASC
+        LIMIT 1
+    """, (), fetch='all')
+    
+    if not rows or rows is True:
+        return await query.edit_message_text(
+            "✅ **All done!**\n\nNo more pending fantasies to review! 🎉"
+        )
+    
+    fid, uid, text, vibe, gender, created = rows[0]
+    
+    # Get user info
+    import registration as reg
+    profile = reg.get_profile(uid) or {}
+    username = profile.get('name', 'Unknown')
+    
+    gender_emoji = "👨" if gender == "m" else "👩"
+    vibe_emoji = {"romantic": "💕", "adventurous": "🔥", "playful": "✨", "mysterious": "🎭"}.get(vibe, "💫")
+    
+    msg = f"📋 **FANTASY REVIEW PANEL**\n\n"
+    msg += f"**Fantasy ID:** {fid}\n"
+    msg += f"**User:** {username} (ID: {uid})\n"
+    msg += f"**Gender:** {gender_emoji} {gender}\n"
+    msg += f"**Vibe:** {vibe_emoji} {vibe}\n"
+    msg += f"**Submitted:** {created.strftime('%Y-%m-%d %H:%M')}\n\n"
+    msg += f"**Fantasy Text:**\n\"{text}\""
+    
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ Approve", callback_data=f"admin:approve:{fid}"),
+            InlineKeyboardButton("❌ Reject", callback_data=f"admin:reject:{fid}")
+        ],
+        [InlineKeyboardButton("⏭️ Skip to Next", callback_data="admin:review:next")]
+    ]
+    
+    await query.edit_message_text(
+        msg,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
 # ===== FANTASY BOARD SYSTEM =====
 
 async def cmd_fantasy_board(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1535,11 +1720,11 @@ async def cmd_fantasy_board(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = update.effective_user.id
 
-    # Get active fantasies with gender info
+    # Get active fantasies with gender info (only approved)
     query = """
         SELECT f.id, f.user_id, f.fantasy_text, f.vibe, f.gender, f.created_at
         FROM fantasy_submissions f
-        WHERE f.active = TRUE
+        WHERE f.active = TRUE AND f.status = 'approved'
         ORDER BY f.created_at DESC
         LIMIT 12
     """
