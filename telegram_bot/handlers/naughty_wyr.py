@@ -333,6 +333,127 @@ def _add_reaction(tg_user_id: int, message_id: int, reaction_type: str) -> bool:
     except Exception:
         return False
 
+# --------- SAFETY FEATURES ---------
+
+def _check_profanity(text: str) -> tuple[bool, str | None]:
+    """Check if text contains blocked words. Returns (is_clean, blocked_word)"""
+    try:
+        text_lower = text.lower()
+        
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("SELECT word, severity FROM wyr_blocked_words")
+            blocked_words = cur.fetchall()
+            
+            for word, severity in blocked_words:
+                if word.lower() in text_lower:
+                    return False, word
+        
+        return True, None
+    except Exception:
+        return True, None
+
+def _check_rate_limit(tg_user_id: int) -> tuple[bool, int]:
+    """Check if user is within rate limit. Returns (allowed, remaining_count)"""
+    try:
+        with _conn() as con, con.cursor() as cur:
+            # Get current rate limit record
+            cur.execute("""
+                SELECT comment_count, window_start, last_comment_at 
+                FROM wyr_rate_limits 
+                WHERE tg_user_id = %s
+            """, (tg_user_id,))
+            
+            row = cur.fetchone()
+            now = datetime.datetime.now(pytz.UTC)
+            
+            # If no record, user is allowed (will create record on first comment)
+            if not row:
+                return True, 5
+            
+            count, window_start, last_comment = row
+            
+            # Check if window has expired (1 hour)
+            window_start_utc = window_start.replace(tzinfo=pytz.UTC) if window_start.tzinfo is None else window_start
+            
+            if (now - window_start_utc).total_seconds() > 3600:  # 1 hour = 3600 seconds
+                # Window expired, reset
+                cur.execute("""
+                    UPDATE wyr_rate_limits 
+                    SET comment_count = 0, window_start = NOW()
+                    WHERE tg_user_id = %s
+                """, (tg_user_id,))
+                con.commit()
+                return True, 5
+            
+            # Check if limit exceeded (5 comments per hour)
+            if count >= 5:
+                remaining_seconds = 3600 - int((now - window_start_utc).total_seconds())
+                return False, remaining_seconds
+            
+            return True, 5 - count
+            
+    except Exception as e:
+        print(f"[wyr-safety] Rate limit check error: {e}")
+        return True, 5
+
+def _increment_rate_limit(tg_user_id: int) -> bool:
+    """Increment user's comment count in rate limit window"""
+    try:
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                INSERT INTO wyr_rate_limits (tg_user_id, comment_count, window_start, last_comment_at)
+                VALUES (%s, 1, NOW(), NOW())
+                ON CONFLICT (tg_user_id) 
+                DO UPDATE SET 
+                    comment_count = wyr_rate_limits.comment_count + 1,
+                    last_comment_at = NOW()
+            """, (tg_user_id,))
+            con.commit()
+            return True
+    except Exception as e:
+        print(f"[wyr-safety] Rate limit increment error: {e}")
+        return False
+
+def _report_comment(message_id: int, reporter_id: int, reason: str) -> bool:
+    """Report a comment for moderation"""
+    try:
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                INSERT INTO wyr_comment_reports (message_id, reporter_tg_id, report_reason)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (message_id, reporter_tg_id) DO NOTHING
+            """, (message_id, reporter_id, reason))
+            con.commit()
+            return cur.rowcount > 0
+    except Exception as e:
+        print(f"[wyr-safety] Report error: {e}")
+        return False
+
+def _get_unreviewed_reports(limit: int = 10) -> list:
+    """Get unreviewed reports for admin"""
+    try:
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    r.id,
+                    r.message_id,
+                    r.report_reason,
+                    r.created_at,
+                    m.content,
+                    COALESCE(p.permanent_username, a.anonymous_name) as username
+                FROM wyr_comment_reports r
+                JOIN wyr_group_messages m ON r.message_id = m.id
+                JOIN wyr_anonymous_users a ON m.anonymous_user_id = a.id
+                LEFT JOIN wyr_permanent_users p ON a.tg_user_id = p.tg_user_id
+                WHERE r.reviewed = FALSE AND m.is_deleted = FALSE
+                ORDER BY r.created_at DESC
+                LIMIT %s
+            """, (limit,))
+            return cur.fetchall()
+    except Exception as e:
+        print(f"[wyr-safety] Get reports error: {e}")
+        return []
+
 # --------- Leaderboard Functions --------
 def _get_top_comments(limit: int = 5) -> list:
     """Get most liked comments this week"""
@@ -554,6 +675,7 @@ def _add_group_message(tg_user_id: int, vote_date: datetime.date, content: str, 
             """, (tg_user_id, vote_date))
             row = cur.fetchone()
             if not row:
+                print(f"[wyr] No anonymous user found for tg_user_id={tg_user_id}, vote_date={vote_date}")
                 return False
 
             anonymous_user_id = row[0]
@@ -581,7 +703,10 @@ def _add_group_message(tg_user_id: int, vote_date: datetime.date, content: str, 
 
             con.commit()
             return True
-    except Exception:
+    except Exception as e:
+        print(f"[wyr] _add_group_message error: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -1046,9 +1171,13 @@ async def on_nwyr_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🏆 Leaderboard", callback_data="nwyr:leaderboard")]
     ]
 
-    # Add admin button if user is admin and has messages
-    if _is_admin(uid) and messages:
-        keyboard.append([InlineKeyboardButton("🗑️ Admin: Delete Comment", callback_data="nwyr:admin_mode")])
+    # Add admin/report buttons if messages exist
+    if messages:
+        # Add admin button if user is admin
+        if _is_admin(uid):
+            keyboard.append([InlineKeyboardButton("🗑️ Admin: Delete Comment", callback_data="nwyr:admin_mode")])
+        # Add report button for all users
+        keyboard.append([InlineKeyboardButton("🚨 Report Inappropriate Comment", callback_data="nwyr:report_mode")])
 
     kb = InlineKeyboardMarkup(keyboard)
 
@@ -1228,7 +1357,7 @@ async def handle_comment_input(update: Update, context: ContextTypes.DEFAULT_TYP
     # Cancel handling is now done by text framework automatically
     # No need for manual /cancel checking
 
-    # Validate comment
+    # Validate comment length
     if len(message_text) > 500:
         await update.message.reply_text("❌ Comment too long! Please keep it under 500 characters.")
         return
@@ -1237,9 +1366,39 @@ async def handle_comment_input(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("❌ Comment too short! Please write at least 3 characters.")
         return
 
+    # SAFETY CHECK 1: Check profanity/blocked words
+    is_clean, blocked_word = _check_profanity(message_text)
+    if not is_clean:
+        await update.message.reply_text(
+            f"⚠️ **Content Policy Violation**\n\n"
+            f"Your comment contains inappropriate language and cannot be posted.\n\n"
+            f"🚫 Blocked: '{blocked_word}'\n\n"
+            f"Please rephrase your comment respectfully."
+        )
+        clear_state(context)
+        return
+
+    # SAFETY CHECK 2: Check rate limit
+    allowed, remaining = _check_rate_limit(uid)
+    if not allowed:
+        minutes = remaining // 60
+        seconds = remaining % 60
+        await update.message.reply_text(
+            f"⏱️ **Rate Limit Reached**\n\n"
+            f"You've posted 5 comments in the last hour.\n"
+            f"Please wait {minutes}m {seconds}s before commenting again.\n\n"
+            f"This helps prevent spam and keeps the chat quality high!"
+        )
+        clear_state(context)
+        return
+
     # Add comment to group chat
     vote_date = context.user_data.get('nwyr_vote_date', datetime.date.today())
     success = _add_group_message(uid, vote_date, message_text, 'comment')
+    
+    # Increment rate limit if successful
+    if success:
+        _increment_rate_limit(uid)
 
     print(f"[nwyr-comment] Comment addition result: {success}")
 
@@ -1369,6 +1528,343 @@ async def on_nwyr_react(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await q.answer("❌ Couldn't add reaction!", show_alert=True)
 
+# --------- REPORT SYSTEM HANDLERS ---------
+
+async def on_nwyr_report_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show report interface for users"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+    today = datetime.date.today()
+    messages = _get_group_messages(today, limit=10)
+
+    if not messages:
+        await q.answer("No messages to report!", show_alert=True)
+        return
+
+    txt = "🚨 **REPORT INAPPROPRIATE COMMENT**\n\n"
+    txt += "⚠️ Select comment to report:\n"
+    txt += "*(Reports are reviewed by admins)*\n\n"
+
+    keyboard = []
+    for msg in messages[-10:]:
+        content = msg['content'][:35] + "..." if len(msg['content']) > 35 else msg['content']
+        utc_time = msg['created_at'].replace(tzinfo=pytz.UTC) if msg['created_at'].tzinfo is None else msg['created_at']
+        ist_time = utc_time.astimezone(IST)
+        time_str = ist_time.strftime('%H:%M')
+
+        button_text = f"🚨 {msg['anonymous_name']} ({time_str}): {content}"
+        keyboard.append([InlineKeyboardButton(button_text, callback_data=f"nwyr:report_select:{msg['id']}")])
+
+    keyboard.append([InlineKeyboardButton("◀️ Back to Chat", callback_data="nwyr:chat")])
+    kb = InlineKeyboardMarkup(keyboard)
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_report_select(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show report reason selection"""
+    q = update.callback_query
+    await q.answer()
+
+    # Extract message ID from callback
+    parts = q.data.split(":")
+    message_id = int(parts[2])
+
+    txt = "🚨 **WHY ARE YOU REPORTING THIS?**\n\n"
+    txt += "Please select a reason:\n"
+
+    keyboard = [
+        [InlineKeyboardButton("🔞 Inappropriate/Sexual Content", callback_data=f"nwyr:report_submit:{message_id}:inappropriate")],
+        [InlineKeyboardButton("😡 Abusive/Hateful Language", callback_data=f"nwyr:report_submit:{message_id}:abusive")],
+        [InlineKeyboardButton("📢 Spam/Advertising", callback_data=f"nwyr:report_submit:{message_id}:spam")],
+        [InlineKeyboardButton("⚠️ Harassment/Bullying", callback_data=f"nwyr:report_submit:{message_id}:harassment")],
+        [InlineKeyboardButton("🚫 Other Violation", callback_data=f"nwyr:report_submit:{message_id}:other")],
+        [InlineKeyboardButton("◀️ Back", callback_data="nwyr:report_mode")]
+    ]
+
+    kb = InlineKeyboardMarkup(keyboard)
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_report_submit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Submit report to admin queue"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+
+    # Extract message ID and reason from callback
+    parts = q.data.split(":")
+    message_id = int(parts[2])
+    reason = parts[3]
+
+    # Map reason codes to readable text
+    reason_map = {
+        "inappropriate": "Inappropriate/Sexual Content",
+        "abusive": "Abusive/Hateful Language",
+        "spam": "Spam/Advertising",
+        "harassment": "Harassment/Bullying",
+        "other": "Other Violation"
+    }
+    reason_text = reason_map.get(reason, reason)
+
+    # Submit report
+    success = _report_comment(message_id, uid, reason_text)
+
+    if success:
+        txt = (
+            "✅ **REPORT SUBMITTED**\n\n"
+            "Thank you for helping keep our community safe!\n\n"
+            f"📋 **Reason:** {reason_text}\n"
+            "👮 **Status:** Under admin review\n\n"
+            "You'll be notified if action is taken.\n"
+            "Admins typically review within 24 hours."
+        )
+    else:
+        txt = (
+            "⚠️ **Already Reported**\n\n"
+            "You've already reported this comment.\n"
+            "Admins will review it soon."
+        )
+
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("💬 Back to Chat", callback_data="nwyr:chat")]])
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def cmd_wyr_review_reports(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to review reported comments"""
+    uid = update.effective_user.id
+
+    if not _is_admin(uid):
+        await update.message.reply_text("❌ Admin access required!")
+        return
+
+    reports = _get_unreviewed_reports(10)
+
+    if not reports:
+        await update.message.reply_text("✅ No pending reports to review!")
+        return
+
+    txt = "👮 **ADMIN: REPORT REVIEW QUEUE**\n\n"
+    txt += f"📊 **{len(reports)} pending reports**\n\n"
+
+    keyboard = []
+    for report in reports:
+        report_id, msg_id, reason, created_at, content, username = report
+        content_preview = content[:30] + "..." if len(content) > 30 else content
+
+        button_text = f"🚨 {username}: {content_preview} ({reason})"
+        keyboard.append([InlineKeyboardButton(button_text, callback_data=f"nwyr:review_report:{report_id}:{msg_id}")])
+
+    kb = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_review_report_detail(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show report details and approve/delete options"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+    if not _is_admin(uid):
+        await q.answer("❌ Admin access required!", show_alert=True)
+        return
+
+    # Extract report_id and message_id from callback
+    parts = q.data.split(":")
+    report_id = int(parts[2])
+    msg_id = int(parts[3])
+
+    # Get report details
+    try:
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    r.report_reason,
+                    r.created_at,
+                    m.content,
+                    COALESCE(p.permanent_username, a.anonymous_name) as username,
+                    a.tg_user_id
+                FROM wyr_comment_reports r
+                JOIN wyr_group_messages m ON r.message_id = m.id
+                JOIN wyr_anonymous_users a ON m.anonymous_user_id = a.id
+                LEFT JOIN wyr_permanent_users p ON a.tg_user_id = p.tg_user_id
+                WHERE r.id = %s
+            """, (report_id,))
+            
+            result = cur.fetchone()
+            if not result:
+                await q.answer("Report not found!", show_alert=True)
+                return
+
+            reason, created_at, content, username, reporter_tg_id = result
+
+    except Exception as e:
+        await q.answer(f"Error loading report: {e}", show_alert=True)
+        return
+
+    # Create IST timestamp
+    utc_time = created_at.replace(tzinfo=pytz.UTC) if created_at.tzinfo is None else created_at
+    ist_time = utc_time.astimezone(IST)
+    time_str = ist_time.strftime("%Y-%m-%d %H:%M IST")
+
+    txt = (
+        "👮 **REPORT REVIEW DETAILS**\n\n"
+        f"🚨 **Reason:** {reason}\n"
+        f"👤 **Posted by:** {username}\n"
+        f"📅 **Reported at:** {time_str}\n\n"
+        f"💬 **Comment Content:**\n{content}\n\n"
+        "⚠️ **Choose Action:**"
+    )
+
+    keyboard = [
+        [InlineKeyboardButton("🗑️ Delete Comment", callback_data=f"nwyr:report_delete:{report_id}:{msg_id}")],
+        [InlineKeyboardButton("✅ Dismiss Report (Keep Comment)", callback_data=f"nwyr:report_dismiss:{report_id}")],
+        [InlineKeyboardButton("◀️ Back to Queue", callback_data="nwyr:back_to_reports")]
+    ]
+
+    kb = InlineKeyboardMarkup(keyboard)
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_report_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Delete reported comment and mark report as reviewed"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+    if not _is_admin(uid):
+        await q.answer("❌ Admin access required!", show_alert=True)
+        return
+
+    # Extract report_id and message_id
+    parts = q.data.split(":")
+    report_id = int(parts[2])
+    msg_id = int(parts[3])
+
+    # Delete comment and mark report as reviewed
+    try:
+        with _conn() as con, con.cursor() as cur:
+            # Delete the comment
+            cur.execute("""
+                UPDATE wyr_group_messages 
+                SET is_deleted = TRUE, deleted_by_admin = %s, deleted_at = NOW()
+                WHERE id = %s
+            """, (uid, msg_id))
+
+            # Mark report as reviewed
+            cur.execute("""
+                UPDATE wyr_comment_reports 
+                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, admin_action = 'deleted'
+                WHERE id = %s
+            """, (uid, report_id))
+
+            con.commit()
+
+        txt = (
+            "✅ **ACTION TAKEN**\n\n"
+            "🗑️ Comment deleted successfully\n"
+            "📝 Report marked as reviewed\n\n"
+            "The reported comment has been removed from the group chat."
+        )
+
+    except Exception as e:
+        txt = f"❌ Error taking action: {e}"
+
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Back to Queue", callback_data="nwyr:back_to_reports")]])
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_report_dismiss(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Dismiss report without deleting comment"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+    if not _is_admin(uid):
+        await q.answer("❌ Admin access required!", show_alert=True)
+        return
+
+    # Extract report_id
+    parts = q.data.split(":")
+    report_id = int(parts[2])
+
+    # Mark report as reviewed without deleting
+    try:
+        with _conn() as con, con.cursor() as cur:
+            cur.execute("""
+                UPDATE wyr_comment_reports 
+                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, admin_action = 'dismissed'
+                WHERE id = %s
+            """, (uid, report_id))
+            con.commit()
+
+        txt = (
+            "✅ **REPORT DISMISSED**\n\n"
+            "📝 Report marked as reviewed\n"
+            "💬 Comment kept in group chat\n\n"
+            "The report has been dismissed as no action needed."
+        )
+
+    except Exception as e:
+        txt = f"❌ Error dismissing report: {e}"
+
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Back to Queue", callback_data="nwyr:back_to_reports")]])
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
+async def on_nwyr_back_to_reports(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Return to report review queue"""
+    q = update.callback_query
+    await q.answer()
+
+    uid = update.effective_user.id
+    if not _is_admin(uid):
+        await q.answer("❌ Admin access required!", show_alert=True)
+        return
+
+    reports = _get_unreviewed_reports(10)
+
+    if not reports:
+        txt = "✅ No pending reports to review!"
+        kb = InlineKeyboardMarkup([[InlineKeyboardButton("💬 Back to Chat", callback_data="nwyr:chat")]])
+    else:
+        txt = "👮 **ADMIN: REPORT REVIEW QUEUE**\n\n"
+        txt += f"📊 **{len(reports)} pending reports**\n\n"
+
+        keyboard = []
+        for report in reports:
+            report_id, msg_id, reason, created_at, content, username = report
+            content_preview = content[:30] + "..." if len(content) > 30 else content
+
+            button_text = f"🚨 {username}: {content_preview} ({reason})"
+            keyboard.append([InlineKeyboardButton(button_text, callback_data=f"nwyr:review_report:{report_id}:{msg_id}")])
+
+        kb = InlineKeyboardMarkup(keyboard)
+
+    try:
+        await q.edit_message_text(txt, reply_markup=kb, parse_mode="Markdown")
+    except Exception:
+        await q.message.reply_text(txt, reply_markup=kb, parse_mode="Markdown")
+
 def register(app):
     from telegram.ext import MessageHandler, filters
 
@@ -1385,6 +1881,18 @@ def register(app):
     app.add_handler(CallbackQueryHandler(on_nwyr_delete_comment, pattern=r"^nwyr:delete:\d+$"), group=-2)
     app.add_handler(CallbackQueryHandler(on_nwyr_cancel_admin, pattern=r"^nwyr:cancel_admin$"), group=-2)
     app.add_handler(CallbackQueryHandler(on_nwyr_react, pattern=r"^nwyr:react:\d+:(like|heart|laugh)$"), group=-2)
+
+    # SAFETY & REPORT SYSTEM
+    app.add_handler(CallbackQueryHandler(on_nwyr_report_mode, pattern=r"^nwyr:report_mode$"), group=-2)
+    app.add_handler(CallbackQueryHandler(on_nwyr_report_select, pattern=r"^nwyr:report_select:\d+$"), group=-2)
+    app.add_handler(CallbackQueryHandler(on_nwyr_report_submit, pattern=r"^nwyr:report_submit:\d+:\w+$"), group=-2)
+    app.add_handler(CommandHandler("wyr_review_reports", cmd_wyr_review_reports), group=-1)
+    
+    # ADMIN REPORT REVIEW HANDLERS
+    app.add_handler(CallbackQueryHandler(on_nwyr_review_report_detail, pattern=r"^nwyr:review_report:\d+:\d+$"), group=-2)
+    app.add_handler(CallbackQueryHandler(on_nwyr_report_delete, pattern=r"^nwyr:report_delete:\d+:\d+$"), group=-2)
+    app.add_handler(CallbackQueryHandler(on_nwyr_report_dismiss, pattern=r"^nwyr:report_dismiss:\d+$"), group=-2)
+    app.add_handler(CallbackQueryHandler(on_nwyr_back_to_reports, pattern=r"^nwyr:back_to_reports$"), group=-2)
 
     # Framework-aware: Higher priority to prevent text swallowing
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_comment_input, block=False), group=-3)
