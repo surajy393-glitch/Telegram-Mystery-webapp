@@ -176,17 +176,17 @@ const SettingsPage = ({ user, onLogout }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100" data-testid="settings-page">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500" data-testid="settings-page">
       {/* Header */}
-      <header className="glass-effect border-b border-pink-100 sticky top-0 z-50">
+      <header className="bg-white bg-opacity-10 backdrop-blur-md border-b border-white border-opacity-20 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/my-profile">
-            <Button variant="ghost" className="hover:bg-pink-50">
-              <ArrowLeft className="w-5 h-5 text-pink-600" />
+          <Link to="/mystery">
+            <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+              <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
-            Settings
+          <h1 className="text-2xl font-bold text-white">
+            🎭 Settings
           </h1>
           <div className="w-10"></div>
         </div>
