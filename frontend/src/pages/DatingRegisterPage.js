@@ -799,9 +799,14 @@ const DatingRegisterPage = ({ onLogin }) => {
 
                 <Button 
                   type="submit"
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-6 rounded-xl text-lg font-bold shadow-2xl"
+                  disabled={!emailVerified && !mobileVerified}
+                  className={`w-full py-6 rounded-xl text-lg font-bold shadow-2xl ${
+                    emailVerified || mobileVerified
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white' 
+                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  }`}
                 >
-                  Next Step →
+                  {emailVerified || mobileVerified ? 'Next Step →' : 'Verify Email or Mobile First'}
                 </Button>
               </form>
             </>
