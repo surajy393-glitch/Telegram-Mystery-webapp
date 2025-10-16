@@ -64,7 +64,7 @@ function App() {
             path="/" 
             element={
               isAuthenticated ? (
-                <Navigate to="/home" replace />
+                <Navigate to="/mystery" replace />
               ) : (
                 <LandingPage />
               )
