@@ -48,51 +48,51 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="glass-effect rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-            <div className="text-5xl mb-4">💬</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Anonymous Chat</h3>
-            <p className="text-gray-600">
-              Connect and chat anonymously. Upgrade to premium for unlimited conversations
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-8 text-center border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300">
+            <div className="text-5xl mb-4">🔐</div>
+            <h3 className="text-2xl font-bold text-white mb-3">Privacy First</h3>
+            <p className="text-white text-opacity-80">
+              No screenshots or downloads. Messages disappear after 48 hours.
             </p>
           </div>
 
-          <div className="glass-effect rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Dating & Social</h3>
-            <p className="text-gray-600">
-              Discover new connections in a safe, anonymous environment
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-8 text-center border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300">
+            <div className="text-5xl mb-4">🇮🇳</div>
+            <h3 className="text-2xl font-bold text-white mb-3">India-First</h3>
+            <p className="text-white text-opacity-80">
+              Built for Indian privacy needs. Perfect for joint families.
             </p>
           </div>
         </div>
 
         {/* Info Section */}
-        <div className="mt-20 glass-effect rounded-3xl p-12 max-w-4xl mx-auto animate-scaleIn">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            Why LuvHive?
+        <div className="mt-20 bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-12 max-w-4xl mx-auto border border-white border-opacity-20">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">
+            How Mystery Match Works
           </h2>
-          <div className="space-y-4 text-gray-700 text-lg">
+          <div className="space-y-4 text-white text-lg">
             <p className="flex items-start gap-3">
-              <span className="text-pink-500 text-2xl">✓</span>
-              <span><strong>Anonymous & Safe:</strong> Your privacy is our priority. Share as much or as little as you want.</span>
+              <span className="text-yellow-300 text-2xl">🎲</span>
+              <span><strong>Get Matched:</strong> Find someone new based on age and interests. Their profile is hidden!</span>
             </p>
             <p className="flex items-start gap-3">
-              <span className="text-pink-500 text-2xl">✓</span>
-              <span><strong>Telegram Integrated:</strong> Seamlessly connected with our Telegram bot for premium features.</span>
+              <span className="text-yellow-300 text-2xl">💬</span>
+              <span><strong>Chat to Unlock:</strong> 10 msgs → Age+City | 30 → Photo | 50 → Interests | 100 → Full Profile</span>
             </p>
             <p className="flex items-start gap-3">
-              <span className="text-pink-500 text-2xl">✓</span>
-              <span><strong>Real Connections:</strong> Meet genuine people looking for friendship, dating, or just a chat.</span>
+              <span className="text-yellow-300 text-2xl">⏰</span>
+              <span><strong>48-Hour Window:</strong> Each match expires in 2 days. Make every chat count!</span>
             </p>
             <p className="flex items-start gap-3">
-              <span className="text-pink-500 text-2xl">✓</span>
-              <span><strong>Premium Benefits:</strong> Unlock unlimited chat and exclusive features with premium membership.</span>
+              <span className="text-yellow-300 text-2xl">✨</span>
+              <span><strong>Premium Option:</strong> Unlimited matches, instant reveals, and advanced filters for ₹100/month</span>
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center text-gray-600">
-          <p>Connected with Telegram Bot • Safe • Anonymous • Fun</p>
+        <div className="mt-16 text-center text-white text-opacity-80">
+          <p>Safe • Anonymous • Privacy-Conscious • Made for India 🇮🇳</p>
         </div>
       </div>
     </div>
