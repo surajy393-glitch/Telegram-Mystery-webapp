@@ -16,11 +16,13 @@ const MysteryChatPage = () => {
   const [sending, setSending] = useState(false);
   const [showUnlock, setShowUnlock] = useState(null);
   
-  const userId = localStorage.getItem('telegram_user_id') || localStorage.getItem('user_id');
+  // Get user data from localStorage
+  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = userData.tg_user_id; // Use the PostgreSQL user ID
 
   useEffect(() => {
     if (!userId) {
-      navigate('/login');
+      navigate('/register');
       return;
     }
     fetchChat();
