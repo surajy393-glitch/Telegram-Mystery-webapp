@@ -13,11 +13,14 @@ const MysteryMatchHome = () => {
   const [finding, setFinding] = useState(false);
   const [error, setError] = useState('');
   
-  const userId = localStorage.getItem('telegram_user_id') || localStorage.getItem('user_id');
+  // Get user data from localStorage (set during login)
+  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = userData.tg_user_id; // Use the PostgreSQL user ID
 
   useEffect(() => {
     if (!userId) {
-      navigate('/login');
+      // User not properly registered, redirect to register
+      navigate('/register');
       return;
     }
     fetchUserData();
