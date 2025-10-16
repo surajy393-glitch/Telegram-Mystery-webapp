@@ -658,6 +658,111 @@ const DatingRegisterPage = ({ onLogin }) => {
                   </div>
                 </div>
 
+                <div>
+                  <Label htmlFor="mobileNumber" className="text-white font-medium">
+                    Mobile Number <span className="text-white text-opacity-60">(optional)</span>
+                  </Label>
+                  <Input
+                    id="mobileNumber"
+                    name="mobileNumber"
+                    type="tel"
+                    placeholder="Enter your mobile (+91xxxxxxxxxx)"
+                    value={formData.mobileNumber}
+                    onChange={handleChange}
+                    className={`mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 rounded-xl ${
+                      mobileStatus === 'available' ? 'border-green-400 border-2' :
+                      mobileStatus === 'taken' ? 'border-red-400 border-2' :
+                      'border-white border-opacity-30'
+                    }`}
+                  />
+                  
+                  {/* Mobile Status Display */}
+                  {mobileStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        mobileStatus === 'available' ? 'text-green-300' :
+                        mobileStatus === 'taken' ? 'text-red-300' :
+                        mobileStatus === 'checking' ? 'text-blue-300' :
+                        'text-white text-opacity-70'
+                      }`}>
+                        {mobileStatus === 'checking' && <span className="animate-spin">⏳</span>}
+                        {mobileStatus === 'available' && <span>✅</span>}
+                        {mobileStatus === 'taken' && <span>❌</span>}
+                        {mobileMessage}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* MOBILE OTP VERIFICATION */}
+                  {formData.mobileNumber && formData.mobileNumber.trim() && !mobileVerified && (
+                    <div className="mt-3 p-4 bg-green-500 bg-opacity-20 rounded-lg border border-green-300 border-opacity-30">
+                      <p className="text-sm font-medium text-green-200 mb-3">
+                        {emailVerified ? '📱 Mobile Verification (Optional)' : '📱 Mobile Verification Required'}
+                      </p>
+                      
+                      {!mobileOtpSent ? (
+                        <div>
+                          <p className="text-sm text-green-100 mb-3">
+                            {emailVerified ? 
+                              'Optionally verify your mobile for additional security' :
+                              'Click below to send verification code to your mobile'
+                            }
+                          </p>
+                          <button
+                            type="button"
+                            onClick={sendMobileOtp}
+                            disabled={mobileOtpLoading}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                          >
+                            {mobileOtpLoading ? "Sending..." : "Send OTP to Mobile"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-green-100">
+                            Enter the 6-digit code sent to your mobile:
+                          </p>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Enter OTP"
+                              value={mobileOtp}
+                              onChange={(e) => setMobileOtp(e.target.value)}
+                              className="flex-1 text-center text-lg tracking-widest bg-white text-gray-800"
+                              maxLength="6"
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyMobileOtp}
+                              disabled={mobileOtpLoading || !mobileOtp.trim()}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                            >
+                              {mobileOtpLoading ? "Verifying..." : "Verify"}
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendMobileOtp}
+                            disabled={mobileOtpLoading}
+                            className="text-sm text-green-200 hover:text-green-100 underline"
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* MOBILE VERIFIED SUCCESS */}
+                  {mobileVerified && (
+                    <div className="mt-3 p-3 bg-green-500 bg-opacity-20 rounded-lg border border-green-300 border-opacity-30">
+                      <p className="text-sm text-green-200 flex items-center gap-2">
+                        ✅ Mobile number verified successfully!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="age" className="text-white font-medium">Age</Label>
