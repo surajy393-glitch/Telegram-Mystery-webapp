@@ -147,18 +147,20 @@ const MysteryMatchHome = () => {
 
         {/* Premium Banner */}
         {stats && !stats.is_premium && (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 text-white shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2">✨ Upgrade to Premium</h3>
                 <p className="text-sm opacity-90">Unlimited matches • See profiles instantly • Advanced filters</p>
-                <p className="text-sm font-semibold mt-2">Only ₹100/month (250 Stars)</p>
+                <p className="text-lg font-bold mt-3 bg-white text-orange-600 inline-block px-4 py-2 rounded-lg">
+                  🎁 Try 1 Week for Just ₹199! 🔥
+                </p>
               </div>
               <button
                 onClick={() => window.open('https://t.me/Loveekisssbot?start=premium', '_blank')}
-                className="bg-white text-orange-500 px-6 py-3 rounded-full font-bold hover:bg-opacity-90 transition"
+                className="bg-white text-orange-500 px-6 py-3 rounded-full font-bold hover:bg-opacity-90 transition shadow-lg hover:scale-105"
               >
-                Upgrade
+                Upgrade Now
               </button>
             </div>
           </div>
