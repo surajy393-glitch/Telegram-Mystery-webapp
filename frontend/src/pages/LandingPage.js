@@ -85,7 +85,7 @@ const LandingPage = () => {
             </p>
             <p className="flex items-start gap-3">
               <span className="text-yellow-300 text-2xl">✨</span>
-              <span><strong>Premium Option:</strong> Unlimited matches, instant reveals, and advanced filters for ₹100/month</span>
+              <span><strong>Premium Option:</strong> Unlimited matches, instant reveals, and advanced filters. Try 1 week for just ₹199!</span>
             </p>
           </div>
         </div>
