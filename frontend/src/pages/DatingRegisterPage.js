@@ -824,7 +824,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                     value={formData.city}
                     onChange={handleChange}
                     required
-                    className="mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 border-white border-opacity-30 focus:border-pink-300 rounded-xl"
+                    className="mt-2 bg-white bg-opacity-90 text-gray-900 placeholder:text-gray-500 border-white border-opacity-30 focus:border-pink-400 rounded-xl font-medium"
                   />
                 </div>
 
