@@ -325,18 +325,45 @@ const SettingsPage = ({ user, onLogout }) => {
           
           <div className="space-y-4">
             <SettingToggle
-              icon={settings.pushNotifications ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              label="Push Notifications"
-              description="Receive notifications for sparks, glows, and messages"
-              isOn={settings.pushNotifications}
-              onToggle={() => handleSettingToggle('pushNotifications')}
-              loading={updating.pushNotifications}
+              icon={<Bell className="w-5 h-5" />}
+              label="New Match Notifications"
+              description="Get notified when you get a new mystery match"
+              isOn={settings.newMatchNotifications}
+              onToggle={() => handleSettingToggle('newMatchNotifications')}
+              loading={updating.newMatchNotifications}
             />
             
             <SettingToggle
-              icon={settings.emailNotifications ? <Mail className="w-5 h-5" /> : <MailX className="w-5 h-5" />}
+              icon={<MessageCircle className="w-5 h-5" />}
+              label="New Message Notifications"
+              description="Get notified for new messages in mystery chats"
+              isOn={settings.newMessageNotifications}
+              onToggle={() => handleSettingToggle('newMessageNotifications')}
+              loading={updating.newMessageNotifications}
+            />
+            
+            <SettingToggle
+              icon={<Eye className="w-5 h-5" />}
+              label="Reveal Request Notifications"
+              description="Get notified when someone requests to reveal your info"
+              isOn={settings.revealRequestNotifications}
+              onToggle={() => handleSettingToggle('revealRequestNotifications')}
+              loading={updating.revealRequestNotifications}
+            />
+            
+            <SettingToggle
+              icon={<Bell className="w-5 h-5" />}
+              label="Match Expiry Notifications"
+              description="Get reminded before your matches expire (48h)"
+              isOn={settings.matchExpiryNotifications}
+              onToggle={() => handleSettingToggle('matchExpiryNotifications')}
+              loading={updating.matchExpiryNotifications}
+            />
+            
+            <SettingToggle
+              icon={<Mail className="w-5 h-5" />}
               label="Email Notifications"
-              description="Get email updates about your LuvHive activity"
+              description="Receive updates via email"
               isOn={settings.emailNotifications}
               onToggle={() => handleSettingToggle('emailNotifications')}
               loading={updating.emailNotifications}
