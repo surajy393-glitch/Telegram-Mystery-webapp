@@ -3,35 +3,34 @@ import { Button } from "@/components/ui/button";
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500">
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center animate-fadeIn">
-          <h1 className="text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 mb-6">
-            Welcome to LuvHive
+          <div className="text-7xl mb-6">🎭</div>
+          <h1 className="text-6xl md:text-7xl font-bold text-white mb-6">
+            Mystery Match
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto">
-            Your Anonymous Dating & Social World
+          <p className="text-xl md:text-2xl text-white text-opacity-90 mb-4 max-w-3xl mx-auto">
+            Safe, Anonymous, and Culturally Respectful Dating
           </p>
-          <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
-            Connect, share stories, and chat anonymously with people around the world. 
-            Join LuvHive - where connections are real and identities are yours to reveal.
+          <p className="text-lg text-white text-opacity-80 mb-12 max-w-2xl mx-auto">
+            Progressive profile reveals. No awkward screenshots. Perfect for privacy-conscious Indians.
           </p>
           
           <div className="flex gap-4 justify-center flex-wrap">
             <Link to="/register">
               <Button 
                 data-testid="get-started-btn"
-                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-6 text-lg rounded-full btn-hover"
+                className="bg-white text-purple-600 hover:bg-opacity-90 px-8 py-6 text-lg rounded-full font-bold shadow-2xl"
               >
-                Enter LuvHive
+                Start Mystery Matching 🎲
               </Button>
             </Link>
             <Link to="/login">
               <Button 
                 data-testid="login-btn"
-                variant="outline" 
-                className="border-2 border-pink-500 text-pink-600 hover:bg-pink-50 px-8 py-6 text-lg rounded-full btn-hover"
+                className="bg-white bg-opacity-20 border-2 border-white text-white hover:bg-opacity-30 px-8 py-6 text-lg rounded-full font-bold"
               >
                 Sign In
               </Button>
@@ -41,11 +40,11 @@ const LandingPage = () => {
 
         {/* Features Section */}
         <div className="mt-24 grid md:grid-cols-3 gap-8 animate-slideIn">
-          <div className="glass-effect rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-            <div className="text-5xl mb-4">📸</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Share Stories</h3>
-            <p className="text-gray-600">
-              Share your moments with 24-hour stories, just like your favorite social apps
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-8 text-center border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300">
+            <div className="text-5xl mb-4">🎭</div>
+            <h3 className="text-2xl font-bold text-white mb-3">Progressive Unlock</h3>
+            <p className="text-white text-opacity-80">
+              Profiles reveal gradually as you chat. No instant photo sharing!
             </p>
           </div>
 
