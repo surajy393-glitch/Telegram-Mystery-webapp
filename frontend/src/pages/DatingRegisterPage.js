@@ -416,6 +416,11 @@ const DatingRegisterPage = ({ onLogin }) => {
       formDataToSend.append("interests", formData.interests.join(", "));
       formDataToSend.append("emailVerified", emailVerified);
       formDataToSend.append("mobileVerified", mobileVerified);
+      
+      // Add profile photo if uploaded
+      if (formData.profilePhoto) {
+        formDataToSend.append("profilePhoto", formData.profilePhoto);
+      }
 
       const response = await axios.post(`${API}/auth/register-for-mystery`, formDataToSend, {
         headers: {
