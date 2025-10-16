@@ -107,7 +107,7 @@ const MysteryMatchHome = () => {
       {/* Header */}
       <div className="bg-white bg-opacity-10 backdrop-blur-md border-b border-white border-opacity-20">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">🎭 Mystery Match</h1>
+          <h1 className="text-2xl font-bold text-white">🎭 LuvHive Mystery Match</h1>
           <button
             onClick={() => navigate('/settings')}
             className="text-white hover:text-pink-200 transition"
