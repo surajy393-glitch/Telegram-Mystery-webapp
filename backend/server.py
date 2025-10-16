@@ -1063,7 +1063,8 @@ async def login(user_data: UserLogin):
             "gender": user["gender"],
             "bio": user.get("bio", ""),
             "profileImage": user.get("profileImage"),
-            "isPremium": user.get("isPremium", False)
+            "isPremium": user.get("isPremium", False),
+            "tg_user_id": user.get("tg_user_id")  # CRITICAL: Include for Mystery Match
         }
     }
 
