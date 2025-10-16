@@ -57,7 +57,7 @@ const MysteryMatchHome = () => {
     }
   };
 
-  const findMysteryMatch = async () => {
+  const findMysteryMatch = async (preferredGender = 'random') => {
     setFinding(true);
     setError('');
     
@@ -65,13 +65,15 @@ const MysteryMatchHome = () => {
       const response = await axios.post(`${API_URL}/api/mystery/find-match`, {
         user_id: parseInt(userId),
         preferred_age_min: 18,
-        preferred_age_max: 35
+        preferred_age_max: 35,
+        preferred_gender: preferredGender  // 'random', 'male', or 'female'
       });
       
       if (response.data.success) {
         // Navigate to chat with new match
         navigate(`/mystery-chat/${response.data.match_id}`);
       } else {
+        // Show specific error message if gender not available
         setError(response.data.message || 'Failed to find match');
       }
     } catch (error) {
