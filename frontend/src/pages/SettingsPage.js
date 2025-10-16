@@ -193,17 +193,29 @@ const SettingsPage = ({ user, onLogout }) => {
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* Profile Header */}
-        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl animate-fadeIn">
+        {/* Profile Header - Mystery Match Style */}
+        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-6 mb-6 shadow-xl animate-fadeIn border border-white border-opacity-20">
           <div className="flex items-center gap-4">
-            <img
-              src={profile?.profileImage || "https://via.placeholder.com/80"}
-              alt={profile?.username}
-              className="w-16 h-16 rounded-full object-cover border-4 border-pink-200 shadow-lg"
-            />
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-lg">
+                <span className="text-3xl">🎭</span>
+              </div>
+              {profile?.isPremium && (
+                <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
+                  <span className="text-xs">👑</span>
+                </div>
+              )}
+            </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">{profile?.fullName}</h2>
-              <p className="text-gray-600">@{profile?.username}</p>
+              <h2 className="text-xl font-bold text-white">{profile?.fullName}</h2>
+              <div className="flex items-center gap-2">
+                <p className="text-white text-opacity-70">Mystery ID: {profile?.username}</p>
+                {profile?.age && (
+                  <span className="bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs text-white">
+                    {profile?.age} • {profile?.gender}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
