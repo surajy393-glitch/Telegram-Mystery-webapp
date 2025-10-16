@@ -153,7 +153,7 @@ const MysteryMatchHome = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2">✨ Upgrade to Premium</h3>
-                <p className="text-sm opacity-90">Unlimited matches • See profiles instantly • Advanced filters</p>
+                <p className="text-sm opacity-90 mb-2">👧 Choose Girls • 👦 Choose Boys • Unlimited matches • Instant reveals</p>
                 <p className="text-lg font-bold mt-3 bg-white text-orange-600 inline-block px-4 py-2 rounded-lg">
                   🎁 Try 1 Week for Just ₹199! 🔥
                 </p>
