@@ -927,7 +927,16 @@ const DatingRegisterPage = ({ onLogin }) => {
                     <span className="text-xl">🎭</span>
                     <div>
                       <p className="font-semibold mb-1">LuvHive Mystery Match Privacy</p>
-                      <p className="text-white text-opacity-80">Your profile stays hidden until you chat and unlock it progressively. Perfect for privacy-conscious dating!</p>
+                      <p className="text-white text-opacity-80 mb-2">Your profile stays completely hidden! Reveal happens progressively:</p>
+                      <ul className="text-xs text-white text-opacity-70 space-y-1 ml-4">
+                        <li>• 30 msgs → Other person can request your Gender</li>
+                        <li>• 60 msgs → Other person can request your Age</li>
+                        <li>• 120 msgs → Other person can request your Photo</li>
+                        <li>• 250 msgs → Full Profile revealed</li>
+                      </ul>
+                      <p className="text-white text-opacity-80 mt-2 text-xs">
+                        ⚠️ <strong>Important:</strong> Don't manually share your age, gender, or photo in chat. Let the system reveal it naturally!
+                      </p>
                     </div>
                   </div>
                 </div>
