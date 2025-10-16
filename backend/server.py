@@ -3559,7 +3559,11 @@ async def register_for_mystery(
     age: int = Form(...),
     gender: str = Form(...),
     city: str = Form(...),
-    interests: str = Form(...)
+    interests: str = Form(...),
+    mobileNumber: str = Form(None),
+    emailVerified: bool = Form(False),
+    mobileVerified: bool = Form(False),
+    profilePhoto: UploadFile = File(None)
 ):
     """
     Register user for Mystery Match dating platform
