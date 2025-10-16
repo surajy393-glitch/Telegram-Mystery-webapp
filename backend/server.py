@@ -3572,6 +3572,163 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Mystery Match Registration Endpoint - Creates user in both MongoDB AND PostgreSQL
+@api_router.post("/auth/register-for-mystery")
+async def register_for_mystery(
+    fullName: str = Form(...),
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    city: str = Form(...),
+    interests: str = Form(...)
+):
+    """
+    Register user for Mystery Match dating platform
+    Creates account in both web app (MongoDB) and bot database (PostgreSQL)
+    """
+    try:
+        # 1. Validate input
+        clean_username = username.strip()
+        clean_email = email.strip().lower()
+        
+        if len(clean_username) < 3:
+            raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+        
+        if len(password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        if age < 18:
+            raise HTTPException(status_code=400, detail="You must be 18 or older to register")
+        
+        # 2. Check if username/email exists in MongoDB
+        existing_user = await db.users.find_one({
+            "$or": [
+                {"username": {"$regex": f"^{clean_username}$", "$options": "i"}},
+                {"email": clean_email}
+            ]
+        })
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username or email already exists")
+        
+        # 3. Create user in MongoDB (web app database)
+        hashed_password = get_password_hash(password)
+        mongo_user_id = str(uuid4())
+        
+        mongo_user = {
+            "id": mongo_user_id,
+            "fullName": fullName,
+            "username": clean_username,
+            "email": clean_email,
+            "password_hash": hashed_password,
+            "age": age,
+            "gender": gender,
+            "city": city,
+            "bio": "",
+            "profileImage": None,
+            "isPremium": False,
+            "isVerified": False,
+            "authMethod": "email",
+            "followers": [],
+            "following": [],
+            "blockedUsers": [],
+            "hiddenStoryUsers": [],
+            "postsSaved": [],
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            # Privacy settings
+            "appearInSearch": True,
+            "allowDirectMessages": True,
+            "showOnlineStatus": True,
+            "allowTagging": True,
+            "allowStoryReplies": True,
+            "showVibeScore": True,
+            "pushNotifications": True,
+            "emailNotifications": True,
+            "isPrivate": False
+        }
+        
+        await db.users.insert_one(mongo_user)
+        
+        # 4. Create user in PostgreSQL (bot database for Mystery Match)
+        try:
+            conn = psycopg2.connect(
+                host="localhost",
+                port=5432,
+                database="luvhive_bot",
+                user="postgres",
+                password="postgres123"
+            )
+            
+            with conn.cursor() as cursor:
+                # Generate a pseudo Telegram ID (negative number to distinguish from real Telegram users)
+                # Use last 8 digits of UUID as user ID
+                pseudo_tg_id = int(str(abs(hash(mongo_user_id)))[-8:])
+                
+                # Insert into PostgreSQL users table
+                cursor.execute("""
+                    INSERT INTO users 
+                    (tg_user_id, first_name, username, gender, age, city, bio, interests, 
+                     profile_photo_url, registration_completed, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, NOW())
+                    ON CONFLICT (tg_user_id) DO NOTHING
+                """, (
+                    pseudo_tg_id,
+                    fullName,
+                    clean_username,
+                    gender,
+                    age,
+                    city,
+                    f"Web user from {city}",  # Default bio
+                    interests,
+                    None,  # profile_photo_url
+                ))
+                
+                conn.commit()
+            
+            conn.close()
+            
+            # Store the PostgreSQL user ID mapping in MongoDB for cross-reference
+            await db.users.update_one(
+                {"id": mongo_user_id},
+                {"$set": {"tg_user_id": pseudo_tg_id}}
+            )
+            
+        except Exception as pg_error:
+            logger.error(f"PostgreSQL insertion error: {pg_error}")
+            # Continue even if PostgreSQL fails - user can still use web app
+        
+        # 5. Generate access token
+        token_data = {
+            "user_id": mongo_user_id,
+            "username": clean_username,
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        }
+        access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+        
+        # 6. Return success response
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": mongo_user_id,
+                "fullName": fullName,
+                "username": clean_username,
+                "email": clean_email,
+                "age": age,
+                "gender": gender,
+                "city": city,
+                "tg_user_id": pseudo_tg_id,
+                "isPremium": False
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Import and include mystery match router
 from mystery_match import mystery_router
 app.include_router(mystery_router)
