@@ -42,8 +42,11 @@ const DatingRegisterPage = ({ onLogin }) => {
     age: "",
     gender: "",
     city: "",
-    interests: []
+    interests: [],
+    profilePhoto: null
   });
+  
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const interestOptions = [
     "Chatting", "Friends", "Relationship", "Love", "Games", "Anime",
