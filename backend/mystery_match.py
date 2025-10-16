@@ -62,7 +62,30 @@ def is_premium_user(user_id: int) -> bool:
     try:
         conn = get_db_connection()
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Check if user has active premium subscription
+            # First check users table for is_premium and premium_until
+            cursor.execute("""
+                SELECT is_premium, premium_until
+                FROM users 
+                WHERE tg_user_id = %s
+            """, (user_id,))
+            
+            user = cursor.fetchone()
+            
+            if user:
+                # Check if user has is_premium flag
+                if user['is_premium']:
+                    # If premium_until exists, check if it's still valid
+                    if user['premium_until']:
+                        from datetime import datetime
+                        if user['premium_until'] > datetime.now():
+                            conn.close()
+                            return True
+                    else:
+                        # is_premium is True but no expiry = lifetime premium
+                        conn.close()
+                        return True
+            
+            # Fallback: Check payments table for completed subscriptions
             cursor.execute("""
                 SELECT * FROM payments 
                 WHERE user_id = %s 
