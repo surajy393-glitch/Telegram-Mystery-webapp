@@ -381,12 +381,15 @@ const DatingRegisterPage = ({ onLogin }) => {
       const formDataToSend = new FormData();
       formDataToSend.append("fullName", formData.fullName);
       formDataToSend.append("username", formData.username);
-      formDataToSend.append("email", formData.email);
+      formDataToSend.append("email", formData.email || "");
+      formDataToSend.append("mobileNumber", formData.mobileNumber || "");
       formDataToSend.append("password", formData.password);
       formDataToSend.append("age", parseInt(formData.age));
       formDataToSend.append("gender", formData.gender);
       formDataToSend.append("city", formData.city);
       formDataToSend.append("interests", formData.interests.join(", "));
+      formDataToSend.append("emailVerified", emailVerified);
+      formDataToSend.append("mobileVerified", mobileVerified);
 
       const response = await axios.post(`${API}/auth/register-for-mystery`, formDataToSend, {
         headers: {
