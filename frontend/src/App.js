@@ -76,7 +76,7 @@ function App() {
               isAuthenticated ? (
                 <Navigate to="/mystery" replace />
               ) : (
-                <RegisterPage onLogin={handleLogin} />
+                <DatingRegisterPage onLogin={handleLogin} />
               )
             } 
           />
