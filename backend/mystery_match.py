@@ -259,10 +259,25 @@ async def find_mystery_match(request: MysteryMatchRequest):
             
             if not potential_matches:
                 conn.close()
+                
+                # Premium user specific gender messages
+                if is_premium and request.preferred_gender and request.preferred_gender != 'random':
+                    gender_label = "Female" if request.preferred_gender.lower() == 'female' else "Male"
+                    alternative_gender = "male" if request.preferred_gender.lower() == 'female' else "female"
+                    alternative_label = "Male" if alternative_gender == 'male' else "Female"
+                    
+                    return {
+                        "success": False,
+                        "error": "gender_not_available",
+                        "message": f"{gender_label} users are not currently available. You can match with {alternative_label} users or try again later.",
+                        "requested_gender": request.preferred_gender,
+                        "alternative_gender": alternative_gender
+                    }
+                
                 return {
                     "success": False,
                     "error": "no_matches_found",
-                    "message": "No matches found with your criteria. Try adjusting your filters."
+                    "message": "No matches found right now. Try again in a few minutes!"
                 }
             
             # Random selection
