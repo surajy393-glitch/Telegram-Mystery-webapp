@@ -429,7 +429,7 @@ const DatingRegisterPage = ({ onLogin }) => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8 animate-fadeIn">
           <h1 className="text-5xl font-bold text-white mb-2">
-            🎭 Mystery Match
+            🎭 LuvHive Mystery Match
           </h1>
           <p className="text-white text-opacity-90">Create your anonymous dating profile</p>
         </div>
