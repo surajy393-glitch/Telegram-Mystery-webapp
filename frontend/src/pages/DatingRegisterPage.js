@@ -879,6 +879,49 @@ const DatingRegisterPage = ({ onLogin }) => {
                   </div>
                 </div>
 
+                <div>
+                  <Label className="text-white font-medium mb-3 block">Profile Photo (Optional - for reveals)</Label>
+                  <div className="bg-white bg-opacity-10 rounded-xl p-4 border-2 border-dashed border-white border-opacity-30">
+                    <input
+                      type="file"
+                      id="profilePhoto"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="profilePhoto"
+                      className="cursor-pointer flex flex-col items-center justify-center text-center"
+                    >
+                      {photoPreview ? (
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Preview"
+                            className="w-32 h-32 rounded-full object-cover border-4 border-pink-400"
+                          />
+                          <div className="mt-3 text-sm text-white">
+                            ✅ Photo uploaded! Click to change
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="text-5xl mb-3">📸</div>
+                          <div className="text-white font-medium mb-2">
+                            Upload Your Photo
+                          </div>
+                          <div className="text-sm text-white text-opacity-70">
+                            Will be revealed progressively after 120 messages
+                          </div>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  <p className="text-xs text-white text-opacity-70 mt-2">
+                    💡 Your photo stays hidden until you chat enough. Other users can request to see it after 120 messages.
+                  </p>
+                </div>
+
                 <div className="bg-white bg-opacity-10 rounded-xl p-4 text-white text-sm">
                   <div className="flex items-start space-x-2">
                     <span className="text-xl">🎭</span>
