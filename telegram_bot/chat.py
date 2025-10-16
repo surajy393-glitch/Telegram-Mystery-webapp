@@ -787,8 +787,13 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE, mode:
 
         # If no sticky target or target not in queue, proceed with normal queue scan
         if uid in queue:
-            await send_safe(context.bot, chat_id=uid, text="🔎 Still searching…")
-            return
+            # For city mode, allow user to change cities by removing from queue and re-searching
+            if mode == MODE_CITY:
+                queue.remove(uid)
+                # Continue to search with the new city (don't return here)
+            else:
+                await send_safe(context.bot, chat_id=uid, text="🔎 Still searching…")
+                return
 
         partner = None
         qn = len(queue)
@@ -805,7 +810,11 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE, mode:
             queue.append(uid)
             if mode == MODE_CITY:
                 city_name = _city_search.get(uid, "your city")
-                msg = f"🏙️ No one from {city_name} is online right now.\n\n💡 Try again later or use regular matching!"
+                msg = f"🏙️ No one from {city_name} is online right now.\n\n💡 Try again later or use regular matching!\n\n🔄 Type another city name to search:"
+                
+                # Re-enable city input state so user can type another city without clicking button again
+                from handlers.text_framework import set_state
+                set_state(context, "city_match", "input_city", ttl_minutes=5)
             elif mode == MODE_GIRLS:
                 msg = "🔎 Finding a girl partner soon...\nIf the search takes too long, try changing your settings (/settings)."
             elif mode == MODE_BOYS:
@@ -1940,12 +1949,13 @@ async def relay(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if r.get("awaiting"):
         return  # on_report_input will handle + ApplicationHandlerStop later
 
-    # ✅ TEXT-FRAMEWORK GUARD: if any feature owns text, relay must NOT run
-    af = context.user_data.get(FEATURE_KEY)
-    if af:   # e.g., "fantasy", "vault", "confession", "profile", etc.
-        return
-
     uid = update.effective_user.id
+
+    # ✅ TEXT-FRAMEWORK GUARD: if any feature owns text, relay must NOT run
+    # BUT: if user is in chat, allow relay (ignore stale feature states from matching)
+    af = context.user_data.get(FEATURE_KEY)
+    if af and not in_chat(uid):   # Only block if NOT in chat
+        return
 
     # Don't intercept comment text, poll text, or Q&A text - let their handlers process it
     state = (context.user_data.get("state") or "")

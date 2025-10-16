@@ -829,6 +829,36 @@ def get_vault_content_total_count(category_id: int, user_id: int) -> int:
         result = cur.fetchone()
         return result[0] if result else 0
 
+def approve_vault_content(content_id: int) -> bool:
+    """Approve vault content for public viewing"""
+    try:
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("""
+                UPDATE vault_content 
+                SET approval_status = 'approved',
+                    status = 'approved',
+                    updated_at = NOW()
+                WHERE id = %s
+            """, (content_id,))
+            con.commit()
+            log.info(f"[approve_vault_content] Content #{content_id} approved successfully")
+            return True
+    except Exception as e:
+        log.error(f"[approve_vault_content] Error approving content #{content_id}: {e}")
+        return False
+
+def delete_vault_content(content_id: int) -> bool:
+    """Delete vault content permanently"""
+    try:
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("DELETE FROM vault_content WHERE id = %s", (content_id,))
+            con.commit()
+            log.info(f"[delete_vault_content] Content #{content_id} deleted successfully")
+            return True
+    except Exception as e:
+        log.error(f"[delete_vault_content] Error deleting content #{content_id}: {e}")
+        return False
+
 async def cmd_vault(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Main vault command - shows categories or content based on premium status"""
     try:
@@ -1773,20 +1803,30 @@ async def handle_media_upload_start(query, category_id: int, user_id: int):
     )
 
     # Store user's submission state in the database temporarily
-    with reg._conn() as con, con.cursor() as cur:
-        cur.execute("""
-            INSERT INTO vault_user_states (user_id, category_id, state, created_at) 
-            VALUES (%s, %s, 'awaiting_media', NOW())
-            ON CONFLICT (user_id) DO UPDATE SET 
-            category_id = %s, state = 'awaiting_media', created_at = NOW()
-        """, (user_id, category_id, category_id))
-        con.commit()
+    try:
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("""
+                INSERT INTO vault_user_states (user_id, category_id, state, created_at) 
+                VALUES (%s, %s, 'awaiting_media', NOW())
+                ON CONFLICT (user_id) DO UPDATE SET 
+                category_id = %s, state = 'awaiting_media', created_at = NOW()
+            """, (user_id, category_id, category_id))
+            con.commit()
+    except Exception as e:
+        log.error(f"Error storing vault user state: {e}")
+        await query.answer("❌ Failed to start upload. Please try again.")
+        return
 
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("❌ Cancel Upload", callback_data="vault:submit")]
     ])
 
-    await query.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
+    try:
+        await query.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
+    except BadRequest as e:
+        # If edit fails (e.g., message not modified), send a new message instead
+        log.warning(f"Could not edit message for media upload: {e}")
+        await query.message.reply_text(text, reply_markup=kb, parse_mode="Markdown")
 
 async def show_vault_stats(query, user_id: int):
     """Show user's vault statistics - PREMIUM ONLY"""

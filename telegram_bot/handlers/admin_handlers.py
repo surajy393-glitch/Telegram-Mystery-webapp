@@ -25,9 +25,10 @@ from admin import (
     admin_title, admin_kb,
     # db helpers / actions
     db_stats, premium_users, set_premium, user_info, reset_user_metrics,
-    runtime_counts, q_all, get_pending_vault_content, approve_vault_content, delete_vault_content
+    runtime_counts, q_all, get_pending_vault_content
 )
 import registration as reg
+from handlers.blur_vault import approve_vault_content, delete_vault_content
 from utils.db_migration import run_all_migrations
 from utils.cb import cb_match, CBError
 

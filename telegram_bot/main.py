@@ -563,6 +563,12 @@ async def on_btn_match_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_city_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     from handlers.text_framework import FEATURE_KEY, MODE_KEY, clear_state
     
+    uid = update.effective_user.id
+    
+    # Don't process city input if user is already in a chat
+    if chat.in_chat(uid):
+        return
+    
     if context.user_data.get(FEATURE_KEY) != "city_match":
         return
     if context.user_data.get(MODE_KEY) != "input_city":
@@ -578,7 +584,6 @@ async def on_city_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ City name too short. Please try again.")
         return
     
-    uid = update.effective_user.id
     clear_state(context)
     
     chat._city_search[uid] = city.title()
@@ -1181,12 +1186,6 @@ def main():
     # Note: Webhook cleanup removed for simplicity - polling mode is ensured by drop_pending_updates=True in run_polling()
     log.info("✅ Bot instance protection system activated")
 
-    # Start FastAPI server in background thread
-    from threading import Thread
-    from api_server import run_api
-    Thread(target=run_api, daemon=True).start()
-    print("🌐 API server started on /api ...")
-
     # --- run mode switch ---
     MODE = os.environ.get("RUN_MODE", "polling").lower()
 
@@ -1208,7 +1207,21 @@ def main():
             stop_signals=None,
         )
     else:
-        log.info("🚀 Bot starting in POLLING mode")
+        log.info("🚀 Bot starting in POLLING mode with API server on port 8080")
+
+        # Run both bot (polling) and API server concurrently
+        import asyncio
+        from api_server import app as fastapi_app
+        import uvicorn
+        from threading import Thread
+        
+        # Start API server in background thread (non-daemon to keep process alive)
+        def run_api_server():
+            uvicorn.run(fastapi_app, host="0.0.0.0", port=8080, log_level="info")
+        
+        api_thread = Thread(target=run_api_server, daemon=False)
+        api_thread.start()
+        log.info("🌐 API server started on 0.0.0.0:8080")
 
         # MS Dhoni system will handle optimizations during runtime
         try:

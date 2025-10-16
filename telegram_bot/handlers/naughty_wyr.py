@@ -1321,8 +1321,8 @@ async def on_nwyr_comment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Store additional data needed for comment processing
     context.user_data['nwyr_vote_date'] = today
-    # Set legacy state for relay compatibility
-    context.user_data["state"] = "comment:wyr"
+    # Set unique state to avoid conflict with posts handler
+    context.user_data["state"] = "wyr_comment"
 
     kb = make_cancel_kb()
 
@@ -1373,9 +1373,10 @@ async def handle_comment_input(update: Update, context: ContextTypes.DEFAULT_TYP
             f"⚠️ **Content Policy Violation**\n\n"
             f"Your comment contains inappropriate language and cannot be posted.\n\n"
             f"🚫 Blocked: '{blocked_word}'\n\n"
-            f"Please rephrase your comment respectfully."
+            f"Please rephrase your comment respectfully.\n\n"
+            f"💬 **You can try again** - Just type your new comment below!"
         )
-        clear_state(context)
+        # DON'T clear state - keep user in comment mode so they can try again
         return
 
     # SAFETY CHECK 2: Check rate limit
@@ -1387,9 +1388,10 @@ async def handle_comment_input(update: Update, context: ContextTypes.DEFAULT_TYP
             f"⏱️ **Rate Limit Reached**\n\n"
             f"You've posted 5 comments in the last hour.\n"
             f"Please wait {minutes}m {seconds}s before commenting again.\n\n"
-            f"This helps prevent spam and keeps the chat quality high!"
+            f"This helps prevent spam and keeps the chat quality high!\n\n"
+            f"💬 **You can try again after the wait time** - Your comment mode is still active."
         )
-        clear_state(context)
+        # DON'T clear state - keep user in comment mode so they can try again after cooldown
         return
 
     # Add comment to group chat
@@ -1767,7 +1769,7 @@ async def on_nwyr_report_delete(update: Update, context: ContextTypes.DEFAULT_TY
             # Mark report as reviewed
             cur.execute("""
                 UPDATE wyr_comment_reports 
-                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, admin_action = 'deleted'
+                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, action_taken = 'deleted'
                 WHERE id = %s
             """, (uid, report_id))
 
@@ -1809,7 +1811,7 @@ async def on_nwyr_report_dismiss(update: Update, context: ContextTypes.DEFAULT_T
         with _conn() as con, con.cursor() as cur:
             cur.execute("""
                 UPDATE wyr_comment_reports 
-                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, admin_action = 'dismissed'
+                SET reviewed = TRUE, reviewed_at = NOW(), reviewed_by = %s, action_taken = 'dismissed'
                 WHERE id = %s
             """, (uid, report_id))
             con.commit()
