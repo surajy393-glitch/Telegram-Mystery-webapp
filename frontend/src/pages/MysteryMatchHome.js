@@ -176,24 +176,83 @@ const MysteryMatchHome = () => {
           </div>
         )}
 
-        {/* Find Match Button */}
-        <button
-          onClick={findMysteryMatch}
-          disabled={finding}
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-6 rounded-2xl text-xl font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:scale-100 shadow-2xl"
-        >
-          {finding ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Finding Mystery Match...
-            </span>
-          ) : (
-            '🎲 Find Mystery Match'
-          )}
-        </button>
+        {/* Find Match Button - Free Users */}
+        {!stats?.is_premium && (
+          <button
+            onClick={() => findMysteryMatch('random')}
+            disabled={finding}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-6 rounded-2xl text-xl font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:scale-100 shadow-2xl"
+          >
+            {finding ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Finding Random Match...
+              </span>
+            ) : (
+              <div>
+                <div className="text-2xl">🎲 Find Mystery Match</div>
+                <div className="text-sm opacity-80 mt-1">Random matching • Could be anyone</div>
+              </div>
+            )}
+          </button>
+        )}
+
+        {/* Find Match Buttons - Premium Users */}
+        {stats?.is_premium && (
+          <div className="space-y-4">
+            <div className="bg-yellow-400 bg-opacity-20 backdrop-blur-md border border-yellow-400 border-opacity-40 rounded-2xl p-4 text-center">
+              <span className="text-yellow-300 font-bold">👑 Premium Feature</span>
+              <p className="text-white text-sm mt-1">Choose who you want to match with!</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => findMysteryMatch('female')}
+                disabled={finding}
+                className="bg-gradient-to-br from-pink-400 to-rose-500 text-white py-8 rounded-2xl font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:scale-100 shadow-2xl"
+              >
+                {finding ? (
+                  <div className="flex flex-col items-center">
+                    <svg className="animate-spin h-6 w-6 mb-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-sm">Searching...</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-4xl mb-2">👧</div>
+                    <div className="text-lg">Find a Girl</div>
+                  </div>
+                )}
+              </button>
+              
+              <button
+                onClick={() => findMysteryMatch('male')}
+                disabled={finding}
+                className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white py-8 rounded-2xl font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:scale-100 shadow-2xl"
+              >
+                {finding ? (
+                  <div className="flex flex-col items-center">
+                    <svg className="animate-spin h-6 w-6 mb-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-sm">Searching...</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-4xl mb-2">👦</div>
+                    <div className="text-lg">Find a Boy</div>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Active Matches */}
         <div className="space-y-4">
