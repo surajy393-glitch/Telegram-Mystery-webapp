@@ -3593,7 +3593,32 @@ async def register_for_mystery(
         if existing_user:
             raise HTTPException(status_code=400, detail="Username or email already exists")
         
-        # 3. Create user in MongoDB (web app database)
+        # 3. Handle profile photo upload if provided
+        profile_photo_url = None
+        if profilePhoto:
+            try:
+                # Save photo to a directory
+                import os
+                upload_dir = "/app/uploads/profiles"
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                # Generate unique filename
+                file_extension = profilePhoto.filename.split('.')[-1]
+                photo_filename = f"{mongo_user_id}_profile.{file_extension}"
+                photo_path = os.path.join(upload_dir, photo_filename)
+                
+                # Save file
+                with open(photo_path, "wb") as f:
+                    content = await profilePhoto.read()
+                    f.write(content)
+                
+                profile_photo_url = f"/uploads/profiles/{photo_filename}"
+                logger.info(f"Profile photo saved: {profile_photo_url}")
+            except Exception as photo_error:
+                logger.error(f"Photo upload error: {photo_error}")
+                # Continue without photo if upload fails
+        
+        # 4. Create user in MongoDB (web app database)
         hashed_password = get_password_hash(password)
         mongo_user_id = str(uuid4())
         
