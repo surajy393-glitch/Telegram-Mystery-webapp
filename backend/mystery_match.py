@@ -285,7 +285,7 @@ async def find_mystery_match(request: MysteryMatchRequest):
                 },
                 "expires_at": (datetime.now() + timedelta(hours=48)).isoformat(),
                 "message_count": 0,
-                "next_unlock_at": 10,
+                "next_unlock_at": 30,  # First unlock at 30 messages (Gender)
                 "is_premium": is_premium
             }
             
