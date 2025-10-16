@@ -16,10 +16,28 @@ const DatingRegisterPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  // OTP and verification states
+  const [usernameStatus, setUsernameStatus] = useState(null);
+  const [usernameSuggestions, setUsernameSuggestions] = useState([]);
+  const [usernameMessage, setUsernameMessage] = useState("");
+  const [emailStatus, setEmailStatus] = useState(null);
+  const [emailMessage, setEmailMessage] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [mobileOtpSent, setMobileOtpSent] = useState(false);
+  const [mobileOtp, setMobileOtp] = useState("");
+  const [mobileVerified, setMobileVerified] = useState(false);
+  const [mobileOtpLoading, setMobileOtpLoading] = useState(false);
+  const [mobileStatus, setMobileStatus] = useState(null);
+  const [mobileMessage, setMobileMessage] = useState("");
+  
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
     email: "",
+    mobileNumber: "",
     password: "",
     age: "",
     gender: "",
