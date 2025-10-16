@@ -474,8 +474,50 @@ const DatingRegisterPage = ({ onLogin }) => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className="mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 border-white border-opacity-30 focus:border-pink-300 rounded-xl"
+                    className={`mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 rounded-xl ${
+                      usernameStatus === 'available' ? 'border-green-400 border-2' :
+                      usernameStatus === 'taken' ? 'border-red-400 border-2' :
+                      'border-white border-opacity-30'
+                    }`}
                   />
+                  
+                  {/* Username Status Display */}
+                  {usernameStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        usernameStatus === 'available' ? 'text-green-300' :
+                        usernameStatus === 'taken' ? 'text-red-300' :
+                        usernameStatus === 'checking' ? 'text-blue-300' :
+                        'text-white text-opacity-70'
+                      }`}>
+                        {usernameStatus === 'checking' && <span className="animate-spin">⏳</span>}
+                        {usernameStatus === 'available' && <span>✅</span>}
+                        {usernameStatus === 'taken' && <span>❌</span>}
+                        {usernameMessage}
+                      </p>
+                      
+                      {/* Username Suggestions */}
+                      {usernameSuggestions.length > 0 && (
+                        <div className="mt-3 p-3 bg-blue-500 bg-opacity-20 rounded-lg border border-blue-300 border-opacity-30">
+                          <p className="text-sm font-medium text-blue-200 mb-2">
+                            Available suggestions:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {usernameSuggestions.map((suggestion, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => selectSuggestion(suggestion)}
+                                className="px-3 py-1 text-sm bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white hover:bg-opacity-30 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
