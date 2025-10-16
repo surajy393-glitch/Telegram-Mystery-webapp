@@ -74,7 +74,7 @@ function App() {
             path="/register" 
             element={
               isAuthenticated ? (
-                <Navigate to="/home" replace />
+                <Navigate to="/mystery" replace />
               ) : (
                 <RegisterPage onLogin={handleLogin} />
               )
@@ -84,9 +84,29 @@ function App() {
             path="/login" 
             element={
               isAuthenticated ? (
-                <Navigate to="/home" replace />
+                <Navigate to="/mystery" replace />
               ) : (
                 <LoginPage onLogin={handleLogin} />
+              )
+            } 
+          />
+          <Route 
+            path="/mystery" 
+            element={
+              isAuthenticated ? (
+                <MysteryMatchHome user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/mystery-chat/:matchId" 
+            element={
+              isAuthenticated ? (
+                <MysteryChatPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
               )
             } 
           />
