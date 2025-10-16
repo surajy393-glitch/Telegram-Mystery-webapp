@@ -337,15 +337,18 @@ const DatingRegisterPage = ({ onLogin }) => {
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
-    if (formData.fullName && formData.username && formData.email && formData.password && formData.age && formData.gender) {
-      if (parseInt(formData.age) < 18) {
-        toast({
-          title: "Age Requirement",
-          description: "You must be 18 or older to register",
-          variant: "destructive"
-        });
-        return;
-      }
+    
+    // REQUIRE either email OR mobile verification before proceeding
+    if (!emailVerified && !mobileVerified) {
+      toast({
+        title: "Verification Required",
+        description: "Please verify either your email or mobile number before proceeding",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (formData.fullName && formData.username && (formData.email || mobileVerified) && formData.age && formData.gender && formData.password) {
       setStep(2);
     }
   };
