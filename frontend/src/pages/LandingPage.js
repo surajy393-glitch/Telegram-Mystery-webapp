@@ -68,7 +68,7 @@ const LandingPage = () => {
         {/* Info Section */}
         <div className="mt-20 bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-12 max-w-4xl mx-auto border border-white border-opacity-20">
           <h2 className="text-3xl font-bold text-white mb-6 text-center">
-            How Mystery Match Works
+            How LuvHive Mystery Match Works
           </h2>
           <div className="space-y-4 text-white text-lg">
             <p className="flex items-start gap-3">
