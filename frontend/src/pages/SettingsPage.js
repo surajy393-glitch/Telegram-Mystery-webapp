@@ -208,65 +208,59 @@ const SettingsPage = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* Account Privacy Section */}
+        {/* Mystery Match Privacy Section */}
         <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
-            <div className={`p-3 rounded-full ${settings.isPrivate ? 'bg-purple-100' : 'bg-green-100'}`}>
-              {settings.isPrivate ? (
-                <Shield className="w-6 h-6 text-purple-600" />
-              ) : (
-                <ShieldCheck className="w-6 h-6 text-green-600" />
-              )}
+            <div className="p-3 rounded-full bg-purple-100">
+              <Shield className="w-6 h-6 text-purple-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">
-              {settings.isPrivate ? 'Private Account' : 'Public Account'}
-            </h3>
-          </div>
-          
-          <SettingToggle
-            label="Private Account"
-            description="Only approved followers can see your posts and stories"
-            isOn={settings.isPrivate}
-            onToggle={() => handleSettingToggle('isPrivate')}
-            loading={updating.isPrivate}
-          />
-        </div>
-
-        {/* Privacy Controls Section */}
-        <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-full bg-yellow-100">
-              <Shield className="w-6 h-6 text-yellow-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800">Privacy Controls</h3>
+            <h3 className="text-xl font-bold text-gray-800">🎭 Mystery Match Privacy</h3>
           </div>
           
           <div className="space-y-4">
             <SettingToggle
               icon={<Search className="w-5 h-5" />}
-              label="Appear in Search"
-              description="Let others discover you in search results"
-              isOn={settings.appearInSearch}
-              onToggle={() => handleSettingToggle('appearInSearch')}
-              loading={updating.appearInSearch}
+              label="Allow Matching"
+              description="Enable others to match with you"
+              isOn={settings.allowMatching}
+              onToggle={() => handleSettingToggle('allowMatching')}
+              loading={updating.allowMatching}
             />
             
             <SettingToggle
-              icon={<MessageCircle className="w-5 h-5" />}
-              label="Allow Direct Messages"
-              description="Let other users send you private messages"
-              isOn={settings.allowDirectMessages}
-              onToggle={() => handleSettingToggle('allowDirectMessages')}
-              loading={updating.allowDirectMessages}
+              icon={<Eye className="w-5 h-5" />}
+              label="Show in Match Pool"
+              description="Appear in the matching algorithm"
+              isOn={settings.showInMatchPool}
+              onToggle={() => handleSettingToggle('showInMatchPool')}
+              loading={updating.showInMatchPool}
             />
             
             <SettingToggle
-              icon={<Wifi className="w-5 h-5" />}
-              label="Show Online Status"
-              description="Display when you're active on LuvHive"
-              isOn={settings.showOnlineStatus}
-              onToggle={() => handleSettingToggle('showOnlineStatus')}
-              loading={updating.showOnlineStatus}
+              icon={<Shield className="w-5 h-5" />}
+              label="Allow Gender Reveal Requests"
+              description="Others can request to see your gender at 30 messages"
+              isOn={settings.allowGenderRevealRequests}
+              onToggle={() => handleSettingToggle('allowGenderRevealRequests')}
+              loading={updating.allowGenderRevealRequests}
+            />
+            
+            <SettingToggle
+              icon={<Shield className="w-5 h-5" />}
+              label="Allow Age Reveal Requests"
+              description="Others can request to see your age at 60 messages"
+              isOn={settings.allowAgeRevealRequests}
+              onToggle={() => handleSettingToggle('allowAgeRevealRequests')}
+              loading={updating.allowAgeRevealRequests}
+            />
+            
+            <SettingToggle
+              icon={<Shield className="w-5 h-5" />}
+              label="Allow Photo Reveal Requests"
+              description="Others can request your photo at 120 messages"
+              isOn={settings.allowPhotoRevealRequests}
+              onToggle={() => handleSettingToggle('allowPhotoRevealRequests')}
+              loading={updating.allowPhotoRevealRequests}
             />
           </div>
         </div>
@@ -275,56 +269,47 @@ const SettingsPage = ({ user, onLogout }) => {
         <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 rounded-full bg-red-100">
-              <Shield className="w-6 h-6 text-red-600" />
+              <UserMinus className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Blocked Users</h3>
+            <h3 className="text-xl font-bold text-gray-800">Blocked Matches</h3>
           </div>
           
           <ActionButton
-            icon={<Shield className="w-5 h-5" />}
-            label="Manage Blocked Users"
-            description={`View and unblock users (${profile?.blockedUsers?.length || 0} blocked)`}
+            icon={<UserMinus className="w-5 h-5" />}
+            label="Manage Blocked Matches"
+            description={`View and unblock matches (${profile?.blockedUsers?.length || 0} blocked)`}
             onClick={() => setShowBlockedUsers(true)}
             bgColor="bg-red-50 hover:bg-red-100"
             textColor="text-red-600"
           />
         </div>
 
-        {/* Interaction Preferences Section */}
+        {/* Matching Preferences Section */}
         <div className="glass-effect rounded-3xl p-6 mb-6 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-full bg-blue-100">
-              <Zap className="w-6 h-6 text-blue-600" />
+            <div className="p-3 rounded-full bg-pink-100">
+              <Zap className="w-6 h-6 text-pink-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Interaction Preferences</h3>
+            <h3 className="text-xl font-bold text-gray-800">Matching Preferences</h3>
           </div>
           
           <div className="space-y-4">
             <SettingToggle
-              icon={<Tag className="w-5 h-5" />}
-              label="Allow Tagging"
-              description="Let others tag you in posts and stories"
-              isOn={settings.allowTagging}
-              onToggle={() => handleSettingToggle('allowTagging')}
-              loading={updating.allowTagging}
-            />
-            
-            <SettingToggle
-              icon={<MessageSquare className="w-5 h-5" />}
-              label="Story Replies"
-              description="Allow others to reply to your stories"
-              isOn={settings.allowStoryReplies}
-              onToggle={() => handleSettingToggle('allowStoryReplies')}
-              loading={updating.allowStoryReplies}
-            />
-            
-            <SettingToggle
               icon={<Zap className="w-5 h-5" />}
-              label="Show Vibe Score"
-              description="Display your vibe compatibility score"
-              isOn={settings.showVibeScore}
-              onToggle={() => handleSettingToggle('showVibeScore')}
-              loading={updating.showVibeScore}
+              label="Auto-Accept Matches"
+              description="Automatically accept all incoming match requests"
+              isOn={settings.autoAcceptMatches}
+              onToggle={() => handleSettingToggle('autoAcceptMatches')}
+              loading={updating.autoAcceptMatches}
+            />
+            
+            <SettingToggle
+              icon={<Shield className="w-5 h-5" />}
+              label="Receive Premium Matches"
+              description="Get matched with premium users"
+              isOn={settings.receivePremiumMatches}
+              onToggle={() => handleSettingToggle('receivePremiumMatches')}
+              loading={updating.receivePremiumMatches}
             />
           </div>
         </div>
