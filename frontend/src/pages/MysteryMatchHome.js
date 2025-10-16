@@ -157,7 +157,7 @@ const MysteryMatchHome = () => {
                 </p>
               </div>
               <button
-                onClick={() => window.open('https://t.me/Loveekisssbot?start=premium', '_blank')}
+                onClick={() => window.open('https://t.me/Loveekisssbot', '_blank')}
                 className="bg-white text-orange-500 px-6 py-3 rounded-full font-bold hover:bg-opacity-90 transition shadow-lg hover:scale-105"
               >
                 Upgrade Now
