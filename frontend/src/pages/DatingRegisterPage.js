@@ -46,8 +46,8 @@ const DatingRegisterPage = ({ onLogin }) => {
   });
 
   const interestOptions = [
-    "Travel", "Food", "Music", "Movies", "Sports", "Reading",
-    "Gaming", "Fitness", "Art", "Photography", "Dancing", "Cooking"
+    "Chatting", "Friends", "Relationship", "Love", "Games", "Anime",
+    "Travel", "Food", "Music", "Movies", "Sports", "Reading"
   ];
 
   const handleChange = (e) => {
