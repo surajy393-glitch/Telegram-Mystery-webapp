@@ -56,6 +56,274 @@ const DatingRegisterPage = ({ onLogin }) => {
       ...formData,
       [name]: value
     });
+    
+    // Check username availability
+    if (name === 'username') {
+      checkUsernameAvailability(value);
+    }
+    
+    // Check email availability
+    if (name === 'email') {
+      checkEmailAvailability(value);
+    }
+    
+    // Check mobile availability
+    if (name === 'mobileNumber') {
+      checkMobileAvailability(value);
+    }
+  };
+
+  const checkUsernameAvailability = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameStatus(null);
+      setUsernameSuggestions([]);
+      setUsernameMessage("");
+      return;
+    }
+
+    setUsernameStatus('checking');
+    setUsernameMessage("Checking availability...");
+    
+    try {
+      const response = await axios.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
+      const data = response.data;
+      
+      if (data.available) {
+        setUsernameStatus('available');
+        setUsernameMessage(data.message);
+        setUsernameSuggestions([]);
+      } else {
+        setUsernameStatus('taken');
+        setUsernameMessage(data.message);
+        setUsernameSuggestions(data.suggestions || []);
+      }
+    } catch (error) {
+      setUsernameStatus('error');
+      setUsernameMessage("Error checking username");
+      setUsernameSuggestions([]);
+    }
+  };
+
+  const selectSuggestion = (suggestion) => {
+    setFormData({
+      ...formData,
+      username: suggestion
+    });
+    checkUsernameAvailability(suggestion);
+  };
+
+  const checkEmailAvailability = async (email) => {
+    if (!email || !email.includes('@')) {
+      setEmailStatus(null);
+      setEmailMessage("");
+      return;
+    }
+
+    setEmailStatus('checking');
+    setEmailMessage("Checking email...");
+    
+    try {
+      const response = await axios.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
+      const data = response.data;
+      
+      if (data.available) {
+        setEmailStatus('available');
+        setEmailMessage(data.message);
+      } else {
+        setEmailStatus('taken');
+        setEmailMessage(data.message);
+      }
+    } catch (error) {
+      setEmailStatus('error');
+      setEmailMessage("Error checking email");
+    }
+  };
+
+  const checkMobileAvailability = async (mobile) => {
+    if (!mobile || mobile.length < 10) {
+      setMobileStatus(null);
+      setMobileMessage("");
+      return;
+    }
+
+    setMobileStatus('checking');
+    setMobileMessage("Checking mobile number...");
+    
+    try {
+      const response = await axios.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
+      const data = response.data;
+      
+      if (data.available) {
+        setMobileStatus('available');
+        setMobileMessage(data.message);
+      } else {
+        setMobileStatus('taken');
+        setMobileMessage(data.message);
+      }
+    } catch (error) {
+      setMobileStatus('error');
+      setMobileMessage("Error checking mobile number");
+    }
+  };
+
+  const sendEmailOtp = async () => {
+    if (!formData.email || emailStatus !== 'available') {
+      toast({
+        title: "Error",
+        description: "Please enter a valid available email first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/send-email-otp`, {
+        email: formData.email
+      });
+      
+      if (response.data.otpSent) {
+        setEmailOtpSent(true);
+        toast({
+          title: "OTP Sent! 📧",
+          description: "Check your email for the verification code",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send OTP",
+        variant: "destructive"
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async () => {
+    if (!emailOtp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-email-otp`, {
+        email: formData.email,
+        otp: emailOtp.trim()
+      });
+      
+      if (response.data.verified) {
+        setEmailVerified(true);
+        toast({
+          title: "Email Verified! ✅",
+          description: "You can now proceed to the next step",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const sendMobileOtp = async () => {
+    if (!formData.mobileNumber || !formData.mobileNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your mobile number first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (mobileStatus === 'taken') {
+      toast({
+        title: "Error",
+        description: "This mobile number is already registered",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (mobileStatus !== 'available') {
+      toast({
+        title: "Error",
+        description: "Please wait for mobile number validation",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMobileOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/send-mobile-otp`, {
+        mobileNumber: formData.mobileNumber
+      });
+      
+      if (response.data.otpSent) {
+        setMobileOtpSent(true);
+        toast({
+          title: "OTP Sent! 📱",
+          description: "Check your mobile for the verification code",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to send mobile OTP",
+        variant: "destructive"
+      });
+    } finally {
+      setMobileOtpLoading(false);
+    }
+  };
+
+  const verifyMobileOtp = async () => {
+    if (!mobileOtp.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the mobile OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMobileOtpLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/auth/verify-mobile-otp`, {
+        mobileNumber: formData.mobileNumber,
+        otp: mobileOtp.trim()
+      });
+      
+      if (response.data.verified) {
+        setMobileVerified(true);
+        toast({
+          title: "Mobile Verified! ✅",
+          description: "Mobile number verified successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid OTP",
+        description: error.response?.data?.detail || "Mobile OTP verification failed",
+        variant: "destructive"
+      });
+    } finally {
+      setMobileOtpLoading(false);
+    }
   };
 
   const toggleInterest = (interest) => {
