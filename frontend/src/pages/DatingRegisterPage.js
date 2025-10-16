@@ -852,7 +852,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                   <div className="flex items-start space-x-2">
                     <span className="text-xl">🎭</span>
                     <div>
-                      <p className="font-semibold mb-1">Mystery Match Privacy</p>
+                      <p className="font-semibold mb-1">LuvHive Mystery Match Privacy</p>
                       <p className="text-white text-opacity-80">Your profile stays hidden until you chat and unlock it progressively. Perfect for privacy-conscious dating!</p>
                     </div>
                   </div>
