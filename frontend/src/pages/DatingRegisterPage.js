@@ -474,7 +474,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className={`mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 rounded-xl ${
+                    className={`mt-2 bg-white bg-opacity-90 text-gray-900 placeholder:text-gray-500 rounded-xl font-medium ${
                       usernameStatus === 'available' ? 'border-green-400 border-2' :
                       usernameStatus === 'taken' ? 'border-red-400 border-2' :
                       'border-white border-opacity-30'
