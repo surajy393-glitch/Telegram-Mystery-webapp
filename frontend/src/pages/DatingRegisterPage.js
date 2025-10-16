@@ -521,17 +521,109 @@ const DatingRegisterPage = ({ onLogin }) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-white font-medium">Email</Label>
+                  <Label htmlFor="email" className="text-white font-medium">
+                    Email {mobileVerified ? <span className="text-white text-opacity-60">(optional)</span> : ""}
+                  </Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={mobileVerified ? "Email (optional)" : "your@email.com"}
                     value={formData.email}
                     onChange={handleChange}
-                    required
-                    className="mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 border-white border-opacity-30 focus:border-pink-300 rounded-xl"
+                    required={!mobileVerified}
+                    className={`mt-2 bg-white bg-opacity-20 text-white placeholder:text-white placeholder:text-opacity-60 rounded-xl ${
+                      emailStatus === 'available' ? 'border-green-400 border-2' :
+                      emailStatus === 'taken' ? 'border-red-400 border-2' :
+                      'border-white border-opacity-30'
+                    }`}
                   />
+                  
+                  {/* Email Status Display */}
+                  {emailStatus && (
+                    <div className="mt-2">
+                      <p className={`text-sm flex items-center gap-2 ${
+                        emailStatus === 'available' ? 'text-green-300' :
+                        emailStatus === 'taken' ? 'text-red-300' :
+                        emailStatus === 'checking' ? 'text-blue-300' :
+                        'text-white text-opacity-70'
+                      }`}>
+                        {emailStatus === 'checking' && <span className="animate-spin">⏳</span>}
+                        {emailStatus === 'available' && <span>✅</span>}
+                        {emailStatus === 'taken' && <span>❌</span>}
+                        {emailMessage}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* EMAIL OTP VERIFICATION */}
+                  {emailStatus === 'available' && !emailVerified && (
+                    <div className="mt-3 p-4 bg-blue-500 bg-opacity-20 rounded-lg border border-blue-300 border-opacity-30">
+                      <p className="text-sm font-medium text-blue-200 mb-3">
+                        {mobileVerified ? '🔐 Email Verification (Optional)' : '🔐 Email Verification Required'}
+                      </p>
+                      
+                      {!emailOtpSent ? (
+                        <div>
+                          <p className="text-sm text-blue-100 mb-3">
+                            {mobileVerified ? 
+                              'Optionally verify your email for additional security' :
+                              'Click below to send verification code to your email'
+                            }
+                          </p>
+                          <button
+                            type="button"
+                            onClick={sendEmailOtp}
+                            disabled={otpLoading}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                          >
+                            {otpLoading ? "Sending..." : "Send OTP to Email"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-blue-100">
+                            Enter the 6-digit code sent to your email:
+                          </p>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Enter OTP"
+                              value={emailOtp}
+                              onChange={(e) => setEmailOtp(e.target.value)}
+                              className="flex-1 text-center text-lg tracking-widest bg-white text-gray-800"
+                              maxLength="6"
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyEmailOtp}
+                              disabled={otpLoading || !emailOtp.trim()}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                            >
+                              {otpLoading ? "Verifying..." : "Verify"}
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendEmailOtp}
+                            disabled={otpLoading}
+                            className="text-sm text-blue-200 hover:text-blue-100 underline"
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* EMAIL VERIFIED SUCCESS */}
+                  {emailVerified && (
+                    <div className="mt-3 p-3 bg-green-500 bg-opacity-20 rounded-lg border border-green-300 border-opacity-30">
+                      <p className="text-sm text-green-200 flex items-center gap-2">
+                        ✅ Email verified successfully!
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
