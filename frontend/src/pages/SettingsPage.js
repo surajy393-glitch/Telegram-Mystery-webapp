@@ -17,20 +17,23 @@ const SettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [settings, setSettings] = useState({
-    // Privacy Controls
-    isPrivate: false,
-    appearInSearch: true,
-    allowDirectMessages: true,
-    showOnlineStatus: true,
-    
-    // Interaction Preferences
-    allowTagging: true,
-    allowStoryReplies: true,
-    showVibeScore: true,
+    // Mystery Match Privacy
+    allowMatching: true,
+    showInMatchPool: true,
+    allowGenderRevealRequests: true,
+    allowAgeRevealRequests: true,
+    allowPhotoRevealRequests: true,
     
     // Notifications
-    pushNotifications: true,
-    emailNotifications: true
+    newMatchNotifications: true,
+    newMessageNotifications: true,
+    revealRequestNotifications: true,
+    matchExpiryNotifications: true,
+    emailNotifications: true,
+    
+    // Matching Preferences
+    autoAcceptMatches: false,
+    receivePremiumMatches: true
   });
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState({});
