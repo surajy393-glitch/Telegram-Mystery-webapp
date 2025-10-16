@@ -787,7 +787,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                       value={formData.gender}
                       onChange={handleChange}
                       required
-                      className="mt-2 w-full bg-white bg-opacity-20 text-white border-white border-opacity-30 rounded-xl px-4 py-2 focus:border-pink-300 focus:outline-none"
+                      className="mt-2 w-full bg-white bg-opacity-90 text-gray-900 border-white border-opacity-30 rounded-xl px-4 py-2 focus:border-pink-400 focus:outline-none font-medium"
                     >
                       <option value="" className="text-gray-800">Select</option>
                       <option value="Male" className="text-gray-800">Male</option>
