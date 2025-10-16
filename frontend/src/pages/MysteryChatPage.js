@@ -11,7 +11,7 @@ const MysteryChatPage = () => {
   
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
-  const [chatData, setChat​Data] = useState(null);
+  const [chatData, setChatData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showUnlock, setShowUnlock] = useState(null);
