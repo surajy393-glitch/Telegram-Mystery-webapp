@@ -15,14 +15,16 @@ const MysteryMatchHome = () => {
   
   // Get user data from localStorage (set during login)
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = userData.tg_user_id; // Use the PostgreSQL user ID
+  const userId = userData.tg_user_id || userData.id; // Try tg_user_id first, fallback to MongoDB id
 
   useEffect(() => {
     if (!userId) {
       // User not properly registered, redirect to register
+      console.error('No user ID found in localStorage:', userData);
       navigate('/register');
       return;
     }
+    console.log('Mystery Match Home - User ID:', userId, 'User Data:', userData);
     fetchUserData();
     fetchStats();
     fetchMatches();
