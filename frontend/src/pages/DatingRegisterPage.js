@@ -405,7 +405,7 @@ const DatingRegisterPage = ({ onLogin }) => {
 
       toast({
         title: "Registration Successful! 🎉",
-        description: "Welcome to Mystery Match!",
+        description: "Welcome to LuvHive Mystery Match!",
       });
 
       // Navigate to Mystery Match home
