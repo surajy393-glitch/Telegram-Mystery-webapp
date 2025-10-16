@@ -3658,6 +3658,7 @@ async def register_for_mystery(
         await db.users.insert_one(mongo_user)
         
         # 4. Create user in PostgreSQL (bot database for Mystery Match)
+        pseudo_tg_id = None
         try:
             conn = psycopg2.connect(
                 host="localhost",
@@ -3672,13 +3673,22 @@ async def register_for_mystery(
                 # Use last 8 digits of UUID as user ID
                 pseudo_tg_id = int(str(abs(hash(mongo_user_id)))[-8:])
                 
+                logger.info(f"Attempting to insert user into PostgreSQL with tg_user_id: {pseudo_tg_id}")
+                
                 # Insert into PostgreSQL users table
                 cursor.execute("""
                     INSERT INTO users 
                     (tg_user_id, first_name, username, gender, age, city, bio, interests, 
                      profile_photo_url, registration_completed, created_at)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, NOW())
-                    ON CONFLICT (tg_user_id) DO NOTHING
+                    ON CONFLICT (tg_user_id) DO UPDATE
+                    SET first_name = EXCLUDED.first_name,
+                        username = EXCLUDED.username,
+                        gender = EXCLUDED.gender,
+                        age = EXCLUDED.age,
+                        city = EXCLUDED.city,
+                        interests = EXCLUDED.interests,
+                        profile_photo_url = EXCLUDED.profile_photo_url
                 """, (
                     pseudo_tg_id,
                     fullName,
@@ -3692,6 +3702,7 @@ async def register_for_mystery(
                 ))
                 
                 conn.commit()
+                logger.info(f"Successfully inserted/updated PostgreSQL user: {pseudo_tg_id}")
             
             conn.close()
             
@@ -3703,7 +3714,10 @@ async def register_for_mystery(
             
         except Exception as pg_error:
             logger.error(f"PostgreSQL insertion error: {pg_error}")
-            # Continue even if PostgreSQL fails - user can still use web app
+            # Set a default pseudo_tg_id even if PostgreSQL fails
+            if pseudo_tg_id is None:
+                pseudo_tg_id = int(str(abs(hash(mongo_user_id)))[-8:])
+            logger.warning(f"Using generated pseudo_tg_id: {pseudo_tg_id} despite PostgreSQL error")
         
         # 5. Generate access token
         token_data = {
