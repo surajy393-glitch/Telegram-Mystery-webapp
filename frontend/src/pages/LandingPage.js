@@ -77,7 +77,7 @@ const LandingPage = () => {
             </p>
             <p className="flex items-start gap-3">
               <span className="text-yellow-300 text-2xl">💬</span>
-              <span><strong>Chat to Unlock:</strong> 10 msgs → Age+City | 30 → Photo | 50 → Interests | 100 → Full Profile</span>
+              <span><strong>Chat to Unlock:</strong> 30 msgs → Request Gender | 60 → Request Age | 120 → Request Photo | 250 → Full Profile</span>
             </p>
             <p className="flex items-start gap-3">
               <span className="text-yellow-300 text-2xl">⏰</span>
