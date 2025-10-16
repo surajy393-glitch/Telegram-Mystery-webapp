@@ -3688,7 +3688,7 @@ async def register_for_mystery(
                     city,
                     f"Web user from {city}",  # Default bio
                     interests,
-                    None,  # profile_photo_url
+                    profile_photo_url,  # Store photo URL
                 ))
                 
                 conn.commit()
