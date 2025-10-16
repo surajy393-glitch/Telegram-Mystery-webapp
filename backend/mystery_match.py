@@ -465,7 +465,7 @@ async def send_message(request: MessageRequest):
                 "message_count": new_count,
                 "unlock_level": new_level,
                 "unlock_achieved": unlock_achieved,
-                "next_unlock_at": [10, 30, 50, 100][new_level] if new_level < 4 else None
+                "next_unlock_at": [30, 60, 120, 250][new_level] if new_level < 4 else None  # Updated thresholds
             }
             
     except HTTPException:
