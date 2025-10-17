@@ -3785,8 +3785,13 @@ class LuvHiveAPITester:
                 data = response.json()
                 
                 # Register in Mystery Match system as premium user
+                # Generate a numeric user ID from the UUID hash
+                import hashlib
+                user_id_hash = hashlib.md5(data['user']['id'].encode()).hexdigest()
+                numeric_user_id = int(user_id_hash[:8], 16) % 1000000000  # Convert to 9-digit number
+                
                 mystery_data = {
-                    "tg_user_id": int(data['user']['id'].replace('-', '')[:9]),  # Convert to int
+                    "tg_user_id": numeric_user_id,
                     "display_name": user_data['fullName'],
                     "age": user_data['age'],
                     "gender": user_data['gender'],
