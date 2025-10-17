@@ -757,3 +757,207 @@ async def get_user_stats(user_id: int):
     except Exception as e:
         logger.error(f"Error in get_user_stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# UNMATCH & BLOCK ENDPOINTS
+# ==========================================
+
+class UnmatchRequest(BaseModel):
+    match_id: int
+    user_id: int
+    reason: Optional[str] = None
+
+@mystery_router.post("/unmatch")
+async def unmatch(request: UnmatchRequest):
+    """End a mystery match"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Verify user is part of this match
+            cursor.execute("""
+                SELECT * FROM mystery_matches 
+                WHERE id = %s 
+                AND (user1_id = %s OR user2_id = %s)
+            """, (request.match_id, request.user_id, request.user_id))
+            
+            match = cursor.fetchone()
+            
+            if not match:
+                conn.close()
+                raise HTTPException(status_code=404, detail="Match not found")
+            
+            # Deactivate match
+            cursor.execute("""
+                UPDATE mystery_matches 
+                SET is_active = FALSE,
+                    unmatch_reason = %s,
+                    unmatch_by_user = %s
+                WHERE id = %s
+            """, (request.reason, request.user_id, request.match_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {
+                "success": True,
+                "message": "Match ended successfully"
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in unmatch: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class BlockRequest(BaseModel):
+    user_id: int
+    block_user_id: int
+    reason: Optional[str] = None
+
+@mystery_router.post("/block")
+async def block_user(request: BlockRequest):
+    """Block a user from matching again"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # Add to blocked users (create table if needed)
+            cursor.execute("""
+                INSERT INTO blocked_users (user_id, blocked_user_id, reason, created_at)
+                VALUES (%s, %s, %s, NOW())
+                ON CONFLICT (user_id, blocked_user_id) DO NOTHING
+            """, (request.user_id, request.block_user_id, request.reason))
+            
+            # Deactivate any active matches between these users
+            cursor.execute("""
+                UPDATE mystery_matches 
+                SET is_active = FALSE,
+                    unmatch_reason = 'User blocked'
+                WHERE ((user1_id = %s AND user2_id = %s) OR (user1_id = %s AND user2_id = %s))
+                AND is_active = TRUE
+            """, (request.user_id, request.block_user_id, request.block_user_id, request.user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {
+                "success": True,
+                "message": "User blocked successfully"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in block_user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@mystery_router.get("/blocked-users/{user_id}")
+async def get_blocked_users(user_id: int):
+    """Get list of blocked users"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT b.blocked_user_id, b.reason, b.created_at,
+                       u.gender, u.age, u.city
+                FROM blocked_users b
+                LEFT JOIN users u ON b.blocked_user_id = u.tg_user_id
+                WHERE b.user_id = %s
+                ORDER BY b.created_at DESC
+            """, (user_id,))
+            
+            blocked = cursor.fetchall()
+            conn.close()
+            
+            return {
+                "success": True,
+                "blocked_users": blocked
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in get_blocked_users: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@mystery_router.post("/unblock")
+async def unblock_user(request: BlockRequest):
+    """Unblock a user"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                DELETE FROM blocked_users 
+                WHERE user_id = %s AND blocked_user_id = %s
+            """, (request.user_id, request.block_user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {
+                "success": True,
+                "message": "User unblocked successfully"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in unblock_user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# EXTEND MATCH ENDPOINT (PREMIUM FEATURE)
+# ==========================================
+
+class ExtendMatchRequest(BaseModel):
+    match_id: int
+    user_id: int
+
+@mystery_router.post("/extend-match")
+async def extend_match(request: ExtendMatchRequest):
+    """Extend match expiry by 24 hours (costs 50 Telegram Stars)"""
+    try:
+        # Check if user is premium (premium gets unlimited extensions)
+        is_premium = is_premium_user(request.user_id)
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Verify match exists and user is part of it
+            cursor.execute("""
+                SELECT * FROM mystery_matches 
+                WHERE id = %s 
+                AND (user1_id = %s OR user2_id = %s)
+                AND is_active = TRUE
+            """, (request.match_id, request.user_id, request.user_id))
+            
+            match = cursor.fetchone()
+            
+            if not match:
+                conn.close()
+                raise HTTPException(status_code=404, detail="Match not found")
+            
+            # Premium users get free extensions
+            if not is_premium:
+                # TODO: Implement Telegram Stars payment verification here
+                # For now, we'll just charge coins or require payment link
+                pass
+            
+            # Extend expiry by 24 hours
+            cursor.execute("""
+                UPDATE mystery_matches 
+                SET expires_at = expires_at + INTERVAL '24 hours'
+                WHERE id = %s
+                RETURNING expires_at
+            """, (request.match_id,))
+            
+            new_expiry = cursor.fetchone()["expires_at"]
+            
+            conn.commit()
+            conn.close()
+            
+            return {
+                "success": True,
+                "message": "Match extended by 24 hours",
+                "new_expiry": new_expiry.isoformat(),
+                "cost": 0 if is_premium else 50  # 50 Stars for non-premium
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in extend_match: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
