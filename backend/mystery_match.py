@@ -421,25 +421,26 @@ async def find_mystery_match(request: MysteryMatchRequest):
 
 @mystery_router.get("/my-matches/{user_id}")
 async def get_my_matches(user_id: int):
-    """Get all active mystery matches for a user"""
+    """Get all active mystery matches for a user - NOW FULLY ASYNC!"""
     try:
-        conn = get_db_connection()
+        pool = await get_async_pool()
         is_premium = is_premium_user(user_id)
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute("""
+        # ASYNC query
+        async with pool.acquire() as conn:
+            matches = await conn.fetch("""
                 SELECT 
                     id as match_id,
                     CASE 
-                        WHEN user1_id = %s THEN user2_id 
+                        WHEN user1_id = $1 THEN user2_id 
                         ELSE user1_id 
                     END as partner_id,
                     CASE 
-                        WHEN user1_id = %s THEN user1_unlock_level 
+                        WHEN user1_id = $1 THEN user1_unlock_level 
                         ELSE user2_unlock_level 
                     END as my_unlock_level,
                     CASE 
-                        WHEN user1_id = %s THEN user2_unlock_level 
+                        WHEN user1_id = $1 THEN user2_unlock_level 
                         ELSE user1_unlock_level 
                     END as partner_unlock_level,
                     message_count,
@@ -447,12 +448,10 @@ async def get_my_matches(user_id: int):
                     expires_at,
                     secret_chat_active
                 FROM mystery_matches
-                WHERE (user1_id = %s OR user2_id = %s)
+                WHERE (user1_id = $1 OR user2_id = $1)
                 AND is_active = TRUE
                 ORDER BY created_at DESC
-            """, (user_id, user_id, user_id, user_id, user_id))
-            
-            matches = cursor.fetchall()
+            """, user_id)
             
             # Get unlock level for each match
             result = []
@@ -469,14 +468,12 @@ async def get_my_matches(user_id: int):
                     "partner": partner_profile if partner_profile else {"display_name": "Mystery User"},
                     "message_count": match["message_count"],
                     "unlock_level": unlock_level,
-                    "next_unlock_at": [20, 60, 100, 150][unlock_level] if unlock_level < 4 else None,  # Unlock thresholds
+                    "next_unlock_at": [20, 60, 100, 150][unlock_level] if unlock_level < 4 else None,
                     "created_at": match["created_at"].isoformat(),
                     "expires_at": match["expires_at"].isoformat(),
                     "time_remaining": str(match["expires_at"] - datetime.now()),
                     "secret_chat_active": match["secret_chat_active"]
                 })
-            
-            conn.close()
             
             return {
                 "success": True,
