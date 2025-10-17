@@ -123,3 +123,4 @@ yarl==1.22.0
 zipp==3.23.0
 sendgrid
 twilio
+asyncpg>=0.29.0
