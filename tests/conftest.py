@@ -1,14 +1,17 @@
 """Pytest fixtures for asynchronous testing of the Mystery Match API."""
 
 import asyncio
+import sys
+from pathlib import Path
 import pytest
 from httpx import AsyncClient
 
-# Import your FastAPI app. Adjust path if your app is defined elsewhere.
-try:
-    from backend.server import app
-except ImportError:
-    from server import app
+# Add backend directory to path
+backend_path = Path(__file__).parent.parent / "backend"
+sys.path.insert(0, str(backend_path))
+
+# Import your FastAPI app
+from server import app
 
 @pytest.fixture(scope="session")
 def event_loop():
