@@ -4,6 +4,7 @@ import asyncio
 import sys
 from pathlib import Path
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 
 # Add backend directory to path
@@ -21,7 +22,7 @@ def event_loop():
     yield loop
     loop.close()
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_client():
     """Yield an AsyncClient instance pointed at the FastAPI app."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
