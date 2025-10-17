@@ -156,18 +156,18 @@ def ensure_fantasy_tables():
             girl_id BIGINT NOT NULL,
             fantasy_key TEXT NOT NULL,
             vibe    TEXT NOT NULL,
-        shared_keywords TEXT[] NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        expires_at TIMESTAMPTZ NOT NULL,
-        status  TEXT DEFAULT 'pending'
-      )
-    """)
-    db_exec("""
-      CREATE TABLE IF NOT EXISTS fantasy_match_notifs (
-        id BIGSERIAL PRIMARY KEY,
-        match_id BIGINT NOT NULL,
-        user_id  BIGINT NOT NULL,
-        sent_at  TIMESTAMPTZ DEFAULT NOW(),
+            shared_keywords TEXT[] NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            expires_at TIMESTAMPTZ NOT NULL,
+            status  TEXT DEFAULT 'pending'
+          )
+        """)
+        db_exec("""
+          CREATE TABLE IF NOT EXISTS fantasy_match_notifs (
+            id BIGSERIAL PRIMARY KEY,
+            match_id BIGINT NOT NULL,
+            user_id  BIGINT NOT NULL,
+            sent_at  TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(match_id, user_id)
       )
     """)
