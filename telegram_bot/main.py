@@ -497,7 +497,7 @@ async def cmd_webapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
 {'✅ Choose gender (Girls/Boys)' if is_premium else '🎲 Random mystery matching'}
 {'✅ Unlimited matches' if is_premium else '✅ 3 matches per day'}
 ✅ Chat with mystery matches
-✅ Progressive profile reveals (10/30/50/100 msgs)
+✅ Progressive profile reveals (20/60/100/150 msgs)
 ✅ 48-hour match windows
 
 Click the button below to open the webapp:
