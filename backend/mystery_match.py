@@ -129,19 +129,19 @@ def get_daily_match_count(user_id: int) -> int:
 def get_unlock_level(message_count: int) -> int:
     """Determine unlock level based on message count
     Thresholds:
-    - 10 msgs: Level 1 (Age + City)
-    - 30 msgs: Level 2 (Blurred Photo)
-    - 50 msgs: Level 3 (Interests + Bio + Clearer Photo)
-    - 100 msgs: Level 4 (Full Profile - Photo + Real Name)
+    - 20 msgs: Level 1 (Gender + Age)
+    - 60 msgs: Level 2 (Blurred Photo)
+    - 100 msgs: Level 3 (Interests + Bio + Clearer Photo)
+    - 150 msgs: Level 4 (Full Profile - Clear Photo + Real Name)
     """
-    if message_count >= 100:
+    if message_count >= 150:
         return 4  # Full profile unlocked
-    elif message_count >= 50:
+    elif message_count >= 100:
         return 3  # Interests + Bio + Clearer photo
-    elif message_count >= 30:
+    elif message_count >= 60:
         return 2  # Blurred photo
-    elif message_count >= 10:
-        return 1  # Age + City
+    elif message_count >= 20:
+        return 1  # Gender + Age
     else:
         return 0  # Nothing unlocked yet
 
