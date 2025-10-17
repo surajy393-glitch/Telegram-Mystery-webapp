@@ -989,6 +989,10 @@ def main():
     # Admin WYR comment deletion command
     app.add_handler(CommandHandler("deletewyrcomment", naughty_wyr.cmd_delete_wyr_comment), group=0)
 
+
+    # Register Telegram Stars payment handlers
+    telegram_stars_payment.register_payment_handlers(app)
+
     # Health check commands for monitoring
     async def cmd_healthz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Basic health check endpoint."""
