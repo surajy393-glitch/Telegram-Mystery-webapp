@@ -745,6 +745,182 @@ async def send_mobile_otp(mobile_number: str):
         logger.info(f"MOCK SMS: OTP sent to {mobile_number}")
         return True
 
+
+async def send_welcome_email(email: str, full_name: str, username: str):
+    """Send welcome email after successful registration"""
+    try:
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
+        
+        sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+        
+        if not sendgrid_api_key:
+            logger.error("SendGrid API key not configured")
+            logger.info(f"MOCK WELCOME EMAIL: Sent to {email}")
+            return True
+        
+        # Create beautiful HTML welcome email
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+            <div style="background-color: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #e91e63; margin: 0; font-size: 32px;">💖 Welcome to LuvHive!</h1>
+                </div>
+                
+                <!-- Welcome Banner -->
+                <div style="background: linear-gradient(135deg, #e91e63, #f06292); padding: 30px; border-radius: 12px; text-align: center; margin: 25px 0;">
+                    <h2 style="color: white; margin: 0 0 15px 0; font-size: 24px;">Hello, {full_name}! 👋</h2>
+                    <p style="color: white; margin: 0; font-size: 16px; line-height: 1.6;">
+                        We're thrilled to have you join our community of meaningful connections!
+                    </p>
+                </div>
+                
+                <!-- Account Details -->
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 25px 0;">
+                    <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">Your Account Details:</h3>
+                    <p style="color: #555; margin: 5px 0;">
+                        <strong>Username:</strong> @{username}
+                    </p>
+                    <p style="color: #555; margin: 5px 0;">
+                        <strong>Email:</strong> {email}
+                    </p>
+                </div>
+                
+                <!-- Features -->
+                <div style="margin: 30px 0;">
+                    <h3 style="color: #333; margin: 0 0 20px 0; font-size: 20px; text-align: center;">What You Can Do Now:</h3>
+                    
+                    <div style="margin: 15px 0;">
+                        <div style="display: inline-block; width: 40px; height: 40px; background: linear-gradient(135deg, #e91e63, #f06292); border-radius: 50%; text-align: center; line-height: 40px; margin-right: 15px; float: left;">
+                            <span style="color: white; font-size: 20px;">🔍</span>
+                        </div>
+                        <div style="padding-left: 60px;">
+                            <h4 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">Mystery Match</h4>
+                            <p style="color: #666; margin: 0; font-size: 14px;">Find your perfect match through exciting mystery conversations</p>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <div style="display: inline-block; width: 40px; height: 40px; background: linear-gradient(135deg, #e91e63, #f06292); border-radius: 50%; text-align: center; line-height: 40px; margin-right: 15px; float: left;">
+                            <span style="color: white; font-size: 20px;">💬</span>
+                        </div>
+                        <div style="padding-left: 60px;">
+                            <h4 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">Connect & Chat</h4>
+                            <p style="color: #666; margin: 0; font-size: 14px;">Start meaningful conversations and build connections</p>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <div style="display: inline-block; width: 40px; height: 40px; background: linear-gradient(135deg, #e91e63, #f06292); border-radius: 50%; text-align: center; line-height: 40px; margin-right: 15px; float: left;">
+                            <span style="color: white; font-size: 20px;">✨</span>
+                        </div>
+                        <div style="padding-left: 60px;">
+                            <h4 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">Share Your Story</h4>
+                            <p style="color: #666; margin: 0; font-size: 14px;">Post updates, share moments, and express yourself</p>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+                </div>
+                
+                <!-- Call to Action -->
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="https://luvhive.net" style="display: inline-block; background: linear-gradient(135deg, #e91e63, #f06292); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(233, 30, 99, 0.3);">
+                        Get Started Now 🚀
+                    </a>
+                </div>
+                
+                <!-- Tips Section -->
+                <div style="background-color: #fff3e0; padding: 20px; border-radius: 10px; border-left: 4px solid #ff9800; margin: 25px 0;">
+                    <h3 style="color: #e65100; margin: 0 0 10px 0; font-size: 16px;">💡 Quick Tips:</h3>
+                    <ul style="color: #666; margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                        <li style="margin: 5px 0;">Complete your profile to get better matches</li>
+                        <li style="margin: 5px 0;">Be genuine and respectful in all interactions</li>
+                        <li style="margin: 5px 0;">Upload a profile photo to increase your visibility</li>
+                        <li style="margin: 5px 0;">Explore Mystery Match to find exciting connections</li>
+                    </ul>
+                </div>
+                
+                <!-- Footer -->
+                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
+                    <p style="color: #999; font-size: 14px; margin: 0 0 10px 0;">
+                        Need help? Contact us at <a href="mailto:support@luvhive.net" style="color: #e91e63; text-decoration: none;">support@luvhive.net</a>
+                    </p>
+                    <p style="color: #999; font-size: 13px; margin: 5px 0;">
+                        Follow us on social media for updates and tips!
+                    </p>
+                    <p style="color: #999; font-size: 12px; margin: 15px 0 0 0;">
+                        © 2025 LuvHive. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Plain text version
+        text_content = f"""
+        Welcome to LuvHive!
+        
+        Hello, {full_name}!
+        
+        We're thrilled to have you join our community of meaningful connections!
+        
+        Your Account Details:
+        Username: @{username}
+        Email: {email}
+        
+        What You Can Do Now:
+        
+        🔍 Mystery Match - Find your perfect match through exciting mystery conversations
+        💬 Connect & Chat - Start meaningful conversations and build connections
+        ✨ Share Your Story - Post updates, share moments, and express yourself
+        
+        Quick Tips:
+        • Complete your profile to get better matches
+        • Be genuine and respectful in all interactions
+        • Upload a profile photo to increase your visibility
+        • Explore Mystery Match to find exciting connections
+        
+        Get started now at: https://luvhive.net
+        
+        Need help? Contact us at support@luvhive.net
+        
+        Best regards,
+        The LuvHive Team
+        
+        © 2025 LuvHive. All rights reserved.
+        """
+        
+        # Create SendGrid message
+        message = Mail(
+            from_email="no-reply@luvhive.net",
+            to_emails=email,
+            subject=f"Welcome to LuvHive, {full_name}! 💖",
+            html_content=html_content,
+            plain_text_content=text_content
+        )
+        
+        # Send email
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        
+        if response.status_code == 202:
+            logger.info(f"Welcome email sent successfully to {email}")
+            return True
+        else:
+            logger.error(f"SendGrid welcome email error: Status {response.status_code}")
+            return False
+                
+    except Exception as e:
+        logger.error(f"Error sending welcome email: {e}")
+        logger.info(f"MOCK WELCOME EMAIL: Sent to {email}")
+        return True
+
+
 async def verify_mobile_otp(mobile_number: str, otp_code: str):
     """Verify mobile OTP using Twilio Verify"""
     try:
