@@ -315,101 +315,10 @@ async def get_my_matches(user_id: int):
 
 @mystery_router.post("/send-message")
 async def send_message(request: MessageRequest):
-    """
-    Send a message in mystery match - FULLY ASYNC NOW!
-    Automatically unlocks profile pieces at milestones (20, 60, 100, 150 messages)
-    Now with content moderation!
-    """
-    try:
-        # MODERATION CHECK
-        from utils.moderation import moderate_content
-        
-        moderation_result = moderate_content(request.message_text)
-        if not moderation_result.is_safe:
-            logger.warning(f"Message blocked from user {request.sender_id}: {moderation_result.reason}")
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Message blocked: {moderation_result.reason}"
-            )
-        
-        # ASYNC DB operations
-        pool = await get_async_pool()
-        
-        async with pool.acquire() as conn:
-            # Verify match exists and is active
-            match = await conn.fetchrow("""
-                SELECT * FROM mystery_matches 
-                WHERE id = $1 
-                AND ($2 = user1_id OR $2 = user2_id)
-                AND is_active = TRUE
-            """, request.match_id, request.sender_id)
-            
-            if not match:
-                raise HTTPException(status_code=404, detail="Match not found or expired")
-            
-            # Check if match has expired
-            if match["expires_at"] < datetime.now():
-                await conn.execute("""
-                    UPDATE mystery_matches 
-                    SET is_active = FALSE 
-                    WHERE id = $1
-                """, request.match_id)
-                raise HTTPException(status_code=410, detail="Match has expired")
-            
-            # Insert message (ASYNC)
-            msg_id = await conn.fetchval("""
-                INSERT INTO match_messages 
-                (match_id, sender_id, message_text, created_at, is_secret_chat)
-                VALUES ($1, $2, $3, NOW(), $4)
-                RETURNING id
-            """, request.match_id, request.sender_id, request.message_text, match["secret_chat_active"])
-            
-            # Update message count (ASYNC)
-            new_count = await conn.fetchval("""
-                UPDATE mystery_matches 
-                SET message_count = message_count + 1
-                WHERE id = $1
-                RETURNING message_count
-            """, request.match_id)
-            
-            # Calculate unlock level
-            unlock_level = get_unlock_level(new_count)
-            
-            # Update unlock levels for both users (ASYNC)
-            if match["user1_id"] == request.sender_id:
-                await conn.execute("""
-                    UPDATE mystery_matches 
-                    SET user1_unlock_level = $1
-                    WHERE id = $2 AND user1_unlock_level < $1
-                """, unlock_level, request.match_id)
-            else:
-                await conn.execute("""
-                    UPDATE mystery_matches 
-                    SET user2_unlock_level = $1
-                    WHERE id = $2 AND user2_unlock_level < $1
-                """, unlock_level, request.match_id)
-            
-            # Check for unlock achievement
-            unlock_achieved = None
-            unlock_thresholds = {20: "gender_age", 60: "photo", 100: "interests_bio", 150: "full_profile"}
-            
-            if new_count in unlock_thresholds:
-                unlock_achieved = unlock_thresholds[new_count]
-            
-            return {
-                "success": True,
-                "message_id": msg_id,
-                "message_count": new_count,
-                "unlock_level": unlock_level,
-                "unlock_achieved": unlock_achieved,
-                "next_unlock_at": [20, 60, 100, 150][unlock_level] if unlock_level < 4 else None
-            }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in send_message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Using async helper from database/async_db.py  
+    from database.async_db import async_send_message as send_msg_helper
+    res = await send_msg_helper(request.match_id, request.sender_id, request.message_text)
+    return {"success": True, "message_id": res.get("message_id", -1)}
 
 @mystery_router.get("/chat/{match_id}")
 async def get_chat_messages(match_id: int, user_id: int):
