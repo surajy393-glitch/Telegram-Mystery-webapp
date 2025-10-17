@@ -3597,7 +3597,10 @@ async def register_for_mystery(
         if existing_user:
             raise HTTPException(status_code=400, detail="Username or email already exists")
         
-        # 3. Handle profile photo upload if provided
+        # 3. Generate user ID early (needed for file uploads)
+        mongo_user_id = str(uuid4())
+        
+        # 4. Handle profile photo upload if provided
         profile_photo_url = None
         if profilePhoto:
             try:
@@ -3637,9 +3640,8 @@ async def register_for_mystery(
                 logger.error(f"Photo upload error: {photo_error}")
                 raise HTTPException(status_code=500, detail="Failed to upload profile photo")
         
-        # 4. Create user in MongoDB (web app database)
+        # 5. Create user in MongoDB (web app database)
         hashed_password = get_password_hash(password)
-        mongo_user_id = str(uuid4())
         
         mongo_user = {
             "id": mongo_user_id,
