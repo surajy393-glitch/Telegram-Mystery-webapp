@@ -322,6 +322,25 @@ async def find_mystery_match(request: MysteryMatchRequest):
             selected_match = random.choice(potential_matches)
             match_user_id = selected_match["tg_user_id"]
             
+            # Double-check limit before creating match (prevent race conditions)
+            if not is_premium:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM mystery_matches
+                    WHERE (user1_id = %s OR user2_id = %s)
+                    AND DATE(created_at) = CURRENT_DATE
+                """, (user_id, user_id))
+                
+                current_count = cursor.fetchone()[0]
+                if current_count >= 3:
+                    conn.close()
+                    return {
+                        "success": False,
+                        "error": "daily_limit_reached",
+                        "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
+                        "matches_today": current_count,
+                        "limit": 3
+                    }
+            
             # Create mystery match
             cursor.execute("""
                 INSERT INTO mystery_matches 
@@ -331,6 +350,28 @@ async def find_mystery_match(request: MysteryMatchRequest):
             """, (user_id, match_user_id))
             
             match_id = cursor.fetchone()["id"]
+            
+            # Final verification: ensure we haven't exceeded limit
+            if not is_premium:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM mystery_matches
+                    WHERE (user1_id = %s OR user2_id = %s)
+                    AND DATE(created_at) = CURRENT_DATE
+                """, (user_id, user_id))
+                
+                final_count = cursor.fetchone()[0]
+                if final_count > 3:
+                    # Rollback the match creation
+                    conn.rollback()
+                    conn.close()
+                    return {
+                        "success": False,
+                        "error": "daily_limit_reached",
+                        "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
+                        "matches_today": 3,
+                        "limit": 3
+                    }
+            
             conn.commit()
             conn.close()
             
