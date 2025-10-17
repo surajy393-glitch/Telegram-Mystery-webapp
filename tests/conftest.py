@@ -16,12 +16,13 @@ from server import app
 @pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the event loop for pytest.mark.asyncio."""
-    loop = asyncio.get_event_loop()
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
     yield loop
     loop.close()
 
 @pytest.fixture
 async def async_client():
     """Yield an AsyncClient instance pointed at the FastAPI app."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        yield client
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
