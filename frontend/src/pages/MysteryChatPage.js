@@ -309,6 +309,20 @@ const MysteryChatPage = () => {
             </div>
           ))
         )}
+        
+        {/* Typing Indicator */}
+        {partnerTyping && (
+          <div className="flex justify-start">
+            <div className="bg-white bg-opacity-20 backdrop-blur-md text-white px-4 py-2 rounded-2xl">
+              <div className="flex space-x-1">
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
