@@ -214,184 +214,75 @@ def get_unlocked_profile_data(user_id: int, unlock_level: int, is_premium: bool 
 
 @mystery_router.post("/find-match")
 async def find_mystery_match(request: MysteryMatchRequest):
-    """
-    Find a new mystery match (NOW ASYNC!)
-    - Free users: 3 matches per day, random matching
-    - Premium users: Unlimited matches, can filter by gender/city
-    """
-    try:
-        user_id = request.user_id
-        pool = await get_async_pool()
-        
-        # Check if user exists (ASYNC)
-        async with pool.acquire() as conn:
-            user = await conn.fetchrow("SELECT * FROM users WHERE tg_user_id = $1", user_id)
-            
-            if not user:
-                raise HTTPException(status_code=404, detail="User not found. Please register first.")
-            
-            # Check premium status
-            is_premium = is_premium_user(user_id)
-            
-            # Check daily limit for free users (ASYNC)
-            if not is_premium:
-                daily_count_row = await conn.fetchrow("""
-                    SELECT COUNT(*) as count FROM mystery_matches
-                    WHERE (user1_id = $1 OR user2_id = $1)
-                    AND DATE(created_at) = CURRENT_DATE
-                """, user_id)
-                
-                daily_count = daily_count_row['count']
-                
-                if daily_count >= 3:
-                    return {
-                        "success": False,
-                    "error": "daily_limit_reached",
-                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                    "matches_today": daily_count,
-                    "limit": 3
-                }
-        
-        # Build matching query
-        query = """
-            SELECT tg_user_id, age, gender, city 
-            FROM users 
-            WHERE tg_user_id != %s
-            AND tg_user_id NOT IN (
-                -- Exclude users already matched
-                SELECT CASE 
-                    WHEN user1_id = %s THEN user2_id 
-                    ELSE user1_id 
-                END
-                FROM mystery_matches
-                WHERE (user1_id = %s OR user2_id = %s)
-                AND is_active = TRUE
-            )
-        """
-        
-        query_params = [user_id, user_id, user_id, user_id]
-        
-        # Add filters for premium users
-        if is_premium:
-            if request.preferred_gender:
-                query += " AND gender = %s"
-                query_params.append(request.preferred_gender)
-            
-            if request.preferred_city:
-                query += " AND city ILIKE %s"
-                query_params.append(f"%{request.preferred_city}%")
-        
-        # Age filter (for all users)
-        query += " AND age BETWEEN %s AND %s"
-        query_params.extend([request.preferred_age_min, request.preferred_age_max])
-        
-        # Execute query
-        cursor.execute(query, query_params)
-        potential_matches = cursor.fetchall()
-        
-        if not potential_matches:
-            cursor.close()
-            conn.close()
-            
-            # Premium user specific gender messages
-            if is_premium and request.preferred_gender and request.preferred_gender != 'random':
-                gender_label = "Female" if request.preferred_gender.lower() == 'female' else "Male"
-                alternative_gender = "male" if request.preferred_gender.lower() == 'female' else "female"
-                alternative_label = "Male" if alternative_gender == 'male' else "Female"
-                
-                return {
-                    "success": False,
-                    "error": "gender_not_available",
-                    "message": f"{gender_label} users are not currently available. You can match with {alternative_label} users or try again later.",
-                    "requested_gender": request.preferred_gender,
-                    "alternative_gender": alternative_gender
-                }
-            
-            return {
-                "success": False,
-                "error": "no_matches_found",
-                "message": "No matches found right now. Try again in a few minutes!"
-            }
-        
-        # Random selection
-        selected_match = random.choice(potential_matches)
-        match_user_id = selected_match["tg_user_id"]
-        
-        # Double-check limit before creating match (prevent race conditions)
-        if not is_premium:
-            cursor.execute("""
-                SELECT COUNT(*) as count FROM mystery_matches
-                WHERE (user1_id = %s OR user2_id = %s)
-                AND DATE(created_at) = CURRENT_DATE
-            """, (user_id, user_id))
-            
-            current_count = cursor.fetchone()['count']
-            if current_count >= 3:
-                cursor.close()
-                conn.close()
-                return {
-                    "success": False,
-                    "error": "daily_limit_reached",
-                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                    "matches_today": current_count,
-                    "limit": 3
-                }
-        
-        # Create mystery match
-        cursor.execute("""
-            INSERT INTO mystery_matches 
-            (user1_id, user2_id, created_at, expires_at, message_count, is_active, user1_unlock_level, user2_unlock_level)
-            VALUES (%s, %s, NOW(), NOW() + INTERVAL '48 hours', 0, TRUE, 0, 0)
-            RETURNING id
-        """, (user_id, match_user_id))
-        
-        match_id = cursor.fetchone()["id"]
-        
-        # Final verification: ensure we haven't exceeded limit
-        if not is_premium:
-            cursor.execute("""
-                SELECT COUNT(*) as count FROM mystery_matches
-                WHERE (user1_id = %s OR user2_id = %s)
-                AND DATE(created_at) = CURRENT_DATE
-            """, (user_id, user_id))
-            
-            final_count = cursor.fetchone()['count']
-            if final_count > 3:
-                # Rollback the match creation
-                conn.rollback()
-                cursor.close()
-                conn.close()
-                return {
-                    "success": False,
-                    "error": "daily_limit_reached",
-                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                    "matches_today": 3,
-                    "limit": 3
-                }
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
+    user_id = request.user_id
+
+    # 1. verify user exists
+    user = await fetch_one("SELECT * FROM users WHERE tg_user_id=$1", user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found. Please register first.")
+
+    # 2. check premium
+    is_premium = await async_is_premium_user(user_id)
+
+    # 3. daily limit for free users
+    if not is_premium and await async_get_daily_match_count(user_id) >= 3:
         return {
-            "success": True,
-            "match_id": match_id,
-            "mystery_user": {
-                "display_name": "Mystery User",
-                "silhouette": True,
-                "unlock_level": 0
-            },
-            "expires_at": (datetime.now() + timedelta(hours=48)).isoformat(),
-            "message_count": 0,
-            "next_unlock_at": 20,  # First unlock at 20 messages (Gender + Age)
-            "is_premium": is_premium
+            "success": False,
+            "error": "daily_limit_reached",
+            "message": "You've reached your daily limit of 3 matches. Upgrade to Premium!",
+            "matches_today": 3,
+            "limit": 3,
         }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in find_mystery_match: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+
+    # 4. build WHERE clause and parameter list
+    where_clauses = ["tg_user_id != $1"]
+    params = [user_id]
+    idx = 2
+
+    if is_premium and request.preferred_gender:
+        where_clauses.append(f"gender = ${idx}")
+        params.append(request.preferred_gender)
+        idx += 1
+
+    if is_premium and request.preferred_city:
+        where_clauses.append(f"city ILIKE ${idx}")
+        params.append(f"%{request.preferred_city}%")
+        idx += 1
+
+    # age filter always applied
+    where_clauses.append(f"age BETWEEN ${idx} AND ${idx+1}")
+    params += [request.preferred_age_min, request.preferred_age_max]
+
+    sql = f"""
+        SELECT tg_user_id, age, gender, city
+        FROM users
+        WHERE {' AND '.join(where_clauses)}
+          AND tg_user_id NOT IN (
+            SELECT CASE WHEN user1_id = $1 THEN user2_id ELSE user1_id END
+            FROM mystery_matches
+            WHERE (user1_id = $1 OR user2_id = $1) AND is_active = TRUE
+        )
+    """
+
+    potential_matches = await fetch_all(sql, *params)
+    if not potential_matches:
+        return {
+            "success": False,
+            "error": "no_matches_found",
+            "message": "No matches found right now. Try again later!",
+        }
+
+    selected = random.choice(potential_matches)
+    match_id = await async_create_match(user_id, selected["tg_user_id"])
+
+    return {
+        "success": True,
+        "match_id": match_id,
+        "expires_at": (datetime.utcnow() + timedelta(hours=48)).isoformat(),
+        "is_premium": is_premium,
+        "message_count": 0,
+        "next_unlock_at": 20,
+    }
 
 @mystery_router.get("/my-matches/{user_id}")
 async def get_my_matches(user_id: int):
