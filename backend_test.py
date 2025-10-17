@@ -3713,6 +3713,333 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Mystery Match Online Status", False, "Exception occurred", str(e))
 
+    # ========== MYSTERY MATCH DAILY LIMIT TESTS ==========
+    
+    def register_free_user_for_mystery_match(self):
+        """Register a free (non-premium) user for Mystery Match testing"""
+        try:
+            user_data = {
+                "fullName": "Maya Chen",
+                "username": f"maya_free_{datetime.now().strftime('%H%M%S')}",
+                "age": 24,
+                "gender": "female",
+                "password": "SecurePass123!"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data['access_token']
+                self.current_user_id = data['user']['id']
+                self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
+                
+                # Also register in Mystery Match system (PostgreSQL)
+                mystery_data = {
+                    "tg_user_id": int(self.current_user_id.replace('-', '')[:9]),  # Convert to int
+                    "display_name": user_data['fullName'],
+                    "age": user_data['age'],
+                    "gender": user_data['gender'],
+                    "city": "San Francisco",
+                    "is_premium": False  # Explicitly set as free user
+                }
+                
+                mystery_response = self.session.post(f"{API_BASE}/mystery/register", json=mystery_data)
+                
+                if mystery_response.status_code == 200:
+                    self.log_result("Register Free User for Mystery Match", True, 
+                                  f"Registered free user: {user_data['username']} (ID: {mystery_data['tg_user_id']})")
+                    return mystery_data['tg_user_id']
+                else:
+                    self.log_result("Register Free User for Mystery Match", False, 
+                                  f"Mystery registration failed: {mystery_response.status_code}", mystery_response.text)
+                    return None
+            else:
+                self.log_result("Register Free User for Mystery Match", False, 
+                              f"User registration failed: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Register Free User for Mystery Match", False, "Exception occurred", str(e))
+            return None
+    
+    def register_premium_user_for_mystery_match(self):
+        """Register a premium user for Mystery Match testing"""
+        try:
+            user_data = {
+                "fullName": "Alex Premium",
+                "username": f"alex_premium_{datetime.now().strftime('%H%M%S')}",
+                "age": 28,
+                "gender": "male",
+                "password": "SecurePass456!"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Register in Mystery Match system as premium user
+                mystery_data = {
+                    "tg_user_id": int(data['user']['id'].replace('-', '')[:9]),  # Convert to int
+                    "display_name": user_data['fullName'],
+                    "age": user_data['age'],
+                    "gender": user_data['gender'],
+                    "city": "Los Angeles",
+                    "is_premium": True  # Set as premium user
+                }
+                
+                mystery_response = self.session.post(f"{API_BASE}/mystery/register", json=mystery_data)
+                
+                if mystery_response.status_code == 200:
+                    self.log_result("Register Premium User for Mystery Match", True, 
+                                  f"Registered premium user: {user_data['username']} (ID: {mystery_data['tg_user_id']})")
+                    return mystery_data['tg_user_id']
+                else:
+                    self.log_result("Register Premium User for Mystery Match", False, 
+                                  f"Mystery registration failed: {mystery_response.status_code}", mystery_response.text)
+                    return None
+            else:
+                self.log_result("Register Premium User for Mystery Match", False, 
+                              f"User registration failed: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Register Premium User for Mystery Match", False, "Exception occurred", str(e))
+            return None
+    
+    def create_multiple_test_users_for_matching(self):
+        """Create multiple test users to ensure there are potential matches available"""
+        try:
+            created_users = []
+            
+            for i in range(5):  # Create 5 potential matches
+                user_data = {
+                    "tg_user_id": 900000 + i,  # Use sequential IDs
+                    "display_name": f"Match User {i+1}",
+                    "age": 22 + i,
+                    "gender": "female" if i % 2 == 0 else "male",
+                    "city": "New York",
+                    "is_premium": False
+                }
+                
+                response = self.session.post(f"{API_BASE}/mystery/register", json=user_data)
+                
+                if response.status_code == 200:
+                    created_users.append(user_data['tg_user_id'])
+            
+            self.log_result("Create Multiple Test Users", len(created_users) >= 3, 
+                          f"Created {len(created_users)} potential match users")
+            return len(created_users) >= 3
+            
+        except Exception as e:
+            self.log_result("Create Multiple Test Users", False, "Exception occurred", str(e))
+            return False
+    
+    def test_daily_match_limit_free_user(self):
+        """Test daily match limit enforcement for free users (3 matches max)"""
+        try:
+            # Register a free user
+            free_user_id = self.register_free_user_for_mystery_match()
+            if not free_user_id:
+                self.log_result("Daily Match Limit Test", False, "Could not register free user")
+                return
+            
+            # Create potential matches
+            if not self.create_multiple_test_users_for_matching():
+                self.log_result("Daily Match Limit Test", False, "Could not create potential matches")
+                return
+            
+            match_request = {
+                "user_id": free_user_id,
+                "preferred_age_min": 18,
+                "preferred_age_max": 35
+            }
+            
+            successful_matches = 0
+            match_responses = []
+            
+            # Attempt to create 5 matches (should only succeed for first 3)
+            for attempt in range(1, 6):
+                print(f"   Attempting match {attempt}/5...")
+                
+                response = self.session.post(f"{API_BASE}/mystery/find-match", json=match_request)
+                match_responses.append({
+                    'attempt': attempt,
+                    'status_code': response.status_code,
+                    'response': response.json() if response.status_code == 200 else response.text
+                })
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        successful_matches += 1
+                        print(f"   ✅ Match {attempt}: SUCCESS - Match ID: {data.get('match_id')}")
+                    else:
+                        print(f"   ❌ Match {attempt}: FAILED - {data.get('message', 'Unknown error')}")
+                        if data.get('error') == 'daily_limit_reached':
+                            print(f"   📊 Daily limit reached: {data.get('matches_today')}/{data.get('limit')}")
+                else:
+                    print(f"   ❌ Match {attempt}: HTTP {response.status_code}")
+            
+            # Verify results
+            success = True
+            issues = []
+            
+            # Check that exactly 3 matches were successful
+            if successful_matches != 3:
+                success = False
+                issues.append(f"Expected exactly 3 successful matches, got {successful_matches}")
+            
+            # Check that attempts 4 and 5 failed with daily_limit_reached
+            for i, resp in enumerate(match_responses[3:], 4):  # Attempts 4 and 5
+                if resp['status_code'] == 200:
+                    data = resp['response']
+                    if data.get('success'):
+                        success = False
+                        issues.append(f"Match {i} should have failed but succeeded")
+                    elif data.get('error') != 'daily_limit_reached':
+                        success = False
+                        issues.append(f"Match {i} failed with wrong error: {data.get('error')}")
+                    elif not data.get('message', '').lower().count('daily limit'):
+                        success = False
+                        issues.append(f"Match {i} missing proper error message")
+                    elif data.get('limit') != 3:
+                        success = False
+                        issues.append(f"Match {i} shows wrong limit: {data.get('limit')}")
+                else:
+                    success = False
+                    issues.append(f"Match {i} returned HTTP {resp['status_code']} instead of proper error response")
+            
+            if success:
+                self.log_result("Daily Match Limit Test (Free User)", True, 
+                              f"✅ Free user correctly limited to 3 matches. Attempts 4-5 properly rejected with 'daily_limit_reached'")
+            else:
+                self.log_result("Daily Match Limit Test (Free User)", False, 
+                              f"Issues found: {'; '.join(issues)}")
+                
+        except Exception as e:
+            self.log_result("Daily Match Limit Test (Free User)", False, "Exception occurred", str(e))
+    
+    def test_premium_user_unlimited_matches(self):
+        """Test that premium users have unlimited matches"""
+        try:
+            # Register a premium user
+            premium_user_id = self.register_premium_user_for_mystery_match()
+            if not premium_user_id:
+                self.log_result("Premium User Unlimited Matches", False, "Could not register premium user")
+                return
+            
+            # Create additional potential matches for premium user
+            if not self.create_multiple_test_users_for_matching():
+                self.log_result("Premium User Unlimited Matches", False, "Could not create potential matches")
+                return
+            
+            match_request = {
+                "user_id": premium_user_id,
+                "preferred_age_min": 18,
+                "preferred_age_max": 35
+            }
+            
+            successful_matches = 0
+            
+            # Attempt to create 5 matches (all should succeed for premium user)
+            for attempt in range(1, 6):
+                print(f"   Premium user attempting match {attempt}/5...")
+                
+                response = self.session.post(f"{API_BASE}/mystery/find-match", json=match_request)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        successful_matches += 1
+                        print(f"   ✅ Premium Match {attempt}: SUCCESS - Match ID: {data.get('match_id')}")
+                    else:
+                        print(f"   ❌ Premium Match {attempt}: FAILED - {data.get('message', 'Unknown error')}")
+                        # For premium users, we should not see daily_limit_reached
+                        if data.get('error') == 'daily_limit_reached':
+                            self.log_result("Premium User Unlimited Matches", False, 
+                                          f"Premium user hit daily limit at match {attempt}")
+                            return
+                else:
+                    print(f"   ❌ Premium Match {attempt}: HTTP {response.status_code}")
+            
+            # Premium users should be able to create more than 3 matches
+            if successful_matches > 3:
+                self.log_result("Premium User Unlimited Matches", True, 
+                              f"✅ Premium user successfully created {successful_matches} matches (no daily limit)")
+            else:
+                self.log_result("Premium User Unlimited Matches", False, 
+                              f"Premium user only created {successful_matches} matches, expected more than 3")
+                
+        except Exception as e:
+            self.log_result("Premium User Unlimited Matches", False, "Exception occurred", str(e))
+    
+    def test_daily_limit_error_response_format(self):
+        """Test that daily limit error responses contain all required fields"""
+        try:
+            # Register a free user
+            free_user_id = self.register_free_user_for_mystery_match()
+            if not free_user_id:
+                self.log_result("Daily Limit Error Response Format", False, "Could not register free user")
+                return
+            
+            # Create potential matches
+            if not self.create_multiple_test_users_for_matching():
+                self.log_result("Daily Limit Error Response Format", False, "Could not create potential matches")
+                return
+            
+            match_request = {
+                "user_id": free_user_id,
+                "preferred_age_min": 18,
+                "preferred_age_max": 35
+            }
+            
+            # Create 3 matches first
+            for i in range(3):
+                response = self.session.post(f"{API_BASE}/mystery/find-match", json=match_request)
+                if response.status_code != 200 or not response.json().get('success'):
+                    self.log_result("Daily Limit Error Response Format", False, f"Could not create initial match {i+1}")
+                    return
+            
+            # Now attempt the 4th match (should fail with proper error format)
+            response = self.session.post(f"{API_BASE}/mystery/find-match", json=match_request)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields in error response
+                required_fields = ['success', 'error', 'message', 'matches_today', 'limit']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"Missing required fields in error response: {missing_fields}")
+                elif data.get('success') is not False:
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"success field should be False, got: {data.get('success')}")
+                elif data.get('error') != 'daily_limit_reached':
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"error field should be 'daily_limit_reached', got: {data.get('error')}")
+                elif data.get('matches_today') != 3:
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"matches_today should be 3, got: {data.get('matches_today')}")
+                elif data.get('limit') != 3:
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"limit should be 3, got: {data.get('limit')}")
+                elif 'daily limit of 3 matches' not in data.get('message', '').lower():
+                    self.log_result("Daily Limit Error Response Format", False, 
+                                  f"message should mention 'daily limit of 3 matches', got: {data.get('message')}")
+                else:
+                    self.log_result("Daily Limit Error Response Format", True, 
+                                  f"✅ Error response format correct: {data}")
+            else:
+                self.log_result("Daily Limit Error Response Format", False, 
+                              f"Expected 200 with error response, got HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Daily Limit Error Response Format", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
