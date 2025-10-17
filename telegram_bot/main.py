@@ -896,6 +896,10 @@ def main():
     # Webapp deep linking commands
     app.add_handler(CommandHandler("webapp", cmd_webapp), group=0)
     app.add_handler(CommandHandler("mystery", cmd_mystery), group=0)
+    
+    # Webapp callback handlers
+    from telegram.ext import CallbackQueryHandler
+    app.add_handler(CallbackQueryHandler(handle_close_webapp_msg, pattern="^close_webapp_msg$"), group=0)
 
     # Referral command
     app.add_handler(CommandHandler("ref", cmd_ref), group=0)
