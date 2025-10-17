@@ -167,6 +167,8 @@ from handlers import fantasy_match
 from handlers import fantasy_chat, vault_text, text_router, fantasy_relay, fantasy_prompts, admin_fantasy_toggle
 from handlers import blur_vault
 from handlers import text_firewall, verification
+# Telegram Stars Payment
+from handlers import telegram_stars_payment
 
 import handlers.menu_handlers # Added import for menu_handlers
 
