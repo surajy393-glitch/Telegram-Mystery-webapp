@@ -3924,7 +3924,15 @@ async def register_for_mystery(
         }
         access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
         
-        # 6. Return success response
+        # 6. Send welcome email (async, don't wait for it to complete)
+        try:
+            await send_welcome_email(clean_email, fullName, clean_username)
+            logger.info(f"Welcome email sent to {clean_email}")
+        except Exception as email_error:
+            # Don't fail registration if email fails
+            logger.error(f"Failed to send welcome email: {email_error}")
+        
+        # 7. Return success response
         return {
             "access_token": access_token,
             "token_type": "bearer",
