@@ -98,3 +98,7 @@ uploads/
 # Log files
 *.log
 logs/
+-e 
+# Environment files
+*.env
+*.env.*
