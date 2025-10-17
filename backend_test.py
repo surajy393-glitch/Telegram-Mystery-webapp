@@ -3753,8 +3753,8 @@ class LuvHiveAPITester:
                 
                 if mystery_response.status_code == 200:
                     self.log_result("Register Free User for Mystery Match", True, 
-                                  f"Registered free user: {user_data['username']} (ID: {mystery_data['tg_user_id']})")
-                    return mystery_data['tg_user_id']
+                                  f"Registered free user: {user_data['username']} (ID: {numeric_user_id})")
+                    return numeric_user_id
                 else:
                     self.log_result("Register Free User for Mystery Match", False, 
                                   f"Mystery registration failed: {mystery_response.status_code}", mystery_response.text)
