@@ -125,3 +125,6 @@ sendgrid
 twilio
 asyncpg>=0.29.0
 better-profanity>=0.7.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
