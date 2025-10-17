@@ -286,71 +286,32 @@ async def find_mystery_match(request: MysteryMatchRequest):
 
 @mystery_router.get("/my-matches/{user_id}")
 async def get_my_matches(user_id: int):
-    """Get all active mystery matches for a user - NOW FULLY ASYNC!"""
-    try:
-        pool = await get_async_pool()
-        is_premium = is_premium_user(user_id)
-        
-        # ASYNC query
-        async with pool.acquire() as conn:
-            matches = await conn.fetch("""
-                SELECT 
-                    id as match_id,
-                    CASE 
-                        WHEN user1_id = $1 THEN user2_id 
-                        ELSE user1_id 
-                    END as partner_id,
-                    CASE 
-                        WHEN user1_id = $1 THEN user1_unlock_level 
-                        ELSE user2_unlock_level 
-                    END as my_unlock_level,
-                    CASE 
-                        WHEN user1_id = $1 THEN user2_unlock_level 
-                        ELSE user1_unlock_level 
-                    END as partner_unlock_level,
-                    message_count,
-                    created_at,
-                    expires_at,
-                    secret_chat_active
-                FROM mystery_matches
-                WHERE (user1_id = $1 OR user2_id = $1)
-                AND is_active = TRUE
-                ORDER BY created_at DESC
-            """, user_id)
-            
-            # Get unlock level for each match
-            result = []
-            for match in matches:
-                unlock_level = get_unlock_level(match["message_count"])
-                partner_profile = get_unlocked_profile_data(
-                    match["partner_id"], 
-                    unlock_level,
-                    is_premium
-                )
-                
-                result.append({
-                    "match_id": match["match_id"],
-                    "partner": partner_profile if partner_profile else {"display_name": "Mystery User"},
-                    "message_count": match["message_count"],
-                    "unlock_level": unlock_level,
-                    "next_unlock_at": [20, 60, 100, 150][unlock_level] if unlock_level < 4 else None,
-                    "created_at": match["created_at"].isoformat(),
-                    "expires_at": match["expires_at"].isoformat(),
-                    "time_remaining": str(match["expires_at"] - datetime.now()),
-                    "secret_chat_active": match["secret_chat_active"]
-                })
-            
-            return {
-                "success": True,
-                "matches": result,
-                "total": len(result),
-                "is_premium": is_premium,
-                "daily_limit": None if is_premium else f"{get_daily_match_count(user_id)}/3"
-            }
-            
-    except Exception as e:
-        logger.error(f"Error in get_my_matches: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    is_premium = await async_is_premium_user(user_id)
+    matches = await async_get_user_matches(user_id)
+    result = []
+    for m in matches:
+        msg_count = m.get("message_count", 0)
+        # unlock level calculation
+        if msg_count >= 150:
+            unlock_level = 4
+        elif msg_count >= 100:
+            unlock_level = 3
+        elif msg_count >= 60:
+            unlock_level = 2
+        elif msg_count >= 20:
+            unlock_level = 1
+        else:
+            unlock_level = 0
+
+        result.append({
+            "match_id": m["match_id"],
+            "partner_id": m["partner_id"],
+            "message_count": msg_count,
+            "unlock_level": unlock_level,
+            "expires_at": m.get("expires_at").isoformat() if m.get("expires_at") else None,
+            "secret_chat_active": m.get("secret_chat_active"),
+        })
+    return {"success": True, "matches": result, "is_premium": is_premium}
 
 @mystery_router.post("/send-message")
 async def send_message(request: MessageRequest):
