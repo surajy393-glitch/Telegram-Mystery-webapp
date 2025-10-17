@@ -229,11 +229,17 @@ const MysteryChatPage = () => {
 
             {/* Partner Info */}
             <div>
-              <div className="text-white font-bold">
-                {partner.age ? `${partner.age}yo from ${partner.city || 'Unknown'}` : 'Mystery User'}
+              <div className="text-white font-bold flex items-center space-x-2">
+                <span>{partner.age ? `${partner.age}yo from ${partner.city || 'Unknown'}` : 'Mystery User'}</span>
+                {partnerOnline && wsConnected && (
+                  <span className="inline-flex items-center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  </span>
+                )}
               </div>
               <div className="text-white text-opacity-75 text-xs">
                 {nextUnlock ? `${messageCount}/${nextUnlock} to unlock` : 'Fully unlocked!'}
+                {!wsConnected && <span className="ml-2">📡 Reconnecting...</span>}
               </div>
             </div>
           </div>
