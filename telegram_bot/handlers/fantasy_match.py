@@ -183,14 +183,17 @@ def ensure_fantasy_tables():
     # Add status column to fantasy_submissions for moderation
     db_exec("""
       ALTER TABLE fantasy_submissions
-      ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'
-    """)
-    # Ensure id column is linked to sequence for auto-increment
-    db_exec("""
-      ALTER TABLE fantasy_submissions 
-      ALTER COLUMN id SET DEFAULT nextval('fantasy_submissions_id_seq')
-    """)
-    log.info("[fantasy] ensured tables")
+          ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'
+        """)
+        # Ensure id column is linked to sequence for auto-increment
+        db_exec("""
+          ALTER TABLE fantasy_submissions 
+          ALTER COLUMN id SET DEFAULT nextval('fantasy_submissions_id_seq')
+        """)
+        log.info("[fantasy] ensured tables")
+    except Exception as e:
+        logger.warning(f"[fantasy] Table setup warning: {e}")
+        # Tables probably already exist, continue
 
 # ---------- IDEMPOTENT SENDER ----------
 async def _send_once(context: ContextTypes.DEFAULT_TYPE, match_id: int, user_id: int,
