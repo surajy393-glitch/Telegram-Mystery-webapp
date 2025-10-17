@@ -242,7 +242,6 @@ async def find_mystery_match(request: MysteryMatchRequest):
                     SELECT COUNT(*) FROM mystery_matches
                     WHERE (user1_id = %s OR user2_id = %s)
                     AND DATE(created_at) = CURRENT_DATE
-                    FOR UPDATE
                 """, (user_id, user_id))
                 
                 daily_count = cursor.fetchone()[0]
