@@ -86,13 +86,35 @@ def _arr(val):
 
 # ---------- GENDER NORMALIZATION ----------
 def normalize_gender(g):
+    """Normalize gender - NOW INCLUSIVE!"""
     g = str(g or "").strip().lower()
-    if g in ("m","male","boy","man"): return "m"
-    if g in ("f","female","girl","woman"): return "f"
-    return None  # Don't default to any gender
+    
+    # Male variants
+    if g in ("m", "male", "boy", "man"): 
+        return "male"
+    
+    # Female variants
+    if g in ("f", "female", "girl", "woman"): 
+        return "female"
+    
+    # Non-binary variants (NEW!)
+    if g in ("nb", "non-binary", "non_binary", "nonbinary", "enby"): 
+        return "non_binary"
+    
+    # Other inclusive options
+    if g in ("genderqueer", "gq"): 
+        return "genderqueer"
+    if g in ("genderfluid", "fluid"): 
+        return "genderfluid"
+    if g in ("agender", "no gender"): 
+        return "agender"
+    
+    # Return as-is for any other gender identity
+    return g if g else None
 
-def _is_m(g): return normalize_gender(g) == "m"
-def _is_f(g): return normalize_gender(g) == "f"
+def _is_m(g): return normalize_gender(g) == "male"
+def _is_f(g): return normalize_gender(g) == "female"
+def _is_nb(g): return normalize_gender(g) == "non_binary"  # NEW helper
 
 # ---------- FANTASY KEY ----------
 def _make_fantasy_key(vibe: str, shared_kw: list) -> str:
