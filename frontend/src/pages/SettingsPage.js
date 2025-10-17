@@ -251,7 +251,7 @@ const SettingsPage = ({ user, onLogout }) => {
             <SettingToggle
               icon={<Shield className="w-5 h-5" />}
               label="Allow Gender Reveal Requests"
-              description="Others can request to see your gender at 30 messages"
+              description="Others can request to see your gender at 20 messages"
               isOn={settings.allowGenderRevealRequests}
               onToggle={() => handleSettingToggle('allowGenderRevealRequests')}
               loading={updating.allowGenderRevealRequests}
@@ -260,7 +260,7 @@ const SettingsPage = ({ user, onLogout }) => {
             <SettingToggle
               icon={<Shield className="w-5 h-5" />}
               label="Allow Age Reveal Requests"
-              description="Others can request to see your age at 60 messages"
+              description="Others can request to see your age at 20 messages"
               isOn={settings.allowAgeRevealRequests}
               onToggle={() => handleSettingToggle('allowAgeRevealRequests')}
               loading={updating.allowAgeRevealRequests}
@@ -269,7 +269,7 @@ const SettingsPage = ({ user, onLogout }) => {
             <SettingToggle
               icon={<Shield className="w-5 h-5" />}
               label="Allow Photo Reveal Requests"
-              description="Others can request your photo at 120 messages"
+              description="Others can request your photo at 60 messages"
               isOn={settings.allowPhotoRevealRequests}
               onToggle={() => handleSettingToggle('allowPhotoRevealRequests')}
               loading={updating.allowPhotoRevealRequests}
