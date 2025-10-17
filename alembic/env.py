@@ -44,6 +44,11 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+    # Override sqlalchemy.url with DATABASE_URL from environment if available
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        config.set_main_option('sqlalchemy.url', db_url)
+    
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
