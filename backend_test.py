@@ -3391,6 +3391,21 @@ class LuvHiveAPITester:
         self.test_password_reset_invalid_token()
         self.test_password_reset_weak_password()
         
+        # Mystery Match tests (HIGH PRIORITY)
+        print("🔮 Testing Mystery Match Features...")
+        print("-" * 50)
+        self.setup_mystery_match_test_users()
+        self.test_mystery_match_find_match()
+        self.test_mystery_match_daily_limit()
+        self.test_mystery_match_premium_filtering()
+        self.test_mystery_match_send_message()
+        self.test_mystery_match_unlock_levels()
+        self.test_mystery_match_get_matches()
+        self.test_mystery_match_websocket_connection()
+        self.test_mystery_match_websocket_messaging()
+        self.test_mystery_match_typing_indicators()
+        self.test_mystery_match_online_status()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
