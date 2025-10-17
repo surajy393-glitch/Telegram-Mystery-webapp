@@ -500,9 +500,21 @@ async def get_my_matches(user_id: int):
 async def send_message(request: MessageRequest):
     """
     Send a message in mystery match
-    Automatically unlocks profile pieces at milestones (10, 30, 50, 100 messages)
+    Automatically unlocks profile pieces at milestones (20, 60, 100, 150 messages)
+    Now with content moderation!
     """
     try:
+        # MODERATION CHECK - New addition!
+        from utils.moderation import moderate_content
+        
+        moderation_result = moderate_content(request.message_text)
+        if not moderation_result.is_safe:
+            logger.warning(f"Message blocked from user {request.sender_id}: {moderation_result.reason}")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Message blocked: {moderation_result.reason}"
+            )
+        
         conn = get_db_connection()
         
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
