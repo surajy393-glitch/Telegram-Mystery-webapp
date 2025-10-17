@@ -962,3 +962,86 @@ async def extend_match(request: ExtendMatchRequest):
     except Exception as e:
         logger.error(f"Error in extend_match: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# WEBSOCKET REAL-TIME CHAT
+# ==========================================
+
+from websocket_manager import manager, handle_websocket_message
+
+@mystery_router.websocket("/ws/chat/{match_id}/{user_id}")
+async def websocket_chat_endpoint(websocket: WebSocket, match_id: int, user_id: int):
+    """WebSocket endpoint for real-time chat"""
+    await manager.connect(websocket, match_id, user_id)
+    
+    try:
+        # Send initial connection success
+        await websocket.send_json({
+            "type": "connected",
+            "match_id": match_id,
+            "user_id": user_id,
+            "message": "Connected to Mystery Match chat"
+        })
+        
+        # Listen for messages
+        while True:
+            # Receive message from client
+            data = await websocket.receive_json()
+            
+            # Handle the message
+            await handle_websocket_message(websocket, match_id, user_id, data)
+            
+    except WebSocketDisconnect:
+        manager.disconnect(match_id, user_id)
+        logger.info(f"User {user_id} disconnected from match {match_id}")
+        
+        # Notify other user
+        await manager.broadcast_to_match(match_id, {
+            "type": "user_offline",
+            "user_id": user_id
+        })
+    
+    except Exception as e:
+        logger.error(f"WebSocket error for user {user_id} in match {match_id}: {e}")
+        manager.disconnect(match_id, user_id)
+
+@mystery_router.get("/chat/online-status/{match_id}/{user_id}")
+async def check_online_status(match_id: int, user_id: int):
+    """Check if the other user in match is online"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Get the other user's ID
+            cursor.execute("""
+                SELECT user1_id, user2_id 
+                FROM mystery_matches 
+                WHERE id = %s
+            """, (match_id,))
+            
+            match = cursor.fetchone()
+            
+            if not match:
+                conn.close()
+                raise HTTPException(status_code=404, detail="Match not found")
+            
+            # Determine the other user
+            other_user_id = match['user2_id'] if match['user1_id'] == user_id else match['user1_id']
+            
+            conn.close()
+            
+            # Check if online via WebSocket manager
+            is_online = manager.is_user_online(match_id, other_user_id)
+            
+            return {
+                "success": True,
+                "user_id": other_user_id,
+                "is_online": is_online
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking online status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
