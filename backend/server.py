@@ -3598,26 +3598,41 @@ async def register_for_mystery(
         profile_photo_url = None
         if profilePhoto:
             try:
-                # Save photo to a directory
-                import os
+                from utils.file_security import (
+                    validate_image_file, 
+                    generate_secure_filename, 
+                    sanitize_path
+                )
+                
+                # Read file content
+                content = await profilePhoto.read()
+                
+                # Validate file
+                is_valid, error_msg = validate_image_file(content, profilePhoto.filename)
+                if not is_valid:
+                    raise HTTPException(status_code=400, detail=f"Invalid image file: {error_msg}")
+                
+                # Create secure upload directory
                 upload_dir = "/app/uploads/profiles"
                 os.makedirs(upload_dir, exist_ok=True)
                 
-                # Generate unique filename
-                file_extension = profilePhoto.filename.split('.')[-1]
-                photo_filename = f"{mongo_user_id}_profile.{file_extension}"
-                photo_path = os.path.join(upload_dir, photo_filename)
+                # Generate secure filename
+                secure_filename = generate_secure_filename(profilePhoto.filename, str(mongo_user_id))
+                
+                # Sanitize path to prevent directory traversal
+                photo_path = sanitize_path(secure_filename, upload_dir)
                 
                 # Save file
                 with open(photo_path, "wb") as f:
-                    content = await profilePhoto.read()
                     f.write(content)
                 
-                profile_photo_url = f"/uploads/profiles/{photo_filename}"
-                logger.info(f"Profile photo saved: {profile_photo_url}")
+                profile_photo_url = f"/uploads/profiles/{secure_filename}"
+                logger.info(f"Profile photo saved securely: {profile_photo_url}")
+            except HTTPException:
+                raise
             except Exception as photo_error:
                 logger.error(f"Photo upload error: {photo_error}")
-                # Continue without photo if upload fails
+                raise HTTPException(status_code=500, detail="Failed to upload profile photo")
         
         # 4. Create user in MongoDB (web app database)
         hashed_password = get_password_hash(password)
