@@ -866,6 +866,9 @@ def main():
     # Register premium open handler for lock screens
     from handlers import premium_open
     premium_open.register(app)
+    
+    # Register Telegram Stars payment handlers
+    telegram_stars_payment.register(app)
 
     # /start must be early so it isn't eaten by generic handlers
     app.add_handler(CommandHandler("start", cmd_start), group=0)
