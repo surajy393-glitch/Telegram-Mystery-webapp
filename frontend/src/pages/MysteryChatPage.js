@@ -345,6 +345,8 @@ const MysteryChatPage = () => {
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !sending && sendMessage()}
+            onFocus={() => handleTyping(true)}
+            onBlur={() => handleTyping(false)}
             placeholder="Type your message..."
             className="flex-1 bg-white bg-opacity-20 text-white placeholder-white placeholder-opacity-50 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
           />
