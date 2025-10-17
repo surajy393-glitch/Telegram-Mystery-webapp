@@ -31,12 +31,15 @@ def get_db_connection():
         return psycopg2.connect(database_url)
     else:
         # Fallback to individual environment variables
+        password = os.getenv('POSTGRES_PASSWORD')
+        if not password:
+            raise ValueError("POSTGRES_PASSWORD environment variable is required")
         return psycopg2.connect(
             host=os.getenv('POSTGRES_HOST', 'localhost'),
             port=os.getenv('POSTGRES_PORT', '5432'),
             database=os.getenv('POSTGRES_DB', 'luvhive_bot'),
             user=os.getenv('POSTGRES_USER', 'postgres'),
-            password=os.getenv('POSTGRES_PASSWORD', 'postgres123')
+            password=password
         )
 
 # ==========================================
