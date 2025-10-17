@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/frontend/.env')
 
 # Get backend URL from frontend env
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mysterymatch-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://async-mystery-match.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class TelegramAuthTester:
