@@ -178,11 +178,11 @@ def ensure_fantasy_tables():
           ADD COLUMN IF NOT EXISTS girl_ready BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS boy_is_premium BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS chat_id TEXT
-    """)
-    # Add status column to fantasy_submissions for moderation
-    db_exec("""
-      ALTER TABLE fantasy_submissions
+          ADD COLUMN IF NOT EXISTS chat_id TEXT
+        """)
+        # Add status column to fantasy_submissions for moderation
+        db_exec("""
+          ALTER TABLE fantasy_submissions
           ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'
         """)
         # Ensure id column is linked to sequence for auto-increment
