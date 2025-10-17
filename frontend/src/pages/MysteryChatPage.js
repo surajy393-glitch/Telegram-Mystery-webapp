@@ -125,7 +125,7 @@ const MysteryChatPage = () => {
   const partner = chatData.partner || {};
   const unlockLevel = chatData.unlock_level || 0;
   const messageCount = chatData.message_count || 0;
-  const nextUnlock = [10, 30, 50, 100][unlockLevel]; // Unlock thresholds
+  const nextUnlock = [20, 60, 100, 150][unlockLevel]; // Unlock thresholds
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-purple-500 via-pink-500 to-red-500">
