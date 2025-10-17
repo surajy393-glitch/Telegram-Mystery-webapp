@@ -598,58 +598,27 @@ class ExtendMatchRequest(BaseModel):
 
 @mystery_router.post("/extend-match")
 async def extend_match(request: ExtendMatchRequest):
-    """Extend match expiry by 24 hours (costs 50 Telegram Stars)"""
-    try:
-        # Check if user is premium (premium gets unlimited extensions)
-        is_premium = is_premium_user(request.user_id)
-        
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Verify match exists and user is part of it
-            cursor.execute("""
-                SELECT * FROM mystery_matches 
-                WHERE id = %s 
-                AND (user1_id = %s OR user2_id = %s)
-                AND is_active = TRUE
-            """, (request.match_id, request.user_id, request.user_id))
-            
-            match = cursor.fetchone()
-            
-            if not match:
-                conn.close()
-                raise HTTPException(status_code=404, detail="Match not found")
-            
-            # Premium users get free extensions
-            if not is_premium:
-                # TODO: Implement Telegram Stars payment verification here
-                # For now, we'll just charge coins or require payment link
-                pass
-            
-            # Extend expiry by 24 hours
-            cursor.execute("""
-                UPDATE mystery_matches 
-                SET expires_at = expires_at + INTERVAL '24 hours'
-                WHERE id = %s
-                RETURNING expires_at
-            """, (request.match_id,))
-            
-            new_expiry = cursor.fetchone()["expires_at"]
-            
-            conn.commit()
-            conn.close()
-            
-            return {
-                "success": True,
-                "message": "Match extended by 24 hours",
-                "new_expiry": new_expiry.isoformat(),
-                "cost": 0 if is_premium else 50  # 50 Stars for non-premium
-            }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in extend_match: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    is_premium = await async_is_premium_user(request.user_id)
+    match = await fetch_one(
+        """SELECT * FROM mystery_matches WHERE id=$1
+           AND (user1_id=$2 OR user2_id=$2) AND is_active=TRUE""",
+        request.match_id, request.user_id
+    )
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    # Payment logic for non‑premium omitted...
+    new_expiry = await fetch_one(
+        """UPDATE mystery_matches 
+              SET expires_at = expires_at + INTERVAL '24 hours'
+              WHERE id=$1 RETURNING expires_at""",
+        request.match_id
+    )
+    return {
+        "success": True,
+        "message": "Match extended by 24 hours",
+        "new_expiry": new_expiry["expires_at"].isoformat(),
+        "cost": 0 if is_premium else 50,
+    }
 
 
 # ==========================================
