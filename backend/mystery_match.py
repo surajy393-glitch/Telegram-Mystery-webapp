@@ -13,6 +13,7 @@ import os
 import logging
 from dotenv import load_dotenv
 from pathlib import Path
+import asyncpg
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -23,14 +24,31 @@ logger = logging.getLogger(__name__)
 # Create router
 mystery_router = APIRouter(prefix="/api/mystery", tags=["Mystery Match"])
 
-# Database connection helper
+# Async database pool
+_async_pool: Optional[asyncpg.Pool] = None
+
+async def get_async_pool():
+    """Get or create async database connection pool"""
+    global _async_pool
+    if _async_pool is None:
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            password = os.getenv('POSTGRES_PASSWORD')
+            if not password:
+                raise ValueError("POSTGRES_PASSWORD environment variable is required")
+            database_url = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{password}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'luvhive_bot')}"
+        
+        _async_pool = await asyncpg.create_pool(database_url, min_size=5, max_size=20)
+        logger.info("Async DB pool created")
+    return _async_pool
+
+# Keep sync for backwards compatibility where needed
 def get_db_connection():
-    """Get PostgreSQL database connection from environment variables"""
+    """Get PostgreSQL database connection (sync - for legacy endpoints)"""
     database_url = os.getenv('DATABASE_URL')
     if database_url:
         return psycopg2.connect(database_url)
     else:
-        # Fallback to individual environment variables
         password = os.getenv('POSTGRES_PASSWORD')
         if not password:
             raise ValueError("POSTGRES_PASSWORD environment variable is required")
