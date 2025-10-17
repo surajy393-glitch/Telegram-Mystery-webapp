@@ -361,12 +361,12 @@ async def find_mystery_match(request: MysteryMatchRequest):
         # Final verification: ensure we haven't exceeded limit
         if not is_premium:
             cursor.execute("""
-                SELECT COUNT(*) FROM mystery_matches
+                SELECT COUNT(*) as count FROM mystery_matches
                 WHERE (user1_id = %s OR user2_id = %s)
                 AND DATE(created_at) = CURRENT_DATE
             """, (user_id, user_id))
             
-            final_count = cursor.fetchone()[0]
+            final_count = cursor.fetchone()['count']
             if final_count > 3:
                 # Rollback the match creation
                 conn.rollback()
