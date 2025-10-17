@@ -458,7 +458,9 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # WEBAPP DEEP LINKING COMMAND
 # ==========================================
 async def cmd_webapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Send user to Mystery Match webapp"""
+    """Send user to Mystery Match webapp with native Telegram Web App button"""
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+    
     uid = update.effective_user.id
     
     # Check if user is registered
@@ -472,29 +474,39 @@ async def cmd_webapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Get user's premium status
     is_premium = reg.has_active_premium(uid)
     
-    # Webapp URL (update this to your actual webapp URL)
-    webapp_url = os.getenv('WEBAPP_URL', 'https://your-webapp-url.com')
+    # Webapp URL (read from environment or use localhost for development)
+    webapp_url = os.getenv('WEBAPP_URL', 'http://localhost:3000')
+    
+    # Create inline keyboard with WebApp button
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            "🎭 Open Mystery Match",
+            web_app=WebAppInfo(url=f"{webapp_url}/mystery?tg_user_id={uid}")
+        )],
+        [InlineKeyboardButton(
+            "❌ Close",
+            callback_data="close_webapp_msg"
+        )]
+    ])
     
     message = f"""🎭 **LuvHive Mystery Match Web App**
 
 {"👑 **PREMIUM USER**" if is_premium else "🆓 **FREE USER**"}
 
-Open the webapp to:
+**Your Benefits:**
 {'✅ Choose gender (Girls/Boys)' if is_premium else '🎲 Random mystery matching'}
 {'✅ Unlimited matches' if is_premium else '✅ 3 matches per day'}
 ✅ Chat with mystery matches
-✅ Progressive profile reveals
+✅ Progressive profile reveals (10/30/50/100 msgs)
 ✅ 48-hour match windows
 
-🔗 [Open Mystery Match Webapp]({webapp_url}/mystery?tg_user_id={uid})
-
-💡 Tip: Login with your Telegram credentials to sync your account!
+Click the button below to open the webapp:
 """
     
     await update.message.reply_text(
         message,
         parse_mode='Markdown',
-        disable_web_page_preview=False
+        reply_markup=keyboard
     )
 
 async def cmd_mystery(update: Update, context: ContextTypes.DEFAULT_TYPE):
