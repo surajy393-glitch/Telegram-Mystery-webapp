@@ -1066,6 +1066,8 @@ def main():
     # Webapp deep linking commands
     app.add_handler(CommandHandler("webapp", cmd_webapp), group=0)
     app.add_handler(CommandHandler("mystery", cmd_mystery), group=0)
+    app.add_handler(CommandHandler("findmatch", cmd_findmatch), group=0)
+    app.add_handler(CommandHandler("mymatches", cmd_mymatches), group=0)
     
     # Webapp callback handlers
     from telegram.ext import CallbackQueryHandler
