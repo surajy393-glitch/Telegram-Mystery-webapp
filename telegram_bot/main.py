@@ -513,6 +513,176 @@ async def cmd_mystery(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Shortcut to webapp mystery match"""
     await cmd_webapp(update, context)
 
+# ==========================================
+# FINDMATCH COMMAND FOR DIRECT MATCHING
+# ==========================================
+async def cmd_findmatch(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Find a mystery match directly from Telegram bot"""
+    import requests
+    
+    uid = update.effective_user.id
+    
+    # Check if user is registered
+    if not reg.is_registered(uid):
+        await update.message.reply_text(
+            "❌ Please complete your profile first!\n"
+            "Use /start to register."
+        )
+        return
+    
+    # Get user's premium status
+    is_premium = reg.has_active_premium(uid)
+    
+    # Check for gender preference if premium
+    gender_pref = None
+    if is_premium and context.args:
+        gender_arg = context.args[0].lower()
+        if gender_arg in ['girls', 'female', 'f']:
+            gender_pref = 'female'
+        elif gender_arg in ['boys', 'male', 'm']:
+            gender_pref = 'male'
+    
+    await update.message.reply_text("🔍 Searching for your mystery match...")
+    
+    try:
+        # Call the Mystery Match API
+        api_url = os.getenv('WEBAPP_URL', 'http://localhost:8001')
+        payload = {
+            "user_id": uid,
+            "preferred_gender": gender_pref,
+            "preferred_age_min": 18,
+            "preferred_age_max": 100
+        }
+        
+        response = requests.post(f"{api_url}/api/mystery/find-match", json=payload)
+        data = response.json()
+        
+        if data.get('success'):
+            match_id = data['match_id']
+            
+            # Send success message with webapp button
+            from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+            
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton(
+                    "💬 Start Chatting",
+                    web_app=WebAppInfo(url=f"{api_url}/mystery/chat/{match_id}")
+                )],
+                [InlineKeyboardButton(
+                    "❌ Close",
+                    callback_data="close_webapp_msg"
+                )]
+            ])
+            
+            message = f"""✨ **Mystery Match Found!** ✨
+
+🎭 **Match ID:** {match_id}
+⏰ **Expires in:** 48 hours
+💬 **Messages to unlock:** {data.get('next_unlock_at', 20)}
+
+Progressive reveals:
+• 20 msgs: Gender + Age
+• 60 msgs: Photo (blurred)
+• 100 msgs: Interests + Bio
+• 150 msgs: Full profile!
+
+Click below to start chatting:
+"""
+            
+            await update.message.reply_text(
+                message,
+                parse_mode='Markdown',
+                reply_markup=keyboard
+            )
+            
+        else:
+            error_type = data.get('error')
+            error_msg = data.get('message', 'No matches found. Try again later!')
+            
+            if error_type == 'daily_limit_reached':
+                await update.message.reply_text(
+                    f"⚠️ {error_msg}\n\n"
+                    "💎 Upgrade to Premium for unlimited matches!\n"
+                    "Use /premium to see benefits."
+                )
+            elif error_type == 'gender_not_available':
+                requested = data.get('requested_gender')
+                alternative = data.get('alternative_gender')
+                await update.message.reply_text(
+                    f"⚠️ {error_msg}\n\n"
+                    f"Try: /findmatch {alternative}"
+                )
+            else:
+                await update.message.reply_text(f"⚠️ {error_msg}")
+                
+    except Exception as e:
+        log.error(f"Error in findmatch: {e}")
+        await update.message.reply_text(
+            "❌ Failed to find match. Please try again later or use /webapp"
+        )
+
+
+async def cmd_mymatches(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show all active mystery matches"""
+    import requests
+    
+    uid = update.effective_user.id
+    
+    # Check if user is registered
+    if not reg.is_registered(uid):
+        await update.message.reply_text(
+            "❌ Please complete your profile first!\n"
+            "Use /start to register."
+        )
+        return
+    
+    try:
+        # Call the Mystery Match API
+        api_url = os.getenv('WEBAPP_URL', 'http://localhost:8001')
+        response = requests.get(f"{api_url}/api/mystery/my-matches/{uid}")
+        data = response.json()
+        
+        if data.get('success'):
+            matches = data.get('matches', [])
+            
+            if not matches:
+                await update.message.reply_text(
+                    "📭 You have no active matches.\n\n"
+                    "Use /findmatch to find your mystery match!"
+                )
+                return
+            
+            # Build matches list message
+            message = f"🎭 **Your Mystery Matches** ({len(matches)})\n\n"
+            
+            for i, match in enumerate(matches, 1):
+                match_id = match['match_id']
+                msg_count = match['message_count']
+                unlock_level = match['unlock_level']
+                time_remaining = match.get('time_remaining', 'Unknown')
+                
+                partner = match.get('partner', {})
+                partner_display = partner.get('display_name', 'Mystery User')
+                if partner.get('age'):
+                    partner_display = f"{partner['age']}yo from {partner.get('city', 'Unknown')}"
+                
+                message += f"{i}. **Match #{match_id}**\n"
+                message += f"   👤 {partner_display}\n"
+                message += f"   💬 {msg_count} messages • Level {unlock_level}/4\n"
+                message += f"   ⏰ {time_remaining}\n\n"
+            
+            message += "\nUse /webapp to chat with your matches!"
+            
+            await update.message.reply_text(message, parse_mode='Markdown')
+            
+        else:
+            await update.message.reply_text("❌ Failed to load matches. Try again later.")
+            
+    except Exception as e:
+        log.error(f"Error in mymatches: {e}")
+        await update.message.reply_text("❌ Failed to load matches. Please try again later.")
+
+
 
 # ---------- bottom-menu taps ----------
 async def on_btn_find(update: Update, context: ContextTypes.DEFAULT_TYPE):
