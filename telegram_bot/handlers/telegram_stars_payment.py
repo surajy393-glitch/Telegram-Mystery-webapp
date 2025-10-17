@@ -1,0 +1,213 @@
+"""
+Telegram Stars Payment Integration for Mystery Match Premium
+"""
+import os
+from telegram import Update, LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes, CommandHandler, PreCheckoutQueryHandler, MessageHandler, filters
+import logging
+import registration as reg
+
+logger = logging.getLogger(__name__)
+
+# Telegram Stars pricing (1 Star = ~$0.015 USD)
+PREMIUM_1_WEEK = 199  # ₹199 = ~13,000 Stars (approx)
+PREMIUM_1_MONTH = 499  # ₹499 = ~33,000 Stars (approx)
+EXTEND_MATCH = 50     # 50 Stars to extend 24h
+
+async def cmd_premium(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show premium plans with Telegram Stars payment"""
+    uid = update.effective_user.id
+    
+    if not reg.is_registered(uid):
+        await update.message.reply_text("Please register first with /start")
+        return
+    
+    # Check if already premium
+    if reg.has_active_premium(uid):
+        try:
+            with reg._conn() as con, con.cursor() as cur:
+                cur.execute("SELECT premium_until FROM users WHERE tg_user_id=%s", (uid,))
+                row = cur.fetchone()
+                expires = row[0] if row else "Unknown"
+        except:
+            expires = "Unknown"
+        
+        await update.message.reply_text(
+            f"👑 You're already a Premium user!\n"
+            f"✨ Expires: {expires}\n\n"
+            f"Premium Benefits:\n"
+            f"✅ Choose gender (Girls/Boys)\n"
+            f"✅ Unlimited matches\n"
+            f"✅ Instant reveals\n"
+            f"✅ Advanced filters\n"
+            f"✅ Free match extensions"
+        )
+        return
+    
+    # Show premium plans
+    keyboard = [
+        [InlineKeyboardButton("🔥 1 Week - 199 Stars", callback_data="buy_premium_1week")],
+        [InlineKeyboardButton("👑 1 Month - 499 Stars", callback_data="buy_premium_1month")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_premium")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    message = """👑 **Mystery Match Premium**
+
+**Premium Benefits:**
+✅ **Choose Gender** - Match with girls or boys specifically
+✅ **Unlimited Matches** - No daily limit
+✅ **Instant Reveals** - See profiles immediately
+✅ **Advanced Filters** - Age, city, interests
+✅ **Free Extensions** - Extend matches for free
+✅ **Priority Support** - Get help faster
+
+**Pricing:**
+🔥 **1 Week** - 199 Telegram Stars (~₹199)
+👑 **1 Month** - 499 Telegram Stars (~₹499)
+
+Select a plan below:
+"""
+    
+    await update.message.reply_text(
+        message,
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def handle_premium_purchase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle premium purchase callback"""
+    query = update.callback_query
+    await query.answer()
+    
+    uid = query.from_user.id
+    data = query.data
+    
+    if data == "cancel_premium":
+        await query.edit_message_text("❌ Purchase cancelled.")
+        return
+    
+    # Determine plan
+    if data == "buy_premium_1week":
+        duration_days = 7
+        price_stars = PREMIUM_1_WEEK
+        plan_name = "1 Week Premium"
+    elif data == "buy_premium_1month":
+        duration_days = 30
+        price_stars = PREMIUM_1_MONTH
+        plan_name = "1 Month Premium"
+    else:
+        return
+    
+    # Create invoice
+    title = f"Mystery Match {plan_name}"
+    description = f"Premium access for {duration_days} days with all features unlocked"
+    payload = f"premium_{duration_days}d_{uid}"
+    
+    # Telegram Stars uses XTR currency
+    prices = [LabeledPrice(label=plan_name, amount=price_stars)]
+    
+    try:
+        await context.bot.send_invoice(
+            chat_id=query.message.chat_id,
+            title=title,
+            description=description,
+            payload=payload,
+            provider_token="",  # Empty for Telegram Stars
+            currency="XTR",     # Telegram Stars currency code
+            prices=prices
+        )
+    except Exception as e:
+        logger.error(f"Error sending invoice: {e}")
+        await query.edit_message_text(
+            f"❌ Error creating payment. Please try again later.\n"
+            f"Error: {str(e)}"
+        )
+
+async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle pre-checkout query - verify payment before processing"""
+    query = update.pre_checkout_query
+    
+    # Always approve - we verify on successful payment
+    await query.answer(ok=True)
+
+async def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle successful payment - activate premium"""
+    payment = update.message.successful_payment
+    uid = update.effective_user.id
+    
+    # Parse payload to get duration
+    payload = payment.invoice_payload
+    
+    try:
+        # Extract duration from payload (format: premium_7d_<uid> or premium_30d_<uid>)
+        parts = payload.split('_')
+        duration_str = parts[1]  # "7d" or "30d"
+        duration_days = int(duration_str.replace('d', ''))
+        
+        # Activate premium in database
+        import datetime
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("""
+                UPDATE users 
+                SET is_premium = TRUE,
+                    premium_until = NOW() + INTERVAL '%s days'
+                WHERE tg_user_id = %s
+            """, (duration_days, uid))
+            con.commit()
+        
+        # Also store payment record
+        with reg._conn() as con, con.cursor() as cur:
+            cur.execute("""
+                INSERT INTO payments 
+                (user_id, amount_stars, currency, status, telegram_payment_id, duration_days, expires_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW() + INTERVAL '%s days')
+            """, (
+                uid,
+                payment.total_amount,  # Amount in Stars
+                payment.currency,
+                'completed',
+                payment.telegram_payment_charge_id,
+                duration_days,
+                duration_days
+            ))
+            con.commit()
+        
+        # Send confirmation
+        await update.message.reply_text(
+            f"🎉 **Payment Successful!**\n\n"
+            f"👑 You are now a Premium user for {duration_days} days!\n\n"
+            f"**Premium Benefits Activated:**\n"
+            f"✅ Choose gender matching\n"
+            f"✅ Unlimited matches\n"
+            f"✅ Instant reveals\n"
+            f"✅ Advanced filters\n\n"
+            f"🎭 Try it now: /webapp or /mystery",
+            parse_mode='Markdown'
+        )
+        
+        logger.info(f"Premium activated for user {uid} - {duration_days} days")
+        
+    except Exception as e:
+        logger.error(f"Error processing payment for user {uid}: {e}")
+        await update.message.reply_text(
+            "⚠️ Payment received but there was an error activating premium.\n"
+            "Please contact support with your payment ID."
+        )
+
+def register_payment_handlers(app):
+    """Register all payment-related handlers"""
+    from telegram.ext import CallbackQueryHandler
+    
+    # Premium command
+    app.add_handler(CommandHandler("premium", cmd_premium))
+    
+    # Premium purchase callbacks
+    app.add_handler(CallbackQueryHandler(handle_premium_purchase, pattern="^buy_premium_"))
+    app.add_handler(CallbackQueryHandler(handle_premium_purchase, pattern="^cancel_premium$"))
+    
+    # Payment handlers
+    app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
+    
+    logger.info("✅ Telegram Stars payment handlers registered")
