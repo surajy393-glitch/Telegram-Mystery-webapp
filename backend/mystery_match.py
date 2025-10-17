@@ -322,107 +322,57 @@ async def send_message(request: MessageRequest):
 
 @mystery_router.get("/chat/{match_id}")
 async def get_chat_messages(match_id: int, user_id: int):
-    """Get all messages for a mystery match"""
-    try:
-        conn = get_db_connection()
-        
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Verify user is part of this match
-            cursor.execute("""
-                SELECT * FROM mystery_matches 
-                WHERE id = %s 
-                AND (user1_id = %s OR user2_id = %s)
-            """, (match_id, user_id, user_id))
-            
-            match = cursor.fetchone()
-            
-            if not match:
-                conn.close()
-                raise HTTPException(status_code=404, detail="Match not found")
-            
-            # Get messages
-            cursor.execute("""
-                SELECT 
-                    id,
-                    sender_id,
-                    message_text,
-                    created_at,
-                    is_secret_chat
-                FROM match_messages
-                WHERE match_id = %s
-                ORDER BY created_at ASC
-            """, (match_id,))
-            
-            messages = cursor.fetchall()
-            
-            # Get current unlock level
-            unlock_level = get_unlock_level(match["message_count"])
-            is_premium = is_premium_user(user_id)
-            
-            # Get partner profile
-            partner_id = match["user2_id"] if match["user1_id"] == user_id else match["user1_id"]
-            partner_profile = get_unlocked_profile_data(partner_id, unlock_level, is_premium)
-            
-            conn.close()
-            
-            return {
-                "success": True,
-                "match_id": match_id,
-                "partner": partner_profile,
-                "messages": [
-                    {
-                        "id": msg["id"],
-                        "sender_id": msg["sender_id"],
-                        "is_me": msg["sender_id"] == user_id,
-                        "message": msg["message_text"],
-                        "timestamp": msg["created_at"].isoformat()
-                    }
-                    for msg in messages
-                ],
-                "message_count": match["message_count"],
-                "unlock_level": unlock_level,
-                "expires_at": match["expires_at"].isoformat(),
-                "secret_chat_active": match["secret_chat_active"]
-            }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in get_chat_messages: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Verify match and user via async helpers
+    match = await fetch_one(
+        """SELECT * FROM mystery_matches WHERE id=$1
+           AND (user1_id=$2 OR user2_id=$2)""",
+        match_id, user_id
+    )
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    messages = await fetch_all(
+        """SELECT id, sender_id, message_text, created_at, is_secret_chat
+           FROM match_messages WHERE match_id=$1 ORDER BY created_at ASC""",
+        match_id
+    )
+    unlock_level = get_unlock_level(match["message_count"])
+    is_premium = await async_is_premium_user(user_id)
+    partner_id = match["user2_id"] if match["user1_id"] == user_id else match["user1_id"]
+    partner_profile = get_unlocked_profile_data(partner_id, unlock_level, is_premium)
+
+    return {
+        "success": True,
+        "match_id": match_id,
+        "partner": partner_profile,
+        "messages": [
+            {
+                "id": m["id"],
+                "sender_id": m["sender_id"],
+                "is_me": m["sender_id"] == user_id,
+                "message": m["message_text"],
+                "timestamp": m["created_at"].isoformat()
+            } for m in messages
+        ],
+        "message_count": match["message_count"],
+        "unlock_level": unlock_level,
+        "expires_at": match["expires_at"].isoformat(),
+        "secret_chat_active": match["secret_chat_active"],
+    }
 
 @mystery_router.post("/unmatch")
 async def unmatch(request: UnmatchRequest):
-    """End a mystery match"""
-    try:
-        conn = get_db_connection()
-        
-        with conn.cursor() as cursor:
-            # Verify user is part of this match
-            cursor.execute("""
-                UPDATE mystery_matches 
-                SET is_active = FALSE
-                WHERE id = %s 
-                AND (user1_id = %s OR user2_id = %s)
-            """, (request.match_id, request.user_id, request.user_id))
-            
-            if cursor.rowcount == 0:
-                conn.close()
-                raise HTTPException(status_code=404, detail="Match not found")
-            
-            conn.commit()
-            conn.close()
-            
-            return {
-                "success": True,
-                "message": "Match ended successfully"
-            }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in unmatch: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    match = await fetch_one(
+        """SELECT * FROM mystery_matches WHERE id=$1 AND (user1_id=$2 OR user2_id=$2)""",
+        request.match_id, request.user_id
+    )
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    await execute(
+        """UPDATE mystery_matches SET is_active=FALSE, unmatch_reason=$3, unmatch_by_user=$2 WHERE id=$1""",
+        request.match_id, request.user_id, request.reason
+    )
+    return {"success": True, "message": "Match ended successfully"}
 
 @mystery_router.post("/request-secret-chat")
 async def request_secret_chat(request: SecretChatRequest):
