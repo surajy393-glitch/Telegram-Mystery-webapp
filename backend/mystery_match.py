@@ -6,14 +6,24 @@ from fastapi import APIRouter, HTTPException, Depends, Header, WebSocket, WebSoc
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timedelta
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import random
 import os
 import logging
 from dotenv import load_dotenv
 from pathlib import Path
-import asyncpg
+
+# Async DB imports
+from database.async_db import (
+    fetch_one,
+    fetch_all,
+    execute,
+    async_get_daily_match_count,
+    async_is_premium_user,
+    async_create_match,
+    async_get_user_matches,
+)
+from utils.feature_flags import feature_required
+from utils.moderation import create_report, check_auto_ban_threshold
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
