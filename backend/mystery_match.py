@@ -301,98 +301,102 @@ async def find_mystery_match(request: MysteryMatchRequest):
         potential_matches = cursor.fetchall()
         
         if not potential_matches:
-                conn.close()
-                
-                # Premium user specific gender messages
-                if is_premium and request.preferred_gender and request.preferred_gender != 'random':
-                    gender_label = "Female" if request.preferred_gender.lower() == 'female' else "Male"
-                    alternative_gender = "male" if request.preferred_gender.lower() == 'female' else "female"
-                    alternative_label = "Male" if alternative_gender == 'male' else "Female"
-                    
-                    return {
-                        "success": False,
-                        "error": "gender_not_available",
-                        "message": f"{gender_label} users are not currently available. You can match with {alternative_label} users or try again later.",
-                        "requested_gender": request.preferred_gender,
-                        "alternative_gender": alternative_gender
-                    }
+            cursor.close()
+            conn.close()
+            
+            # Premium user specific gender messages
+            if is_premium and request.preferred_gender and request.preferred_gender != 'random':
+                gender_label = "Female" if request.preferred_gender.lower() == 'female' else "Male"
+                alternative_gender = "male" if request.preferred_gender.lower() == 'female' else "female"
+                alternative_label = "Male" if alternative_gender == 'male' else "Female"
                 
                 return {
                     "success": False,
-                    "error": "no_matches_found",
-                    "message": "No matches found right now. Try again in a few minutes!"
+                    "error": "gender_not_available",
+                    "message": f"{gender_label} users are not currently available. You can match with {alternative_label} users or try again later.",
+                    "requested_gender": request.preferred_gender,
+                    "alternative_gender": alternative_gender
                 }
             
-            # Random selection
-            selected_match = random.choice(potential_matches)
-            match_user_id = selected_match["tg_user_id"]
-            
-            # Double-check limit before creating match (prevent race conditions)
-            if not is_premium:
-                cursor.execute("""
-                    SELECT COUNT(*) FROM mystery_matches
-                    WHERE (user1_id = %s OR user2_id = %s)
-                    AND DATE(created_at) = CURRENT_DATE
-                """, (user_id, user_id))
-                
-                current_count = cursor.fetchone()[0]
-                if current_count >= 3:
-                    conn.close()
-                    return {
-                        "success": False,
-                        "error": "daily_limit_reached",
-                        "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                        "matches_today": current_count,
-                        "limit": 3
-                    }
-            
-            # Create mystery match
-            cursor.execute("""
-                INSERT INTO mystery_matches 
-                (user1_id, user2_id, created_at, expires_at, message_count, is_active, user1_unlock_level, user2_unlock_level)
-                VALUES (%s, %s, NOW(), NOW() + INTERVAL '48 hours', 0, TRUE, 0, 0)
-                RETURNING id
-            """, (user_id, match_user_id))
-            
-            match_id = cursor.fetchone()["id"]
-            
-            # Final verification: ensure we haven't exceeded limit
-            if not is_premium:
-                cursor.execute("""
-                    SELECT COUNT(*) FROM mystery_matches
-                    WHERE (user1_id = %s OR user2_id = %s)
-                    AND DATE(created_at) = CURRENT_DATE
-                """, (user_id, user_id))
-                
-                final_count = cursor.fetchone()[0]
-                if final_count > 3:
-                    # Rollback the match creation
-                    conn.rollback()
-                    conn.close()
-                    return {
-                        "success": False,
-                        "error": "daily_limit_reached",
-                        "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                        "matches_today": 3,
-                        "limit": 3
-                    }
-            
-            conn.commit()
-            conn.close()
-            
             return {
-                "success": True,
-                "match_id": match_id,
-                "mystery_user": {
-                    "display_name": "Mystery User",
-                    "silhouette": True,
-                    "unlock_level": 0
-                },
-                "expires_at": (datetime.now() + timedelta(hours=48)).isoformat(),
-                "message_count": 0,
-                "next_unlock_at": 20,  # First unlock at 20 messages (Gender + Age)
-                "is_premium": is_premium
+                "success": False,
+                "error": "no_matches_found",
+                "message": "No matches found right now. Try again in a few minutes!"
             }
+        
+        # Random selection
+        selected_match = random.choice(potential_matches)
+        match_user_id = selected_match["tg_user_id"]
+        
+        # Double-check limit before creating match (prevent race conditions)
+        if not is_premium:
+            cursor.execute("""
+                SELECT COUNT(*) FROM mystery_matches
+                WHERE (user1_id = %s OR user2_id = %s)
+                AND DATE(created_at) = CURRENT_DATE
+            """, (user_id, user_id))
+            
+            current_count = cursor.fetchone()[0]
+            if current_count >= 3:
+                cursor.close()
+                conn.close()
+                return {
+                    "success": False,
+                    "error": "daily_limit_reached",
+                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
+                    "matches_today": current_count,
+                    "limit": 3
+                }
+        
+        # Create mystery match
+        cursor.execute("""
+            INSERT INTO mystery_matches 
+            (user1_id, user2_id, created_at, expires_at, message_count, is_active, user1_unlock_level, user2_unlock_level)
+            VALUES (%s, %s, NOW(), NOW() + INTERVAL '48 hours', 0, TRUE, 0, 0)
+            RETURNING id
+        """, (user_id, match_user_id))
+        
+        match_id = cursor.fetchone()["id"]
+        
+        # Final verification: ensure we haven't exceeded limit
+        if not is_premium:
+            cursor.execute("""
+                SELECT COUNT(*) FROM mystery_matches
+                WHERE (user1_id = %s OR user2_id = %s)
+                AND DATE(created_at) = CURRENT_DATE
+            """, (user_id, user_id))
+            
+            final_count = cursor.fetchone()[0]
+            if final_count > 3:
+                # Rollback the match creation
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                return {
+                    "success": False,
+                    "error": "daily_limit_reached",
+                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
+                    "matches_today": 3,
+                    "limit": 3
+                }
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "match_id": match_id,
+            "mystery_user": {
+                "display_name": "Mystery User",
+                "silhouette": True,
+                "unlock_level": 0
+            },
+            "expires_at": (datetime.now() + timedelta(hours=48)).isoformat(),
+            "message_count": 0,
+            "next_unlock_at": 20,  # First unlock at 20 messages (Gender + Age)
+            "is_premium": is_premium
+        }
             
     except HTTPException:
         raise
