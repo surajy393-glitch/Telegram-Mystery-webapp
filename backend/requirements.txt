@@ -134,3 +134,5 @@ sqlalchemy==2.0.44
 httpx==0.28.1
 pytest==8.4.2
 pytest-asyncio==1.2.0
+python-http-client>=3.3.7
+werkzeug>=2.2.0
