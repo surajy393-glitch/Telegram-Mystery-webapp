@@ -867,6 +867,10 @@ def main():
 
     # /start must be early so it isn't eaten by generic handlers
     app.add_handler(CommandHandler("start", cmd_start), group=0)
+    
+    # Webapp deep linking commands
+    app.add_handler(CommandHandler("webapp", cmd_webapp), group=0)
+    app.add_handler(CommandHandler("mystery", cmd_mystery), group=0)
 
     # Referral command
     app.add_handler(CommandHandler("ref", cmd_ref), group=0)
