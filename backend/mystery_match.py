@@ -1057,6 +1057,47 @@ async def extend_match(request: ExtendMatchRequest):
 
 
 # ==========================================
+# MODERATION & REPORTING ENDPOINTS
+# ==========================================
+
+class ReportRequest(BaseModel):
+    reporter_id: int
+    reported_user_id: int
+    content_type: str  # 'message', 'profile', 'photo'
+    content_id: str
+    reason: str
+
+@mystery_router.post("/report")
+async def report_content(request: ReportRequest):
+    """Report inappropriate content or user"""
+    try:
+        from utils.moderation import create_report, check_auto_ban_threshold
+        
+        # Create report
+        report_id = await create_report(
+            reporter_id=request.reporter_id,
+            reported_user_id=request.reported_user_id,
+            content_type=request.content_type,
+            content_id=request.content_id,
+            reason=request.reason
+        )
+        
+        # Check if user should be auto-banned
+        was_banned = await check_auto_ban_threshold(request.reported_user_id)
+        
+        return {
+            "success": True,
+            "report_id": report_id,
+            "message": "Report submitted successfully",
+            "action_taken": "User auto-banned" if was_banned else "Report pending review"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit report")
+
+
+# ==========================================
 # WEBSOCKET REAL-TIME CHAT
 # ==========================================
 
