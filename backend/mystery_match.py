@@ -564,87 +564,29 @@ class BlockRequest(BaseModel):
 
 @mystery_router.post("/block")
 async def block_user(request: BlockRequest):
-    """Block a user from matching again"""
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            # Add to blocked users (create table if needed)
-            cursor.execute("""
-                INSERT INTO blocked_users (user_id, blocked_user_id, reason, created_at)
-                VALUES (%s, %s, %s, NOW())
-                ON CONFLICT (user_id, blocked_user_id) DO NOTHING
-            """, (request.user_id, request.block_user_id, request.reason))
-            
-            # Deactivate any active matches between these users
-            cursor.execute("""
-                UPDATE mystery_matches 
-                SET is_active = FALSE,
-                    unmatch_reason = 'User blocked'
-                WHERE ((user1_id = %s AND user2_id = %s) OR (user1_id = %s AND user2_id = %s))
-                AND is_active = TRUE
-            """, (request.user_id, request.block_user_id, request.block_user_id, request.user_id))
-            
-            conn.commit()
-            conn.close()
-            
-            return {
-                "success": True,
-                "message": "User blocked successfully"
-            }
-            
-    except Exception as e:
-        logger.error(f"Error in block_user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@mystery_router.get("/blocked-users/{user_id}")
-async def get_blocked_users(user_id: int):
-    """Get list of blocked users"""
-    try:
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute("""
-                SELECT b.blocked_user_id, b.reason, b.created_at,
-                       u.gender, u.age, u.city
-                FROM blocked_users b
-                LEFT JOIN users u ON b.blocked_user_id = u.tg_user_id
-                WHERE b.user_id = %s
-                ORDER BY b.created_at DESC
-            """, (user_id,))
-            
-            blocked = cursor.fetchall()
-            conn.close()
-            
-            return {
-                "success": True,
-                "blocked_users": blocked
-            }
-            
-    except Exception as e:
-        logger.error(f"Error in get_blocked_users: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Insert into blocked_users
+    await execute(
+        """INSERT INTO blocked_users (user_id, blocked_user_id, reason, created_at)
+           VALUES ($1, $2, $3, NOW())
+           ON CONFLICT (user_id, blocked_user_id) DO NOTHING""",
+        request.user_id, request.block_user_id, request.reason
+    )
+    # Deactivate active matches
+    await execute(
+        """UPDATE mystery_matches SET is_active=FALSE, unmatch_reason='User blocked'
+           WHERE ((user1_id=$1 AND user2_id=$2) OR (user1_id=$2 AND user2_id=$1))
+             AND is_active=TRUE""",
+        request.user_id, request.block_user_id
+    )
+    return {"success": True, "message": "User blocked successfully"}
 
 @mystery_router.post("/unblock")
 async def unblock_user(request: BlockRequest):
-    """Unblock a user"""
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                DELETE FROM blocked_users 
-                WHERE user_id = %s AND blocked_user_id = %s
-            """, (request.user_id, request.block_user_id))
-            
-            conn.commit()
-            conn.close()
-            
-            return {
-                "success": True,
-                "message": "User unblocked successfully"
-            }
-            
-    except Exception as e:
-        logger.error(f"Error in unblock_user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    await execute(
+        """DELETE FROM blocked_users WHERE user_id=$1 AND blocked_user_id=$2""",
+        request.user_id, request.block_user_id
+    )
+    return {"success": True, "message": "User unblocked successfully"}
 
 # ==========================================
 # EXTEND MATCH ENDPOINT (PREMIUM FEATURE)
