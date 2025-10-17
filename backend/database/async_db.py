@@ -168,3 +168,27 @@ async def async_get_user_matches(user_id: int) -> List[Dict[str, Any]]:
         AND is_active = TRUE
         ORDER BY created_at DESC
     """, user_id)
+
+
+async def async_send_message(match_id: int, sender_id: int, message_text: str) -> Dict[str, Any]:
+    """
+    Insert a new message for a match and increment message_count.
+    Returns the inserted message's id.
+    """
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        # Insert the message and get its id
+        row = await conn.fetchrow(
+            """
+            INSERT INTO match_messages (match_id, sender_id, message_text, created_at)
+            VALUES ($1, $2, $3, NOW())
+            RETURNING id
+            """,
+            match_id, sender_id, message_text
+        )
+        # Update message_count on the match record
+        await conn.execute(
+            "UPDATE mystery_matches SET message_count = message_count + 1 WHERE id=$1",
+            match_id
+        )
+        return {"message_id": row["id"]}
