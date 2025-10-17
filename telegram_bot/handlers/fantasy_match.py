@@ -123,26 +123,39 @@ def _make_fantasy_key(vibe: str, shared_kw: list) -> str:
     return f"{vibe}:{'-'.join(norm)}"
 
 # ---------- ENSURE TABLES ----------
+# NOTE: Runtime schema modifications moved to Alembic migrations
+# Use: alembic upgrade head
+# These are kept for backward compatibility but should be deprecated
 def ensure_fantasy_tables():
-    db_exec("""
-      CREATE TABLE IF NOT EXISTS fantasy_submissions (
-        id BIGSERIAL PRIMARY KEY,
-        user_id BIGINT NOT NULL,
-        gender  TEXT NOT NULL,
-        fantasy_text TEXT NOT NULL,
-        vibe    TEXT NOT NULL,
-        keywords TEXT[] NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        active  BOOLEAN DEFAULT TRUE
-      )
-    """)
-    db_exec("""
-      CREATE TABLE IF NOT EXISTS fantasy_matches (
-        id BIGSERIAL PRIMARY KEY,
-        boy_id  BIGINT NOT NULL,
-        girl_id BIGINT NOT NULL,
-        fantasy_key TEXT NOT NULL,
-        vibe    TEXT NOT NULL,
+    """
+    DEPRECATED: Use Alembic migrations instead
+    Kept for backward compatibility only
+    """
+    # Check if tables exist first
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Only create if tables don't exist
+        db_exec("""
+          CREATE TABLE IF NOT EXISTS fantasy_submissions (
+            id BIGSERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            gender  TEXT NOT NULL,
+            fantasy_text TEXT NOT NULL,
+            vibe    TEXT NOT NULL,
+            keywords TEXT[] NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            active  BOOLEAN DEFAULT TRUE
+          )
+        """)
+        db_exec("""
+          CREATE TABLE IF NOT EXISTS fantasy_matches (
+            id BIGSERIAL PRIMARY KEY,
+            boy_id  BIGINT NOT NULL,
+            girl_id BIGINT NOT NULL,
+            fantasy_key TEXT NOT NULL,
+            vibe    TEXT NOT NULL,
         shared_keywords TEXT[] NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         expires_at TIMESTAMPTZ NOT NULL,
