@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 # Add backend directory to path
 backend_path = Path(__file__).parent.parent / "backend"
@@ -25,5 +25,6 @@ def event_loop():
 @pytest_asyncio.fixture
 async def async_client():
     """Yield an AsyncClient instance pointed at the FastAPI app."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
