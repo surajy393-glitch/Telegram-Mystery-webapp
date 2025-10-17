@@ -63,12 +63,15 @@ async def create_indexes():
     except Exception as e:
         logger.error(f"Error creating indexes: {e}")
 
-# Initialize indexes on startup
-import asyncio
-asyncio.create_task(create_indexes())
-
 # Create the main app without a prefix
 app = FastAPI()
+
+# Initialize indexes on startup
+@app.on_event("startup")
+async def startup_event():
+    """Run startup tasks"""
+    import asyncio
+    asyncio.create_task(create_indexes())
 
 # Add compression middleware for better performance
 app.add_middleware(GZipMiddleware, minimum_size=1000)
