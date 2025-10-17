@@ -250,24 +250,28 @@ async def unmatch(request: UnmatchRequest):
 @mystery_router.post("/block")
 async def block_user(request: BlockRequest):
     """Block a user and deactivate any active matches."""
-    await execute(
-        """
-        INSERT INTO blocked_users (user_id, blocked_user_id, reason, created_at)
-        VALUES ($1,$2,$3,NOW())
-        ON CONFLICT (user_id,blocked_user_id) DO NOTHING
-        """,
-        request.user_id, request.block_user_id, request.reason
-    )
-    await execute(
-        """
-        UPDATE mystery_matches
-        SET is_active=FALSE, unmatch_reason='User blocked'
-        WHERE ((user1_id=$1 AND user2_id=$2) OR (user1_id=$2 AND user2_id=$1))
-          AND is_active=TRUE
-        """,
-        request.user_id, request.block_user_id
-    )
-    return {"success": True, "message": "User blocked successfully"}
+    try:
+        await execute(
+            """
+            INSERT INTO blocked_users (user_id, blocked_user_id, reason, created_at)
+            VALUES ($1,$2,$3,NOW())
+            ON CONFLICT (user_id,blocked_user_id) DO NOTHING
+            """,
+            request.user_id, request.block_user_id, request.reason
+        )
+        await execute(
+            """
+            UPDATE mystery_matches
+            SET is_active=FALSE, unmatch_reason='User blocked'
+            WHERE ((user1_id=$1 AND user2_id=$2) OR (user1_id=$2 AND user2_id=$1))
+              AND is_active=TRUE
+            """,
+            request.user_id, request.block_user_id
+        )
+        return {"success": True, "message": "User blocked successfully"}
+    except Exception as e:
+        # Handle foreign key violation or other database errors
+        return {"success": False, "error": str(e)}
 
 @mystery_router.post("/unblock")
 async def unblock_user(request: BlockRequest):
