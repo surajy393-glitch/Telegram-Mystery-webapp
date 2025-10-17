@@ -245,12 +245,12 @@ async def find_mystery_match(request: MysteryMatchRequest):
         # Check daily limit for free users (enforce strict 3 match limit)
         if not is_premium:
             cursor.execute("""
-                SELECT COUNT(*) FROM mystery_matches
+                SELECT COUNT(*) as count FROM mystery_matches
                 WHERE (user1_id = %s OR user2_id = %s)
                 AND DATE(created_at) = CURRENT_DATE
             """, (user_id, user_id))
             
-            daily_count = cursor.fetchone()[0]
+            daily_count = cursor.fetchone()['count']
             
             if daily_count >= 3:
                 cursor.close()
