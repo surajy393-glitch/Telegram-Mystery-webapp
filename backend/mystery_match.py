@@ -331,12 +331,12 @@ async def find_mystery_match(request: MysteryMatchRequest):
         # Double-check limit before creating match (prevent race conditions)
         if not is_premium:
             cursor.execute("""
-                SELECT COUNT(*) FROM mystery_matches
+                SELECT COUNT(*) as count FROM mystery_matches
                 WHERE (user1_id = %s OR user2_id = %s)
                 AND DATE(created_at) = CURRENT_DATE
             """, (user_id, user_id))
             
-            current_count = cursor.fetchone()[0]
+            current_count = cursor.fetchone()['count']
             if current_count >= 3:
                 cursor.close()
                 conn.close()
