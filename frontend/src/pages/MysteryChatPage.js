@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -20,14 +21,23 @@ const MysteryChatPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = userData.tg_user_id; // Use the PostgreSQL user ID
 
+  // WebSocket integration for real-time chat
+  const { 
+    sendMessage: sendWSMessage, 
+    sendTypingIndicator,
+    messages: wsMessages,
+    isConnected: wsConnected,
+    isTyping: partnerTyping,
+    isOnline: partnerOnline
+  } = useWebSocket(matchId, userId);
+
+  // Initial fetch - load chat history once
   useEffect(() => {
     if (!userId) {
       navigate('/register');
       return;
     }
     fetchChat();
-    const interval = setInterval(fetchChat, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
   }, [matchId]);
 
   useEffect(() => {
