@@ -1,5 +1,6 @@
 """
 Mystery Match Backend API
+from fastapi import WebSocket, WebSocketDisconnect
 Progressive profile unlock system for anonymous dating
 """
 from fastapi import APIRouter, HTTPException, Depends, Header
