@@ -357,7 +357,7 @@ const MysteryMatchHome = () => {
               <span className="text-2xl">🔓</span>
               <div>
                 <div className="font-semibold">Progressive Reveal</div>
-                <div className="opacity-75">10 msgs → Age+City | 30 → Photo | 50 → Interests | 100 → Full Profile</div>
+                <div className="opacity-75">20 msgs → Gender+Age | 60 → Photo | 100 → Interests | 150 → Full Profile</div>
               </div>
             </div>
             <div className="flex items-start space-x-3">
