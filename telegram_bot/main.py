@@ -516,6 +516,14 @@ async def cmd_mystery(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ---------- bottom-menu taps ----------
 async def on_btn_find(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+
+async def handle_close_webapp_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle close button callback"""
+    query = update.callback_query
+    await query.answer()
+    await query.delete_message()
+
     """Handle '⚡ Find a Partner' button."""
     if await _ban_gate(update, context):
         return
