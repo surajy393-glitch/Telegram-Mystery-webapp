@@ -3696,15 +3696,16 @@ async def register_for_mystery(
                 
                 logger.info(f"Attempting to insert user into PostgreSQL with tg_user_id: {pseudo_tg_id}")
                 
+                # Parse interests string to array
+                interests_array = [i.strip() for i in interests.split(',') if i.strip()]
+                
                 # Insert into PostgreSQL users table
                 cursor.execute("""
                     INSERT INTO users 
-                    (tg_user_id, first_name, username, gender, age, city, bio, interests, 
-                     profile_photo_url, registration_completed, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, NOW())
+                    (tg_user_id, username, gender, age, city, bio, interests, profile_photo_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (tg_user_id) DO UPDATE
-                    SET first_name = EXCLUDED.first_name,
-                        username = EXCLUDED.username,
+                    SET username = EXCLUDED.username,
                         gender = EXCLUDED.gender,
                         age = EXCLUDED.age,
                         city = EXCLUDED.city,
@@ -3712,14 +3713,13 @@ async def register_for_mystery(
                         profile_photo_url = EXCLUDED.profile_photo_url
                 """, (
                     pseudo_tg_id,
-                    fullName,
                     clean_username,
                     gender,
                     age,
                     city,
-                    f"Web user from {city}",  # Default bio
-                    interests,
-                    profile_photo_url,  # Store photo URL
+                    f"{fullName} from {city}",  # Use full name in bio
+                    interests_array,
+                    profile_photo_url,
                 ))
                 
                 conn.commit()
