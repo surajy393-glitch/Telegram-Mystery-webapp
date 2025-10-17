@@ -147,17 +147,20 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Mystery Match API Endpoints working excellently. POST /api/mystery/find-match successfully creates matches with 48-hour expiry, premium user gender filtering operational (correctly handles gender preferences and fallbacks), match creation and database persistence verified. GET /api/mystery/my-matches/{user_id} returns proper match data structure with partner info, message counts, unlock levels, and expiry times. Match structure validation passed with all required fields present."
 
-  - task: "Telegram Bot Find Match Command"
+  - task: "Mystery Match Daily Limit Enforcement"
     implemented: true
-    working: "NA"
-    file: "telegram_bot/main.py"
-    stuck_count: 0
+    working: false
+    file: "backend/mystery_match.py"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented /findmatch command that calls Mystery Match API, handles premium gender preferences, daily limits, and returns match with WebApp button to start chatting. Also added /mymatches command to view all active matches."
+        comment: "Implemented daily limit enforcement for free users (3 matches max) in POST /api/mystery/find-match endpoint with proper error responses including matches_today and limit fields."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND: Mystery Match daily limit enforcement has a database connection error. Fixed SQL syntax error (removed FOR UPDATE from COUNT query) but still getting database error '0' when testing. The daily limit logic is implemented correctly in code but cannot be tested due to PostgreSQL connection issues in mystery_match.py. REQUIRES: Database connection debugging or alternative testing approach."
 
 frontend:
   - task: "WebSocket Integration in Chat Page"
