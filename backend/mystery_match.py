@@ -369,15 +369,19 @@ async def check_online_status(match_id: int, user_id: int):
 
 @mystery_router.post("/report")
 async def report_content(request: ReportRequest):
-    report_id = await create_report(
-        request.reporter_id,
-        request.reported_user_id,
-        request.content_type,
-        request.content_id,
-        request.reason,
-    )
-    await check_auto_ban_threshold(request.reported_user_id)
-    return {"success": True, "report_id": report_id}
+    try:
+        report_id = await create_report(
+            request.reporter_id,
+            request.reported_user_id,
+            request.content_type,
+            request.content_id,
+            request.reason,
+        )
+        await check_auto_ban_threshold(request.reported_user_id)
+        return {"success": True, "report_id": report_id}
+    except Exception as e:
+        # Handle foreign key violation or other database errors
+        return {"success": False, "error": str(e)}
 
 @mystery_router.websocket("/ws/chat/{match_id}/{user_id}")
 async def websocket_chat_endpoint(websocket: WebSocket, match_id: int, user_id: int):
