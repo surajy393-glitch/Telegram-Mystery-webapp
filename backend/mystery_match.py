@@ -229,38 +229,39 @@ async def find_mystery_match(request: MysteryMatchRequest):
         
         # Check if user exists
         conn = get_db_connection()
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute("SELECT * FROM users WHERE tg_user_id = %s", (user_id,))
-            user = cursor.fetchone()
-            
-            if not user:
-                conn.close()
-                raise HTTPException(status_code=404, detail="User not found. Please register first.")
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cursor.execute("SELECT * FROM users WHERE tg_user_id = %s", (user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="User not found. Please register first.")
         
         # Check premium status
         is_premium = is_premium_user(user_id)
         
         # Check daily limit for free users (enforce strict 3 match limit)
         if not is_premium:
-            with conn.cursor() as cursor:
-                # Use database lock to prevent race conditions
-                cursor.execute("""
-                    SELECT COUNT(*) FROM mystery_matches
-                    WHERE (user1_id = %s OR user2_id = %s)
-                    AND DATE(created_at) = CURRENT_DATE
-                """, (user_id, user_id))
-                
-                daily_count = cursor.fetchone()[0]
-                
-                if daily_count >= 3:
-                    conn.close()
-                    return {
-                        "success": False,
-                        "error": "daily_limit_reached",
-                        "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
-                        "matches_today": daily_count,
-                        "limit": 3
-                    }
+            cursor.execute("""
+                SELECT COUNT(*) FROM mystery_matches
+                WHERE (user1_id = %s OR user2_id = %s)
+                AND DATE(created_at) = CURRENT_DATE
+            """, (user_id, user_id))
+            
+            daily_count = cursor.fetchone()[0]
+            
+            if daily_count >= 3:
+                cursor.close()
+                conn.close()
+                return {
+                    "success": False,
+                    "error": "daily_limit_reached",
+                    "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
+                    "matches_today": daily_count,
+                    "limit": 3
+                }
         
         # Build matching query
         query = """
