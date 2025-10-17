@@ -3735,8 +3735,13 @@ class LuvHiveAPITester:
                 self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
                 
                 # Also register in Mystery Match system (PostgreSQL)
+                # Generate a numeric user ID from the UUID hash
+                import hashlib
+                user_id_hash = hashlib.md5(self.current_user_id.encode()).hexdigest()
+                numeric_user_id = int(user_id_hash[:8], 16) % 1000000000  # Convert to 9-digit number
+                
                 mystery_data = {
-                    "tg_user_id": int(self.current_user_id.replace('-', '')[:9]),  # Convert to int
+                    "tg_user_id": numeric_user_id,
                     "display_name": user_data['fullName'],
                     "age": user_data['age'],
                     "gender": user_data['gender'],
