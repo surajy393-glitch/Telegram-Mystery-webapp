@@ -4211,13 +4211,7 @@ class LuvHiveAPITester:
         print("🔮 Testing Mystery Match Daily Limit Enforcement...")
         print("-" * 50)
         print("🚨 CRITICAL TEST: Daily Match Limit for Free Users (3 matches max)")
-        self.test_daily_match_limit_free_user()
-        
-        print("💎 Testing Premium User Unlimited Matches...")
-        self.test_premium_user_unlimited_matches()
-        
-        print("📋 Testing Daily Limit Error Response Format...")
-        self.test_daily_limit_error_response_format()
+        self.test_mystery_match_daily_limit_with_existing_user()
         
         # Summary
         print("=" * 60)
