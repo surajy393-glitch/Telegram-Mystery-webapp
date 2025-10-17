@@ -394,7 +394,7 @@ async def get_my_matches(user_id: int):
                     "partner": partner_profile if partner_profile else {"display_name": "Mystery User"},
                     "message_count": match["message_count"],
                     "unlock_level": unlock_level,
-                    "next_unlock_at": [30, 60, 120, 250][unlock_level] if unlock_level < 4 else None,  # Updated thresholds
+                    "next_unlock_at": [10, 30, 50, 100][unlock_level] if unlock_level < 4 else None,  # Unlock thresholds
                     "created_at": match["created_at"].isoformat(),
                     "expires_at": match["expires_at"].isoformat(),
                     "time_remaining": str(match["expires_at"] - datetime.now()),
