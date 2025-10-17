@@ -451,6 +451,55 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=main_menu_kb()
     )
 
+
+# ==========================================
+# WEBAPP DEEP LINKING COMMAND
+# ==========================================
+async def cmd_webapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Send user to Mystery Match webapp"""
+    uid = update.effective_user.id
+    
+    # Check if user is registered
+    if not reg.is_registered(uid):
+        await update.message.reply_text(
+            "❌ Please complete your profile first!\n"
+            "Use /start to register."
+        )
+        return
+    
+    # Get user's premium status
+    is_premium = reg.has_active_premium(uid)
+    
+    # Webapp URL (update this to your actual webapp URL)
+    webapp_url = os.getenv('WEBAPP_URL', 'https://your-webapp-url.com')
+    
+    message = f"""🎭 **LuvHive Mystery Match Web App**
+
+{"👑 **PREMIUM USER**" if is_premium else "🆓 **FREE USER**"}
+
+Open the webapp to:
+{'✅ Choose gender (Girls/Boys)' if is_premium else '🎲 Random mystery matching'}
+{'✅ Unlimited matches' if is_premium else '✅ 3 matches per day'}
+✅ Chat with mystery matches
+✅ Progressive profile reveals
+✅ 48-hour match windows
+
+🔗 [Open Mystery Match Webapp]({webapp_url}/mystery?tg_user_id={uid})
+
+💡 Tip: Login with your Telegram credentials to sync your account!
+"""
+    
+    await update.message.reply_text(
+        message,
+        parse_mode='Markdown',
+        disable_web_page_preview=False
+    )
+
+async def cmd_mystery(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Shortcut to webapp mystery match"""
+    await cmd_webapp(update, context)
+
+
 # ---------- bottom-menu taps ----------
 async def on_btn_find(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle '⚡ Find a Partner' button."""
