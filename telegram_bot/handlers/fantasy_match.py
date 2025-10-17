@@ -168,16 +168,16 @@ def ensure_fantasy_tables():
             match_id BIGINT NOT NULL,
             user_id  BIGINT NOT NULL,
             sent_at  TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(match_id, user_id)
-      )
-    """)
-    # Add missing columns to fantasy_matches
-    db_exec("""
-      ALTER TABLE fantasy_matches 
-      ADD COLUMN IF NOT EXISTS boy_ready BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS girl_ready BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS boy_is_premium BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ,
+            UNIQUE(match_id, user_id)
+          )
+        """)
+        # Add missing columns to fantasy_matches
+        db_exec("""
+          ALTER TABLE fantasy_matches 
+          ADD COLUMN IF NOT EXISTS boy_ready BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS girl_ready BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS boy_is_premium BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ,
       ADD COLUMN IF NOT EXISTS chat_id TEXT
     """)
     # Add status column to fantasy_submissions for moderation
