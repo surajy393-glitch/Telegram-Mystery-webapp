@@ -40,6 +40,27 @@ const MysteryChatPage = () => {
     fetchChat();
   }, [matchId]);
 
+  // Merge WebSocket messages with fetched messages
+  useEffect(() => {
+    if (wsMessages.length > 0) {
+      // Add new WebSocket messages to the message list
+      const newMessages = wsMessages.map(wsMsg => ({
+        id: `ws_${Date.now()}_${Math.random()}`,
+        sender_id: wsMsg.user_id,
+        is_me: wsMsg.user_id === userId,
+        message: wsMsg.content,
+        timestamp: wsMsg.timestamp
+      }));
+      
+      setMessages(prev => {
+        // Filter out duplicates by timestamp
+        const existingTimestamps = new Set(prev.map(m => m.timestamp));
+        const filtered = newMessages.filter(m => !existingTimestamps.has(m.timestamp));
+        return [...prev, ...filtered];
+      });
+    }
+  }, [wsMessages, userId]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -68,6 +89,7 @@ const MysteryChatPage = () => {
     setSending(true);
     
     try {
+      // Send via API to persist in database
       const response = await axios.post(`${API_URL}/api/mystery/send-message`, {
         match_id: parseInt(matchId),
         sender_id: parseInt(userId),
@@ -75,22 +97,54 @@ const MysteryChatPage = () => {
       });
       
       if (response.data.success) {
+        const msgText = messageText;
         setMessageText('');
+        
+        // Send via WebSocket for real-time delivery to partner
+        if (wsConnected) {
+          sendWSMessage(msgText);
+        }
+        
+        // Add message to local state immediately for instant feedback
+        const newMsg = {
+          id: `local_${Date.now()}`,
+          sender_id: userId,
+          is_me: true,
+          message: msgText,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMsg]);
         
         // Check if unlock achieved
         if (response.data.unlock_achieved) {
           setShowUnlock(response.data.unlock_achieved);
           setTimeout(() => setShowUnlock(null), 3000);
+          
+          // Refresh to get updated partner profile
+          setTimeout(fetchChat, 1000);
         }
         
-        // Refresh chat
-        fetchChat();
+        // Update message count in chat data
+        if (chatData) {
+          setChatData({
+            ...chatData,
+            message_count: response.data.message_count,
+            unlock_level: response.data.unlock_level
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message');
     } finally {
       setSending(false);
+    }
+  };
+
+  // Handle typing indicator
+  const handleTyping = (isTyping) => {
+    if (wsConnected) {
+      sendTypingIndicator(isTyping);
     }
   };
 
