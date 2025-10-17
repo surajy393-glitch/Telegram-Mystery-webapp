@@ -241,43 +241,37 @@ def get_unlocked_profile_data(user_id: int, unlock_level: int, is_premium: bool 
 @mystery_router.post("/find-match")
 async def find_mystery_match(request: MysteryMatchRequest):
     """
-    Find a new mystery match
+    Find a new mystery match (NOW ASYNC!)
     - Free users: 3 matches per day, random matching
     - Premium users: Unlimited matches, can filter by gender/city
     """
     try:
         user_id = request.user_id
+        pool = await get_async_pool()
         
-        # Check if user exists
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
-        cursor.execute("SELECT * FROM users WHERE tg_user_id = %s", (user_id,))
-        user = cursor.fetchone()
-        
-        if not user:
-            cursor.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="User not found. Please register first.")
-        
-        # Check premium status
-        is_premium = is_premium_user(user_id)
-        
-        # Check daily limit for free users (enforce strict 3 match limit)
-        if not is_premium:
-            cursor.execute("""
-                SELECT COUNT(*) as count FROM mystery_matches
-                WHERE (user1_id = %s OR user2_id = %s)
-                AND DATE(created_at) = CURRENT_DATE
-            """, (user_id, user_id))
+        # Check if user exists (ASYNC)
+        async with pool.acquire() as conn:
+            user = await conn.fetchrow("SELECT * FROM users WHERE tg_user_id = $1", user_id)
             
-            daily_count = cursor.fetchone()['count']
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found. Please register first.")
             
-            if daily_count >= 3:
-                cursor.close()
-                conn.close()
-                return {
-                    "success": False,
+            # Check premium status
+            is_premium = is_premium_user(user_id)
+            
+            # Check daily limit for free users (ASYNC)
+            if not is_premium:
+                daily_count_row = await conn.fetchrow("""
+                    SELECT COUNT(*) as count FROM mystery_matches
+                    WHERE (user1_id = $1 OR user2_id = $1)
+                    AND DATE(created_at) = CURRENT_DATE
+                """, user_id)
+                
+                daily_count = daily_count_row['count']
+                
+                if daily_count >= 3:
+                    return {
+                        "success": False,
                     "error": "daily_limit_reached",
                     "message": "You've reached your daily limit of 3 matches. Upgrade to Premium for unlimited matches!",
                     "matches_today": daily_count,
