@@ -176,8 +176,8 @@ async def create_report(
     """
     result = await fetch_one("""
         INSERT INTO content_reports 
-        (reporter_id, reported_user_id, content_type, content_id, reason, status, created_at)
-        VALUES ($1, $2, $3, $4, $5, 'pending', NOW())
+        (reporter_id, reported_user_id, content_type, content_id, reason, created_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
         RETURNING id
     """, reporter_id, reported_user_id, content_type, content_id, reason)
     
