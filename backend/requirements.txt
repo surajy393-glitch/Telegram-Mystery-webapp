@@ -129,3 +129,8 @@ pytest>=7.4.0
 pytest-asyncio>=0.21.0
 httpx>=0.24.0
 psycopg2-binary==2.9.11
+alembic==1.17.0
+sqlalchemy==2.0.44
+httpx==0.28.1
+pytest==8.4.2
+pytest-asyncio==1.2.0
