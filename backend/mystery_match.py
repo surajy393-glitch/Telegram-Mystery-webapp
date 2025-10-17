@@ -297,11 +297,10 @@ async def find_mystery_match(request: MysteryMatchRequest):
         query_params.extend([request.preferred_age_min, request.preferred_age_max])
         
         # Execute query
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(query, query_params)
-            potential_matches = cursor.fetchall()
-            
-            if not potential_matches:
+        cursor.execute(query, query_params)
+        potential_matches = cursor.fetchall()
+        
+        if not potential_matches:
                 conn.close()
                 
                 # Premium user specific gender messages
