@@ -87,24 +87,11 @@ async def execute(query: str, *args) -> str:
         return await conn.execute(query, *args)
 
 
-async def execute_many(query: str, args_list: List[tuple]) -> None:
-    """Execute query multiple times with different parameters"""
+async def fetchval(query: str, *args):
+    """Execute query and fetch single value"""
     pool = await get_pool()
     async with pool.acquire() as conn:
-        await conn.executemany(query, args_list)
-
-
-async def transaction(queries: List[tuple]) -> None:
-    """
-    Execute multiple queries in a transaction
-    Args:
-        queries: List of (query, args) tuples
-    """
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            for query, args in queries:
-                await conn.execute(query, *args)
+        return await conn.fetchval(query, *args)
 
 
 # Mystery Match specific async operations
@@ -153,14 +140,14 @@ async def async_is_premium_user(user_id: int) -> bool:
 
 async def async_create_match(user1_id: int, user2_id: int) -> int:
     """Create mystery match (async)"""
-    result = await fetch_one("""
+    match_id = await fetchval("""
         INSERT INTO mystery_matches 
         (user1_id, user2_id, created_at, expires_at, message_count, is_active, user1_unlock_level, user2_unlock_level)
         VALUES ($1, $2, NOW(), NOW() + INTERVAL '48 hours', 0, TRUE, 0, 0)
         RETURNING id
     """, user1_id, user2_id)
     
-    return result['id'] if result else None
+    return match_id
 
 
 async def async_get_user_matches(user_id: int) -> List[Dict[str, Any]]:
@@ -181,29 +168,3 @@ async def async_get_user_matches(user_id: int) -> List[Dict[str, Any]]:
         AND is_active = TRUE
         ORDER BY created_at DESC
     """, user_id)
-
-
-async def async_send_message(match_id: int, sender_id: int, message_text: str) -> Dict[str, Any]:
-    """Send message in match (async)"""
-    # Insert message
-    msg_result = await fetch_one("""
-        INSERT INTO match_messages 
-        (match_id, sender_id, message_text, created_at, is_secret_chat)
-        SELECT $1, $2, $3, NOW(), secret_chat_active
-        FROM mystery_matches
-        WHERE id = $1
-        RETURNING id
-    """, match_id, sender_id, message_text)
-    
-    # Update message count
-    count_result = await fetch_one("""
-        UPDATE mystery_matches 
-        SET message_count = message_count + 1
-        WHERE id = $1
-        RETURNING message_count
-    """, match_id)
-    
-    return {
-        'message_id': msg_result['id'],
-        'message_count': count_result['message_count']
-    }
