@@ -190,8 +190,12 @@ async def get_my_matches(user_id: int):
 @mystery_router.post("/send-message")
 async def send_message(request: MessageRequest):
     """Send a chat message via async helper (see async_send_message below)."""
-    res = await async_send_message(request.match_id, request.sender_id, request.message_text)
-    return {"success": True, "message_id": res["message_id"]}
+    try:
+        res = await async_send_message(request.match_id, request.sender_id, request.message_text)
+        return {"success": True, "message_id": res["message_id"]}
+    except Exception as e:
+        # Handle foreign key violation or other database errors
+        return {"success": False, "error": str(e)}
 
 @mystery_router.get("/chat/{match_id}")
 async def get_chat_messages(match_id: int, user_id: int):
