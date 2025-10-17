@@ -1379,13 +1379,13 @@ async def check_telegram_bot_auth(auth_request: dict):
         import psycopg2
         from psycopg2.extras import RealDictCursor
         
-        # Connect to the Telegram bot's PostgreSQL database
+        # Connect to the Telegram bot's PostgreSQL database using env vars
         bot_conn = psycopg2.connect(
-            host="localhost",
-            port=5432,
-            database="luvhive", 
-            user="postgres",
-            password="luvhive123"
+            host=os.getenv('POSTGRES_HOST', 'localhost'),
+            port=int(os.getenv('POSTGRES_PORT', '5432')),
+            database=os.getenv('POSTGRES_DB', 'luvhive_bot'),
+            user=os.getenv('POSTGRES_USER', 'postgres'),
+            password=os.getenv('POSTGRES_PASSWORD')
         )
         
         # Get the most recently active user from bot database
