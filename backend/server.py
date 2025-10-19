@@ -2811,7 +2811,15 @@ async def get_blocked_users(current_user: User = Depends(get_current_user)):
 
 @api_router.get("/users/{userId}")
 async def get_user_profile(userId: str, current_user: User = Depends(get_current_user)):
+    # Try to find by MongoDB id first, then by tg_user_id
     user = await db.users.find_one({"id": userId})
+    if not user:
+        # Try finding by tg_user_id (for Mystery Match compatibility)
+        try:
+            tg_id = int(userId)
+            user = await db.users.find_one({"tg_user_id": tg_id})
+        except ValueError:
+            pass
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
