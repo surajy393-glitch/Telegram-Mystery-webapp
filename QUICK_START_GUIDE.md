@@ -394,7 +394,7 @@ The bot runs these automated jobs:
 ## 🤝 Integration with Web App (LuvHive)
 
 Your Telegram bot can integrate with your web app at:
-`https://api-database-init.preview.emergentagent.com`
+`https://post-viewer-1.preview.emergentagent.com`
 
 ### Integration Points:
 1. **User Linking:** Link Telegram account to web app
