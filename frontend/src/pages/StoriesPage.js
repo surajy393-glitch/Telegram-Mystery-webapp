@@ -37,7 +37,11 @@ const StoriesPage = ({ user }) => {
   };
 
   const handleCreateStory = async () => {
-    if (!newStory.trim() && !selectedImage) return;
+    // Allow story with just image (no caption required)
+    if (!newStory.trim() && !selectedImage) {
+      alert('Please add some content or an image');
+      return;
+    }
 
     try {
       const formData = new FormData();
