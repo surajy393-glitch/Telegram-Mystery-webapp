@@ -114,13 +114,7 @@ function App() {
           />
           <Route 
             path="/home" 
-            element={
-              isAuthenticated ? (
-                <HomePage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            } 
+            element={<Navigate to="/feed" replace />}
           />
           <Route 
             path="/feed" 
