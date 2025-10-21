@@ -1,0 +1,588 @@
+"""
+Social Platform Features for LuvHive
+- Posts (Feed)
+- Stories (24-hour content)
+- Follow/Unfollow
+- Likes, Comments, Shares
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime, timedelta, timezone
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+from uuid import uuid4
+
+# Create router
+social_router = APIRouter(prefix="/api/social", tags=["social"])
+
+# MongoDB connection
+MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.environ.get("DB_NAME", "luvhive_database")
+client = AsyncIOMotorClient(MONGO_URL)
+db = client[DB_NAME]
+
+# Pydantic Models
+class CreatePostRequest(BaseModel):
+    content: str
+    postType: str = "text"  # text, image, video, poll
+    isAnonymous: bool = False
+    pollOptions: Optional[List[str]] = None
+    
+class CreateStoryRequest(BaseModel):
+    content: str
+    storyType: str = "text"  # text, image, video
+    isAnonymous: bool = False
+
+class CommentRequest(BaseModel):
+    postId: str
+    content: str
+    isAnonymous: bool = False
+
+class LikeRequest(BaseModel):
+    postId: str
+    reactionType: str = "like"  # like, love, fire, wow
+
+# Helper Functions
+async def get_current_user(token: str):
+    """Get current user from token - placeholder"""
+    # TODO: Implement proper JWT validation
+    user = await db.users.find_one({"id": token})
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+# POSTS ENDPOINTS
+
+@social_router.post("/posts")
+async def create_post(
+    content: str = Form(...),
+    postType: str = Form("text"),
+    isAnonymous: bool = Form(False),
+    image: Optional[UploadFile] = File(None),
+    userId: str = Form(...)
+):
+    """Create a new post"""
+    try:
+        # Get user
+        user = await db.users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Handle image upload if provided
+        image_url = None
+        if image:
+            # Save image
+            upload_dir = "/app/uploads/posts"
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            file_ext = image.filename.split('.')[-1]
+            filename = f"{uuid4()}.{file_ext}"
+            file_path = os.path.join(upload_dir, filename)
+            
+            with open(file_path, "wb") as f:
+                content_bytes = await image.read()
+                f.write(content_bytes)
+            
+            image_url = f"/uploads/posts/{filename}"
+        
+        # Create post document
+        post = {
+            "id": str(uuid4()),
+            "userId": userId if not isAnonymous else "anonymous",
+            "username": user.get("username") if not isAnonymous else "Anonymous",
+            "userAvatar": user.get("profileImage") if not isAnonymous else None,
+            "content": content,
+            "postType": postType,
+            "imageUrl": image_url,
+            "isAnonymous": isAnonymous,
+            "likes": [],
+            "comments": [],
+            "shares": 0,
+            "views": 0,
+            "createdAt": datetime.now(timezone.utc),
+            "city": user.get("city", "Unknown"),
+            "age": user.get("age", 0),
+            "gender": user.get("gender", "Unknown")
+        }
+        
+        await db.posts.insert_one(post)
+        
+        return {
+            "success": True,
+            "message": "Post created successfully",
+            "post": {
+                "id": post["id"],
+                "createdAt": post["createdAt"].isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.get("/feed")
+async def get_feed(
+    userId: str,
+    skip: int = 0,
+    limit: int = 20,
+    city: Optional[str] = None
+):
+    """Get feed with posts"""
+    try:
+        # Build query
+        query = {}
+        
+        # Filter by city if provided
+        if city:
+            query["city"] = city
+        
+        # Get posts sorted by recent
+        posts = await db.posts.find(query)\
+            .sort("createdAt", -1)\
+            .skip(skip)\
+            .limit(limit)\
+            .to_list(limit)
+        
+        # Format posts
+        formatted_posts = []
+        for post in posts:
+            # Get like count
+            like_count = len(post.get("likes", []))
+            comment_count = len(post.get("comments", []))
+            
+            # Check if current user liked
+            user_liked = userId in post.get("likes", [])
+            
+            formatted_posts.append({
+                "id": post["id"],
+                "userId": post.get("userId"),
+                "username": post.get("username"),
+                "userAvatar": post.get("userAvatar"),
+                "content": post.get("content"),
+                "postType": post.get("postType"),
+                "imageUrl": post.get("imageUrl"),
+                "isAnonymous": post.get("isAnonymous", False),
+                "likes": like_count,
+                "comments": comment_count,
+                "shares": post.get("shares", 0),
+                "views": post.get("views", 0),
+                "userLiked": user_liked,
+                "createdAt": post["createdAt"].isoformat(),
+                "timeAgo": get_time_ago(post["createdAt"])
+            })
+        
+        return {
+            "success": True,
+            "posts": formatted_posts,
+            "hasMore": len(formatted_posts) == limit
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.post("/posts/{postId}/like")
+async def like_post(postId: str, userId: str = Form(...), reactionType: str = Form("like")):
+    """Like/Unlike a post"""
+    try:
+        post = await db.posts.find_one({"id": postId})
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        likes = post.get("likes", [])
+        
+        if userId in likes:
+            # Unlike
+            likes.remove(userId)
+            action = "unliked"
+        else:
+            # Like
+            likes.append(userId)
+            action = "liked"
+        
+        # Update post
+        await db.posts.update_one(
+            {"id": postId},
+            {"$set": {"likes": likes}}
+        )
+        
+        return {
+            "success": True,
+            "action": action,
+            "likeCount": len(likes)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.post("/posts/{postId}/comment")
+async def add_comment(
+    postId: str,
+    userId: str = Form(...),
+    content: str = Form(...),
+    isAnonymous: bool = Form(False)
+):
+    """Add comment to a post"""
+    try:
+        post = await db.posts.find_one({"id": postId})
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        user = await db.users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        comment = {
+            "id": str(uuid4()),
+            "userId": userId if not isAnonymous else "anonymous",
+            "username": user.get("username") if not isAnonymous else "Anonymous",
+            "userAvatar": user.get("profileImage") if not isAnonymous else None,
+            "content": content,
+            "createdAt": datetime.now(timezone.utc),
+            "isAnonymous": isAnonymous
+        }
+        
+        # Add comment to post
+        await db.posts.update_one(
+            {"id": postId},
+            {"$push": {"comments": comment}}
+        )
+        
+        return {
+            "success": True,
+            "comment": {
+                "id": comment["id"],
+                "content": comment["content"],
+                "createdAt": comment["createdAt"].isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.get("/posts/{postId}/comments")
+async def get_comments(postId: str, skip: int = 0, limit: int = 50):
+    """Get comments for a post"""
+    try:
+        post = await db.posts.find_one({"id": postId})
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        comments = post.get("comments", [])
+        
+        # Format comments
+        formatted_comments = []
+        for comment in comments[skip:skip+limit]:
+            formatted_comments.append({
+                "id": comment["id"],
+                "userId": comment.get("userId"),
+                "username": comment.get("username"),
+                "userAvatar": comment.get("userAvatar"),
+                "content": comment.get("content"),
+                "createdAt": comment["createdAt"].isoformat(),
+                "timeAgo": get_time_ago(comment["createdAt"]),
+                "isAnonymous": comment.get("isAnonymous", False)
+            })
+        
+        return {
+            "success": True,
+            "comments": formatted_comments,
+            "total": len(comments)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# STORIES ENDPOINTS
+
+@social_router.post("/stories")
+async def create_story(
+    content: str = Form(...),
+    storyType: str = Form("text"),
+    isAnonymous: bool = Form(False),
+    image: Optional[UploadFile] = File(None),
+    userId: str = Form(...)
+):
+    """Create a 24-hour story"""
+    try:
+        user = await db.users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Handle image upload
+        image_url = None
+        if image:
+            upload_dir = "/app/uploads/stories"
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            file_ext = image.filename.split('.')[-1]
+            filename = f"{uuid4()}.{file_ext}"
+            file_path = os.path.join(upload_dir, filename)
+            
+            with open(file_path, "wb") as f:
+                content_bytes = await image.read()
+                f.write(content_bytes)
+            
+            image_url = f"/uploads/stories/{filename}"
+        
+        # Create story
+        story = {
+            "id": str(uuid4()),
+            "userId": userId if not isAnonymous else "anonymous",
+            "username": user.get("username") if not isAnonymous else "Anonymous",
+            "userAvatar": user.get("profileImage") if not isAnonymous else None,
+            "content": content,
+            "storyType": storyType,
+            "imageUrl": image_url,
+            "isAnonymous": isAnonymous,
+            "views": [],
+            "createdAt": datetime.now(timezone.utc),
+            "expiresAt": datetime.now(timezone.utc) + timedelta(hours=24)
+        }
+        
+        await db.stories.insert_one(story)
+        
+        return {
+            "success": True,
+            "message": "Story created successfully",
+            "story": {
+                "id": story["id"],
+                "expiresAt": story["expiresAt"].isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.get("/stories")
+async def get_stories(userId: str, skip: int = 0, limit: int = 50):
+    """Get active stories (not expired)"""
+    try:
+        # Get non-expired stories
+        now = datetime.now(timezone.utc)
+        
+        stories = await db.stories.find({
+            "expiresAt": {"$gt": now}
+        }).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Format stories
+        formatted_stories = []
+        for story in stories:
+            # Check if user viewed
+            user_viewed = userId in story.get("views", [])
+            
+            formatted_stories.append({
+                "id": story["id"],
+                "userId": story.get("userId"),
+                "username": story.get("username"),
+                "userAvatar": story.get("userAvatar"),
+                "content": story.get("content"),
+                "storyType": story.get("storyType"),
+                "imageUrl": story.get("imageUrl"),
+                "isAnonymous": story.get("isAnonymous", False),
+                "views": len(story.get("views", [])),
+                "userViewed": user_viewed,
+                "createdAt": story["createdAt"].isoformat(),
+                "expiresAt": story["expiresAt"].isoformat(),
+                "timeAgo": get_time_ago(story["createdAt"])
+            })
+        
+        return {
+            "success": True,
+            "stories": formatted_stories
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.post("/stories/{storyId}/view")
+async def view_story(storyId: str, userId: str = Form(...)):
+    """Mark story as viewed"""
+    try:
+        story = await db.stories.find_one({"id": storyId})
+        if not story:
+            raise HTTPException(status_code=404, detail="Story not found")
+        
+        views = story.get("views", [])
+        
+        if userId not in views:
+            views.append(userId)
+            await db.stories.update_one(
+                {"id": storyId},
+                {"$set": {"views": views}}
+            )
+        
+        return {
+            "success": True,
+            "viewCount": len(views)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# FOLLOW SYSTEM
+
+@social_router.post("/follow")
+async def follow_user(userId: str = Form(...), targetUserId: str = Form(...)):
+    """Follow a user"""
+    try:
+        if userId == targetUserId:
+            raise HTTPException(status_code=400, detail="Cannot follow yourself")
+        
+        user = await db.users.find_one({"id": userId})
+        target = await db.users.find_one({"id": targetUserId})
+        
+        if not user or not target:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Add to following list
+        following = user.get("following", [])
+        if targetUserId not in following:
+            following.append(targetUserId)
+            await db.users.update_one(
+                {"id": userId},
+                {"$set": {"following": following}}
+            )
+        
+        # Add to followers list
+        followers = target.get("followers", [])
+        if userId not in followers:
+            followers.append(userId)
+            await db.users.update_one(
+                {"id": targetUserId},
+                {"$set": {"followers": followers}}
+            )
+        
+        return {
+            "success": True,
+            "message": "Followed successfully",
+            "following": True
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.post("/unfollow")
+async def unfollow_user(userId: str = Form(...), targetUserId: str = Form(...)):
+    """Unfollow a user"""
+    try:
+        user = await db.users.find_one({"id": userId})
+        target = await db.users.find_one({"id": targetUserId})
+        
+        if not user or not target:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Remove from following list
+        following = user.get("following", [])
+        if targetUserId in following:
+            following.remove(targetUserId)
+            await db.users.update_one(
+                {"id": userId},
+                {"$set": {"following": following}}
+            )
+        
+        # Remove from followers list
+        followers = target.get("followers", [])
+        if userId in followers:
+            followers.remove(userId)
+            await db.users.update_one(
+                {"id": targetUserId},
+                {"$set": {"followers": followers}}
+            )
+        
+        return {
+            "success": True,
+            "message": "Unfollowed successfully",
+            "following": False
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.get("/users/{userId}/followers")
+async def get_followers(userId: str):
+    """Get user's followers"""
+    try:
+        user = await db.users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        follower_ids = user.get("followers", [])
+        
+        # Get follower details
+        followers = []
+        for fid in follower_ids:
+            follower = await db.users.find_one({"id": fid})
+            if follower:
+                followers.append({
+                    "id": follower["id"],
+                    "username": follower.get("username"),
+                    "fullName": follower.get("fullName"),
+                    "profileImage": follower.get("profileImage"),
+                    "bio": follower.get("bio", "")
+                })
+        
+        return {
+            "success": True,
+            "followers": followers,
+            "count": len(followers)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@social_router.get("/users/{userId}/following")
+async def get_following(userId: str):
+    """Get users that this user follows"""
+    try:
+        user = await db.users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        following_ids = user.get("following", [])
+        
+        # Get following details
+        following = []
+        for fid in following_ids:
+            followed_user = await db.users.find_one({"id": fid})
+            if followed_user:
+                following.append({
+                    "id": followed_user["id"],
+                    "username": followed_user.get("username"),
+                    "fullName": followed_user.get("fullName"),
+                    "profileImage": followed_user.get("profileImage"),
+                    "bio": followed_user.get("bio", "")
+                })
+        
+        return {
+            "success": True,
+            "following": following,
+            "count": len(following)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# UTILITY FUNCTIONS
+
+def get_time_ago(dt):
+    """Convert datetime to 'time ago' format"""
+    now = datetime.now(timezone.utc)
+    diff = now - dt
+    
+    seconds = diff.total_seconds()
+    
+    if seconds < 60:
+        return "Just now"
+    elif seconds < 3600:
+        minutes = int(seconds / 60)
+        return f"{minutes}m ago"
+    elif seconds < 86400:
+        hours = int(seconds / 3600)
+        return f"{hours}h ago"
+    elif seconds < 604800:
+        days = int(seconds / 86400)
+        return f"{days}d ago"
+    else:
+        weeks = int(seconds / 604800)
+        return f"{weeks}w ago"
