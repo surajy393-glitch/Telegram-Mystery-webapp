@@ -4068,6 +4068,302 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Daily Limit Error Response Format", False, "Exception occurred", str(e))
 
+    # ========== POST AND STORY IMAGE TESTS ==========
+    
+    def test_create_post_with_base64_image(self):
+        """Test POST /api/posts/create with base64 mediaUrl"""
+        try:
+            # Use the small base64 image from the request
+            base64_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": base64_image,
+                "caption": "Test post with base64 image for image display testing #imagetest #base64"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if post was created with correct mediaUrl
+                if 'post' in data:
+                    post = data['post']
+                    if post.get('mediaUrl') == base64_image:
+                        self.log_result("Create Post with Base64 Image", True, 
+                                      f"Post created successfully with full base64 mediaUrl (length: {len(base64_image)})")
+                        return post['id']  # Return post ID for further testing
+                    else:
+                        actual_url = post.get('mediaUrl', 'MISSING')
+                        if actual_url == 'MISSING':
+                            self.log_result("Create Post with Base64 Image", False, "mediaUrl field is missing from response")
+                        elif len(actual_url) != len(base64_image):
+                            self.log_result("Create Post with Base64 Image", False, 
+                                          f"mediaUrl truncated - Expected length: {len(base64_image)}, Got: {len(actual_url)}")
+                        else:
+                            self.log_result("Create Post with Base64 Image", False, 
+                                          f"mediaUrl modified - Expected: {base64_image[:50]}..., Got: {actual_url[:50]}...")
+                else:
+                    self.log_result("Create Post with Base64 Image", False, "Response missing 'post' field")
+            else:
+                self.log_result("Create Post with Base64 Image", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Post with Base64 Image", False, "Exception occurred", str(e))
+        
+        return None
+    
+    def test_get_posts_feed_image_retrieval(self):
+        """Test GET /api/posts/feed returns posts with full mediaUrl"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts_with_images = [p for p in data['posts'] if p.get('mediaUrl', '').startswith('data:image')]
+                    
+                    if posts_with_images:
+                        # Check the first post with base64 image
+                        post = posts_with_images[0]
+                        media_url = post.get('mediaUrl', '')
+                        
+                        # Verify it's a complete base64 data URL
+                        if media_url.startswith('data:image/') and ',' in media_url:
+                            base64_part = media_url.split(',')[1]
+                            if len(base64_part) > 10:  # Should have substantial base64 data
+                                self.log_result("Get Posts Feed Image Retrieval", True, 
+                                              f"Posts feed returns complete base64 images (mediaUrl length: {len(media_url)})")
+                            else:
+                                self.log_result("Get Posts Feed Image Retrieval", False, 
+                                              f"Base64 data appears truncated (length: {len(base64_part)})")
+                        else:
+                            self.log_result("Get Posts Feed Image Retrieval", False, 
+                                          f"Invalid base64 format: {media_url[:100]}...")
+                    else:
+                        self.log_result("Get Posts Feed Image Retrieval", True, 
+                                      f"No posts with base64 images found in feed ({len(data['posts'])} total posts)")
+                else:
+                    self.log_result("Get Posts Feed Image Retrieval", False, "Response missing 'posts' array")
+            else:
+                self.log_result("Get Posts Feed Image Retrieval", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Posts Feed Image Retrieval", False, "Exception occurred", str(e))
+    
+    def test_create_story_with_base64_image(self):
+        """Test POST /api/stories/create with base64 mediaUrl"""
+        try:
+            # Use the small base64 image from the request
+            base64_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            story_data = {
+                "mediaType": "image",
+                "mediaUrl": base64_image,
+                "caption": "Test story with base64 image for image display testing"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories/create", json=story_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if story was created with correct mediaUrl
+                if 'story' in data:
+                    story = data['story']
+                    if story.get('mediaUrl') == base64_image:
+                        self.log_result("Create Story with Base64 Image", True, 
+                                      f"Story created successfully with full base64 mediaUrl (length: {len(base64_image)})")
+                        return story['id']  # Return story ID for further testing
+                    else:
+                        actual_url = story.get('mediaUrl', 'MISSING')
+                        if actual_url == 'MISSING':
+                            self.log_result("Create Story with Base64 Image", False, "mediaUrl field is missing from response")
+                        elif len(actual_url) != len(base64_image):
+                            self.log_result("Create Story with Base64 Image", False, 
+                                          f"mediaUrl truncated - Expected length: {len(base64_image)}, Got: {len(actual_url)}")
+                        else:
+                            self.log_result("Create Story with Base64 Image", False, 
+                                          f"mediaUrl modified - Expected: {base64_image[:50]}..., Got: {actual_url[:50]}...")
+                else:
+                    self.log_result("Create Story with Base64 Image", False, "Response missing 'story' field")
+            else:
+                self.log_result("Create Story with Base64 Image", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Story with Base64 Image", False, "Exception occurred", str(e))
+        
+        return None
+    
+    def test_get_stories_feed_image_retrieval(self):
+        """Test GET /api/stories/feed returns stories with full mediaUrl"""
+        try:
+            response = self.session.get(f"{API_BASE}/stories/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'stories' in data and isinstance(data['stories'], list):
+                    stories_with_images = [s for s in data['stories'] if s.get('mediaUrl', '').startswith('data:image')]
+                    
+                    if stories_with_images:
+                        # Check the first story with base64 image
+                        story = stories_with_images[0]
+                        media_url = story.get('mediaUrl', '')
+                        
+                        # Verify it's a complete base64 data URL
+                        if media_url.startswith('data:image/') and ',' in media_url:
+                            base64_part = media_url.split(',')[1]
+                            if len(base64_part) > 10:  # Should have substantial base64 data
+                                self.log_result("Get Stories Feed Image Retrieval", True, 
+                                              f"Stories feed returns complete base64 images (mediaUrl length: {len(media_url)})")
+                            else:
+                                self.log_result("Get Stories Feed Image Retrieval", False, 
+                                              f"Base64 data appears truncated (length: {len(base64_part)})")
+                        else:
+                            self.log_result("Get Stories Feed Image Retrieval", False, 
+                                          f"Invalid base64 format: {media_url[:100]}...")
+                    else:
+                        self.log_result("Get Stories Feed Image Retrieval", True, 
+                                      f"No stories with base64 images found in feed ({len(data['stories'])} total stories)")
+                else:
+                    self.log_result("Get Stories Feed Image Retrieval", False, "Response missing 'stories' array")
+            else:
+                self.log_result("Get Stories Feed Image Retrieval", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Get Stories Feed Image Retrieval", False, "Exception occurred", str(e))
+    
+    def test_database_direct_query_posts(self):
+        """Check database directly for post mediaUrl values"""
+        try:
+            # This test will check what's actually stored in the database
+            # We'll use the API to get posts and examine the raw data
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                base64_posts = []
+                placeholder_posts = []
+                
+                for post in posts:
+                    media_url = post.get('mediaUrl', '')
+                    if media_url.startswith('data:image/'):
+                        base64_posts.append({
+                            'id': post.get('id'),
+                            'mediaUrl_length': len(media_url),
+                            'mediaUrl_preview': media_url[:100] + '...' if len(media_url) > 100 else media_url
+                        })
+                    elif media_url and not media_url.startswith('http'):
+                        placeholder_posts.append({
+                            'id': post.get('id'),
+                            'mediaUrl': media_url
+                        })
+                
+                result_msg = f"Database Analysis - Posts with base64: {len(base64_posts)}, Posts with placeholders: {len(placeholder_posts)}"
+                
+                if placeholder_posts:
+                    result_msg += f"\nPlaceholder examples: {placeholder_posts[:3]}"
+                
+                if base64_posts:
+                    result_msg += f"\nBase64 examples: {base64_posts[:2]}"
+                
+                self.log_result("Database Direct Query Posts", True, result_msg)
+                
+            else:
+                self.log_result("Database Direct Query Posts", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Database Direct Query Posts", False, "Exception occurred", str(e))
+    
+    def test_database_direct_query_stories(self):
+        """Check database directly for story mediaUrl values"""
+        try:
+            # This test will check what's actually stored in the database
+            # We'll use the API to get stories and examine the raw data
+            response = self.session.get(f"{API_BASE}/stories/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                stories = data.get('stories', [])
+                
+                base64_stories = []
+                placeholder_stories = []
+                
+                for story in stories:
+                    media_url = story.get('mediaUrl', '')
+                    if media_url.startswith('data:image/'):
+                        base64_stories.append({
+                            'id': story.get('id'),
+                            'mediaUrl_length': len(media_url),
+                            'mediaUrl_preview': media_url[:100] + '...' if len(media_url) > 100 else media_url
+                        })
+                    elif media_url and not media_url.startswith('http'):
+                        placeholder_stories.append({
+                            'id': story.get('id'),
+                            'mediaUrl': media_url
+                        })
+                
+                result_msg = f"Database Analysis - Stories with base64: {len(base64_stories)}, Stories with placeholders: {len(placeholder_stories)}"
+                
+                if placeholder_stories:
+                    result_msg += f"\nPlaceholder examples: {placeholder_stories[:3]}"
+                
+                if base64_stories:
+                    result_msg += f"\nBase64 examples: {base64_stories[:2]}"
+                
+                self.log_result("Database Direct Query Stories", True, result_msg)
+                
+            else:
+                self.log_result("Database Direct Query Stories", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Database Direct Query Stories", False, "Exception occurred", str(e))
+    
+    def test_backend_logs_for_image_errors(self):
+        """Check backend logs for any errors related to image storage"""
+        try:
+            # Check supervisor backend logs for any image-related errors
+            import subprocess
+            
+            # Get recent backend logs
+            result = subprocess.run(
+                ['tail', '-n', '50', '/var/log/supervisor/backend.err.log'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            if result.returncode == 0:
+                log_content = result.stdout
+                
+                # Look for image-related errors
+                image_errors = []
+                error_keywords = ['mediaUrl', 'base64', 'image', 'truncat', 'error', 'exception']
+                
+                for line in log_content.split('\n'):
+                    if any(keyword.lower() in line.lower() for keyword in error_keywords):
+                        image_errors.append(line.strip())
+                
+                if image_errors:
+                    self.log_result("Backend Logs Image Errors", False, 
+                                  f"Found {len(image_errors)} potential image-related log entries:\n" + 
+                                  '\n'.join(image_errors[-5:]))  # Show last 5 errors
+                else:
+                    self.log_result("Backend Logs Image Errors", True, 
+                                  "No image-related errors found in recent backend logs")
+            else:
+                self.log_result("Backend Logs Image Errors", True, 
+                              "Could not read backend logs (may not exist or no errors)")
+                
+        except Exception as e:
+            self.log_result("Backend Logs Image Errors", True, 
+                          f"Could not check backend logs: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
@@ -4084,6 +4380,17 @@ class LuvHiveAPITester:
         if not self.register_second_user():
             print("❌ Cannot proceed without second test user")
             return
+        
+        # ========== POST AND STORY IMAGE TESTS (HIGH PRIORITY) ==========
+        print("🖼️ PRIORITY: Testing POST AND STORY IMAGE HANDLING...")
+        print("-" * 50)
+        self.test_create_post_with_base64_image()
+        self.test_get_posts_feed_image_retrieval()
+        self.test_create_story_with_base64_image()
+        self.test_get_stories_feed_image_retrieval()
+        self.test_database_direct_query_posts()
+        self.test_database_direct_query_stories()
+        self.test_backend_logs_for_image_errors()
         
         # ========== PRIORITY: NEW FEATURE TESTS FOR OTP & EMAIL VALIDATION ==========
         print("🔥 PRIORITY: Testing NEW OTP & Email Validation Features...")
