@@ -123,6 +123,26 @@ function App() {
             } 
           />
           <Route 
+            path="/feed" 
+            element={
+              isAuthenticated ? (
+                <FeedPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/stories" 
+            element={
+              isAuthenticated ? (
+                <StoriesPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/my-profile" 
             element={
               isAuthenticated ? (
