@@ -37,7 +37,11 @@ const FeedPage = ({ user, onLogout }) => {
   };
 
   const handleCreatePost = async () => {
-    if (!newPost.trim() && !selectedImage) return;
+    // Allow posting with just image (no caption required)
+    if (!newPost.trim() && !selectedImage) {
+      alert('Please add some content or an image');
+      return;
+    }
 
     try {
       const formData = new FormData();
