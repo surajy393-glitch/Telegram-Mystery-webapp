@@ -11,6 +11,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import MyProfilePage from "@/pages/MyProfilePage";
 import FeedPage from "@/pages/FeedPage";
 import StoriesPage from "@/pages/StoriesPage";
+import SocialSettingsPage from "@/pages/SocialSettingsPage";
 import EditProfilePage from "@/pages/EditProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
