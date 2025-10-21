@@ -138,6 +138,16 @@ function App() {
             } 
           />
           <Route 
+            path="/social-settings" 
+            element={
+              isAuthenticated ? (
+                <SocialSettingsPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/my-profile" 
             element={
               isAuthenticated ? (
