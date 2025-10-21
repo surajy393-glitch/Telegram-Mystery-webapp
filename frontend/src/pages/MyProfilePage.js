@@ -65,11 +65,11 @@ const MyProfilePage = ({ user, onLogout }) => {
             My Profile
           </h1>
           <div className="flex gap-2">
-            <Link to="/settings">
+            <Link to="/social-settings">
               <Button 
                 variant="ghost" 
                 className="hover:bg-pink-50"
-                data-testid="settings-btn"
+                title="Social Settings"
               >
                 <Settings className="w-5 h-5 text-pink-600" />
               </Button>
