@@ -567,6 +567,11 @@ async def get_following(userId: str):
 
 def get_time_ago(dt):
     """Convert datetime to 'time ago' format"""
+    # Ensure dt is timezone-aware
+    if dt.tzinfo is None:
+        from datetime import timezone as tz
+        dt = dt.replace(tzinfo=tz.utc)
+    
     now = datetime.now(timezone.utc)
     diff = now - dt
     
