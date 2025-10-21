@@ -143,7 +143,7 @@ const FeedPage = ({ user, onLogout }) => {
               🎭 Mystery
             </button>
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/my-profile')}
               className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-all"
             >
               {user?.username?.[0]?.toUpperCase()}
