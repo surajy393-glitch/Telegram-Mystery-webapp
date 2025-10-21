@@ -45,7 +45,7 @@ const StoriesPage = ({ user }) => {
 
     try {
       const formData = new FormData();
-      formData.append('content', newStory);
+      formData.append('content', newStory || 'Story image');  // Default text if empty
       formData.append('userId', user.id);
       formData.append('storyType', selectedImage ? 'image' : 'text');
       formData.append('isAnonymous', isAnonymous);
