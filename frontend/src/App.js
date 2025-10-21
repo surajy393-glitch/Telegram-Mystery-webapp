@@ -76,7 +76,7 @@ function App() {
             path="/register" 
             element={
               isAuthenticated ? (
-                <Navigate to="/mystery" replace />
+                <Navigate to="/feed" replace />
               ) : (
                 <DatingRegisterPage onLogin={handleLogin} />
               )
@@ -86,7 +86,7 @@ function App() {
             path="/login" 
             element={
               isAuthenticated ? (
-                <Navigate to="/mystery" replace />
+                <Navigate to="/feed" replace />
               ) : (
                 <LoginPage onLogin={handleLogin} />
               )
