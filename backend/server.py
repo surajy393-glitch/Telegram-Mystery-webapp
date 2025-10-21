@@ -3990,6 +3990,10 @@ app.include_router(api_router)
 from mystery_match import mystery_router
 app.include_router(mystery_router)
 
+# Import and include social features router
+from social_features import social_router
+app.include_router(social_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
