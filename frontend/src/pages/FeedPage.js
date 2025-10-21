@@ -274,9 +274,11 @@ const FeedPage = ({ user, onLogout }) => {
                 </div>
 
                 {/* Post Content */}
-                <div className="px-4 pb-3">
-                  <p className="text-gray-800">{post.content}</p>
-                </div>
+                {post.content && post.content.trim() && (
+                  <div className="px-4 pb-3">
+                    <p className="text-gray-800">{post.content}</p>
+                  </div>
+                )}
 
                 {/* Post Image */}
                 {post.imageUrl && (
