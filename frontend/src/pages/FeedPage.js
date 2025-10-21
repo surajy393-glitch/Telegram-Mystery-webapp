@@ -124,27 +124,27 @@ const FeedPage = ({ user, onLogout }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
             LuvHive
           </h1>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => navigate('/stories')}
-              className="text-gray-600 hover:text-pink-600"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-600 hover:to-purple-600 transition-all shadow-md"
             >
-              Stories
+              📸 Stories
             </button>
             <button
               onClick={() => navigate('/mystery')}
-              className="text-gray-600 hover:text-pink-600"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold hover:from-purple-600 hover:to-indigo-600 transition-all shadow-md"
             >
-              Mystery Match
+              🎭 Mystery
             </button>
             <button
               onClick={() => navigate('/profile')}
-              className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold"
+              className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-all"
             >
               {user?.username?.[0]?.toUpperCase()}
             </button>
