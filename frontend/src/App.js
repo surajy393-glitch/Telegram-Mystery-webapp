@@ -9,6 +9,8 @@ import MysteryChatPage from "@/pages/MysteryChatPage";
 import HomePage from "@/pages/HomePage";
 import ProfilePage from "@/pages/ProfilePage";
 import MyProfilePage from "@/pages/MyProfilePage";
+import FeedPage from "@/pages/FeedPage";
+import StoriesPage from "@/pages/StoriesPage";
 import EditProfilePage from "@/pages/EditProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
