@@ -45,7 +45,7 @@ const FeedPage = ({ user, onLogout }) => {
 
     try {
       const formData = new FormData();
-      formData.append('content', newPost);
+      formData.append('content', newPost || 'Photo post');  // Default text if empty
       formData.append('userId', user.id);
       formData.append('postType', selectedImage ? 'image' : 'text');
       formData.append('isAnonymous', isAnonymous);
