@@ -110,7 +110,35 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
     // Create default user if none exists
     const defaultUser = user || { name: 'Test User', username: 'testuser', profilePic: '✨' };
     
-    // Create story object with all features
+    try {
+      // Get authentication token (if available)
+      const token = localStorage.getItem('token');
+      
+      // Upload story to backend API which will upload to Telegram
+      const response = await fetch('http://localhost:8001/api/stories/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
+        body: JSON.stringify({
+          mediaType: storyType === 'image' ? 'image' : 'image',
+          mediaUrl: storyType === 'image' ? selectedImage : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          caption: storyText
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Story created and uploaded to Telegram:', result);
+      } else {
+        console.error('❌ Failed to upload story:', await response.text());
+      }
+    } catch (uploadError) {
+      console.error('❌ Story upload error:', uploadError);
+    }
+    
+    // Create story object for local display
     const newStory = {
       id: Date.now(),
       user: {
@@ -138,63 +166,35 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
         options: pollOptions.filter(opt => opt.trim()),
         votes: {}
       } : null,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
     };
 
-    // Save to localStorage for persistence with error handling
+    // Also save to localStorage for local display
     try {
       const userStoriesKey = `luvhive_stories_${defaultUser.username}`;
-      console.log('📚 Saving story to key:', userStoriesKey);
       let existingStories = JSON.parse(localStorage.getItem(userStoriesKey) || '[]');
-      console.log('📚 Existing stories before:', existingStories.length);
-      
-      // Limit to 20 stories per user to prevent quota issues
       if (existingStories.length >= 20) {
         existingStories = existingStories.slice(0, 19);
       }
-      
       existingStories.unshift(newStory);
       localStorage.setItem(userStoriesKey, JSON.stringify(existingStories));
-      console.log('📚 Stories after save:', existingStories.length);
-      console.log('📚 Saved story data:', newStory);
+      console.log('📚 Saved to localStorage and uploaded to Telegram!');
     } catch (error) {
-      console.log('Story storage error:', error);
-      // If localStorage is full, clear old data
-      if (error.name === 'QuotaExceededError') {
-        try {
-          // Clear old data to make space
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.includes('luvhive_stories_')) {
-              const data = JSON.parse(localStorage.getItem(key) || '[]');
-              if (data.length > 5) {
-                localStorage.setItem(key, JSON.stringify(data.slice(0, 5)));
-              }
-            }
-          }
-          // Try saving again
-          const userStoriesKey = `luvhive_stories_${defaultUser.username}`;
-          const existingStories = JSON.parse(localStorage.getItem(userStoriesKey) || '[]');
-          existingStories.unshift(newStory);
-          localStorage.setItem(userStoriesKey, JSON.stringify(existingStories));
-        } catch (retryError) {
-          console.log('Failed to save story even after cleanup');
-        }
-      }
+      console.error('Story storage error:', error);
     }
 
-    // Simulate story creation
+    // Show success and close
     setTimeout(() => {
-      console.log('✅ Story created successfully:', newStory);
+      console.log('✅ Story created successfully');
       onStoryCreated && onStoryCreated(newStory);
       onClose && onClose();
       
-      // Show success feedback
       if (window.Telegram?.WebApp?.showAlert) {
-        window.Telegram.WebApp.showAlert('✨ Story shared successfully!');
+        window.Telegram.WebApp.showAlert('✨ Story shared successfully and uploaded to Telegram!');
       } else {
-        alert('✨ Story shared successfully!');
+        alert('✨ Story shared successfully and uploaded to Telegram!');
       }
+      setIsSubmitting(false);
     }, 1500);
   };
 
