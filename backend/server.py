@@ -2763,6 +2763,10 @@ async def create_story(story_data: StoryCreate, current_user: User = Depends(get
     
     await db.stories.insert_one(story_dict)
     
+    # Remove MongoDB ObjectId from response
+    if "_id" in story_dict:
+        del story_dict["_id"]
+    
     return {"message": "Story created successfully", "story": story_dict}
 
 @api_router.delete("/stories/{story_id}")
