@@ -2811,6 +2811,77 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     return {"stories": list(stories_by_user.values())}
 
 # Posts Routes
+@api_router.post("/posts")
+async def create_post_with_file(
+    caption: str = Form(""),
+    media: Optional[UploadFile] = File(None),
+    media_type: str = Form("image"),
+    current_user: User = Depends(get_current_user)
+):
+    """Create post with actual file upload (multipart/form-data)"""
+    file_id = None
+    file_path = None
+    telegram_url = None
+    
+    try:
+        if media:
+            # Read the actual file
+            file_content = await media.read()
+            mime_type = media.content_type or "image/jpeg"
+            
+            # Convert to base64 data URL for send_media_to_telegram_channel
+            import base64
+            encoded = base64.b64encode(file_content).decode('utf-8')
+            media_url = f"data:{mime_type};base64,{encoded}"
+            
+            logger.info(f"Received file upload: {media.filename}, size: {len(file_content)} bytes, type: {mime_type}")
+            
+            # Upload to Telegram
+            file_id, file_path, telegram_url = await send_media_to_telegram_channel(
+                media_url=media_url,
+                media_type=media_type,
+                caption=caption,
+                username=current_user.username
+            )
+            
+            if telegram_url:
+                logger.info(f"✅ File uploaded to Telegram: {telegram_url}")
+            else:
+                logger.warning("⚠️ Failed to upload to Telegram, using base64 fallback")
+                telegram_url = media_url
+        else:
+            # No media uploaded
+            logger.warning("No media file received")
+            telegram_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    
+    except Exception as e:
+        logger.error(f"Failed to process file upload: {e}")
+        import traceback
+        traceback.print_exc()
+        telegram_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    
+    # Create post
+    post = Post(
+        userId=current_user.id,
+        username=current_user.username,
+        userProfileImage=current_user.profileImage,
+        mediaType=media_type,
+        mediaUrl=telegram_url,
+        caption=caption
+    )
+    
+    post_dict = post.dict()
+    if file_id:
+        post_dict["telegramFileId"] = file_id
+        post_dict["telegramFilePath"] = file_path
+    
+    await db.posts.insert_one(post_dict)
+    
+    if "_id" in post_dict:
+        del post_dict["_id"]
+    
+    return {"message": "Post created successfully", "post": post_dict}
+
 @api_router.post("/posts/create")
 async def create_post(post_data: PostCreate, current_user: User = Depends(get_current_user)):
     # Send media to Telegram channel first to get file_id and file_path
