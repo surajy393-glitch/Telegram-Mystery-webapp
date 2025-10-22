@@ -4609,6 +4609,15 @@ class LuvHiveAPITester:
             print("❌ Cannot proceed without second test user")
             return
         
+        # ========== TELEGRAM MEDIA UPLOAD TESTS (HIGHEST PRIORITY) ==========
+        print("🔥 CRITICAL: Testing TELEGRAM MEDIA UPLOAD FLOW...")
+        print("-" * 60)
+        self.test_create_post_with_telegram_upload()
+        self.test_create_story_with_telegram_upload()
+        self.test_media_proxy_endpoint()
+        self.test_feed_endpoint_telegram_urls()
+        self.test_telegram_channel_upload_verification()
+        
         # ========== POST AND STORY IMAGE TESTS (HIGH PRIORITY) ==========
         print("🖼️ PRIORITY: Testing POST AND STORY IMAGE HANDLING...")
         print("-" * 50)
