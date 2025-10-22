@@ -2903,8 +2903,8 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "userId": post["userId"],
             "username": post["username"],
             "userProfileImage": post.get("userProfileImage"),
-            "mediaType": post["mediaType"],
-            "mediaUrl": post["mediaUrl"],
+            "mediaType": post.get("mediaType", "image"),  # Default to image if missing
+            "mediaUrl": post.get("mediaUrl", ""),
             "caption": post.get("caption", ""),
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
