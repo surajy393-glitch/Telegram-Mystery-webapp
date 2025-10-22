@@ -92,9 +92,10 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setSelectedImageFile(file); // Store the actual File object
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target.result);
+        setSelectedImage(e.target.result); // Keep data URL for preview
         setStoryType('image');
       };
       reader.readAsDataURL(file);
