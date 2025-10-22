@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config';
 
 const CreateStory = ({ user, onClose, onStoryCreated }) => {
   const [storyType, setStoryType] = useState('image'); // 'image' or 'text'
