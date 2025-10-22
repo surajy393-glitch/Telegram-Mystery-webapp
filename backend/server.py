@@ -2722,6 +2722,76 @@ async def link_telegram(code: str, current_user: User = Depends(get_current_user
     return {"message": "Telegram linked successfully"}
 
 # Stories Routes
+@api_router.post("/stories")
+async def create_story_with_file(
+    caption: str = Form(""),
+    media: Optional[UploadFile] = File(None),
+    media_type: str = Form("image"),
+    current_user: User = Depends(get_current_user)
+):
+    """Create story with actual file upload (multipart/form-data)"""
+    file_id = None
+    file_path = None
+    telegram_url = None
+    
+    try:
+        if media:
+            # Read the actual file
+            file_content = await media.read()
+            mime_type = media.content_type or "image/jpeg"
+            
+            # Convert to base64 data URL for send_media_to_telegram_channel
+            import base64
+            encoded = base64.b64encode(file_content).decode('utf-8')
+            media_url = f"data:{mime_type};base64,{encoded}"
+            
+            logger.info(f"Received story file: {media.filename}, size: {len(file_content)} bytes, type: {mime_type}")
+            
+            # Upload to Telegram
+            file_id, file_path, telegram_url = await send_media_to_telegram_channel(
+                media_url=media_url,
+                media_type=media_type,
+                caption=caption,
+                username=current_user.username
+            )
+            
+            if telegram_url:
+                logger.info(f"✅ Story uploaded to Telegram: {telegram_url}")
+            else:
+                logger.warning("⚠️ Failed to upload story to Telegram")
+                telegram_url = media_url
+        else:
+            logger.warning("No media file received for story")
+            telegram_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    
+    except Exception as e:
+        logger.error(f"Failed to process story file: {e}")
+        import traceback
+        traceback.print_exc()
+        telegram_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    
+    # Create story
+    story = Story(
+        userId=current_user.id,
+        username=current_user.username,
+        userProfileImage=current_user.profileImage,
+        mediaType=media_type,
+        mediaUrl=telegram_url,
+        caption=caption
+    )
+    
+    story_dict = story.dict()
+    if file_id:
+        story_dict["telegramFileId"] = file_id
+        story_dict["telegramFilePath"] = file_path
+    
+    await db.stories.insert_one(story_dict)
+    
+    if "_id" in story_dict:
+        del story_dict["_id"]
+    
+    return {"message": "Story created successfully", "story": story_dict}
+
 @api_router.post("/stories/create")
 async def create_story(story_data: StoryCreate, current_user: User = Depends(get_current_user)):
     # Send media to Telegram channel first to get file_id and file_path
