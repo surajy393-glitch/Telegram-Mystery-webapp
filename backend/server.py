@@ -2898,7 +2898,7 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
     
     posts_list = []
     for post in posts:
-        posts_list.append({
+        post_data = {
             "id": post["id"],
             "userId": post["userId"],
             "username": post["username"],
@@ -2911,7 +2911,15 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"],
             "isLiked": current_user.id in post.get("likes", []),
             "isSaved": post["id"] in saved_posts
-        })
+        }
+        
+        # Add Telegram fields if they exist
+        if post.get("telegramFileId"):
+            post_data["telegramFileId"] = post["telegramFileId"]
+        if post.get("telegramFilePath"):
+            post_data["telegramFilePath"] = post["telegramFilePath"]
+            
+        posts_list.append(post_data)
     
     return {"posts": posts_list}
 
