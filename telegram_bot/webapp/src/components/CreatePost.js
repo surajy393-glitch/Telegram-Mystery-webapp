@@ -147,7 +147,7 @@ const CreatePost = ({ user, onClose, onPostCreated }) => {
       const uploadedImages = [];
       for (const img of selectedImages) {
         try {
-          const response = await fetch('http://localhost:8001/api/posts/create', {
+          const response = await fetch(API_ENDPOINTS.CREATE_POST, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ const CreatePost = ({ user, onClose, onPostCreated }) => {
       // If no images, create text post
       if (selectedImages.length === 0 && postText.trim()) {
         try {
-          const response = await fetch('http://localhost:8001/api/posts/create', {
+          const response = await fetch(API_ENDPOINTS.CREATE_POST, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
