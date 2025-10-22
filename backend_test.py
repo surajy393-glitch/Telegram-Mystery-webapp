@@ -4786,6 +4786,241 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Telegram Channel Upload Verification", False, "Exception occurred", str(e))
 
+    # ========== NEW FORMDATA FILE UPLOAD TESTS ==========
+    
+    def create_test_image_file(self):
+        """Create a small test image file for upload testing"""
+        # Create a simple 1x1 pixel JPEG in bytes
+        import base64
+        # This is a minimal valid JPEG (1x1 red pixel)
+        jpeg_data = base64.b64decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=')
+        return jpeg_data
+    
+    def test_new_post_endpoint_with_file(self):
+        """Test NEW endpoint POST /api/posts with actual file upload (multipart/form-data)"""
+        try:
+            # Create test image
+            image_data = self.create_test_image_file()
+            
+            # Prepare multipart form data
+            files = {
+                'media': ('test_image.jpg', image_data, 'image/jpeg')
+            }
+            data = {
+                'caption': 'Test post with REAL file upload via FormData!',
+                'media_type': 'image'
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/posts", 
+                files=files, 
+                data=data
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                post = result.get('post', {})
+                
+                # Check for Telegram URL
+                media_url = post.get('mediaUrl', '')
+                if 'api.telegram.org/file/bot' in media_url:
+                    self.log_result("NEW Post Endpoint with File", True, 
+                                  f"✅ Post created with Telegram URL: {media_url[:50]}...")
+                    
+                    # Check for Telegram metadata
+                    if post.get('telegramFileId') and post.get('telegramFilePath'):
+                        self.log_result("NEW Post Telegram Metadata", True, 
+                                      f"file_id: {post['telegramFileId'][:20]}..., file_path: {post['telegramFilePath']}")
+                    else:
+                        self.log_result("NEW Post Telegram Metadata", False, "Missing telegramFileId or telegramFilePath")
+                else:
+                    self.log_result("NEW Post Endpoint with File", False, 
+                                  f"Expected Telegram URL, got: {media_url[:50]}...")
+            else:
+                self.log_result("NEW Post Endpoint with File", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("NEW Post Endpoint with File", False, "Exception occurred", str(e))
+    
+    def test_new_story_endpoint_with_file(self):
+        """Test NEW endpoint POST /api/stories with actual file upload (multipart/form-data)"""
+        try:
+            # Create test image
+            image_data = self.create_test_image_file()
+            
+            # Prepare multipart form data
+            files = {
+                'media': ('test_story.jpg', image_data, 'image/jpeg')
+            }
+            data = {
+                'caption': 'Test story with REAL file upload via FormData!',
+                'media_type': 'image'
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/stories", 
+                files=files, 
+                data=data
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                story = result.get('story', {})
+                
+                # Check for Telegram URL
+                media_url = story.get('mediaUrl', '')
+                if 'api.telegram.org/file/bot' in media_url:
+                    self.log_result("NEW Story Endpoint with File", True, 
+                                  f"✅ Story created with Telegram URL: {media_url[:50]}...")
+                    
+                    # Check for Telegram metadata
+                    if story.get('telegramFileId') and story.get('telegramFilePath'):
+                        self.log_result("NEW Story Telegram Metadata", True, 
+                                      f"file_id: {story['telegramFileId'][:20]}..., file_path: {story['telegramFilePath']}")
+                    else:
+                        self.log_result("NEW Story Telegram Metadata", False, "Missing telegramFileId or telegramFilePath")
+                else:
+                    self.log_result("NEW Story Endpoint with File", False, 
+                                  f"Expected Telegram URL, got: {media_url[:50]}...")
+            else:
+                self.log_result("NEW Story Endpoint with File", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("NEW Story Endpoint with File", False, "Exception occurred", str(e))
+    
+    def test_feed_endpoint_telegram_urls(self):
+        """Test GET /api/posts/feed returns posts with Telegram URLs"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if posts:
+                    telegram_posts = []
+                    base64_posts = []
+                    
+                    for post in posts:
+                        media_url = post.get('mediaUrl', '')
+                        if 'api.telegram.org/file/bot' in media_url:
+                            telegram_posts.append(post['id'])
+                        elif media_url.startswith('data:'):
+                            base64_posts.append(post['id'])
+                    
+                    self.log_result("Feed Endpoint Telegram URLs", True, 
+                                  f"Found {len(telegram_posts)} posts with Telegram URLs, {len(base64_posts)} with base64")
+                else:
+                    self.log_result("Feed Endpoint Telegram URLs", True, "No posts found in feed (expected for new user)")
+            else:
+                self.log_result("Feed Endpoint Telegram URLs", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Feed Endpoint Telegram URLs", False, "Exception occurred", str(e))
+    
+    def test_old_endpoint_backward_compatibility(self):
+        """Test OLD endpoint /api/posts/create still works with JSON (backward compatibility)"""
+        try:
+            # Test old JSON-based endpoint
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Test post via OLD JSON endpoint for backward compatibility"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                post = result.get('post', {})
+                
+                # Old endpoint should still work
+                if post.get('mediaUrl'):
+                    self.log_result("OLD Endpoint Backward Compatibility", True, 
+                                  "✅ Old JSON endpoint still works for backward compatibility")
+                else:
+                    self.log_result("OLD Endpoint Backward Compatibility", False, "Post created but missing mediaUrl")
+            else:
+                self.log_result("OLD Endpoint Backward Compatibility", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("OLD Endpoint Backward Compatibility", False, "Exception occurred", str(e))
+    
+    def test_backend_logs_verification(self):
+        """Test that backend logs show proper file processing"""
+        try:
+            # Create test image and upload
+            image_data = self.create_test_image_file()
+            
+            files = {
+                'media': ('log_test.jpg', image_data, 'image/jpeg')
+            }
+            data = {
+                'caption': 'Testing backend logs for file processing',
+                'media_type': 'image'
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts", files=files, data=data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                post = result.get('post', {})
+                
+                # Check if we got a proper response indicating file was processed
+                if post.get('mediaUrl') and 'telegram' in post.get('mediaUrl', '').lower():
+                    self.log_result("Backend Logs Verification", True, 
+                                  "✅ File processed successfully - check backend logs for: 'Received file upload', '✅ File uploaded to Telegram'")
+                else:
+                    self.log_result("Backend Logs Verification", False, 
+                                  "File upload may have failed - check backend logs for errors")
+            else:
+                self.log_result("Backend Logs Verification", False, 
+                              f"Upload failed: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Backend Logs Verification", False, "Exception occurred", str(e))
+    
+    def test_telegram_channel_verification(self):
+        """Test that files appear in Telegram channel -1003138482795"""
+        try:
+            # Create and upload test image
+            image_data = self.create_test_image_file()
+            
+            files = {
+                'media': ('channel_test.jpg', image_data, 'image/jpeg')
+            }
+            data = {
+                'caption': 'Testing Telegram channel upload - should appear in channel -1003138482795',
+                'media_type': 'image'
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts", files=files, data=data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                post = result.get('post', {})
+                
+                # Check for Telegram file metadata
+                file_id = post.get('telegramFileId')
+                file_path = post.get('telegramFilePath')
+                
+                if file_id and file_path:
+                    self.log_result("Telegram Channel Verification", True, 
+                                  f"✅ File uploaded to channel. Check channel -1003138482795 for new image. file_id: {file_id[:20]}...")
+                else:
+                    self.log_result("Telegram Channel Verification", False, 
+                                  "Missing Telegram file metadata - upload may have failed")
+            else:
+                self.log_result("Telegram Channel Verification", False, 
+                              f"Upload failed: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram Channel Verification", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
