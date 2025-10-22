@@ -144,20 +144,23 @@ const CreatePost = ({ user, onClose, onPostCreated }) => {
       const token = localStorage.getItem('token');
       
       // Upload each image to backend API which will upload to Telegram
+      // IMPORTANT: Use FormData with actual File object, not base64 JSON!
       const uploadedImages = [];
       for (const img of selectedImages) {
         try {
+          // Create FormData and append the actual File object
+          const formData = new FormData();
+          formData.append('caption', postText);
+          formData.append('media', img.file);  // Use the actual File, not data URL!
+          formData.append('media_type', 'image');
+          
           const response = await fetch(API_ENDPOINTS.CREATE_POST, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
               ...(token && { 'Authorization': `Bearer ${token}` })
+              // Don't set Content-Type - browser will set it with boundary for FormData
             },
-            body: JSON.stringify({
-              mediaType: 'image',
-              mediaUrl: img.url, // base64 data URL
-              caption: postText
-            })
+            body: formData  // Send FormData, not JSON!
           });
           
           if (response.ok) {
@@ -175,17 +178,17 @@ const CreatePost = ({ user, onClose, onPostCreated }) => {
       // If no images, create text post
       if (selectedImages.length === 0 && postText.trim()) {
         try {
+          const formData = new FormData();
+          formData.append('caption', postText);
+          formData.append('media_type', 'image');
+          // No media file attached for text-only post
+          
           const response = await fetch(API_ENDPOINTS.CREATE_POST, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
               ...(token && { 'Authorization': `Bearer ${token}` })
             },
-            body: JSON.stringify({
-              mediaType: 'image',
-              mediaUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', // 1x1 transparent placeholder
-              caption: postText
-            })
+            body: formData
           });
           
           if (response.ok) {
