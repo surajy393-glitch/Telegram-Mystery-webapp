@@ -2793,30 +2793,46 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
 # Posts Routes
 @api_router.post("/posts/create")
 async def create_post(post_data: PostCreate, current_user: User = Depends(get_current_user)):
-    post = Post(
-        userId=current_user.id,
-        username=current_user.username,
-        userProfileImage=current_user.profileImage,
-        mediaType=post_data.mediaType,
-        mediaUrl=post_data.mediaUrl,
-        caption=post_data.caption
-    )
+    # Send media to Telegram channel first to get file_id and file_path
+    file_id = None
+    file_path = None
+    telegram_url = None
     
-    await db.posts.insert_one(post.dict())
-    
-    # Send media to Telegram channel (non-blocking)
     try:
-        await send_media_to_telegram_channel(
+        file_id, file_path, telegram_url = await send_media_to_telegram_channel(
             media_url=post_data.mediaUrl,
             media_type=post_data.mediaType,
             caption=post_data.caption or "",
             username=current_user.username
         )
+        
+        if telegram_url:
+            logger.info(f"Media uploaded to Telegram: {telegram_url}")
+        else:
+            logger.warning("Failed to upload media to Telegram, using base64 fallback")
     except Exception as e:
         logger.error(f"Failed to send post media to Telegram: {e}")
         # Don't fail the post creation if Telegram upload fails
     
-    return {"message": "Post created successfully", "post": post.dict()}
+    # Create post with Telegram URL if available, otherwise use base64
+    post = Post(
+        userId=current_user.id,
+        username=current_user.username,
+        userProfileImage=current_user.profileImage,
+        mediaType=post_data.mediaType,
+        mediaUrl=telegram_url if telegram_url else post_data.mediaUrl,  # Use Telegram URL if available
+        caption=post_data.caption
+    )
+    
+    # Add Telegram metadata if available
+    post_dict = post.dict()
+    if file_id:
+        post_dict["telegramFileId"] = file_id
+        post_dict["telegramFilePath"] = file_path
+    
+    await db.posts.insert_one(post_dict)
+    
+    return {"message": "Post created successfully", "post": post_dict}
 
 @api_router.get("/posts/feed")
 async def get_posts_feed(current_user: User = Depends(get_current_user)):
