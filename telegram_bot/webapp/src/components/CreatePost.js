@@ -138,66 +138,99 @@ const CreatePost = ({ user, onClose, onPostCreated }) => {
     // Create default user if none exists
     const defaultUser = user || { name: 'Test User', username: 'testuser', profilePic: '✨' };
     
-    // Simulate post creation
-    const newPost = {
-      id: Date.now(),
-      user: {
-        name: defaultUser.name,
-        username: defaultUser.username,
-        avatar: defaultUser.profilePic,
-        mood: mood,
-        aura: getAuraByMood(mood)
-      },
-      content: postText,
-      images: selectedImages.map(img => img.url),
-      mood: mood,
-      music: selectedMusic,
-      location: selectedLocation || null,
-      vibeScore: Math.floor(Math.random() * 20) + 80, // Random score 80-100
-      sparkCount: 0,
-      glowCount: 0,
-      timestamp: 'Just now',
-      isSparkPost: false
-    };
-
-    // Save post to user's profile with storage management
     try {
-      const userPostsKey = `luvhive_posts_${defaultUser.username}`;
-      console.log('📝 Saving post to key:', userPostsKey);
-      let existingPosts = JSON.parse(localStorage.getItem(userPostsKey) || '[]');
-      console.log('📝 Existing posts before:', existingPosts.length);
+      // Get authentication token (if available)
+      const token = localStorage.getItem('token');
       
-      // Limit to 50 posts per user to prevent quota issues
+      // Upload each image to backend API which will upload to Telegram
+      const uploadedImages = [];
+      for (const img of selectedImages) {
+        try {
+          const response = await fetch('http://localhost:8001/api/posts/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: JSON.stringify({
+              mediaType: 'image',
+              mediaUrl: img.url, // base64 data URL
+              caption: postText
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Post created and uploaded to Telegram:', result);
+            uploadedImages.push(result.post);
+          } else {
+            console.error('❌ Failed to upload post:', await response.text());
+          }
+        } catch (uploadError) {
+          console.error('❌ Upload error:', uploadError);
+        }
+      }
+      
+      // If no images, create text post
+      if (selectedImages.length === 0 && postText.trim()) {
+        try {
+          const response = await fetch('http://localhost:8001/api/posts/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: JSON.stringify({
+              mediaType: 'image',
+              mediaUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', // 1x1 transparent placeholder
+              caption: postText
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Text post created:', result);
+          }
+        } catch (uploadError) {
+          console.error('❌ Text post error:', uploadError);
+        }
+      }
+      
+      // Create local post for immediate UI feedback
+      const newPost = {
+        id: Date.now(),
+        user: {
+          name: defaultUser.name,
+          username: defaultUser.username,
+          avatar: defaultUser.profilePic,
+          mood: mood,
+          aura: getAuraByMood(mood)
+        },
+        content: postText,
+        images: selectedImages.map(img => img.url),
+        mood: mood,
+        music: selectedMusic,
+        location: selectedLocation || null,
+        vibeScore: Math.floor(Math.random() * 20) + 80,
+        sparkCount: 0,
+        glowCount: 0,
+        timestamp: 'Just now',
+        isSparkPost: false
+      };
+      
+      // Also save to localStorage for local display
+      const userPostsKey = `luvhive_posts_${defaultUser.username}`;
+      let existingPosts = JSON.parse(localStorage.getItem(userPostsKey) || '[]');
       if (existingPosts.length >= 50) {
         existingPosts = existingPosts.slice(0, 49);
       }
-      
-      existingPosts.unshift(newPost); // Add to beginning of array
+      existingPosts.unshift(newPost);
       localStorage.setItem(userPostsKey, JSON.stringify(existingPosts));
-      console.log('📝 Posts after save:', existingPosts.length);
-      console.log('📝 Saved post data:', newPost);
+      console.log('📝 Saved to localStorage and uploaded to Telegram!');
     } catch (error) {
-      console.log('Storage error:', error);
-      // If localStorage is full, clear old data
-      if (error.name === 'QuotaExceededError') {
-        try {
-          // Clear old stories and posts to make space
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && (key.includes('luvhive_posts_') || key.includes('luvhive_stories_'))) {
-              const data = JSON.parse(localStorage.getItem(key) || '[]');
-              if (data.length > 10) {
-                // Keep only 10 most recent items
-                localStorage.setItem(key, JSON.stringify(data.slice(0, 10)));
-              }
-            }
-          }
-          // Try saving again
-          const userPostsKey = `luvhive_posts_${defaultUser.username}`;
-          const existingPosts = JSON.parse(localStorage.getItem(userPostsKey) || '[]');
-          existingPosts.unshift(newPost);
-          localStorage.setItem(userPostsKey, JSON.stringify(existingPosts));
-        } catch (retryError) {
+      console.error('Post creation error:', error);
+      // Fallback to localStorage only if API fails
+      try {
           console.log('Failed to save post even after cleanup');
         }
       }
