@@ -5023,10 +5023,11 @@ class LuvHiveAPITester:
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("=" * 60)
-        print("LUVHIVE BACKEND API TESTING")
-        print("=" * 60)
-        print(f"Testing against: {API_BASE}")
+        print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
+        print("=" * 80)
+        print(f"📡 Testing against: {API_BASE}")
+        print("Bot token: 8494034049:AAFnfoQO2mzJE-AEdI79l5s-i8ygnAf6Hzo")
+        print("Channel: -1003138482795")
         print()
         
         # Setup phase
@@ -5038,13 +5039,22 @@ class LuvHiveAPITester:
             print("❌ Cannot proceed without second test user")
             return
         
+        # ========== NEW FORMDATA FILE UPLOAD TESTS (CRITICAL) ==========
+        print("🔥 CRITICAL: Testing NEW FormData File Upload Flow - THE ROOT CAUSE FIX!")
+        print("-" * 80)
+        self.test_new_post_endpoint_with_file()
+        self.test_new_story_endpoint_with_file()
+        self.test_feed_endpoint_telegram_urls()
+        self.test_old_endpoint_backward_compatibility()
+        self.test_backend_logs_verification()
+        self.test_telegram_channel_verification()
+        
         # ========== TELEGRAM MEDIA UPLOAD TESTS (HIGHEST PRIORITY) ==========
         print("🔥 CRITICAL: Testing TELEGRAM MEDIA UPLOAD FLOW...")
         print("-" * 60)
         self.test_create_post_with_telegram_upload()
         self.test_create_story_with_telegram_upload()
         self.test_media_proxy_endpoint()
-        self.test_feed_endpoint_telegram_urls()
         self.test_telegram_channel_upload_verification()
         
         # ========== POST AND STORY IMAGE TESTS (HIGH PRIORITY) ==========
