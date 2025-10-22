@@ -2848,6 +2848,10 @@ async def create_post(post_data: PostCreate, current_user: User = Depends(get_cu
     
     await db.posts.insert_one(post_dict)
     
+    # Remove MongoDB ObjectId from response
+    if "_id" in post_dict:
+        del post_dict["_id"]
+    
     return {"message": "Post created successfully", "post": post_dict}
 
 @api_router.get("/media/{file_id}")
