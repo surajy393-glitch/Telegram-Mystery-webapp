@@ -415,6 +415,68 @@ async def send_telegram_otp(telegram_id: int, otp: str):
         logger.error(f"Error sending Telegram OTP: {e}")
         return False
 
+async def send_media_to_telegram_channel(media_url: str, media_type: str, caption: str, username: str):
+    """Send media (photo/video) to Telegram media sink channel"""
+    try:
+        import aiohttp
+        import tempfile
+        import io
+        
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+        if not bot_token:
+            logger.error("Telegram bot token not configured")
+            return False
+        
+        # Media sink channel ID
+        channel_id = "-1003138482795"
+        
+        # Prepare caption with username
+        full_caption = f"📱 New {media_type} from @{username}\n\n{caption}" if caption else f"📱 New {media_type} from @{username}"
+        
+        # Handle base64 data URL
+        if media_url.startswith('data:'):
+            # Extract base64 data
+            header, encoded = media_url.split(',', 1)
+            media_data = base64.b64decode(encoded)
+            
+            # Determine file extension from data URL
+            if 'image' in header:
+                file_ext = 'jpg' if 'jpeg' in header else header.split('/')[-1].split(';')[0]
+                endpoint = 'sendPhoto'
+                field_name = 'photo'
+            elif 'video' in header:
+                file_ext = 'mp4'
+                endpoint = 'sendVideo'
+                field_name = 'video'
+            else:
+                logger.error(f"Unknown media type in data URL: {header}")
+                return False
+            
+            # Create form data with file
+            form = aiohttp.FormData()
+            form.add_field(field_name, media_data, filename=f'media.{file_ext}', content_type=header.split(';')[0])
+            form.add_field('chat_id', channel_id)
+            form.add_field('caption', full_caption[:1024])  # Telegram caption limit
+            
+            url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, data=form) as response:
+                    if response.status == 200:
+                        logger.info(f"Successfully sent {media_type} to Telegram channel")
+                        return True
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"Failed to send media to Telegram: {response.status} - {error_text}")
+                        return False
+        else:
+            logger.warning("Media URL is not a base64 data URL, skipping Telegram upload")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error sending media to Telegram channel: {e}")
+        return False
+
 async def store_email_otp(email: str, otp: str, expires_in_minutes: int = 10):
     """Store email OTP with expiration"""
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
