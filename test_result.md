@@ -186,6 +186,18 @@ backend:
         comment: "❌ CRITICAL ISSUE FOUND: Mystery Match daily limit enforcement has a database connection error. Fixed SQL syntax error (removed FOR UPDATE from COUNT query) but still getting database error '0' when testing. The daily limit logic is implemented correctly in code but cannot be tested due to PostgreSQL connection issues in mystery_match.py. REQUIRES: Database connection debugging or alternative testing approach."
 
 frontend:
+  - task: "Post and Story Image Display Issue"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/FeedPage.js, frontend/src/pages/StoriesPage.js, frontend/src/pages/HomePage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE IDENTIFIED: Post and story images not displaying due to frontend routing configuration. The app is configured as 'Mystery Match' dating app and all social media routes (/feed, /home, /stories) redirect to Mystery Match landing page. Backend API endpoints (/api/social/feed, /api/social/stories) are working correctly and storing base64 images properly, but frontend social media pages are inaccessible due to authentication redirects. ISSUE: Frontend routing in App.js redirects unauthenticated users to LandingPage (Mystery Match) instead of social media interface. Social media components (FeedPage.js, HomePage.js, StoriesPage.js) exist but are not accessible through current routing configuration."
+
   - task: "WebSocket Integration in Chat Page"
     implemented: true
     working: "NA"
