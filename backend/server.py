@@ -2670,6 +2670,18 @@ async def create_story(story_data: StoryCreate, current_user: User = Depends(get
     
     await db.stories.insert_one(story.dict())
     
+    # Send media to Telegram channel (non-blocking)
+    try:
+        await send_media_to_telegram_channel(
+            media_url=story_data.mediaUrl,
+            media_type=story_data.mediaType,
+            caption=story_data.caption or "",
+            username=current_user.username
+        )
+    except Exception as e:
+        logger.error(f"Failed to send story media to Telegram: {e}")
+        # Don't fail the story creation if Telegram upload fails
+    
     return {"message": "Story created successfully", "story": story.dict()}
 
 @api_router.delete("/stories/{story_id}")
