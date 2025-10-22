@@ -123,19 +123,9 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
       formData.append('caption', storyText);
       formData.append('media_type', 'image');
       
-      // For image stories, we need to get the File object
-      // The selectedImage is currently a data URL, we need to convert it back or store the File
-      if (storyType === 'image' && selectedImage) {
-        // If we have the original file stored, use it
-        // For now, we'll need to fetch and convert the data URL to a File
-        try {
-          const response = await fetch(selectedImage);
-          const blob = await response.blob();
-          const file = new File([blob], 'story.jpg', { type: 'image/jpeg' });
-          formData.append('media', file);
-        } catch (err) {
-          console.error('Failed to convert image:', err);
-        }
+      // For image stories, use the stored File object
+      if (storyType === 'image' && selectedImageFile) {
+        formData.append('media', selectedImageFile); // Use the actual File object!
       }
       
       const response = await fetch(API_ENDPOINTS.CREATE_STORY, {
