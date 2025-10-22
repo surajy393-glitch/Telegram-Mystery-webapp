@@ -4748,6 +4748,16 @@ class LuvHiveAPITester:
         print("🚨 CRITICAL TEST: Daily Match Limit for Free Users (3 matches max)")
         self.test_mystery_match_daily_limit_with_existing_user()
         
+        # Telegram Media Sink Tests (NEW)
+        print("📱 Testing Telegram Media Sink Integration...")
+        print("-" * 50)
+        print("🚨 CRITICAL TEST: Updated Bot Token and Media Sink Functionality")
+        self.test_create_post_with_telegram_media_sink()
+        self.test_create_story_with_telegram_media_sink()
+        self.test_telegram_bot_token_configuration()
+        self.test_non_blocking_telegram_behavior()
+        self.test_telegram_channel_configuration()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
