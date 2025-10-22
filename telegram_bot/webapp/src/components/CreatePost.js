@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config';
 
 const CreatePost = ({ user, onClose, onPostCreated }) => {
   const [postText, setPostText] = useState('');
