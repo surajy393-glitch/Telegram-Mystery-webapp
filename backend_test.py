@@ -54,9 +54,11 @@ class LuvHiveAPITester:
     def register_test_user(self):
         """Register a test user for authentication"""
         try:
+            import time
+            unique_id = int(time.time()) % 10000
             user_data = {
-                "fullName": "Test User 999",
-                "username": "testuser999",
+                "fullName": f"Test User {unique_id}",
+                "username": f"testuser{unique_id}",
                 "age": 25,
                 "gender": "female",
                 "password": "test123"
