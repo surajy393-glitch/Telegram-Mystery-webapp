@@ -2727,6 +2727,18 @@ async def create_post(post_data: PostCreate, current_user: User = Depends(get_cu
     
     await db.posts.insert_one(post.dict())
     
+    # Send media to Telegram channel (non-blocking)
+    try:
+        await send_media_to_telegram_channel(
+            media_url=post_data.mediaUrl,
+            media_type=post_data.mediaType,
+            caption=post_data.caption or "",
+            username=current_user.username
+        )
+    except Exception as e:
+        logger.error(f"Failed to send post media to Telegram: {e}")
+        # Don't fail the post creation if Telegram upload fails
+    
     return {"message": "Post created successfully", "post": post.dict()}
 
 @api_router.get("/posts/feed")
