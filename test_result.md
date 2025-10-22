@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test Telegram Media Sink Integration with Updated Bot Token - Verify that the updated bot token (8494034049:AAFnfoQO2mzJE-AEdI79l5s-i8ygnAf6Hzo) works correctly for sending media to Telegram channel -1003138482795"
+user_problem_statement: "Test Post and Story Image Display Issue - Images in posts and stories are showing as placeholder 'Post' icons instead of actual uploaded images. Backend confirmed working with base64 data storage, but frontend images not displaying correctly."
 
 backend:
   - task: "Post Image Storage and Retrieval"
