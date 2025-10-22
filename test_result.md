@@ -220,13 +220,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Telegram Media Sink Integration with Updated Bot Token"
-  stuck_tasks: []
+    - "Post and Story Image Display Issue"
+  stuck_tasks:
+    - "Post and Story Image Display Issue"
   test_all: false
   test_priority: "high_first"
   backend_testing_needed: false
   frontend_testing_needed: false
-  telegram_media_sink_testing_complete: true
+  image_display_testing_complete: true
 
 agent_communication:
   - agent: "main"
