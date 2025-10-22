@@ -208,15 +208,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "WebSocket Real-time Chat System"
-    - "Send Message Endpoint Verification"
-    - "WebSocket Integration in Chat Page"
-    - "Telegram Bot Find Match Command"
+    - "Telegram Media Sink Integration with Updated Bot Token"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_needed: true
-  frontend_testing_needed: true
+  backend_testing_needed: false
+  frontend_testing_needed: false
+  telegram_media_sink_testing_complete: true
 
 agent_communication:
   - agent: "main"
