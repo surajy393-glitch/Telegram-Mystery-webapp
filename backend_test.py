@@ -4592,6 +4592,200 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Telegram Channel Configuration", False, "Exception occurred", str(e))
 
+    # ========== TELEGRAM MEDIA UPLOAD TESTS ==========
+    
+    def test_create_post_with_telegram_upload(self):
+        """Test POST /api/posts/create with image and verify Telegram upload"""
+        try:
+            # Test image data (small PNG)
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test post with proper Telegram URL"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                post = data.get('post', {})
+                
+                # Check for Telegram-specific fields
+                media_url = post.get('mediaUrl', '')
+                telegram_file_id = post.get('telegramFileId')
+                telegram_file_path = post.get('telegramFilePath')
+                
+                # Verify mediaUrl starts with Telegram URL
+                if media_url.startswith("https://api.telegram.org/file/bot"):
+                    if telegram_file_id and telegram_file_path:
+                        self.log_result("Create Post with Telegram Upload", True, 
+                                      f"✅ Post created with Telegram URL: {media_url[:50]}..., file_id: {telegram_file_id}, file_path: {telegram_file_path}")
+                        return post.get('id')
+                    else:
+                        self.log_result("Create Post with Telegram Upload", False, 
+                                      f"Missing telegramFileId or telegramFilePath. file_id: {telegram_file_id}, file_path: {telegram_file_path}")
+                else:
+                    self.log_result("Create Post with Telegram Upload", False, 
+                                  f"MediaUrl doesn't start with Telegram URL: {media_url}")
+            else:
+                self.log_result("Create Post with Telegram Upload", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Post with Telegram Upload", False, "Exception occurred", str(e))
+        
+        return None
+    
+    def test_create_story_with_telegram_upload(self):
+        """Test POST /api/stories/create with image and verify Telegram upload"""
+        try:
+            # Test image data (small PNG)
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            story_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test story with proper Telegram URL"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories/create", json=story_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                story = data.get('story', {})
+                
+                # Check for Telegram-specific fields
+                media_url = story.get('mediaUrl', '')
+                telegram_file_id = story.get('telegramFileId')
+                telegram_file_path = story.get('telegramFilePath')
+                
+                # Verify mediaUrl starts with Telegram URL
+                if media_url.startswith("https://api.telegram.org/file/bot"):
+                    if telegram_file_id and telegram_file_path:
+                        self.log_result("Create Story with Telegram Upload", True, 
+                                      f"✅ Story created with Telegram URL: {media_url[:50]}..., file_id: {telegram_file_id}, file_path: {telegram_file_path}")
+                        return story.get('id')
+                    else:
+                        self.log_result("Create Story with Telegram Upload", False, 
+                                      f"Missing telegramFileId or telegramFilePath. file_id: {telegram_file_id}, file_path: {telegram_file_path}")
+                else:
+                    self.log_result("Create Story with Telegram Upload", False, 
+                                  f"MediaUrl doesn't start with Telegram URL: {media_url}")
+            else:
+                self.log_result("Create Story with Telegram Upload", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Story with Telegram Upload", False, "Exception occurred", str(e))
+        
+        return None
+    
+    def test_media_proxy_endpoint(self):
+        """Test GET /api/media/{file_id} endpoint"""
+        try:
+            # First create a post to get a file_id
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test post for media proxy"
+            }
+            
+            post_response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if post_response.status_code == 200:
+                post_data = post_response.json()
+                post = post_data.get('post', {})
+                telegram_file_id = post.get('telegramFileId')
+                
+                if telegram_file_id:
+                    # Test media proxy endpoint
+                    proxy_response = self.session.get(f"{API_BASE}/media/{telegram_file_id}", allow_redirects=False)
+                    
+                    if proxy_response.status_code == 302:
+                        redirect_url = proxy_response.headers.get('Location', '')
+                        if redirect_url.startswith("https://api.telegram.org/file/bot"):
+                            self.log_result("Media Proxy Endpoint", True, 
+                                          f"✅ Proxy returned 302 redirect to: {redirect_url[:50]}...")
+                        else:
+                            self.log_result("Media Proxy Endpoint", False, 
+                                          f"Invalid redirect URL: {redirect_url}")
+                    else:
+                        self.log_result("Media Proxy Endpoint", False, 
+                                      f"Expected 302 redirect, got {proxy_response.status_code}")
+                else:
+                    self.log_result("Media Proxy Endpoint", False, "No telegramFileId in post response")
+            else:
+                self.log_result("Media Proxy Endpoint", False, "Could not create post for testing")
+                
+        except Exception as e:
+            self.log_result("Media Proxy Endpoint", False, "Exception occurred", str(e))
+    
+    def test_feed_endpoint_telegram_urls(self):
+        """Test GET /api/posts/feed returns posts with Telegram URLs"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if posts:
+                    telegram_url_posts = 0
+                    for post in posts:
+                        media_url = post.get('mediaUrl', '')
+                        if media_url.startswith("https://api.telegram.org/file/bot"):
+                            telegram_url_posts += 1
+                    
+                    if telegram_url_posts > 0:
+                        self.log_result("Feed Endpoint Telegram URLs", True, 
+                                      f"✅ Found {telegram_url_posts}/{len(posts)} posts with Telegram URLs")
+                    else:
+                        self.log_result("Feed Endpoint Telegram URLs", True, 
+                                      f"No posts with Telegram URLs found (may be expected if no media posts exist)")
+                else:
+                    self.log_result("Feed Endpoint Telegram URLs", True, "No posts in feed (expected for new user)")
+            else:
+                self.log_result("Feed Endpoint Telegram URLs", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Feed Endpoint Telegram URLs", False, "Exception occurred", str(e))
+    
+    def test_telegram_channel_upload_verification(self):
+        """Test that backend logs show successful Telegram channel uploads"""
+        try:
+            # Create a post and check if it triggers Telegram upload
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test for channel upload verification"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                post = data.get('post', {})
+                
+                # Check if post has Telegram fields indicating successful upload
+                if (post.get('telegramFileId') and 
+                    post.get('telegramFilePath') and 
+                    post.get('mediaUrl', '').startswith("https://api.telegram.org/file/bot")):
+                    
+                    self.log_result("Telegram Channel Upload Verification", True, 
+                                  f"✅ Post indicates successful Telegram upload - file_id: {post.get('telegramFileId')}, file_path: {post.get('telegramFilePath')}")
+                else:
+                    self.log_result("Telegram Channel Upload Verification", False, 
+                                  f"Post missing Telegram upload indicators. telegramFileId: {post.get('telegramFileId')}, telegramFilePath: {post.get('telegramFilePath')}")
+            else:
+                self.log_result("Telegram Channel Upload Verification", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Telegram Channel Upload Verification", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
