@@ -415,17 +415,37 @@ async def send_telegram_otp(telegram_id: int, otp: str):
         logger.error(f"Error sending Telegram OTP: {e}")
         return False
 
+async def get_telegram_file_path(file_id: str, bot_token: str) -> str:
+    """Get file_path from Telegram using file_id"""
+    import aiohttp
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"https://api.telegram.org/bot{bot_token}/getFile",
+                params={"file_id": file_id}
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get("ok"):
+                        return data["result"]["file_path"]
+                logger.error(f"Failed to get file path: {await resp.text()}")
+                return None
+    except Exception as e:
+        logger.error(f"Error getting file path: {e}")
+        return None
+
 async def send_media_to_telegram_channel(media_url: str, media_type: str, caption: str, username: str):
-    """Send media (photo/video) to Telegram media sink channel"""
+    """
+    Send media (photo/video) to Telegram media sink channel
+    Returns: (file_id, file_path, telegram_url) or (None, None, None) on failure
+    """
     try:
         import aiohttp
-        import tempfile
-        import io
         
         bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
         if not bot_token:
             logger.error("Telegram bot token not configured")
-            return False
+            return None, None, None
         
         # Media sink channel ID
         channel_id = "-1003138482795"
@@ -439,22 +459,26 @@ async def send_media_to_telegram_channel(media_url: str, media_type: str, captio
             header, encoded = media_url.split(',', 1)
             media_data = base64.b64decode(encoded)
             
-            # Determine file extension from data URL
-            if 'image' in header:
-                file_ext = 'jpg' if 'jpeg' in header else header.split('/')[-1].split(';')[0]
-                endpoint = 'sendPhoto'
+            # Determine proper Telegram endpoint based on MIME type
+            mime_type = header.split(';')[0].replace('data:', '')
+            if mime_type.startswith('image/'):
+                file_ext = 'jpg' if 'jpeg' in mime_type else mime_type.split('/')[-1]
+                endpoint = 'sendPhoto'  # Use sendPhoto for images
                 field_name = 'photo'
-            elif 'video' in header:
-                file_ext = 'mp4'
-                endpoint = 'sendVideo'
+            elif mime_type.startswith('video/'):
+                file_ext = mime_type.split('/')[-1] or 'mp4'
+                endpoint = 'sendVideo'  # Use sendVideo for videos
                 field_name = 'video'
             else:
-                logger.error(f"Unknown media type in data URL: {header}")
-                return False
+                # Fallback to document for other types
+                file_ext = mime_type.split('/')[-1] or 'bin'
+                endpoint = 'sendDocument'
+                field_name = 'document'
+                logger.warning(f"Unknown media type {mime_type}, using sendDocument")
             
             # Create form data with file
             form = aiohttp.FormData()
-            form.add_field(field_name, media_data, filename=f'media.{file_ext}', content_type=header.split(';')[0])
+            form.add_field(field_name, media_data, filename=f'media.{file_ext}', content_type=mime_type)
             form.add_field('chat_id', channel_id)
             form.add_field('caption', full_caption[:1024])  # Telegram caption limit
             
@@ -463,19 +487,60 @@ async def send_media_to_telegram_channel(media_url: str, media_type: str, captio
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, data=form) as response:
                     if response.status == 200:
-                        logger.info(f"Successfully sent {media_type} to Telegram channel")
-                        return True
+                        result = await response.json()
+                        if result.get("ok"):
+                            # Extract file_id from the response
+                            message = result.get("result", {})
+                            
+                            # Get file_id based on media type
+                            if endpoint == 'sendPhoto':
+                                # For photos, use the largest size
+                                photos = message.get("photo", [])
+                                if photos:
+                                    file_id = photos[-1].get("file_id")  # Largest photo
+                                else:
+                                    logger.error("No photo in response")
+                                    return None, None, None
+                            elif endpoint == 'sendVideo':
+                                video = message.get("video", {})
+                                file_id = video.get("file_id")
+                            else:
+                                document = message.get("document", {})
+                                file_id = document.get("file_id")
+                            
+                            if not file_id:
+                                logger.error("No file_id in Telegram response")
+                                return None, None, None
+                            
+                            # Get file_path using getFile
+                            file_path = await get_telegram_file_path(file_id, bot_token)
+                            if not file_path:
+                                logger.error("Failed to get file_path from Telegram")
+                                return None, None, None
+                            
+                            # Build proper downloadable URL
+                            telegram_url = f"https://api.telegram.org/file/bot{bot_token}/{file_path}"
+                            
+                            logger.info(f"Successfully sent {media_type} to Telegram channel")
+                            logger.info(f"file_id: {file_id}, file_path: {file_path}")
+                            
+                            return file_id, file_path, telegram_url
+                        else:
+                            logger.error(f"Telegram API returned error: {result}")
+                            return None, None, None
                     else:
                         error_text = await response.text()
                         logger.error(f"Failed to send media to Telegram: {response.status} - {error_text}")
-                        return False
+                        return None, None, None
         else:
             logger.warning("Media URL is not a base64 data URL, skipping Telegram upload")
-            return False
+            return None, None, None
             
     except Exception as e:
         logger.error(f"Error sending media to Telegram channel: {e}")
-        return False
+        import traceback
+        traceback.print_exc()
+        return None, None, None
 
 async def store_email_otp(email: str, otp: str, expires_in_minutes: int = 10):
     """Store email OTP with expiration"""
