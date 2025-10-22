@@ -116,17 +116,33 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
       const token = localStorage.getItem('token');
       
       // Upload story to backend API which will upload to Telegram
+      // IMPORTANT: Use FormData with actual File object!
+      const formData = new FormData();
+      formData.append('caption', storyText);
+      formData.append('media_type', 'image');
+      
+      // For image stories, we need to get the File object
+      // The selectedImage is currently a data URL, we need to convert it back or store the File
+      if (storyType === 'image' && selectedImage) {
+        // If we have the original file stored, use it
+        // For now, we'll need to fetch and convert the data URL to a File
+        try {
+          const response = await fetch(selectedImage);
+          const blob = await response.blob();
+          const file = new File([blob], 'story.jpg', { type: 'image/jpeg' });
+          formData.append('media', file);
+        } catch (err) {
+          console.error('Failed to convert image:', err);
+        }
+      }
+      
       const response = await fetch(API_ENDPOINTS.CREATE_STORY, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
+          // Don't set Content-Type - browser will set it for FormData
         },
-        body: JSON.stringify({
-          mediaType: storyType === 'image' ? 'image' : 'image',
-          mediaUrl: storyType === 'image' ? selectedImage : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-          caption: storyText
-        })
+        body: formData
       });
       
       if (response.ok) {
