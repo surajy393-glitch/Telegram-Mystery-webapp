@@ -267,14 +267,16 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Post and Story Image Display Issue"
-  stuck_tasks:
-    - "Post and Story Image Display Issue"
+    - "NEW FormData File Upload Flow - POST /api/posts"
+    - "NEW FormData File Upload Flow - POST /api/stories"
+    - "Telegram Channel Integration Verification"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   backend_testing_needed: false
   frontend_testing_needed: false
-  image_display_testing_complete: true
+  formdata_file_upload_testing_complete: true
+  image_display_root_cause_fixed: true
 
 agent_communication:
   - agent: "main"
