@@ -2724,30 +2724,46 @@ async def link_telegram(code: str, current_user: User = Depends(get_current_user
 # Stories Routes
 @api_router.post("/stories/create")
 async def create_story(story_data: StoryCreate, current_user: User = Depends(get_current_user)):
-    story = Story(
-        userId=current_user.id,
-        username=current_user.username,
-        userProfileImage=current_user.profileImage,
-        mediaType=story_data.mediaType,
-        mediaUrl=story_data.mediaUrl,
-        caption=story_data.caption
-    )
+    # Send media to Telegram channel first to get file_id and file_path
+    file_id = None
+    file_path = None
+    telegram_url = None
     
-    await db.stories.insert_one(story.dict())
-    
-    # Send media to Telegram channel (non-blocking)
     try:
-        await send_media_to_telegram_channel(
+        file_id, file_path, telegram_url = await send_media_to_telegram_channel(
             media_url=story_data.mediaUrl,
             media_type=story_data.mediaType,
             caption=story_data.caption or "",
             username=current_user.username
         )
+        
+        if telegram_url:
+            logger.info(f"Story media uploaded to Telegram: {telegram_url}")
+        else:
+            logger.warning("Failed to upload story media to Telegram, using base64 fallback")
     except Exception as e:
         logger.error(f"Failed to send story media to Telegram: {e}")
         # Don't fail the story creation if Telegram upload fails
     
-    return {"message": "Story created successfully", "story": story.dict()}
+    # Create story with Telegram URL if available, otherwise use base64
+    story = Story(
+        userId=current_user.id,
+        username=current_user.username,
+        userProfileImage=current_user.profileImage,
+        mediaType=story_data.mediaType,
+        mediaUrl=telegram_url if telegram_url else story_data.mediaUrl,  # Use Telegram URL if available
+        caption=story_data.caption
+    )
+    
+    # Add Telegram metadata if available
+    story_dict = story.dict()
+    if file_id:
+        story_dict["telegramFileId"] = file_id
+        story_dict["telegramFilePath"] = file_path
+    
+    await db.stories.insert_one(story_dict)
+    
+    return {"message": "Story created successfully", "story": story_dict}
 
 @api_router.delete("/stories/{story_id}")
 async def delete_story(story_id: str, current_user: User = Depends(get_current_user)):
