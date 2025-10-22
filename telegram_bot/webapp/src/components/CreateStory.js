@@ -116,7 +116,7 @@ const CreateStory = ({ user, onClose, onStoryCreated }) => {
       const token = localStorage.getItem('token');
       
       // Upload story to backend API which will upload to Telegram
-      const response = await fetch('http://localhost:8001/api/stories/create', {
+      const response = await fetch(API_ENDPOINTS.CREATE_STORY, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
