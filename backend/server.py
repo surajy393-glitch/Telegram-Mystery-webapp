@@ -2850,6 +2850,35 @@ async def create_post(post_data: PostCreate, current_user: User = Depends(get_cu
     
     return {"message": "Post created successfully", "post": post_dict}
 
+@api_router.get("/media/{file_id}")
+async def get_media_proxy(file_id: str):
+    """
+    Media proxy endpoint to avoid exposing bot token to frontend
+    Redirects to actual Telegram file URL
+    """
+    try:
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+        if not bot_token:
+            raise HTTPException(status_code=500, detail="Bot token not configured")
+        
+        # Get file_path from Telegram
+        file_path = await get_telegram_file_path(file_id, bot_token)
+        if not file_path:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Build Telegram file URL
+        telegram_url = f"https://api.telegram.org/file/bot{bot_token}/{file_path}"
+        
+        # Redirect to Telegram URL
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=telegram_url)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Media proxy error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve media")
+
 @api_router.get("/posts/feed")
 async def get_posts_feed(current_user: User = Depends(get_current_user)):
     # Exclude archived posts from feed
