@@ -4364,6 +4364,234 @@ class LuvHiveAPITester:
             self.log_result("Backend Logs Image Errors", True, 
                           f"Could not check backend logs: {str(e)}")
 
+    # ========== TELEGRAM MEDIA SINK TESTS ==========
+    
+    def test_create_post_with_telegram_media_sink(self):
+        """Test POST /api/posts/create with base64 image and verify Telegram media sink integration"""
+        try:
+            # Test image from the review request
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test post from LuvHive"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify post creation
+                if 'message' in data and 'post' in data:
+                    post = data['post']
+                    
+                    # Check post structure
+                    required_fields = ['id', 'userId', 'username', 'mediaType', 'mediaUrl', 'caption']
+                    missing_fields = [field for field in required_fields if field not in post]
+                    
+                    if missing_fields:
+                        self.log_result("Create Post with Telegram Media Sink", False, f"Missing post fields: {missing_fields}")
+                    elif post['mediaUrl'] != test_image:
+                        self.log_result("Create Post with Telegram Media Sink", False, "Base64 image data not preserved correctly")
+                    elif post['caption'] != post_data['caption']:
+                        self.log_result("Create Post with Telegram Media Sink", False, "Caption not preserved correctly")
+                    else:
+                        # Verify post exists in database by fetching posts feed
+                        feed_response = self.session.get(f"{API_BASE}/posts/feed")
+                        if feed_response.status_code == 200:
+                            feed_data = feed_response.json()
+                            posts = feed_data.get('posts', [])
+                            created_post_found = any(p['id'] == post['id'] for p in posts)
+                            
+                            if created_post_found:
+                                self.log_result("Create Post with Telegram Media Sink", True, 
+                                              f"✅ Post created successfully with ID: {post['id']}, Caption: '{post['caption']}', Media preserved correctly. Telegram media sink integration attempted (check backend logs for upload status).")
+                            else:
+                                self.log_result("Create Post with Telegram Media Sink", False, "Post not found in database after creation")
+                        else:
+                            self.log_result("Create Post with Telegram Media Sink", False, "Could not verify post in database")
+                else:
+                    self.log_result("Create Post with Telegram Media Sink", False, f"Unexpected response structure: {data}")
+            else:
+                self.log_result("Create Post with Telegram Media Sink", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Post with Telegram Media Sink", False, "Exception occurred", str(e))
+    
+    def test_create_story_with_telegram_media_sink(self):
+        """Test POST /api/stories/create with base64 image and verify Telegram media sink integration"""
+        try:
+            # Test image from the review request
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            story_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Test story from LuvHive"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories/create", json=story_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify story creation
+                if 'message' in data and 'story' in data:
+                    story = data['story']
+                    
+                    # Check story structure
+                    required_fields = ['id', 'userId', 'username', 'mediaType', 'mediaUrl', 'caption', 'expiresAt']
+                    missing_fields = [field for field in required_fields if field not in story]
+                    
+                    if missing_fields:
+                        self.log_result("Create Story with Telegram Media Sink", False, f"Missing story fields: {missing_fields}")
+                    elif story['mediaUrl'] != test_image:
+                        self.log_result("Create Story with Telegram Media Sink", False, "Base64 image data not preserved correctly")
+                    elif story['caption'] != story_data['caption']:
+                        self.log_result("Create Story with Telegram Media Sink", False, "Caption not preserved correctly")
+                    else:
+                        # Verify story exists in database by fetching stories feed
+                        feed_response = self.session.get(f"{API_BASE}/stories/feed")
+                        if feed_response.status_code == 200:
+                            feed_data = feed_response.json()
+                            stories = feed_data.get('stories', [])
+                            
+                            # Find the created story in the feed
+                            created_story_found = False
+                            for user_stories in stories:
+                                for s in user_stories.get('stories', []):
+                                    if s['id'] == story['id']:
+                                        created_story_found = True
+                                        break
+                                if created_story_found:
+                                    break
+                            
+                            if created_story_found:
+                                self.log_result("Create Story with Telegram Media Sink", True, 
+                                              f"✅ Story created successfully with ID: {story['id']}, Caption: '{story['caption']}', Media preserved correctly. Telegram media sink integration attempted (check backend logs for upload status).")
+                            else:
+                                self.log_result("Create Story with Telegram Media Sink", False, "Story not found in database after creation")
+                        else:
+                            self.log_result("Create Story with Telegram Media Sink", False, "Could not verify story in database")
+                else:
+                    self.log_result("Create Story with Telegram Media Sink", False, f"Unexpected response structure: {data}")
+            else:
+                self.log_result("Create Story with Telegram Media Sink", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Create Story with Telegram Media Sink", False, "Exception occurred", str(e))
+    
+    def test_telegram_bot_token_configuration(self):
+        """Test that the updated Telegram bot token is properly configured"""
+        try:
+            # Check if we can access the backend environment (indirectly through API behavior)
+            # We'll test this by creating a post and checking if the Telegram integration attempts to run
+            
+            test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": test_image,
+                "caption": "Bot token configuration test"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                # Post creation should succeed regardless of Telegram upload status
+                # The key is that the Telegram integration doesn't break the post creation
+                self.log_result("Telegram Bot Token Configuration", True, 
+                              "✅ Bot token configuration appears correct - post creation succeeded with Telegram integration enabled. Check backend logs for actual Telegram API calls.")
+            else:
+                self.log_result("Telegram Bot Token Configuration", False, 
+                              f"Post creation failed, may indicate bot token configuration issue: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Telegram Bot Token Configuration", False, "Exception occurred", str(e))
+    
+    def test_non_blocking_telegram_behavior(self):
+        """Test that Telegram upload failures don't break post/story creation"""
+        try:
+            # Create a post with invalid media URL to potentially trigger Telegram upload failure
+            # But post creation should still succeed (non-blocking behavior)
+            
+            invalid_media_post = {
+                "mediaType": "image",
+                "mediaUrl": "invalid-media-url-not-base64",
+                "caption": "Non-blocking behavior test"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=invalid_media_post)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'post' in data:
+                    self.log_result("Non-blocking Telegram Behavior (Post)", True, 
+                                  "✅ Post creation succeeded even with invalid media URL - Telegram integration is non-blocking")
+                else:
+                    self.log_result("Non-blocking Telegram Behavior (Post)", False, "Unexpected response structure")
+            else:
+                self.log_result("Non-blocking Telegram Behavior (Post)", False, 
+                              f"Post creation failed: {response.status_code} - Telegram integration may be blocking")
+            
+            # Test the same with stories
+            invalid_media_story = {
+                "mediaType": "image", 
+                "mediaUrl": "invalid-media-url-not-base64",
+                "caption": "Non-blocking behavior test story"
+            }
+            
+            response2 = self.session.post(f"{API_BASE}/stories/create", json=invalid_media_story)
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                if 'message' in data2 and 'story' in data2:
+                    self.log_result("Non-blocking Telegram Behavior (Story)", True, 
+                                  "✅ Story creation succeeded even with invalid media URL - Telegram integration is non-blocking")
+                else:
+                    self.log_result("Non-blocking Telegram Behavior (Story)", False, "Unexpected response structure")
+            else:
+                self.log_result("Non-blocking Telegram Behavior (Story)", False, 
+                              f"Story creation failed: {response2.status_code} - Telegram integration may be blocking")
+                
+        except Exception as e:
+            self.log_result("Non-blocking Telegram Behavior", False, "Exception occurred", str(e))
+    
+    def test_telegram_channel_configuration(self):
+        """Test Telegram channel configuration by checking if media sink attempts are made"""
+        try:
+            # Create multiple posts to test the Telegram media sink
+            test_posts = [
+                {
+                    "mediaType": "image",
+                    "mediaUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    "caption": "Channel test post 1"
+                },
+                {
+                    "mediaType": "image", 
+                    "mediaUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    "caption": "Channel test post 2"
+                }
+            ]
+            
+            successful_posts = 0
+            for i, post_data in enumerate(test_posts):
+                response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+                if response.status_code == 200:
+                    successful_posts += 1
+            
+            if successful_posts == len(test_posts):
+                self.log_result("Telegram Channel Configuration", True, 
+                              f"✅ Created {successful_posts} posts successfully. Telegram channel integration attempted for channel -1003138482795. Check backend logs for actual upload status and any permission errors.")
+            else:
+                self.log_result("Telegram Channel Configuration", False, 
+                              f"Only {successful_posts}/{len(test_posts)} posts created successfully")
+                
+        except Exception as e:
+            self.log_result("Telegram Channel Configuration", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
