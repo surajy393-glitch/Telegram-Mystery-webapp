@@ -55,11 +55,11 @@ class LuvHiveAPITester:
         """Register a test user for authentication"""
         try:
             user_data = {
-                "fullName": "Emma Rodriguez",
-                "username": f"emma_test_{datetime.now().strftime('%H%M%S')}",
+                "fullName": "Test User 999",
+                "username": "testuser999",
                 "age": 25,
                 "gender": "female",
-                "password": "SecurePass123!"
+                "password": "test123"
             }
             
             response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
