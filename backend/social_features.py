@@ -321,6 +321,9 @@ async def create_story(
 ):
     """Create a 24-hour story"""
     try:
+        logger.info(f"Creating story for user: {userId}, type: {storyType}, content: {content[:50] if content else 'empty'}")
+        logger.info(f"Image received: {image.filename if image else 'None'}")
+        
         user = await db.users.find_one({"id": userId})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
