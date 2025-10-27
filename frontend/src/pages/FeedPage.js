@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus, Bell, Search, User } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
