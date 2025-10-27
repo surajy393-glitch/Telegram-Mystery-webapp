@@ -372,34 +372,7 @@ async def like_comment(commentId: str, userId: str = Form(...)):
         logger.error(f"Error liking comment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-def get_time_ago(created_at):
-    """Helper function to get human-readable time ago"""
-    if not created_at:
-        return "Just now"
-    
-    try:
-        if isinstance(created_at, str):
-            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-        
-        now = datetime.now(timezone.utc)
-        if created_at.tzinfo is None:
-            created_at = created_at.replace(tzinfo=timezone.utc)
-        
-        diff = now - created_at
-        seconds = diff.total_seconds()
-        
-        if seconds < 60:
-            return "Just now"
-        elif seconds < 3600:
-            return f"{int(seconds / 60)}m ago"
-        elif seconds < 86400:
-            return f"{int(seconds / 3600)}h ago"
-        elif seconds < 604800:
-            return f"{int(seconds / 86400)}d ago"
-        else:
-            return created_at.strftime("%b %d")
-    except:
-        return "Just now"
+# get_time_ago function is defined in UTILITY FUNCTIONS section
 
 # STORIES ENDPOINTS
 
