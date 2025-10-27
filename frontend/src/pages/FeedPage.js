@@ -24,6 +24,7 @@ const FeedPage = ({ user, onLogout }) => {
     if (user) {
       fetchFeed();
       fetchNotificationCount();
+      fetchStories();
       
       // Poll notification count every 30 seconds
       const interval = setInterval(fetchNotificationCount, 30000);
@@ -40,6 +41,24 @@ const FeedPage = ({ user, onLogout }) => {
       setNotificationCount(response.data.count);
     } catch (error) {
       console.error("Error fetching notification count:", error);
+    }
+  };
+
+  const fetchStories = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/api/stories/feed`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const stories = response.data.stories || [];
+      const myStory = stories.find(s => s.userId === user.id);
+      const otherUserStories = stories.filter(s => s.userId !== user.id);
+      
+      setMyStories(myStory);
+      setOtherStories(otherUserStories);
+    } catch (error) {
+      console.error("Error fetching stories:", error);
     }
   };
 
