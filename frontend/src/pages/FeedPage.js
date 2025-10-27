@@ -702,7 +702,7 @@ const FeedPage = ({ user, onLogout }) => {
                 {currentStoryIndex > 0 && (
                   <button
                     onClick={() => setCurrentStoryIndex(currentStoryIndex - 1)}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-4xl"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white text-4xl rounded-full transition-all shadow-lg"
                   >
                     ‹
                   </button>
@@ -710,7 +710,7 @@ const FeedPage = ({ user, onLogout }) => {
                 {currentStoryIndex < viewingStories.stories.length - 1 && (
                   <button
                     onClick={() => setCurrentStoryIndex(currentStoryIndex + 1)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-4xl"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white text-4xl rounded-full transition-all shadow-lg"
                   >
                     ›
                   </button>
