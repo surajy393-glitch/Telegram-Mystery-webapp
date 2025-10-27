@@ -186,48 +186,63 @@ const FeedPage = ({ user, onLogout }) => {
             </div>
           </div>
           
-          {/* Bottom row with compact Stories and Mystery buttons */}
-          <div className="flex items-center gap-2">
-            {/* Profile Circle */}
-            <button
-              onClick={() => navigate('/my-profile')}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 p-0.5 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
-            >
-              <div className="w-full h-full rounded-full bg-white p-0.5">
-                {user?.profileImage ? (
-                  <img
-                    src={user.profileImage}
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-white text-sm font-bold">
-                    {user?.username?.[0]?.toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </button>
-            
-            {/* Stories Button */}
-            <button
-              onClick={() => navigate('/stories')}
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white text-sm font-medium flex items-center gap-2 hover:from-pink-500 hover:to-rose-500 transition-all shadow-md"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Stories
-            </button>
-            
+          {/* Bottom row with Mystery button and stories */}
+          <div className="flex items-center gap-3">
             {/* Mystery Button */}
             <button
               onClick={() => navigate('/mystery')}
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-sm font-medium flex items-center gap-2 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-md"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-sm font-medium flex items-center gap-2 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-md flex-shrink-0"
             >
               <span className="text-base">🎭</span>
               Mystery
             </button>
+            
+            {/* Stories Horizontal Scroll */}
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide flex-1">
+              {/* User's Own Story - Add Story Button */}
+              <div className="flex-shrink-0 text-center cursor-pointer" onClick={() => setShowCreateStory(true)}>
+                <div className="relative">
+                  <div className={`w-16 h-16 rounded-full p-0.5 ${myStories ? 'bg-gradient-to-br from-pink-500 to-rose-500' : 'bg-gray-300'}`}>
+                    <div className="w-full h-full rounded-full bg-white p-0.5">
+                      <img
+                        src={user?.profileImage || "https://via.placeholder.com/64"}
+                        alt="Your story"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  {/* Plus icon for adding story */}
+                  <div className="absolute bottom-0 right-0 w-5 h-5 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <Plus className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs mt-1 text-gray-700 font-medium truncate w-16">
+                  {myStories ? 'Your Story' : 'Add Story'}
+                </p>
+              </div>
+
+              {/* Other Users' Stories */}
+              {otherStories.map((storyGroup) => (
+                <div 
+                  key={storyGroup.userId} 
+                  className="flex-shrink-0 text-center cursor-pointer"
+                  onClick={() => openStoryViewer(storyGroup)}
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 p-0.5">
+                    <div className="w-full h-full rounded-full bg-white p-0.5">
+                      <img
+                        src={storyGroup.userProfileImage || "https://via.placeholder.com/64"}
+                        alt={storyGroup.username}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs mt-1 text-gray-700 font-medium truncate w-16">
+                    {storyGroup.username}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
