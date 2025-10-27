@@ -50,17 +50,33 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchStories = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/stories/feed`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API_URL}/api/social/stories?userId=${user.id}`);
       
       const stories = response.data.stories || [];
-      const myStory = stories.find(s => s.userId === user.id);
-      const otherUserStories = stories.filter(s => s.userId !== user.id);
+      
+      // Group stories by user
+      const storyGroups = {};
+      stories.forEach(story => {
+        const userId = story.userId;
+        if (!storyGroups[userId]) {
+          storyGroups[userId] = {
+            userId: userId,
+            username: story.username,
+            userProfileImage: story.userAvatar,
+            stories: []
+          };
+        }
+        storyGroups[userId].stories.push(story);
+      });
+      
+      // Separate my stories from others
+      const myStory = storyGroups[user.id] || null;
+      const otherUserStories = Object.values(storyGroups).filter(g => g.userId !== user.id);
       
       setMyStories(myStory);
       setOtherStories(otherUserStories);
+      
+      console.log('✅ Fetched stories:', { myStory, otherCount: otherUserStories.length });
     } catch (error) {
       console.error("Error fetching stories:", error);
     }
