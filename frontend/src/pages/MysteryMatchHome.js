@@ -111,7 +111,18 @@ const MysteryMatchHome = () => {
       {/* Header */}
       <div className="bg-white bg-opacity-10 backdrop-blur-md border-b border-white border-opacity-20">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">🎭 LuvHive Mystery Match</h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/feed')}
+              className="text-white hover:text-pink-200 transition p-2 hover:bg-white hover:bg-opacity-10 rounded-lg"
+              title="Back to Feed"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h1 className="text-2xl font-bold text-white">🎭 LuvHive Mystery Match</h1>
+          </div>
           <button
             onClick={() => navigate('/settings')}
             className="text-white hover:text-pink-200 transition"
