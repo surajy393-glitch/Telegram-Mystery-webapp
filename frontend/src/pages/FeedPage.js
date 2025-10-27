@@ -138,6 +138,11 @@ const FeedPage = ({ user, onLogout }) => {
     }
   };
 
+  const openStoryViewer = (storyGroup) => {
+    // TODO: Implement story viewer functionality
+    console.log('Opening story viewer for:', storyGroup);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
