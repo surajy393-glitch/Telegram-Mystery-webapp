@@ -147,28 +147,78 @@ const FeedPage = ({ user, onLogout }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            LuvHive
-          </h1>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigate('/stories')}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-600 hover:to-purple-600 transition-all shadow-md"
-            >
-              📸 Stories
-            </button>
-            <button
-              onClick={() => navigate('/mystery')}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold hover:from-purple-600 hover:to-indigo-600 transition-all shadow-md"
-            >
-              🎭 Mystery
-            </button>
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          {/* Top row with logo and icons */}
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              LuvHive
+            </h1>
+            <div className="flex items-center gap-2">
+              <Link to="/notifications">
+                <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Bell className="w-5 h-5 text-gray-700" />
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                      {notificationCount}
+                    </span>
+                  )}
+                </button>
+              </Link>
+              <Link to="/search">
+                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Search className="w-5 h-5 text-gray-700" />
+                </button>
+              </Link>
+              <button
+                onClick={() => navigate('/my-profile')}
+                className="w-9 h-9 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-all"
+              >
+                {user?.username?.[0]?.toUpperCase()}
+              </button>
+            </div>
+          </div>
+          
+          {/* Bottom row with compact Stories and Mystery buttons */}
+          <div className="flex items-center gap-2">
+            {/* Profile Circle */}
             <button
               onClick={() => navigate('/my-profile')}
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg transition-all"
+              className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 p-0.5 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
             >
-              {user?.username?.[0]?.toUpperCase()}
+              <div className="w-full h-full rounded-full bg-white p-0.5">
+                {user?.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-white text-sm font-bold">
+                    {user?.username?.[0]?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </button>
+            
+            {/* Stories Button */}
+            <button
+              onClick={() => navigate('/stories')}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white text-sm font-medium flex items-center gap-2 hover:from-pink-500 hover:to-rose-500 transition-all shadow-md"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Stories
+            </button>
+            
+            {/* Mystery Button */}
+            <button
+              onClick={() => navigate('/mystery')}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-sm font-medium flex items-center gap-2 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-md"
+            >
+              <span className="text-base">🎭</span>
+              Mystery
             </button>
           </div>
         </div>
