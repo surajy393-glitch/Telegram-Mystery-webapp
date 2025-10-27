@@ -32,9 +32,18 @@ const EditProfilePage = ({ user, onLogout }) => {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found, redirecting to login");
+        navigate("/");
+        return;
+      }
+      
+      console.log("Fetching profile with token...");
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log("Profile data received:", response.data);
       setProfile(response.data);
       setFormData({
         fullName: response.data.fullName || "",
@@ -44,6 +53,14 @@ const EditProfilePage = ({ user, onLogout }) => {
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
+      if (error.response?.status === 401) {
+        console.error("Authentication failed, redirecting to login");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/");
+      } else {
+        alert("Failed to load profile. Please try again.");
+      }
     }
   };
 
