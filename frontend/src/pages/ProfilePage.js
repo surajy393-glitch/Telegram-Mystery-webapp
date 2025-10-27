@@ -296,17 +296,9 @@ const ProfilePage = ({ user, onLogout }) => {
   }
 
   if (isViewingSpecificUser && isViewingOwnProfile) {
-    // Redirect to MyProfile if viewing own profile
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-gray-600 mb-4">Redirecting to your profile...</p>
-          <Link to="/my-profile" className="text-pink-600 hover:text-pink-800">
-            Click here if not redirected
-          </Link>
-        </div>
-      </div>
-    );
+    // Redirect to MyProfile immediately if viewing own profile
+    navigate("/my-profile", { replace: true });
+    return null; // Don't render anything during redirect
   }
 
   if (isViewingSpecificUser) {
