@@ -17,8 +17,13 @@ const MyProfilePage = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState("posts");
 
   useEffect(() => {
+    // Use user prop as immediate fallback
+    if (user) {
+      setProfile(user);
+      setLoading(false);
+    }
     fetchProfileData();
-  }, []);
+  }, [user]);
 
   const fetchProfileData = async () => {
     try {
