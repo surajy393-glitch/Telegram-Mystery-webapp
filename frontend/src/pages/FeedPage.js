@@ -15,12 +15,30 @@ const FeedPage = ({ user, onLogout }) => {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [commentingOn, setCommentingOn] = useState(null);
   const [commentText, setCommentText] = useState('');
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchFeed();
+      fetchNotificationCount();
+      
+      // Poll notification count every 30 seconds
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
     }
   }, [user]);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/api/notifications/unread-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotificationCount(response.data.count);
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+    }
+  };
 
   const fetchFeed = async () => {
     try {
