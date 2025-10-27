@@ -313,19 +313,19 @@ async def get_comments(postId: str, skip: int = 0, limit: int = 50):
 
 @social_router.post("/stories")
 async def create_story(
-    content: str = Form(...),
-    storyType: str = Form("text"),
+    userId: str = Form(...),
+    content: str = Form(""),
+    storyType: str = Form("image"),
     isAnonymous: bool = Form(False),
-    image: Optional[UploadFile] = File(None),
-    userId: str = Form(...)
+    image: Optional[UploadFile] = File(None)
 ):
     """Create a 24-hour story"""
     try:
-        logger.info(f"Creating story for user: {userId}, type: {storyType}, content: {content[:50] if content else 'empty'}")
-        logger.info(f"Image received: {image.filename if image else 'None'}")
+        logger.info(f"Creating story for user: {userId}, type: {storyType}, has_image: {image is not None}")
         
         user = await db.users.find_one({"id": userId})
         if not user:
+            logger.error(f"User not found: {userId}")
             raise HTTPException(status_code=404, detail="User not found")
         
         # Handle image upload
