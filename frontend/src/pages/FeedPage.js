@@ -433,7 +433,7 @@ const FeedPage = ({ user, onLogout }) => {
                 </div>
 
                 {/* Post Content */}
-                {post.content && post.content.trim() && (
+                {post.content && post.content.trim() && post.content !== 'Photo post' && (
                   <div className="px-4 pb-3">
                     <p className="text-gray-800">{post.content}</p>
                   </div>
