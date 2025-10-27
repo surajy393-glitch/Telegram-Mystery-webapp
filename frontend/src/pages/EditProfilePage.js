@@ -174,9 +174,16 @@ const EditProfilePage = ({ user, onLogout }) => {
           <div className="text-center mb-8">
             <div className="relative inline-block">
               <img
-                src={formData.profileImage || "https://via.placeholder.com/120"}
+                src={
+                  formData.profileImage 
+                    ? (formData.profileImage.startsWith('data:') || formData.profileImage.startsWith('http') 
+                        ? formData.profileImage 
+                        : `${process.env.REACT_APP_BACKEND_URL}${formData.profileImage}`)
+                    : "https://via.placeholder.com/120"
+                }
                 alt="Profile"
                 className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg"
+                onError={(e) => e.target.src = "https://via.placeholder.com/120"}
               />
               <label
                 htmlFor="profileImageInput"
