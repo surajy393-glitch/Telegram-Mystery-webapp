@@ -248,6 +248,22 @@ async def add_comment(
             {"$push": {"comments": comment}}
         )
         
+        # Create notification for post owner (if not commenting on own post and not anonymous)
+        if not isAnonymous and post.get("userId") != userId:
+            notification = {
+                "id": str(uuid4()),
+                "userId": post.get("userId"),
+                "fromUserId": userId,
+                "fromUsername": user.get("username", "Unknown"),
+                "fromUserImage": user.get("profileImage"),
+                "type": "comment",
+                "postId": postId,
+                "commentText": content[:50],  # Store first 50 chars
+                "isRead": False,
+                "createdAt": datetime.now(timezone.utc)
+            }
+            await db.notifications.insert_one(notification)
+        
         return {
             "success": True,
             "comment": {
