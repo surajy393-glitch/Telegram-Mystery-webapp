@@ -175,20 +175,18 @@ const FeedPage = ({ user, onLogout }) => {
   const handleStoryImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewStory({ 
-          ...newStory, 
-          mediaUrl: reader.result, 
-          mediaType: file.type.startsWith("video") ? "video" : "image" 
-        });
-      };
-      reader.readAsDataURL(file);
+      // Store the actual file object
+      setNewStory({ 
+        ...newStory, 
+        mediaFile: file,
+        mediaUrl: URL.createObjectURL(file), // For preview
+        mediaType: file.type.startsWith("video") ? "video" : "image" 
+      });
     }
   };
 
   const handleCreateStory = async () => {
-    if (!newStory.mediaUrl) {
+    if (!newStory.mediaFile) {
       alert('Please select an image or video');
       return;
     }
@@ -196,23 +194,25 @@ const FeedPage = ({ user, onLogout }) => {
     try {
       const formData = new FormData();
       formData.append('userId', user.id);
-      formData.append('username', user.username);
-      formData.append('userProfileImage', user.profileImage || '');
-      formData.append('mediaType', newStory.mediaType);
-      formData.append('mediaUrl', newStory.mediaUrl);
-      formData.append('caption', newStory.caption || '');
+      formData.append('content', newStory.caption || '');
+      formData.append('storyType', newStory.mediaType);
+      formData.append('isAnonymous', false);
+      formData.append('image', newStory.mediaFile); // Send the actual file
 
-      const response = await axios.post(`${API_URL}/api/social/stories`, formData);
+      const response = await axios.post(`${API_URL}/api/social/stories`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       if (response.data.success) {
-        setNewStory({ mediaUrl: "", caption: "", mediaType: "image" });
+        setNewStory({ mediaUrl: "", caption: "", mediaType: "image", mediaFile: null });
         setShowCreateStory(false);
         fetchStories();
         alert('Story created successfully!');
       }
     } catch (error) {
       console.error('Error creating story:', error);
-      alert('Failed to create story');
+      console.error('Error response:', error.response?.data);
+      alert('Failed to create story: ' + (error.response?.data?.detail || error.message));
     }
   };
 
