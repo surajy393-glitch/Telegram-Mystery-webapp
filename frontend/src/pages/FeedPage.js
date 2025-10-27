@@ -278,9 +278,16 @@ const FeedPage = ({ user, onLogout }) => {
                   <div className={`w-16 h-16 rounded-full p-0.5 ${myStories ? 'bg-gradient-to-br from-pink-500 to-rose-500' : 'bg-gray-300'}`}>
                     <div className="w-full h-full rounded-full bg-white p-0.5">
                       <img
-                        src={user?.profileImage || "https://via.placeholder.com/64"}
+                        src={
+                          user?.profileImage 
+                            ? (user.profileImage.startsWith('data:') || user.profileImage.startsWith('http') 
+                                ? user.profileImage 
+                                : `${API_URL}${user.profileImage}`)
+                            : "https://via.placeholder.com/64"
+                        }
                         alt="Your story"
                         className="w-full h-full rounded-full object-cover"
+                        onError={(e) => e.target.src = "https://via.placeholder.com/64"}
                       />
                     </div>
                   </div>
