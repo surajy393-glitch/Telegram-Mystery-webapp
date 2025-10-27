@@ -755,6 +755,19 @@ const FeedPage = ({ user, onLogout }) => {
           </div>
         </div>
       )}
+
+      {/* Comment Modal */}
+      {showCommentModal && selectedPost && (
+        <CommentModal
+          post={selectedPost}
+          user={user}
+          onClose={() => {
+            setShowCommentModal(false);
+            setSelectedPost(null);
+          }}
+          onCommentAdded={fetchFeed}
+        />
+      )}
     </div>
   );
 };
