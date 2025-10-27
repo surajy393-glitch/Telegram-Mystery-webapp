@@ -280,9 +280,10 @@ async def add_comment(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Get comments for a post
 @social_router.get("/posts/{postId}/comments")
-async def get_comments(postId: str, skip: int = 0, limit: int = 50):
-    """Get comments for a post"""
+async def get_post_comments(postId: str):
+    """Get all comments for a post with nested replies"""
     try:
         post = await db.posts.find_one({"id": postId})
         if not post:
@@ -290,28 +291,115 @@ async def get_comments(postId: str, skip: int = 0, limit: int = 50):
         
         comments = post.get("comments", [])
         
-        # Format comments
-        formatted_comments = []
-        for comment in comments[skip:skip+limit]:
-            formatted_comments.append({
-                "id": comment["id"],
+        # Organize comments and replies
+        comment_map = {}
+        root_comments = []
+        
+        for comment in comments:
+            comment_id = comment.get("id")
+            comment_data = {
+                "id": comment_id,
                 "userId": comment.get("userId"),
                 "username": comment.get("username"),
                 "userAvatar": comment.get("userAvatar"),
                 "content": comment.get("content"),
-                "createdAt": comment["createdAt"].isoformat(),
-                "timeAgo": get_time_ago(comment["createdAt"]),
-                "isAnonymous": comment.get("isAnonymous", False)
-            })
+                "createdAt": comment.get("createdAt"),
+                "timeAgo": get_time_ago(comment.get("createdAt")),
+                "likesCount": len(comment.get("likes", [])),
+                "userLiked": False,  # TODO: Add user-specific like status
+                "parentCommentId": comment.get("parentCommentId"),
+                "replies": []
+            }
+            comment_map[comment_id] = comment_data
+            
+            if comment.get("parentCommentId"):
+                # It's a reply
+                parent_id = comment.get("parentCommentId")
+                if parent_id in comment_map:
+                    comment_map[parent_id]["replies"].append(comment_data)
+            else:
+                # It's a root comment
+                root_comments.append(comment_data)
         
-        return {
-            "success": True,
-            "comments": formatted_comments,
-            "total": len(comments)
-        }
-        
+        return {"success": True, "comments": root_comments}
     except Exception as e:
+        logger.error(f"Error fetching comments: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Like a comment
+@social_router.post("/comments/{commentId}/like")
+async def like_comment(commentId: str, userId: str = Form(...)):
+    """Like or unlike a comment"""
+    try:
+        # Find the post containing this comment
+        post = await db.posts.find_one({"comments.id": commentId})
+        if not post:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        
+        comments = post.get("comments", [])
+        comment_index = None
+        
+        for idx, comment in enumerate(comments):
+            if comment.get("id") == commentId:
+                comment_index = idx
+                break
+        
+        if comment_index is None:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        
+        comment = comments[comment_index]
+        likes = comment.get("likes", [])
+        
+        if userId in likes:
+            # Unlike
+            likes.remove(userId)
+        else:
+            # Like
+            likes.append(userId)
+        
+        comment["likes"] = likes
+        comments[comment_index] = comment
+        
+        await db.posts.update_one(
+            {"id": post["id"]},
+            {"$set": {"comments": comments}}
+        )
+        
+        return {"success": True, "likesCount": len(likes)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error liking comment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def get_time_ago(created_at):
+    """Helper function to get human-readable time ago"""
+    if not created_at:
+        return "Just now"
+    
+    try:
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+        
+        now = datetime.now(timezone.utc)
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        
+        diff = now - created_at
+        seconds = diff.total_seconds()
+        
+        if seconds < 60:
+            return "Just now"
+        elif seconds < 3600:
+            return f"{int(seconds / 60)}m ago"
+        elif seconds < 86400:
+            return f"{int(seconds / 3600)}h ago"
+        elif seconds < 604800:
+            return f"{int(seconds / 86400)}d ago"
+        else:
+            return created_at.strftime("%b %d")
+    except:
+        return "Just now"
 
 # STORIES ENDPOINTS
 
