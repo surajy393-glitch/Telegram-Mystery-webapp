@@ -25,9 +25,19 @@ const EditProfilePage = ({ user, onLogout }) => {
   });
 
   useEffect(() => {
+    // If user prop exists, use it as fallback
+    if (user) {
+      setProfile(user);
+      setFormData({
+        fullName: user.fullName || "",
+        username: user.username || "",
+        bio: user.bio || "",
+        profileImage: user.profileImage || ""
+      });
+    }
     fetchProfile();
     checkUsernameChange();
-  }, []);
+  }, [user]);
 
   const fetchProfile = async () => {
     try {
