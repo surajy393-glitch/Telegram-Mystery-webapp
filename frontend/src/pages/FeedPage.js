@@ -442,9 +442,13 @@ const FeedPage = ({ user, onLogout }) => {
                 {/* Post Image */}
                 {post.imageUrl && (
                   <img
-                    src={API_URL + post.imageUrl}
+                    src={post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http') ? post.imageUrl : `${API_URL}${post.imageUrl}`}
                     alt="Post"
                     className="w-full max-h-96 object-cover"
+                    onError={(e) => {
+                      console.error('Image failed to load:', post.imageUrl);
+                      e.target.style.display = 'none';
+                    }}
                   />
                 )}
 
