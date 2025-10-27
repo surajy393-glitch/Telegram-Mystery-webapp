@@ -547,7 +547,10 @@ const FeedPage = ({ user, onLogout }) => {
                   </button>
 
                   <button
-                    onClick={() => setCommentingOn(post.id)}
+                    onClick={() => {
+                      setSelectedPost(post);
+                      setShowCommentModal(true);
+                    }}
                     className="flex items-center space-x-2 text-gray-600 hover:text-pink-600"
                   >
                     <MessageCircle size={20} />
