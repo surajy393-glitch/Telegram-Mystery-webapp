@@ -4332,6 +4332,111 @@ async def register_for_mystery(
         logger.error(f"Registration error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== NOTIFICATION ENDPOINTS ====================
+
+# Get unread notification count
+@api_router.get("/notifications/unread-count")
+async def get_unread_notification_count(current_user: dict = Depends(get_current_user)):
+    try:
+        count = await db.notifications.count_documents({
+            "userId": current_user["id"],
+            "isRead": False
+        })
+        return {"count": count}
+    except Exception as e:
+        logger.error(f"Error fetching notification count: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Get all notifications for current user
+@api_router.get("/notifications")
+async def get_notifications(
+    skip: int = 0,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        notifications = await db.notifications.find({
+            "userId": current_user["id"]
+        }).sort("createdAt", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        return {"notifications": notifications}
+    except Exception as e:
+        logger.error(f"Error fetching notifications: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Mark notification as read
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        result = await db.notifications.update_one(
+            {"id": notification_id, "userId": current_user["id"]},
+            {"$set": {"isRead": True}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"success": True, "message": "Notification marked as read"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking notification as read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Mark all notifications as read
+@api_router.put("/notifications/read-all")
+async def mark_all_notifications_read(current_user: dict = Depends(get_current_user)):
+    try:
+        await db.notifications.update_many(
+            {"userId": current_user["id"], "isRead": False},
+            {"$set": {"isRead": True}}
+        )
+        
+        return {"success": True, "message": "All notifications marked as read"}
+    except Exception as e:
+        logger.error(f"Error marking all notifications as read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Helper function to create notification
+async def create_notification(
+    user_id: str,
+    from_user_id: str,
+    notification_type: str,
+    post_id: Optional[str] = None,
+    comment_text: Optional[str] = None
+):
+    """Helper function to create a notification"""
+    try:
+        # Get from_user details
+        from_user = await db.users.find_one({"id": from_user_id})
+        if not from_user:
+            return
+        
+        # Don't notify if user is notifying themselves
+        if user_id == from_user_id:
+            return
+        
+        notification = {
+            "id": str(uuid.uuid4()),
+            "userId": user_id,
+            "fromUserId": from_user_id,
+            "fromUsername": from_user.get("username", "Unknown"),
+            "fromUserImage": from_user.get("profileImage"),
+            "type": notification_type,
+            "postId": post_id,
+            "commentText": comment_text,
+            "isRead": False,
+            "createdAt": datetime.now(timezone.utc)
+        }
+        
+        await db.notifications.insert_one(notification)
+        logger.info(f"Created {notification_type} notification for user {user_id}")
+    except Exception as e:
+        logger.error(f"Error creating notification: {e}")
+
 # Health check endpoint
 @api_router.get("/health")
 async def health_check():
