@@ -466,11 +466,40 @@ const FeedPage = ({ user, onLogout }) => {
               <div key={post.id} className="bg-white rounded-lg shadow-sm">
                 {/* Post Header */}
                 <div className="p-4 flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white">
-                    {post.isAnonymous ? '?' : post.username?.[0]?.toUpperCase()}
-                  </div>
+                  <img
+                    src={
+                      post.isAnonymous 
+                        ? "https://via.placeholder.com/40?text=?" 
+                        : (post.userAvatar 
+                            ? (post.userAvatar.startsWith('data:') || post.userAvatar.startsWith('http') 
+                                ? post.userAvatar 
+                                : `${API_URL}${post.userAvatar}`)
+                            : "https://via.placeholder.com/40")
+                    }
+                    alt={post.username}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    onError={(e) => e.target.src = "https://via.placeholder.com/40"}
+                  />
                   <div>
-                    <h3 className="font-semibold">
+                    <h3 
+                      className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
+                      onClick={async () => {
+                        if (post.isAnonymous) return;
+                        
+                        // Check if user profile is private
+                        try {
+                          const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
+                          if (response.data.isPrivate && response.data.id !== user.id) {
+                            alert('This account is private');
+                          } else {
+                            navigate(`/profile/${post.userId}`);
+                          }
+                        } catch (error) {
+                          console.error('Error checking profile:', error);
+                          navigate(`/profile/${post.userId}`);
+                        }
+                      }}
+                    >
                       {post.isAnonymous ? 'Anonymous' : post.username}
                     </h3>
                     <p className="text-xs text-gray-500">{post.timeAgo}</p>
