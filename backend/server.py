@@ -67,6 +67,13 @@ async def create_indexes():
 # Create the main app without a prefix
 app = FastAPI()
 
+# Mount uploads directory for serving static files
+import os
+os.makedirs("/app/uploads/posts", exist_ok=True)
+os.makedirs("/app/uploads/profiles", exist_ok=True)
+os.makedirs("/app/uploads/stories", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
+
 # Initialize indexes on startup
 @app.on_event("startup")
 async def startup_event():
