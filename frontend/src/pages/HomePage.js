@@ -532,35 +532,34 @@ const HomePage = ({ user, onLogout }) => {
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
             LuvHive
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user?.isPremium && (
               <span className="premium-badge">PREMIUM</span>
             )}
             <Link to="/notifications">
-              <Button variant="ghost" className="hover:bg-pink-50 relative" data-testid="notifications-btn">
+              <Button variant="ghost" className="hover:bg-pink-50 relative p-2" data-testid="notifications-btn">
                 <Bell className="w-5 h-5 text-pink-600" />
                 {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {notificationCount > 9 ? '9+' : notificationCount}
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {notificationCount}
                   </span>
                 )}
               </Button>
             </Link>
-            <Link to="/my-profile">
-              <Button variant="ghost" className="hover:bg-pink-50" data-testid="my-profile-btn">
+            <Link to="/search">
+              <Button variant="ghost" className="hover:bg-pink-50 p-2" data-testid="search-btn">
+                <Search className="w-5 h-5 text-pink-600" />
+              </Button>
+            </Link>
+            <Link to="/profile">
+              <Button variant="ghost" className="hover:bg-pink-50 p-2" data-testid="profile-btn">
                 <UserIcon className="w-5 h-5 text-pink-600" />
               </Button>
             </Link>
-            <Link to="/search">
-              <Button variant="ghost" className="hover:bg-pink-50 text-sm text-gray-600">
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-            </Link>
-            <Button 
-              variant="ghost" 
+            <Button
               onClick={onLogout}
-              className="hover:bg-pink-50"
+              variant="ghost"
+              className="hover:bg-pink-50 p-2"
               data-testid="logout-btn"
             >
               <LogOut className="w-5 h-5 text-pink-600" />
