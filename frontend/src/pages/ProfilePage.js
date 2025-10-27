@@ -22,6 +22,7 @@ const API = `${BACKEND_URL}/api`;
 
 const ProfilePage = ({ user, onLogout }) => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [viewingUser, setViewingUser] = useState(null);
   const [users, setUsers] = useState([]);
