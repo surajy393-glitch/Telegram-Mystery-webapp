@@ -660,18 +660,34 @@ const FeedPage = ({ user, onLogout }) => {
 
             {/* Story Content */}
             <div className="flex-1 flex items-center justify-center">
-              {viewingStories.stories[currentStoryIndex]?.mediaType === "video" ? (
+              {viewingStories.stories[currentStoryIndex]?.storyType === "video" ? (
                 <video
-                  src={viewingStories.stories[currentStoryIndex]?.mediaUrl}
+                  src={
+                    viewingStories.stories[currentStoryIndex]?.imageUrl 
+                      ? `${API_URL}${viewingStories.stories[currentStoryIndex].imageUrl}`
+                      : "https://via.placeholder.com/400"
+                  }
                   controls
                   autoPlay
                   className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    console.error('Story video failed:', viewingStories.stories[currentStoryIndex]?.imageUrl);
+                  }}
                 />
               ) : (
                 <img
-                  src={viewingStories.stories[currentStoryIndex]?.mediaUrl}
+                  src={
+                    viewingStories.stories[currentStoryIndex]?.imageUrl 
+                      ? `${API_URL}${viewingStories.stories[currentStoryIndex].imageUrl}`
+                      : "https://via.placeholder.com/400"
+                  }
                   alt="Story"
                   className="max-w-full max-h-full object-contain"
+                  onLoad={() => console.log('✅ Story image loaded')}
+                  onError={(e) => {
+                    console.error('❌ Story image failed:', viewingStories.stories[currentStoryIndex]?.imageUrl);
+                    e.target.src = "https://via.placeholder.com/400?text=Image+Not+Found";
+                  }}
                 />
               )}
             </div>
