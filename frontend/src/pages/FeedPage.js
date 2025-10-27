@@ -273,7 +273,18 @@ const FeedPage = ({ user, onLogout }) => {
             {/* Stories Horizontal Scroll */}
             <div className="flex gap-3 overflow-x-auto scrollbar-hide flex-1">
               {/* User's Own Story - Add Story Button */}
-              <div className="flex-shrink-0 text-center cursor-pointer" onClick={() => setShowCreateStory(true)}>
+              <div 
+                className="flex-shrink-0 text-center cursor-pointer" 
+                onClick={() => {
+                  if (myStories) {
+                    // Has stories - open viewer
+                    openStoryViewer(myStories);
+                  } else {
+                    // No stories - open create dialog
+                    setShowCreateStory(true);
+                  }
+                }}
+              >
                 <div className="relative">
                   <div className={`w-16 h-16 rounded-full p-0.5 ${myStories ? 'bg-gradient-to-br from-pink-500 to-rose-500' : 'bg-gray-300'}`}>
                     <div className="w-full h-full rounded-full bg-white p-0.5">
@@ -291,8 +302,14 @@ const FeedPage = ({ user, onLogout }) => {
                       />
                     </div>
                   </div>
-                  {/* Plus icon for adding story */}
-                  <div className="absolute bottom-0 right-0 w-5 h-5 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center border-2 border-white">
+                  {/* Plus icon for adding story - only show if no stories */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-5 h-5 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center border-2 border-white cursor-pointer hover:scale-110 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent parent click
+                      setShowCreateStory(true);
+                    }}
+                  >
                     <Plus className="w-3 h-3 text-white" />
                   </div>
                 </div>
