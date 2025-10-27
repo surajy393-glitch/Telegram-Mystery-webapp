@@ -70,7 +70,12 @@ const FeedPage = ({ user, onLogout }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/api/social/feed?userId=${user.id}&limit=20`);
+      console.log('Feed response:', response.data);
       if (response.data.success) {
+        console.log('Posts received:', response.data.posts);
+        response.data.posts.forEach(post => {
+          console.log(`Post ${post.id}: imageUrl = ${post.imageUrl}, postType = ${post.postType}`);
+        });
         setPosts(response.data.posts);
       }
     } catch (error) {
