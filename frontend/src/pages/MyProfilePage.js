@@ -109,6 +109,7 @@ const MyProfilePage = ({ user, onLogout }) => {
                   console.error('Profile image failed to load:', profile?.profileImage);
                   e.target.src = "https://via.placeholder.com/150";
                 }}
+                onLoad={() => console.log('✅ Profile image loaded:', profile?.profileImage)}
               />
               {profile?.isPremium && (
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
@@ -122,8 +123,8 @@ const MyProfilePage = ({ user, onLogout }) => {
 
             {/* Profile Stats */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl font-bold text-gray-800 mb-1">{profile?.fullName}</h2>
-              <p className="text-lg text-gray-600 mb-4">@{profile?.username}</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-1">{profile?.fullName || 'No Name'}</h2>
+              <p className="text-lg text-gray-600 mb-4">@{profile?.username || 'username'}</p>
 
               {/* Stats */}
               <div className="flex justify-center md:justify-start gap-8 mb-4">
