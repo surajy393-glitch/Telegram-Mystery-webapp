@@ -162,8 +162,53 @@ const FeedPage = ({ user, onLogout }) => {
   };
 
   const openStoryViewer = (storyGroup) => {
-    // TODO: Implement story viewer functionality
-    console.log('Opening story viewer for:', storyGroup);
+    setViewingStories(storyGroup);
+    setCurrentStoryIndex(0);
+    setShowStoryViewer(true);
+  };
+
+  const handleStoryImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewStory({ 
+          ...newStory, 
+          mediaUrl: reader.result, 
+          mediaType: file.type.startsWith("video") ? "video" : "image" 
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreateStory = async () => {
+    if (!newStory.mediaUrl) {
+      alert('Please select an image or video');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('userId', user.id);
+      formData.append('username', user.username);
+      formData.append('userProfileImage', user.profileImage || '');
+      formData.append('mediaType', newStory.mediaType);
+      formData.append('mediaUrl', newStory.mediaUrl);
+      formData.append('caption', newStory.caption || '');
+
+      const response = await axios.post(`${API_URL}/api/social/stories`, formData);
+
+      if (response.data.success) {
+        setNewStory({ mediaUrl: "", caption: "", mediaType: "image" });
+        setShowCreateStory(false);
+        fetchStories();
+        alert('Story created successfully!');
+      }
+    } catch (error) {
+      console.error('Error creating story:', error);
+      alert('Failed to create story');
+    }
   };
 
   if (loading) {
