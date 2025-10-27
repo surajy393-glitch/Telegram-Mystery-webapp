@@ -634,8 +634,12 @@ const FeedPage = ({ user, onLogout }) => {
       {showStoryViewer && viewingStories && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
           <button
-            onClick={() => setShowStoryViewer(false)}
-            className="absolute top-4 right-4 text-white text-3xl z-10"
+            onClick={() => {
+              setShowStoryViewer(false);
+              setViewingStories(null);
+              setCurrentStoryIndex(0);
+            }}
+            className="absolute top-4 right-4 text-white text-4xl z-20 w-12 h-12 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
           >
             ×
           </button>
