@@ -31,18 +31,24 @@ const MyProfilePage = ({ user, onLogout }) => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [profileRes, postsRes, savedRes, archivedRes] = await Promise.all([
-        axios.get(`${API}/auth/me`, { headers }),
-        axios.get(`${API}/profile/posts`, { headers }),
-        axios.get(`${API}/profile/saved`, { headers }),
-        axios.get(`${API}/profile/archived`, { headers })
+        axios.get(`${API}/auth/me`, { headers }).catch(() => ({ data: user })),
+        axios.get(`${API}/profile/posts`, { headers }).catch(() => ({ data: { posts: [] } })),
+        axios.get(`${API}/profile/saved`, { headers }).catch(() => ({ data: { posts: [] } })),
+        axios.get(`${API}/profile/archived`, { headers }).catch(() => ({ data: { archived: [] } }))
       ]);
 
-      setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+      }
       setMyPosts(postsRes.data.posts || []);
       setSavedPosts(savedRes.data.posts || []);
       setArchivedItems(archivedRes.data.archived || []);
     } catch (error) {
       console.error("Error fetching profile:", error);
+      // Use user prop as fallback
+      if (user && !profile) {
+        setProfile(user);
+      }
     } finally {
       setLoading(false);
     }
