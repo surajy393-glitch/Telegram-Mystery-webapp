@@ -502,6 +502,150 @@ const FeedPage = ({ user, onLogout }) => {
           </div>
         )}
       </div>
+
+      {/* Create Story Modal */}
+      {showCreateStory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6">
+            <h2 className="text-xl font-bold mb-4">Add to Your Story</h2>
+            
+            {newStory.mediaUrl && (
+              <div className="mb-4 relative">
+                {newStory.mediaType === "video" ? (
+                  <video
+                    src={newStory.mediaUrl}
+                    controls
+                    className="w-full rounded-lg max-h-64 object-cover"
+                  />
+                ) : (
+                  <img
+                    src={newStory.mediaUrl}
+                    alt="Preview"
+                    className="w-full rounded-lg max-h-64 object-cover"
+                  />
+                )}
+                <button
+                  onClick={() => setNewStory({ ...newStory, mediaUrl: "" })}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {!newStory.mediaUrl && (
+              <label className="block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-pink-500">
+                <ImageIcon className="mx-auto mb-2 text-gray-400" size={48} />
+                <span className="text-gray-600">Click to select image or video</span>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleStoryImageUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+
+            <textarea
+              value={newStory.caption}
+              onChange={(e) => setNewStory({ ...newStory, caption: e.target.value })}
+              placeholder="Add a caption (optional)"
+              className="w-full border border-gray-300 rounded-lg p-3 mb-4 mt-4 resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              rows="2"
+            />
+
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  setShowCreateStory(false);
+                  setNewStory({ mediaUrl: "", caption: "", mediaType: "image" });
+                }}
+                className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateStory}
+                disabled={!newStory.mediaUrl}
+                className="flex-1 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Story
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Story Viewer */}
+      {showStoryViewer && viewingStories && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          <button
+            onClick={() => setShowStoryViewer(false)}
+            className="absolute top-4 right-4 text-white text-3xl z-10"
+          >
+            ×
+          </button>
+          
+          <div className="relative w-full max-w-md h-full flex flex-col">
+            {/* Story Header */}
+            <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/70 to-transparent">
+              <div className="flex items-center space-x-3">
+                <img
+                  src={viewingStories.userProfileImage || "https://via.placeholder.com/40"}
+                  alt={viewingStories.username}
+                  className="w-10 h-10 rounded-full border-2 border-white"
+                />
+                <div>
+                  <h3 className="text-white font-semibold">{viewingStories.username}</h3>
+                  <p className="text-white text-xs opacity-75">
+                    {new Date(viewingStories.stories[currentStoryIndex]?.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Story Content */}
+            <div className="flex-1 flex items-center justify-center">
+              {viewingStories.stories[currentStoryIndex]?.mediaType === "video" ? (
+                <video
+                  src={viewingStories.stories[currentStoryIndex]?.mediaUrl}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full object-contain"
+                />
+              ) : (
+                <img
+                  src={viewingStories.stories[currentStoryIndex]?.mediaUrl}
+                  alt="Story"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+
+            {/* Navigation */}
+            {viewingStories.stories.length > 1 && (
+              <>
+                {currentStoryIndex > 0 && (
+                  <button
+                    onClick={() => setCurrentStoryIndex(currentStoryIndex - 1)}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-4xl"
+                  >
+                    ‹
+                  </button>
+                )}
+                {currentStoryIndex < viewingStories.stories.length - 1 && (
+                  <button
+                    onClick={() => setCurrentStoryIndex(currentStoryIndex + 1)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-4xl"
+                  >
+                    ›
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
