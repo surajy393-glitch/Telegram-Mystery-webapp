@@ -444,23 +444,23 @@ const FeedPage = ({ user, onLogout }) => {
                   </div>
                 )}
 
-                {/* Post Image - DEBUG VERSION */}
+                {/* Post Image - FIXED VERSION */}
                 {post.imageUrl ? (
-                  <div className="w-full bg-gray-100">
+                  <div className="w-full">
                     <img
-                      src={`https://deploy-preview-9.preview.emergentagent.com${post.imageUrl}`}
+                      src={post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http') 
+                        ? post.imageUrl 
+                        : `${API_URL}${post.imageUrl}`}
                       alt="Post"
                       className="w-full max-h-96 object-cover"
-                      onLoad={() => console.log('Image loaded successfully:', post.imageUrl)}
+                      onLoad={() => console.log('✅ Image loaded:', post.imageUrl)}
                       onError={(e) => {
-                        console.error('Image failed to load:', post.imageUrl);
-                        console.error('Full src:', e.target.src);
+                        console.error('❌ Image failed:', post.imageUrl);
+                        console.error('Full URL tried:', e.target.src);
                       }}
                     />
                   </div>
-                ) : (
-                  <div className="px-4 py-2 text-red-500">No imageUrl found for this post</div>
-                )}
+                ) : null}
 
                 {/* Post Actions */}
                 <div className="px-4 py-3 flex items-center justify-between border-t border-gray-100">
