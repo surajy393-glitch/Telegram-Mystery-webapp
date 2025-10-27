@@ -4466,6 +4466,30 @@ async def health_check():
             "database": db_name
         }
 
+# Serve uploaded files endpoint
+@api_router.get("/uploads/{file_type}/{filename}")
+async def serve_upload(file_type: str, filename: str):
+    """Serve uploaded files (posts, profiles, stories)"""
+    try:
+        # Validate file type
+        if file_type not in ["posts", "profiles", "stories"]:
+            raise HTTPException(status_code=400, detail="Invalid file type")
+        
+        # Build file path
+        file_path = f"/app/uploads/{file_type}/{filename}"
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Return file
+        return FileResponse(file_path)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
