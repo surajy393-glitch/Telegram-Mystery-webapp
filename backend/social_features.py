@@ -224,9 +224,10 @@ async def add_comment(
     postId: str,
     userId: str = Form(...),
     content: str = Form(...),
-    isAnonymous: bool = Form(False)
+    isAnonymous: bool = Form(False),
+    parentCommentId: Optional[str] = Form(None)
 ):
-    """Add comment to a post"""
+    """Add comment or reply to a post"""
     try:
         post = await db.posts.find_one({"id": postId})
         if not post:
@@ -236,6 +237,12 @@ async def add_comment(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
+        # If it's a reply, validate parent comment exists
+        if parentCommentId:
+            parent_exists = any(c.get("id") == parentCommentId for c in post.get("comments", []))
+            if not parent_exists:
+                raise HTTPException(status_code=404, detail="Parent comment not found")
+        
         comment = {
             "id": str(uuid4()),
             "userId": userId if not isAnonymous else "anonymous",
@@ -243,7 +250,9 @@ async def add_comment(
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
             "content": content,
             "createdAt": datetime.now(timezone.utc),
-            "isAnonymous": isAnonymous
+            "isAnonymous": isAnonymous,
+            "parentCommentId": parentCommentId,
+            "likes": []
         }
         
         # Add comment to post
