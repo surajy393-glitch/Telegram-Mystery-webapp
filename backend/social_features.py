@@ -339,7 +339,7 @@ async def create_story(
                 content_bytes = await image.read()
                 f.write(content_bytes)
             
-            image_url = f"/uploads/stories/{filename}"
+            image_url = f"/api/uploads/stories/{filename}"
         
         # Create story
         story = {
