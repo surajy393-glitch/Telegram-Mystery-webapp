@@ -12,7 +12,11 @@ from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import logging
 from uuid import uuid4
+
+# Setup logger
+logger = logging.getLogger(__name__)
 
 # Create router
 social_router = APIRouter(prefix="/api/social", tags=["social"])
