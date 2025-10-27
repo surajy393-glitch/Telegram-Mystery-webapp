@@ -3210,6 +3210,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "fullName": user["fullName"],
         "profileImage": user.get("profileImage"),
         "bio": user.get("bio", ""),
+        "isPrivate": user.get("isPrivate", False),
         "followersCount": len(user.get("followers", [])),
         "followingCount": len(user.get("following", [])),
         "isFollowing": user["id"] in current_user.following,
