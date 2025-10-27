@@ -85,7 +85,7 @@ async def create_post(
                 content_bytes = await image.read()
                 f.write(content_bytes)
             
-            image_url = f"/uploads/posts/{filename}"
+            image_url = f"/api/uploads/posts/{filename}"
         
         # Create post document
         post = {
