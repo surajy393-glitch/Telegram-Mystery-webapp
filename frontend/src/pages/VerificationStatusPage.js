@@ -59,14 +59,15 @@ const VerificationStatusPage = ({ user }) => {
           { email },
           { headers: { Authorization: `Bearer ${token}` }}
         );
+        // For email, show debug code since we're not sending real emails yet
         setMessage(`Code sent! For testing: ${response.data.debug_code}`);
         setMessageType('success');
       } else {
-        const response = await axios.post(`${API}/auth/send-phone-verification`, 
+        await axios.post(`${API}/auth/send-phone-verification`, 
           { phone: phoneNumber },
           { headers: { Authorization: `Bearer ${token}` }}
         );
-        setMessage(`Code sent! For testing: ${response.data.debug_code}`);
+        setMessage('Verification code sent to your phone via SMS!');
         setMessageType('success');
       }
       setVerificationStep('verify');
