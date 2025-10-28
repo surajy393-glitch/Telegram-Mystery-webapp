@@ -40,6 +40,78 @@ const VerificationStatusPage = ({ user }) => {
     }
   };
 
+  const handleVerificationClick = (type) => {
+    setVerificationType(type);
+    setVerificationStep('send');
+    setOtpCode('');
+    setMessage('');
+    setShowVerifyDialog(true);
+  };
+
+  const sendVerificationCode = async () => {
+    setVerifying(true);
+    setMessage('');
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (verificationType === 'email') {
+        await axios.post(`${API}/auth/send-email-verification`, 
+          { email },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setMessage('Verification code sent to your email!');
+        setMessageType('success');
+      } else {
+        await axios.post(`${API}/auth/send-phone-verification`, 
+          { phone: phoneNumber },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setMessage('Verification code sent to your phone!');
+        setMessageType('success');
+      }
+      setVerificationStep('verify');
+    } catch (error) {
+      setMessage(error.response?.data?.detail || 'Failed to send verification code');
+      setMessageType('error');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    setVerifying(true);
+    setMessage('');
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (verificationType === 'email') {
+        await axios.post(`${API}/auth/verify-email`, 
+          { code: otpCode },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setMessage('Email verified successfully!');
+      } else {
+        await axios.post(`${API}/auth/verify-phone`, 
+          { code: otpCode },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setMessage('Phone verified successfully!');
+      }
+      setMessageType('success');
+      
+      // Refresh verification status
+      setTimeout(() => {
+        setShowVerifyDialog(false);
+        fetchVerificationStatus();
+      }, 1500);
+    } catch (error) {
+      setMessage(error.response?.data?.detail || 'Invalid verification code');
+      setMessageType('error');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white">
