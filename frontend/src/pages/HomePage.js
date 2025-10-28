@@ -1277,70 +1277,98 @@ const HomePage = ({ user, onLogout }) => {
 
       {/* Report Post Dialog */}
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-        <DialogContent className="bg-white rounded-3xl max-w-md" data-testid="report-dialog">
+        <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl max-w-md" data-testid="report-dialog">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-800">
-              Report Post
+            <DialogTitle className="text-2xl font-bold text-white text-center">
+              Report
             </DialogTitle>
-            <DialogDescription className="text-gray-600 mt-2">
-              Why are you reporting this post?
+            <DialogDescription className="text-gray-300 mt-2 text-center text-sm">
+              Why are you reporting this post?<br />
+              Your report is anonymous. If someone is in immediate danger, call the local emergency services — don't wait.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 mt-6">
+          <div className="space-y-1 mt-6 max-h-[400px] overflow-y-auto">
             <button
-              onClick={() => handleReportPost(reportingPost?.id, "Inappropriate Content")}
-              className="w-full text-left px-4 py-4 hover:bg-pink-50 rounded-xl transition-colors border border-gray-200"
-              data-testid="report-inappropriate"
+              onClick={() => handleReportPost("I just don't like it")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-dont-like"
             >
-              <p className="font-semibold text-gray-800">Inappropriate Content</p>
-              <p className="text-sm text-gray-600">Nudity, violence, or harmful content</p>
+              I just don't like it
             </button>
             
             <button
-              onClick={() => handleReportPost(reportingPost?.id, "Spam or Misleading")}
-              className="w-full text-left px-4 py-4 hover:bg-pink-50 rounded-xl transition-colors border border-gray-200"
-              data-testid="report-spam"
-            >
-              <p className="font-semibold text-gray-800">Spam or Misleading</p>
-              <p className="text-sm text-gray-600">False information or scams</p>
-            </button>
-            
-            <button
-              onClick={() => handleReportPost(reportingPost?.id, "Harassment or Bullying")}
-              className="w-full text-left px-4 py-4 hover:bg-pink-50 rounded-xl transition-colors border border-gray-200"
+              onClick={() => handleReportPost("Harassment or bullying")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
               data-testid="report-harassment"
             >
-              <p className="font-semibold text-gray-800">Harassment or Bullying</p>
-              <p className="text-sm text-gray-600">Targeting someone negatively</p>
+              Harassment or bullying
             </button>
             
             <button
-              onClick={() => handleReportPost(reportingPost?.id, "Hate Speech")}
-              className="w-full text-left px-4 py-4 hover:bg-pink-50 rounded-xl transition-colors border border-gray-200"
+              onClick={() => handleReportPost("Self-harm or dangerous content")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-self-harm"
+            >
+              Self-harm or dangerous content
+            </button>
+            
+            <button
+              onClick={() => handleReportPost("Hate speech or violence")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
               data-testid="report-hate"
             >
-              <p className="font-semibold text-gray-800">Hate Speech</p>
-              <p className="text-sm text-gray-600">Discriminatory or offensive content</p>
+              Hate speech or violence
             </button>
             
             <button
-              onClick={() => handleReportPost(reportingPost?.id, "Something Else")}
-              className="w-full text-left px-4 py-4 hover:bg-pink-50 rounded-xl transition-colors border border-gray-200"
-              data-testid="report-other"
+              onClick={() => handleReportPost("Illegal activities")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-illegal"
             >
-              <p className="font-semibold text-gray-800">Something Else</p>
-              <p className="text-sm text-gray-600">Other concerns</p>
+              Illegal activities
+            </button>
+            
+            <button
+              onClick={() => handleReportPost("Adult content")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-adult"
+            >
+              Adult content
+            </button>
+            
+            <button
+              onClick={() => handleReportPost("Spam or scam")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-spam"
+            >
+              Spam or scam
+            </button>
+            
+            <button
+              onClick={() => handleReportPost("Misinformation")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-misinformation"
+            >
+              Misinformation
+            </button>
+            
+            <button
+              onClick={() => handleReportPost("Copyright violation")}
+              className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              data-testid="report-copyright"
+            >
+              Copyright violation
             </button>
           </div>
           
-          <div className="mt-6">
+          <div className="mt-4">
             <Button
               onClick={() => {
                 setShowReportDialog(false);
                 setReportingPost(null);
               }}
               variant="outline"
-              className="w-full border-2 border-gray-300 hover:bg-gray-50 rounded-xl py-4"
+              className="w-full border-2 border-gray-600 hover:bg-gray-700 rounded-xl py-4 text-white"
             >
               Cancel
             </Button>
