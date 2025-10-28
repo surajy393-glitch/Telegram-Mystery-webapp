@@ -44,7 +44,8 @@ const DatingRegisterPage = ({ onLogin }) => {
     gender: "",
     city: "",
     interests: [],
-    profilePhoto: null
+    profilePhoto: null,
+    personalityAnswers: {}
   });
   
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -53,6 +54,94 @@ const DatingRegisterPage = ({ onLogin }) => {
   const interestOptions = [
     "Chatting", "Friends", "Relationship", "Love", "Games", "Anime",
     "Travel", "Food", "Music", "Movies", "Sports", "Reading"
+  ];
+
+  // Personality questions for vibe compatibility
+  const personalityQuestions = [
+    {
+      id: "friday_night",
+      question: "What's your ideal Friday night?",
+      emoji: "🎉",
+      options: [
+        { value: "party", label: "Party with friends", emoji: "🎊" },
+        { value: "movie", label: "Cozy movie night", emoji: "🎬" },
+        { value: "gaming", label: "Gaming session", emoji: "🎮" },
+        { value: "chill", label: "Relaxing at home", emoji: "🏠" }
+      ]
+    },
+    {
+      id: "morning_type",
+      question: "Are you a morning person or night owl?",
+      emoji: "⏰",
+      options: [
+        { value: "early_bird", label: "Early bird", emoji: "🌅" },
+        { value: "night_owl", label: "Night owl", emoji: "🌙" },
+        { value: "flexible", label: "I adapt", emoji: "🔄" }
+      ]
+    },
+    {
+      id: "beverage",
+      question: "Coffee or Tea?",
+      emoji: "☕",
+      options: [
+        { value: "coffee", label: "Coffee lover", emoji: "☕" },
+        { value: "tea", label: "Tea enthusiast", emoji: "🍵" },
+        { value: "both", label: "Both are great", emoji: "😊" },
+        { value: "neither", label: "Neither", emoji: "🥤" }
+      ]
+    },
+    {
+      id: "vacation",
+      question: "Beach or Mountains?",
+      emoji: "🏖️",
+      options: [
+        { value: "beach", label: "Beach paradise", emoji: "🏖️" },
+        { value: "mountains", label: "Mountain adventure", emoji: "⛰️" },
+        { value: "city", label: "City exploration", emoji: "🌆" },
+        { value: "countryside", label: "Peaceful countryside", emoji: "🌾" }
+      ]
+    },
+    {
+      id: "pet_preference",
+      question: "Dogs or Cats?",
+      emoji: "🐾",
+      options: [
+        { value: "dogs", label: "Dog person", emoji: "🐕" },
+        { value: "cats", label: "Cat person", emoji: "🐈" },
+        { value: "both", label: "Love both", emoji: "❤️" },
+        { value: "other", label: "Other pets", emoji: "🦎" }
+      ]
+    },
+    {
+      id: "social_type",
+      question: "Introvert or Extrovert?",
+      emoji: "🎭",
+      options: [
+        { value: "introvert", label: "Introvert", emoji: "📚" },
+        { value: "extrovert", label: "Extrovert", emoji: "🎤" },
+        { value: "ambivert", label: "Ambivert", emoji: "⚖️" }
+      ]
+    },
+    {
+      id: "adventure_level",
+      question: "Adventure or Relaxation?",
+      emoji: "🎢",
+      options: [
+        { value: "thrill_seeker", label: "Thrill seeker", emoji: "🎢" },
+        { value: "balanced", label: "Balanced mix", emoji: "🎯" },
+        { value: "chill_vibes", label: "Chill vibes", emoji: "😌" }
+      ]
+    },
+    {
+      id: "planning_style",
+      question: "Planner or Spontaneous?",
+      emoji: "📅",
+      options: [
+        { value: "planner", label: "Love planning", emoji: "📋" },
+        { value: "spontaneous", label: "Go with the flow", emoji: "🌊" },
+        { value: "mix", label: "Bit of both", emoji: "🎲" }
+      ]
+    }
   ];
 
   const handleChange = (e) => {
