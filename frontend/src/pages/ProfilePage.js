@@ -92,8 +92,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchUserPosts = async (targetUserId) => {
     try {
       const token = localStorage.getItem("token");
-      // fetch posts via social endpoint; adjust query if your backend differs
-      const response = await axios.get(`${API}/social/posts?userId=${targetUserId}`, {
+      const response = await axios.get(`${API}/users/${targetUserId}/posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserPosts(response.data.posts || []);
