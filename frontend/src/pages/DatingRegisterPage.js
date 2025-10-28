@@ -1135,6 +1135,83 @@ const DatingRegisterPage = ({ onLogin }) => {
                 </div>
               </form>
             </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">Personality Questions</h2>
+              <form onSubmit={handleFinalSubmit} className="space-y-6">
+                <div className="bg-white bg-opacity-10 rounded-xl p-4 text-white text-sm mb-6">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-xl">🧠</span>
+                    <div>
+                      <p className="font-semibold mb-1">Personality Matching</p>
+                      <p className="text-white text-opacity-80">Answer these questions to help us find your perfect vibe match!</p>
+                    </div>
+                  </div>
+                </div>
+
+                {personalityQuestions.map((question, index) => (
+                  <div key={question.id} className="bg-white bg-opacity-10 rounded-xl p-5">
+                    <div className="mb-4">
+                      <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                        <span className="text-2xl">{question.emoji}</span>
+                        {question.question}
+                      </h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      {question.options.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => selectPersonalityAnswer(question.id, option.value)}
+                          className={`p-4 rounded-lg text-left transition-all duration-200 flex items-center gap-3 ${
+                            formData.personalityAnswers[question.id] === option.value
+                              ? 'bg-pink-500 text-white shadow-lg transform scale-105'
+                              : 'bg-white bg-opacity-20 text-white border border-white border-opacity-30 hover:bg-opacity-30'
+                          }`}
+                        >
+                          <span className="text-2xl">{option.emoji}</span>
+                          <span className="font-medium">{option.label}</span>
+                          {formData.personalityAnswers[question.id] === option.value && (
+                            <span className="ml-auto text-xl">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-white bg-opacity-10 rounded-xl p-4 text-white text-sm">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-xl">💡</span>
+                    <div>
+                      <p className="font-semibold mb-1">How It Works</p>
+                      <p className="text-white text-opacity-80 mb-2">Your answers help us match you with people who share similar vibes and interests.</p>
+                      <p className="text-white text-opacity-70 text-xs">
+                        ✨ The more honest you are, the better your matches will be!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button 
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="flex-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white border border-white border-opacity-30 py-6 rounded-xl"
+                  >
+                    ← Back
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-6 rounded-xl text-lg font-bold shadow-2xl"
+                  >
+                    {loading ? "Creating..." : "Complete 🎉"}
+                  </Button>
+                </div>
+              </form>
+            </>
           )}
 
           <div className="mt-6 text-center text-white text-opacity-90">
