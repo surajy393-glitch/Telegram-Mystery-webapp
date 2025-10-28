@@ -3167,12 +3167,25 @@ async def get_media_proxy(file_id: str):
 
 @api_router.get("/posts/feed")
 async def get_posts_feed(current_user: User = Depends(get_current_user)):
-    # Exclude archived posts from feed
-    posts = await db.posts.find({"isArchived": {"$ne": True}}).sort("createdAt", -1).to_list(1000)
-    
-    # Get current user's saved posts
+    # Get current user's full data to access blockedUsers and mutedUsers
     user = await db.users.find_one({"id": current_user.id})
+    blocked_users = user.get("blockedUsers", [])
+    muted_users = user.get("mutedUsers", [])
     saved_posts = user.get("savedPosts", [])
+    
+    # Combine blocked and muted users to exclude from feed
+    excluded_users = list(set(blocked_users + muted_users))
+    
+    # Exclude archived posts and posts from blocked/muted users
+    query = {
+        "isArchived": {"$ne": True}
+    }
+    
+    # Add filter to exclude posts from blocked and muted users
+    if excluded_users:
+        query["userId"] = {"$nin": excluded_users}
+    
+    posts = await db.posts.find(query).sort("createdAt", -1).to_list(1000)
     
     posts_list = []
     for post in posts:
