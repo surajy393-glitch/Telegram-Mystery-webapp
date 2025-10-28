@@ -3579,6 +3579,52 @@ async def unfollow_user(userId: str, current_user: User = Depends(get_current_us
     
     return {"message": "User unfollowed successfully"}
 
+@api_router.post("/users/{userId}/accept-follow-request")
+async def accept_follow_request(userId: str, current_user: User = Depends(get_current_user)):
+    """Accept a follow request from another user"""
+    # Remove from follow requests
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$pull": {"followRequests": userId}}
+    )
+    
+    # Add to followers
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$addToSet": {"followers": userId}}
+    )
+    
+    # Add to their following list
+    await db.users.update_one(
+        {"id": userId},
+        {"$addToSet": {"following": current_user.id}}
+    )
+    
+    # Create notification
+    requester = await db.users.find_one({"id": userId})
+    if requester:
+        notification = Notification(
+            userId=userId,
+            fromUserId=current_user.id,
+            fromUsername=current_user.username,
+            fromUserImage=current_user.profileImage,
+            type="follow_request_accepted"
+        )
+        await db.notifications.insert_one(notification.dict())
+    
+    return {"message": "Follow request accepted"}
+
+@api_router.post("/users/{userId}/reject-follow-request")
+async def reject_follow_request(userId: str, current_user: User = Depends(get_current_user)):
+    """Reject/delete a follow request from another user"""
+    # Remove from follow requests
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$pull": {"followRequests": userId}}
+    )
+    
+    return {"message": "Follow request rejected"}
+
 # My Profile Routes
 @api_router.get("/profile/posts")
 async def get_my_posts(current_user: User = Depends(get_current_user)):
