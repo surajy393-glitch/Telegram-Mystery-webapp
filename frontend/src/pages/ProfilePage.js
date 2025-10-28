@@ -211,9 +211,22 @@ const ProfilePage = ({ user, onLogout }) => {
       // Add to following in progress
       setFollowingInProgress(prev => new Set(prev).add(targetUserId));
 
-      // Make API call
-      const endpoint = isFollowing ? "unfollow" : "follow";
-      console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
+      let endpoint, newState;
+      
+      if (hasRequested) {
+        // Cancel follow request
+        endpoint = "cancel-follow-request";
+        newState = { isFollowing: false, hasRequested: false };
+      } else if (isFollowing) {
+        // Unfollow
+        endpoint = "unfollow";
+        newState = { isFollowing: false, hasRequested: false };
+      } else {
+        // Follow or send request
+        endpoint = "follow";
+      }
+
+      console.log(`Action: ${endpoint} for user ${targetUserId}`);
       
       const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
@@ -222,16 +235,20 @@ const ProfilePage = ({ user, onLogout }) => {
       console.log("Follow action response:", response.data);
       
       // Update state based on response
-      const wasRequestSent = response.data.requested === true;
+      if (endpoint === "follow") {
+        const wasRequestSent = response.data.requested === true;
+        newState = wasRequestSent 
+          ? { isFollowing: false, hasRequested: true }
+          : { isFollowing: true, hasRequested: false };
+      }
       
       if (viewingUser && viewingUser.id === targetUserId) {
         setViewingUser(prev => ({
           ...prev,
-          isFollowing: wasRequestSent ? false : !isFollowing,
-          hasRequested: wasRequestSent ? true : false,
-          followersCount: (!isFollowing && !wasRequestSent) 
+          ...newState,
+          followersCount: newState.isFollowing && !isFollowing
             ? prev.followersCount + 1 
-            : (isFollowing ? Math.max(0, prev.followersCount - 1) : prev.followersCount)
+            : (!newState.isFollowing && isFollowing ? Math.max(0, prev.followersCount - 1) : prev.followersCount)
         }));
       }
 
@@ -242,9 +259,9 @@ const ProfilePage = ({ user, onLogout }) => {
       console.error("Error toggling follow:", error);
       if (error.response) {
         console.error("Response error:", error.response.data);
-        alert(error.response.data.detail || "Failed to follow/unfollow user");
+        alert(error.response.data.detail || "Failed to process request");
       } else {
-        alert("Failed to follow/unfollow user. Please try again.");
+        alert("Failed to process request. Please try again.");
       }
     } finally {
       // Remove from following in progress
