@@ -60,17 +60,41 @@ const MysteryMatchHome = () => {
           localStorage.setItem('token', response.data.access_token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
           setAuthenticating(false);
-          window.location.reload(); // Reload to update user state
+          setUser(response.data.user); // Update state instead of reload
+          setLoading(false);
         }
       } catch (error) {
         console.error('❌ Auto-auth failed:', error);
         setAuthenticating(false);
+        setLoading(false);
       }
     };
 
     handleTelegramAuth();
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUserId = userData.tg_user_id || userData.id;
+    
+    if (!currentUserId || !token) {
+      console.log('Waiting for authentication...');
+      return;
+    }
+    
+    console.log('User authenticated, fetching data...');
+    fetchUserData();
+    fetchStats();
+    fetchMatches();
+  }, [user]); // Re-run when user state changes
+
+  const fetchUserData = async () => {
+    // Existing fetchUserData logic
+  };
+  
+  // Remove the old useEffect that checked userId
+  /*
   useEffect(() => {
     if (!userId) {
       // User not properly registered, redirect to register
