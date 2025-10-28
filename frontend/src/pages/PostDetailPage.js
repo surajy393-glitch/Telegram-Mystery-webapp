@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, MessageCircle, Send, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Send, Image as ImageIcon, MoreVertical, Trash2, Flag, Ban } from "lucide-react";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
