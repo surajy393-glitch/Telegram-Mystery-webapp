@@ -152,6 +152,17 @@ const MysteryMatchHome = () => {
     return `${hours}h ${minutes}m`;
   };
 
+  if (authenticating) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mx-auto mb-4"></div>
+          <div className="text-2xl">Authenticating with Telegram...</div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center">
