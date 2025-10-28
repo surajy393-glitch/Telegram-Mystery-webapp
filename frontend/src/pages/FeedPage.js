@@ -821,6 +821,32 @@ const FeedPage = ({ user, onLogout }) => {
         }}
         onCommentAdded={fetchFeed}
       />
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <h3 className="text-lg font-bold mb-4">Share Post</h3>
+            <div className="bg-gray-100 rounded-lg p-3 mb-4 break-all text-sm">
+              {shareLink}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={copyToClipboard}
+                className="flex-1 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
