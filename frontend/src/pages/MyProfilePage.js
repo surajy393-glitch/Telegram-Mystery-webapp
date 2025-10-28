@@ -134,11 +134,11 @@ const MyProfilePage = ({ user, onLogout }) => {
                   <p className="text-sm text-gray-600">Posts</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-600">{profile?.followers?.length || 0}</p>
+                  <p className="text-2xl font-bold text-pink-600">{profile?.followersCount || 0}</p>
                   <p className="text-sm text-gray-600">Followers</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-600">{profile?.following?.length || 0}</p>
+                  <p className="text-2xl font-bold text-pink-600">{profile?.followingCount || 0}</p>
                   <p className="text-sm text-gray-600">Following</p>
                 </div>
               </div>
