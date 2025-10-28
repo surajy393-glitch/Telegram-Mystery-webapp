@@ -93,24 +93,14 @@ const MysteryMatchHome = () => {
     // Existing fetchUserData logic
   };
   
-  // Remove the old useEffect that checked userId
-  /*
-  useEffect(() => {
-    if (!userId) {
-      // User not properly registered, redirect to register
-      console.error('No user ID found in localStorage:', userData);
-      navigate('/register');
-      return;
-    }
-    console.log('Mystery Match Home - User ID:', userId, 'User Data:', userData);
-    fetchUserData();
-    fetchStats();
-    fetchMatches();
-  }, [userId]);
-
   const fetchUserData = async () => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUserId = userData.tg_user_id || userData.id;
+    
+    if (!currentUserId) return;
+    
     try {
-      const response = await axios.get(`${API_URL}/api/users/${userId}`);
+      const response = await axios.get(`${API_URL}/api/users/${currentUserId}`);
       setUser(response.data);
     } catch (error) {
       console.error('Error fetching user:', error);
