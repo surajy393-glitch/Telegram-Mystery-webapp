@@ -281,6 +281,17 @@ const MysteryChatPage = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {/* Vibe Compatibility Card (shown after 30 messages) */}
+        {messageCount >= 30 && partner.id && (
+          <div className="mb-4">
+            <VibeCompatibility 
+              partnerUserId={partner.id} 
+              messageCount={messageCount}
+              showAt={30}
+            />
+          </div>
+        )}
+        
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-white">
