@@ -4605,6 +4605,13 @@ async def register_for_mystery(
         # 5. Create user in MongoDB (web app database)
         hashed_password = get_password_hash(password)
         
+        # Parse personality answers from JSON string
+        import json
+        try:
+            personality_data = json.loads(personalityAnswers) if personalityAnswers else {}
+        except:
+            personality_data = {}
+        
         mongo_user = {
             "id": mongo_user_id,
             "fullName": fullName,
@@ -4617,6 +4624,7 @@ async def register_for_mystery(
             "bio": "",
             "profileImage": profile_photo_url,
             "mobileNumber": mobileNumber,
+            "personalityAnswers": personality_data,
             "isPremium": False,
             "isVerified": False,
             "authMethod": "email",
