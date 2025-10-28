@@ -33,6 +33,7 @@ const API = `${BACKEND_URL}/api`;
 
 const SearchPage = ({ user, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
     users: [],
