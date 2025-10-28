@@ -210,6 +210,7 @@ const SearchPage = ({ user, onLogout }) => {
   const handleFollowToggle = async (targetUserId, isFollowing) => {
     // Prevent multiple simultaneous follow actions on same user
     if (followingInProgress.has(targetUserId)) {
+      console.log("Follow action already in progress for user:", targetUserId);
       return;
     }
 
@@ -217,8 +218,11 @@ const SearchPage = ({ user, onLogout }) => {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No authentication token found");
+        alert("Please log in to follow users");
         return;
       }
+
+      console.log(`Starting follow action for user ${targetUserId}, currently following: ${isFollowing}`);
 
       // Add to following in progress
       setFollowingInProgress(prev => new Set(prev).add(targetUserId));
@@ -244,6 +248,7 @@ const SearchPage = ({ user, onLogout }) => {
           ...prev,
           users: updateUserFollowStatus(prev.users, targetUserId, !isFollowing)
         }));
+        console.log("Updated search results optimistically");
       }
 
       if (trendingContent.trending_users && trendingContent.trending_users.length > 0) {
@@ -251,17 +256,18 @@ const SearchPage = ({ user, onLogout }) => {
           ...prev,
           trending_users: updateUserFollowStatus(prev.trending_users, targetUserId, !isFollowing)
         }));
+        console.log("Updated trending users optimistically");
       }
 
       // Make API call in background
       const endpoint = isFollowing ? "unfollow" : "follow";
-      console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
+      console.log(`Making API call to: ${API}/users/${targetUserId}/${endpoint}`);
       
       const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log("Follow action response:", response.data);
+      console.log("Follow action successful:", response.data);
       
     } catch (error) {
       console.error("Error toggling follow:", error);
@@ -297,6 +303,9 @@ const SearchPage = ({ user, onLogout }) => {
 
       if (error.response) {
         console.error("Response error:", error.response.data);
+        alert(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user: ${error.response.data.detail || 'Unknown error'}`);
+      } else {
+        alert(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user. Please try again.`);
       }
     } finally {
       // Remove from following in progress
@@ -305,6 +314,7 @@ const SearchPage = ({ user, onLogout }) => {
         newSet.delete(targetUserId);
         return newSet;
       });
+      console.log("Follow action completed for user:", targetUserId);
     }
   };
 
