@@ -457,37 +457,71 @@ const ProfilePage = ({ user, onLogout }) => {
           )}
         </div>
 
-        {/* Vibe Compatibility Dialog */}
+        {/* Vibe Check Dialog */}
         <Dialog open={showVibeCompatibility} onOpenChange={setShowVibeCompatibility}>
-          <DialogContent className="bg-white rounded-3xl" data-testid="vibe-compatibility-dialog">
+          <DialogContent className="bg-white rounded-3xl max-w-md" data-testid="vibe-compatibility-dialog">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">
-                Vibe Compatibility
+                Vibe Check
               </DialogTitle>
             </DialogHeader>
-            <div className="text-center py-6">
+            <div className="text-center py-4">
               {vibeScore !== null ? (
-                <div className="space-y-4">
-                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">
-                    {vibeScore}%
+                <div className="space-y-3">
+                  {/* Main Score */}
+                  <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">
+                    {vibeScore.compatibility_percentage}%
                   </div>
-                  <p className="text-lg text-gray-700">
-                    Your vibe compatibility with {viewingUser?.fullName}
+                  <p className="text-sm text-gray-600">
+                    {vibeScore.message}
                   </p>
-                  <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl p-4 mt-4">
-                    <p className="text-sm text-gray-600">
-                      {vibeScore >= 80 ? "🔥 Amazing connection! You two are perfectly matched!" :
-                       vibeScore >= 60 ? "💫 Great chemistry! You have a lot in common!" :
-                       vibeScore >= 40 ? "✨ Good potential! Worth getting to know each other better!" :
-                       "🌟 Different vibes, but opposites can attract!"}
-                    </p>
+                  
+                  {/* Breakdown in Grid - All 3 in one view */}
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {/* Total Score */}
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {vibeScore.compatibility_percentage}%
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Overall</div>
+                    </div>
+                    
+                    {/* Interest Match */}
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {vibeScore.interest_score}%
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Interests</div>
+                    </div>
+                    
+                    {/* Personality Match */}
+                    <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-3">
+                      <div className="text-2xl font-bold text-pink-600">
+                        {vibeScore.personality_score}%
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Personality</div>
+                    </div>
                   </div>
+                  
+                  {/* Common Interests */}
+                  {vibeScore.common_interests && vibeScore.common_interests.length > 0 && (
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 mt-3">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">❤️ Common Interests</div>
+                      <div className="flex flex-wrap gap-1">
+                        {vibeScore.common_interests.map((interest, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-                  <p className="text-lg text-gray-700">
-                    AI is analyzing your compatibility...
+                <div className="space-y-3 py-4">
+                  <div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                  <p className="text-sm text-gray-600">
+                    Calculating vibe...
                   </p>
                 </div>
               )}
