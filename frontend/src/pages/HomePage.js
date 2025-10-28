@@ -713,7 +713,7 @@ const HomePage = ({ user, onLogout }) => {
             posts.map((post) => (
               <div key={post.id} className="glass-effect rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
                 {/* Post Header */}
-                <div className="p-4 flex items-center justify-between" style={{backgroundColor: '#fff', position: 'relative'}}>
+                <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
                       src={
