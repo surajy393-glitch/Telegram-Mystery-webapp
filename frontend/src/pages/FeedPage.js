@@ -1256,6 +1256,222 @@ const FeedPage = ({ user, onLogout }) => {
           </div>
         </div>
       )}
+      
+      {/* Story Report Dialog */}
+      {showStoryReportDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-white text-center mb-2">
+              Report Story
+            </h2>
+            <p className="text-gray-300 text-center text-sm mb-6">
+              Why are you reporting this story?<br />
+              Your report is anonymous.
+            </p>
+            
+            <div className="space-y-1 max-h-[400px] overflow-y-auto">
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "I just don't like it" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                I just don't like it
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Harassment or bullying" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Harassment or bullying
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Self-harm or dangerous content" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Self-harm or dangerous content
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Hate speech or violence" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Hate speech or violence
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Illegal activities" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Illegal activities
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Adult content" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Adult content
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Spam or scam" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Spam or scam
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Misinformation" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Misinformation
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Copyright violation" }, 
+                      { headers: { Authorization: `Bearer ${token}` }}
+                    );
+                    alert('Report submitted successfully!');
+                    setShowStoryReportDialog(false);
+                    setReportingStory(null);
+                  } catch (error) {
+                    console.error('Error reporting story:', error);
+                    alert('Failed to submit report');
+                  }
+                }}
+                className="w-full text-left px-4 py-4 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              >
+                Copyright violation
+              </button>
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowStoryReportDialog(false);
+                setReportingStory(null);
+              }}
+              className="w-full mt-4 border-2 border-gray-600 hover:bg-gray-700 rounded-xl py-4 text-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
