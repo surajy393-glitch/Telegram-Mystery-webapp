@@ -111,6 +111,8 @@ const SearchPage = ({ user, onLogout }) => {
 
     try {
       const token = localStorage.getItem("token");
+      console.log('Searching for:', query, 'type:', type, 'token:', token ? 'present' : 'missing');
+      
       const response = await axios.post(`${API}/search`, {
         query: query.trim(),
         type: type === "all" ? "all" : type
@@ -118,11 +120,15 @@ const SearchPage = ({ user, onLogout }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Search results:', response.data);
+      
       // Cache the result
       searchCache.set(cacheKey, response.data);
       setSearchResults(response.data);
     } catch (error) {
       console.error("Error searching:", error);
+      console.error("Error response:", error.response?.data);
+      alert(`Search failed: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
