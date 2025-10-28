@@ -210,6 +210,54 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: Save/Unsave post endpoints working correctly. Successfully tested save functionality (returns 'Post saved'), unsave functionality (returns 'Post unsaved'). Toggle behavior working as expected."
 
+  - task: "LuvHive Verified - isVerified field in User model"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added isVerified field to User model (line 123) with default False. Field included in user registration flows and /auth/me endpoint response. Field used to display blue verification badge on frontend."
+
+  - task: "Admin Manual Verification Endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created POST /api/admin/verify-user/{username} endpoint for manual verification (testing only). Public endpoint allows immediate verification without meeting criteria. Successfully verified 'Luvsociety' and 'Luststorm' test accounts."
+
+  - task: "Verification Status Endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created GET /api/verification/status endpoint to return user's verification progress. Returns 11 criteria checks: accountAge (45+ days), emailVerified, phoneVerified, postsCount (20+), followersCount (100+), noViolations (0), profileComplete, personalityQuestions, profileViews (1000+), avgStoryViews (70+), totalLikes (1000+). Returns current values and boolean met status for each criterion."
+
+  - task: "Include isVerified in Feed and Story Endpoints"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated GET /api/posts/feed and GET /api/stories/feed endpoints to include isVerified field for each post/story author. Modified feed endpoints to fetch user verification status and include in response for frontend badge display."
+
 metadata:
   created_by: "main_agent"
   version: "3.0"
