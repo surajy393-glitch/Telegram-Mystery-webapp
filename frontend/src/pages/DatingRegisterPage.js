@@ -1137,23 +1137,23 @@ const DatingRegisterPage = ({ onLogin }) => {
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">Personality Questions</h2>
+              <h2 className="text-3xl font-extrabold text-white mb-6 text-center drop-shadow-lg">Personality Questions</h2>
               <form onSubmit={handleFinalSubmit} className="space-y-6">
-                <div className="bg-white bg-opacity-10 rounded-xl p-4 text-white text-sm mb-6">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 bg-opacity-90 rounded-xl p-4 shadow-lg mb-6">
                   <div className="flex items-start space-x-2">
-                    <span className="text-xl">🧠</span>
+                    <span className="text-2xl">🧠</span>
                     <div>
-                      <p className="font-semibold mb-1">Personality Matching</p>
-                      <p className="text-white text-opacity-80">Answer these questions to help us find your perfect vibe match!</p>
+                      <p className="font-bold text-white text-lg mb-1">Personality Matching</p>
+                      <p className="text-white text-opacity-95 font-medium">Answer these questions to help us find your perfect vibe match!</p>
                     </div>
                   </div>
                 </div>
 
                 {personalityQuestions.map((question, index) => (
-                  <div key={question.id} className="bg-white bg-opacity-10 rounded-xl p-5">
+                  <div key={question.id} className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 shadow-lg">
                     <div className="mb-4">
-                      <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                        <span className="text-2xl">{question.emoji}</span>
+                      <h3 className="text-white font-bold text-xl flex items-center gap-2 drop-shadow-md">
+                        <span className="text-3xl">{question.emoji}</span>
                         {question.question}
                       </h3>
                     </div>
@@ -1166,14 +1166,14 @@ const DatingRegisterPage = ({ onLogin }) => {
                           onClick={() => selectPersonalityAnswer(question.id, option.value)}
                           className={`p-4 rounded-lg text-left transition-all duration-200 flex items-center gap-3 ${
                             formData.personalityAnswers[question.id] === option.value
-                              ? 'bg-pink-500 text-white shadow-lg transform scale-105'
-                              : 'bg-white bg-opacity-20 text-white border border-white border-opacity-30 hover:bg-opacity-30'
+                              ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-xl transform scale-105 border-2 border-white'
+                              : 'bg-white bg-opacity-30 text-white font-semibold border-2 border-white border-opacity-40 hover:bg-opacity-40 hover:border-opacity-60 shadow-md'
                           }`}
                         >
                           <span className="text-2xl">{option.emoji}</span>
-                          <span className="font-medium">{option.label}</span>
+                          <span className="font-bold text-lg">{option.label}</span>
                           {formData.personalityAnswers[question.id] === option.value && (
-                            <span className="ml-auto text-xl">✓</span>
+                            <span className="ml-auto text-2xl">✓</span>
                           )}
                         </button>
                       ))}
