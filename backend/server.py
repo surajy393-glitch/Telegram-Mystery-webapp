@@ -4748,6 +4748,8 @@ async def register_for_mystery(
                 "age": age,
                 "gender": gender,
                 "city": city,
+                "bio": "",
+                "profileImage": profile_photo_url,
                 "tg_user_id": pseudo_tg_id,
                 "isPremium": False
             }
