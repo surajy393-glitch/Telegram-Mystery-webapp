@@ -860,18 +860,121 @@ const FeedPage = ({ user, onLogout }) => {
           <div className="relative w-full max-w-md h-full flex flex-col">
             {/* Story Header */}
             <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/70 to-transparent">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={viewingStories.userProfileImage || "https://via.placeholder.com/40"}
-                  alt={viewingStories.username}
-                  className="w-10 h-10 rounded-full border-2 border-white"
-                />
-                <div>
-                  <h3 className="text-white font-semibold">{viewingStories.username}</h3>
-                  <p className="text-white text-xs opacity-75">
-                    {new Date(viewingStories.stories[currentStoryIndex]?.createdAt).toLocaleString()}
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={viewingStories.userProfileImage || "https://via.placeholder.com/40"}
+                    alt={viewingStories.username}
+                    className="w-10 h-10 rounded-full border-2 border-white"
+                  />
+                  <div>
+                    <h3 className="text-white font-semibold">{viewingStories.username}</h3>
+                    <p className="text-white text-xs opacity-75">
+                      {new Date(viewingStories.stories[currentStoryIndex]?.createdAt).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
+                
+                {/* 3-Dot Menu for Own Stories */}
+                {viewingStories.userId === user?.id && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenStoryMenu(!openStoryMenu);
+                      }}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                    >
+                      <MoreVertical className="w-6 h-6 text-white" />
+                    </button>
+                    
+                    {openStoryMenu && (
+                      <div 
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button 
+                          onClick={async () => {
+                            if (window.confirm('Delete this story?')) {
+                              try {
+                                const token = localStorage.getItem("token");
+                                const storyId = viewingStories.stories[currentStoryIndex]?.id;
+                                await axios.delete(`${API_URL}/api/social/stories/${storyId}`, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                alert('Story deleted');
+                                setOpenStoryMenu(false);
+                                setShowStoryViewer(false);
+                                fetchStories();
+                              } catch (error) {
+                                console.error('Error deleting story:', error);
+                                alert('Failed to delete story');
+                              }
+                            }
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3 border-b"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                          Delete Story
+                        </button>
+                        
+                        <button 
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem("token");
+                              const storyId = viewingStories.stories[currentStoryIndex]?.id;
+                              await axios.post(`${API_URL}/api/social/stories/${storyId}/archive`, {}, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              alert('Story archived');
+                              setOpenStoryMenu(false);
+                              setShowStoryViewer(false);
+                              fetchStories();
+                            } catch (error) {
+                              console.error('Error archiving story:', error);
+                              alert('Failed to archive story');
+                            }
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                        >
+                          <Download className="w-5 h-5" />
+                          Archive Story
+                        </button>
+                        
+                        <button 
+                          onClick={() => {
+                            const link = `${window.location.origin}/story/${viewingStories.stories[currentStoryIndex]?.id}`;
+                            navigator.clipboard.writeText(link);
+                            alert('Link copied to clipboard!');
+                            setOpenStoryMenu(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                        >
+                          <Share2 className="w-5 h-5" />
+                          Copy Link
+                        </button>
+                        
+                        <button 
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: `${viewingStories.username}'s story`,
+                                url: `${window.location.origin}/story/${viewingStories.stories[currentStoryIndex]?.id}`
+                              });
+                            } else {
+                              alert('Sharing not supported on this device');
+                            }
+                            setOpenStoryMenu(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3"
+                        >
+                          <Share2 className="w-5 h-5" />
+                          Share Story
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
