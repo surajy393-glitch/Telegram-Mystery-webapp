@@ -1130,7 +1130,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                     disabled={loading}
                     className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-6 rounded-xl text-lg font-bold shadow-2xl"
                   >
-                    {loading ? "Creating..." : "Complete 🎉"}
+                    Next Step →
                   </Button>
                 </div>
               </form>
