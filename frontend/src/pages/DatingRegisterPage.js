@@ -1150,9 +1150,9 @@ const DatingRegisterPage = ({ onLogin }) => {
                 </div>
 
                 {personalityQuestions.map((question, index) => (
-                  <div key={question.id} className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 shadow-lg">
+                  <div key={question.id} className="bg-white rounded-xl p-5 shadow-lg">
                     <div className="mb-4">
-                      <h3 className="text-white font-bold text-xl flex items-center gap-2 drop-shadow-md">
+                      <h3 className="text-gray-900 font-bold text-xl flex items-center gap-2">
                         <span className="text-3xl">{question.emoji}</span>
                         {question.question}
                       </h3>
@@ -1166,8 +1166,8 @@ const DatingRegisterPage = ({ onLogin }) => {
                           onClick={() => selectPersonalityAnswer(question.id, option.value)}
                           className={`p-4 rounded-lg text-left transition-all duration-200 flex items-center gap-3 ${
                             formData.personalityAnswers[question.id] === option.value
-                              ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-xl transform scale-105 border-2 border-white'
-                              : 'bg-white bg-opacity-30 text-white font-semibold border-2 border-white border-opacity-40 hover:bg-opacity-40 hover:border-opacity-60 shadow-md'
+                              ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-xl transform scale-105 border-2 border-pink-700'
+                              : 'bg-gray-100 text-gray-900 font-semibold border-2 border-gray-300 hover:bg-gray-200 hover:border-gray-400 shadow-md'
                           }`}
                         >
                           <span className="text-2xl">{option.emoji}</span>
