@@ -308,15 +308,17 @@ async def get_post_comments(postId: str, userId: Optional[str] = None):
             likes = comment.get("likes", [])
             user_liked = userId in likes if userId else False
             
+            # UNIFIED FORMAT - use same fields as /api/posts endpoint
             comment_data = {
                 "id": comment_id,
                 "userId": comment.get("userId"),
                 "username": comment.get("username"),
-                "userAvatar": comment.get("userAvatar"),
-                "content": comment.get("content"),
+                "userProfileImage": comment.get("userProfileImage", comment.get("userAvatar")),  # Support both
+                "text": comment.get("text", comment.get("content")),  # Support both
                 "createdAt": comment.get("createdAt"),
                 "timeAgo": get_time_ago(comment.get("createdAt")),
                 "likesCount": len(likes),
+                "likes": likes,
                 "userLiked": user_liked,
                 "parentCommentId": comment.get("parentCommentId"),
                 "replies": []
