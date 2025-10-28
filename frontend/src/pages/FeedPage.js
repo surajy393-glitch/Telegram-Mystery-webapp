@@ -586,9 +586,11 @@ const FeedPage = ({ user, onLogout }) => {
                     <span>{post.comments}</span>
                   </button>
 
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-pink-600">
+                  <button 
+                    onClick={() => handleShare(post)}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-pink-600"
+                  >
                     <Share2 size={20} />
-                    <span>{post.shares}</span>
                   </button>
                 </div>
 
