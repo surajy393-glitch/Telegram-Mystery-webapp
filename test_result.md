@@ -141,11 +141,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Verified existing POST /api/users/{userId}/block and POST /api/users/{userId}/unblock endpoints at lines 4266 and 4314. Block removes from following/followers, adds to blockedUsers list (stronger restriction - they might realize)."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Block/Unblock endpoints working correctly. Successfully tested blocking user (returns 'User blocked successfully'), unblocking user (returns 'User unblocked successfully'). Endpoints properly handle user validation and database updates."
 
   - task: "Report Post Endpoint Enhancement"
     implemented: true
