@@ -3810,7 +3810,7 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
         # Create a more intelligent search with exact match priority
         base_filter = {
             "$and": [
-                {"id": {"$ne": current_user.id}},  # Exclude current user
+                # Allow users to find themselves in search (removed self-exclusion)
                 {"id": {"$nin": current_user.blockedUsers}},  # Exclude blocked users
                 {"appearInSearch": True}  # Only users who appear in search
             ]
