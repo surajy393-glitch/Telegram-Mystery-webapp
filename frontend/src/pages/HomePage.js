@@ -710,7 +710,7 @@ const HomePage = ({ user, onLogout }) => {
               <p className="text-gray-600 text-lg">No posts yet. Be the first to share!</p>
             </div>
           ) : (
-            posts.map((post) => (
+            posts.filter(post => post.userId !== user?.id).map((post) => (
               <div key={post.id} className="glass-effect rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
                 {/* Post Header */}
                 <div className="p-4 flex items-center justify-between">
