@@ -359,7 +359,10 @@ const ProfilePage = ({ user, onLogout }) => {
                   e.target.src = "https://via.placeholder.com/120";
                 }}
               />
-              <h2 className="text-3xl font-bold text-gray-800 mb-1">{viewingUser?.fullName}</h2>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h2 className="text-3xl font-bold text-gray-800">{viewingUser?.fullName}</h2>
+                {viewingUser?.isVerified && <VerifiedBadge size="lg" />}
+              </div>
               <p className="text-lg text-gray-600 mb-2">@{viewingUser?.username}</p>
               
               {/* Private Account Badge */}
