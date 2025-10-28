@@ -3805,6 +3805,8 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     
     # Search users (if type is "users" or "all")
     if search_type in ["users", "all"]:
+        logger.info(f"🔍 Search: Starting user search for query '{query}' by user {current_user.username}")
+        
         # Create a more intelligent search with exact match priority
         base_filter = {
             "$and": [
