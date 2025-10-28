@@ -201,11 +201,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Verified existing POST /api/posts/{post_id}/save and POST /api/posts/{post_id}/unsave endpoints exist and functional. These toggle saved posts in user's savedPosts array."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Save/Unsave post endpoints working correctly. Successfully tested save functionality (returns 'Post saved'), unsave functionality (returns 'Post unsaved'). Toggle behavior working as expected."
 
 metadata:
   created_by: "main_agent"
