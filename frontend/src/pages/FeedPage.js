@@ -23,8 +23,6 @@ const FeedPage = ({ user, onLogout }) => {
   const [viewingStories, setViewingStories] = useState(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image", mediaFile: null });
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
     if (user) {
