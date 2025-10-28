@@ -3623,6 +3623,45 @@ async def save_post(post_id: str, current_user: User = Depends(get_current_user)
         )
         return {"message": "Post saved", "isSaved": True}
 
+@api_router.post("/posts/{post_id}/unsave")
+async def unsave_post(post_id: str, current_user: User = Depends(get_current_user)):
+    """Alias for save_post (toggles save/unsave)"""
+    return await save_post(post_id, current_user)
+
+@api_router.post("/posts/{post_id}/report")
+async def report_post(post_id: str, reason: str = Form(...), current_user: User = Depends(get_current_user)):
+    """Report a post"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Store report
+    report = {
+        "id": str(uuid4()),
+        "postId": post_id,
+        "reportedBy": current_user.id,
+        "reason": reason,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.post_reports.insert_one(report)
+    
+    return {"message": "Report submitted successfully"}
+
+@api_router.delete("/posts/{post_id}")
+async def delete_post(post_id: str, current_user: User = Depends(get_current_user)):
+    """Delete a post (only by post owner)"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete your own posts")
+    
+    await db.posts.delete_one({"id": post_id})
+    
+    return {"message": "Post deleted successfully"}
+
 # Post Management (Own Posts)
 @api_router.post("/posts/{post_id}/archive")
 async def archive_post(post_id: str, current_user: User = Depends(get_current_user)):
