@@ -298,6 +298,205 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Authentication Required", False, "Exception occurred", str(e))
     
+    def login_existing_user(self, username, password):
+        """Login with existing user credentials"""
+        try:
+            user_data = {
+                "username": username,
+                "password": password
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data['access_token']
+                self.current_user_id = data['user']['id']
+                self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
+                self.log_result("User Login", True, f"Logged in as: {username}")
+                return True
+            else:
+                self.log_result("User Login", False, f"Status: {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_result("User Login", False, "Exception occurred", str(e))
+            return False
+    
+    def test_explore_endpoint_returns_posts(self):
+        """Test GET /api/search/explore returns posts from public accounts"""
+        try:
+            response = self.session.get(f"{API_BASE}/search/explore")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts_count = len(data['posts'])
+                    self.log_result("Explore Endpoint - Returns Posts", True, 
+                                  f"Retrieved {posts_count} posts from public accounts")
+                    return data['posts']
+                else:
+                    self.log_result("Explore Endpoint - Returns Posts", False, 
+                                  "Response missing 'posts' array")
+                    return []
+            else:
+                self.log_result("Explore Endpoint - Returns Posts", False, 
+                              f"Status: {response.status_code}", response.text)
+                return []
+                
+        except Exception as e:
+            self.log_result("Explore Endpoint - Returns Posts", False, "Exception occurred", str(e))
+            return []
+    
+    def test_explore_excludes_blocked_users(self):
+        """Test that explore endpoint excludes blocked users' posts"""
+        try:
+            # First, get current user's blocked users list
+            response = self.session.get(f"{API_BASE}/auth/me")
+            if response.status_code != 200:
+                self.log_result("Explore - Excludes Blocked Users", False, 
+                              "Could not fetch current user data")
+                return
+            
+            current_user = response.json()
+            blocked_users = current_user.get('blockedUsers', [])
+            
+            # Get explore posts
+            response = self.session.get(f"{API_BASE}/search/explore")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                # Check if any post is from a blocked user
+                blocked_posts = [post for post in posts if post['userId'] in blocked_users]
+                
+                if len(blocked_posts) == 0:
+                    self.log_result("Explore - Excludes Blocked Users", True, 
+                                  f"No posts from {len(blocked_users)} blocked users found in {len(posts)} posts")
+                else:
+                    self.log_result("Explore - Excludes Blocked Users", False, 
+                                  f"Found {len(blocked_posts)} posts from blocked users")
+            else:
+                self.log_result("Explore - Excludes Blocked Users", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Explore - Excludes Blocked Users", False, "Exception occurred", str(e))
+    
+    def test_explore_excludes_private_accounts(self):
+        """Test that explore endpoint excludes private account posts"""
+        try:
+            # Get explore posts
+            response = self.session.get(f"{API_BASE}/search/explore")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                # For each post, check if the user is private
+                # We need to query user data for each unique userId
+                user_ids = list(set([post['userId'] for post in posts]))
+                
+                private_posts_found = False
+                for user_id in user_ids:
+                    user_response = self.session.get(f"{API_BASE}/users/{user_id}/profile")
+                    if user_response.status_code == 200:
+                        user_data = user_response.json()
+                        if user_data.get('isPrivate', False):
+                            private_posts_found = True
+                            break
+                
+                if not private_posts_found:
+                    self.log_result("Explore - Excludes Private Accounts", True, 
+                                  f"No posts from private accounts found in {len(posts)} posts")
+                else:
+                    self.log_result("Explore - Excludes Private Accounts", False, 
+                                  "Found posts from private accounts")
+            else:
+                self.log_result("Explore - Excludes Private Accounts", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Explore - Excludes Private Accounts", False, "Exception occurred", str(e))
+    
+    def test_explore_response_format(self):
+        """Test that explore endpoint returns correct response format"""
+        try:
+            response = self.session.get(f"{API_BASE}/search/explore")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if len(posts) == 0:
+                    self.log_result("Explore - Response Format", True, 
+                                  "No posts available to check format (empty result is valid)")
+                    return
+                
+                # Check first post has all required fields
+                required_fields = ['id', 'userId', 'username', 'userProfileImage', 
+                                 'caption', 'imageUrl', 'mediaUrl', 'likesCount', 'commentsCount']
+                
+                first_post = posts[0]
+                missing_fields = [field for field in required_fields if field not in first_post]
+                
+                if len(missing_fields) == 0:
+                    self.log_result("Explore - Response Format", True, 
+                                  f"All required fields present: {', '.join(required_fields)}")
+                else:
+                    self.log_result("Explore - Response Format", False, 
+                                  f"Missing fields: {', '.join(missing_fields)}")
+            else:
+                self.log_result("Explore - Response Format", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Explore - Response Format", False, "Exception occurred", str(e))
+    
+    def test_explore_sorted_by_created_at(self):
+        """Test that explore posts are sorted by createdAt (newest first)"""
+        try:
+            response = self.session.get(f"{API_BASE}/search/explore")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if len(posts) < 2:
+                    self.log_result("Explore - Sorted by CreatedAt", True, 
+                                  f"Only {len(posts)} post(s) available, sorting cannot be verified but endpoint works")
+                    return
+                
+                # Check if posts are sorted by createdAt (newest first)
+                is_sorted = True
+                for i in range(len(posts) - 1):
+                    current_date = posts[i].get('createdAt')
+                    next_date = posts[i + 1].get('createdAt')
+                    
+                    if current_date and next_date:
+                        # Parse dates for comparison
+                        from dateutil import parser
+                        current_dt = parser.parse(current_date)
+                        next_dt = parser.parse(next_date)
+                        
+                        if current_dt < next_dt:
+                            is_sorted = False
+                            break
+                
+                if is_sorted:
+                    self.log_result("Explore - Sorted by CreatedAt", True, 
+                                  f"Posts are correctly sorted by createdAt (newest first) - checked {len(posts)} posts")
+                else:
+                    self.log_result("Explore - Sorted by CreatedAt", False, 
+                                  "Posts are not sorted correctly by createdAt")
+            else:
+                self.log_result("Explore - Sorted by CreatedAt", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Explore - Sorted by CreatedAt", False, "Exception occurred", str(e))
+    
     def test_get_user_profile_with_settings(self):
         """Test GET /api/auth/me endpoint - should NOT include publicProfile, should include blockedUsers"""
         try:
