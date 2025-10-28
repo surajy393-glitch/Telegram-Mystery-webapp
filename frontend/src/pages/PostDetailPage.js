@@ -415,14 +415,20 @@ const PostDetailPage = ({ user }) => {
                                 {/* 3-dot menu */}
                                 <div className="relative">
                                   <button
-                                    onClick={() => setShowMenuFor(showMenuFor === comment.id ? null : comment.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowMenuFor(showMenuFor === comment.id ? null : comment.id);
+                                    }}
                                     className="p-1 hover:bg-gray-100 rounded-full"
                                   >
                                     <MoreVertical className="w-4 h-4 text-gray-500" />
                                   </button>
                                   
                                   {showMenuFor === comment.id && (
-                                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
+                                    <div 
+                                      className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
                                       {comment.userId === user?.id ? (
                                         // Own comment - show delete
                                         <button
