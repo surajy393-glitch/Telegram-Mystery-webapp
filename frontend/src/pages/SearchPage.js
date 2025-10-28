@@ -96,6 +96,23 @@ const SearchPage = ({ user, onLogout }) => {
     }
   }, []);
 
+  const fetchExplorePosts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log('🔍 Fetching explore posts');
+      
+      const response = await axios.get(`${API}/search/explore`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      console.log('✅ Explore posts response:', response.data);
+      setExplorePosts(response.data.posts || []);
+    } catch (error) {
+      console.error("❌ Error fetching explore posts:", error);
+      setExplorePosts([]);
+    }
+  }, []);
+
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
 
