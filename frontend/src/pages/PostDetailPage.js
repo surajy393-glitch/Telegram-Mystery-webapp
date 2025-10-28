@@ -80,9 +80,12 @@ const PostDetailPage = ({ user }) => {
 
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('text', newComment);
+      
       const response = await axios.post(
         `${API}/posts/${postId}/comment`,
-        { text: newComment },
+        formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
