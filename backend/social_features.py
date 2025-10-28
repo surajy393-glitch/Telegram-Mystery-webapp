@@ -152,6 +152,10 @@ async def get_feed(
         # Format posts
         formatted_posts = []
         for post in posts:
+            # Get post author's verification status
+            post_author = await db.users.find_one({"id": post.get("userId")}, {"isVerified": 1})
+            is_verified = post_author.get("isVerified", False) if post_author else False
+            
             # Get like count
             like_count = len(post.get("likes", []))
             comment_count = len(post.get("comments", []))
@@ -164,6 +168,7 @@ async def get_feed(
                 "userId": post.get("userId"),
                 "username": post.get("username"),
                 "userAvatar": post.get("userAvatar"),
+                "isVerified": is_verified,
                 "content": post.get("content"),
                 "postType": post.get("postType"),
                 "imageUrl": post.get("imageUrl"),
