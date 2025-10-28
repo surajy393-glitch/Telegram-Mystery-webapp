@@ -3873,6 +3873,10 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
                 "isFollowing": user["id"] in current_user.following,
                 "isPremium": user.get("isPremium", False)
             })
+        
+        logger.info(f"✅ Search: Total users returned for '{query}': {len(results['users'])}")
+        if results['users']:
+            logger.info(f"👤 First user result: {results['users'][0]['username']} ({results['users'][0]['fullName']})")
     
     # Search posts (if type is "posts" or "all")
     if search_type in ["posts", "all"]:
