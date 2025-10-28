@@ -725,79 +725,77 @@ const HomePage = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  {/* 3-Dot Menu */}
-                  <div className="flex-shrink-0">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button 
-                          className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center bg-gray-50 border border-gray-300"
-                          data-testid={`post-menu-${post.id}`}
-                          aria-label="Post options"
-                          type="button"
-                        >
-                          <MoreVertical className="w-6 h-6 text-gray-900" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
+                  {/* 3-Dot Menu - Custom Implementation */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setOpenPostMenu(openPostMenu === post.id ? null : post.id)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      data-testid={`post-menu-${post.id}`}
+                    >
+                      <MoreVertical className="w-6 h-6 text-gray-700" />
+                    </button>
+                    
+                    {openPostMenu === post.id && (
+                      <div className="absolute right-0 top-12 bg-white rounded-xl shadow-2xl w-56 z-50 border border-gray-200">
                         {post.userId === user?.id ? (
-                        /* Own Post Menu */
-                        <>
-                          <DropdownMenuItem onClick={() => handleArchivePost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <Download className="w-4 h-4 mr-3" />
-                            Archive
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleHideLikes(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <Heart className="w-4 h-4 mr-3" />
-                            {post.likesHidden ? "Show" : "Hide"} Like Count
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleComments(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <MessageCircle className="w-4 h-4 mr-3" />
-                            {post.commentsDisabled ? "Turn On" : "Turn Off"} Commenting
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setEditingPost(post); setEditCaption(post.caption); setShowEditDialog(true); }} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <Send className="w-4 h-4 mr-3" />
-                            Edit Caption
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setDeletingPost(post.id); setShowDeleteDialog(true); }} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
-                            <Trash2 className="w-4 h-4 mr-3" />
-                            Delete
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePinPost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <Plus className="w-4 h-4 mr-3" />
-                            {post.isPinned ? "Unpin from" : "Pin to"} Your Main Grid
-                          </DropdownMenuItem>
-                        </>
-                      ) : (
-                        /* Other User's Post Menu */
-                        <>
-                          <DropdownMenuItem onClick={() => handleSavePost(post.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <Bookmark className={`w-4 h-4 mr-3 ${post.isSaved ? "fill-pink-500 text-pink-500" : ""}`} />
-                            {post.isSaved ? "Unsave" : "Save"} Post
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleFollowFromPost(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <UserIcon className="w-4 h-4 mr-3" />
-                            Follow @{post.username}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUnfollowFromPost(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <UserIcon className="w-4 h-4 mr-3" />
-                            Unfollow @{post.username}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleMuteUser(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <AlertCircle className="w-4 h-4 mr-3" />
-                            Mute User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleBlockUser(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
-                            <AlertCircle className="w-4 h-4 mr-3 text-orange-600" />
-                            <span className="text-orange-600">Block User</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setReportingPost(post); setShowReportDialog(true); }} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
-                            <AlertCircle className="w-4 h-4 mr-3" />
-                            Report Post
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                          /* Own Post Menu */
+                          <>
+                            <button onClick={() => { handleArchivePost(post.id); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <Download className="w-4 h-4" />
+                              Archive
+                            </button>
+                            <button onClick={() => { handleHideLikes(post.id); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <Heart className="w-4 h-4" />
+                              {post.likesHidden ? "Show" : "Hide"} Like Count
+                            </button>
+                            <button onClick={() => { handleToggleComments(post.id); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <MessageCircle className="w-4 h-4" />
+                              {post.commentsDisabled ? "Turn On" : "Turn Off"} Commenting
+                            </button>
+                            <button onClick={() => { setEditingPost(post); setEditCaption(post.caption); setShowEditDialog(true); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <Send className="w-4 h-4" />
+                              Edit Caption
+                            </button>
+                            <button onClick={() => { setDeletingPost(post.id); setShowDeleteDialog(true); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 rounded-lg flex items-center gap-3">
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                            <button onClick={() => { handlePinPost(post.id); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <Plus className="w-4 h-4" />
+                              {post.isPinned ? "Unpin from" : "Pin to"} Your Main Grid
+                            </button>
+                          </>
+                        ) : (
+                          /* Other User's Post Menu */
+                          <>
+                            <button onClick={() => { handleSavePost(post.id); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <Bookmark className={`w-4 h-4 ${post.isSaved ? "fill-pink-500 text-pink-500" : ""}`} />
+                              {post.isSaved ? "Unsave" : "Save"} Post
+                            </button>
+                            <button onClick={() => { handleFollowFromPost(post.userId); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <UserIcon className="w-4 h-4" />
+                              Follow @{post.username}
+                            </button>
+                            <button onClick={() => { handleUnfollowFromPost(post.userId); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <UserIcon className="w-4 h-4" />
+                              Unfollow @{post.username}
+                            </button>
+                            <button onClick={() => { handleMuteUser(post.userId); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3">
+                              <AlertCircle className="w-4 h-4" />
+                              Mute User
+                            </button>
+                            <button onClick={() => { handleBlockUser(post.userId); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-pink-50 rounded-lg flex items-center gap-3 text-orange-600">
+                              <AlertCircle className="w-4 h-4" />
+                              Block User
+                            </button>
+                            <button onClick={() => { setReportingPost(post); setShowReportDialog(true); setOpenPostMenu(null); }} className="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 rounded-lg flex items-center gap-3">
+                              <AlertCircle className="w-4 h-4" />
+                              Report Post
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
