@@ -107,6 +107,20 @@ const HomePage = ({ user, onLogout }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Close post menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openPostMenu && !event.target.closest('[data-testid^="post-menu-"]')) {
+        setOpenPostMenu(null);
+      }
+    };
+
+    if (openPostMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openPostMenu]);
+
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem("token");
