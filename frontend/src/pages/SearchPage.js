@@ -507,9 +507,14 @@ const SearchPage = ({ user, onLogout }) => {
                     >
                       {suggestion.avatar && (
                         <img
-                          src={suggestion.avatar}
+                          src={
+                            suggestion.avatar.startsWith('data:') || suggestion.avatar.startsWith('http')
+                              ? suggestion.avatar
+                              : `${API}${suggestion.avatar}`
+                          }
                           alt=""
                           className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => e.target.src = "https://via.placeholder.com/32"}
                         />
                       )}
                       {suggestion.type === "hashtag" && (
