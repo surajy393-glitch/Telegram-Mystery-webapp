@@ -4855,6 +4855,7 @@ async def register_for_mystery(
             "followers": [],
             "following": [],
             "blockedUsers": [],
+            "mutedUsers": [],
             "hiddenStoryUsers": [],
             "postsSaved": [],
             "createdAt": datetime.now(timezone.utc).isoformat(),
