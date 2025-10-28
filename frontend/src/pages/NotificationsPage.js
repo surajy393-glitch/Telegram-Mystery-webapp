@@ -56,6 +56,39 @@ const NotificationsPage = ({ user, onLogout }) => {
     }
   };
 
+  const handleAcceptFollowRequest = async (fromUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${fromUserId}/accept-follow-request`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Remove notification from list
+      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.fromUserId === fromUserId)));
+      
+      alert("Follow request accepted!");
+    } catch (error) {
+      console.error("Error accepting follow request:", error);
+      alert("Failed to accept follow request");
+    }
+  };
+
+  const handleRejectFollowRequest = async (fromUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${fromUserId}/reject-follow-request`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Remove notification from list
+      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.fromUserId === fromUserId)));
+      
+    } catch (error) {
+      console.error("Error rejecting follow request:", error);
+      alert("Failed to reject follow request");
+    }
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case "like":
@@ -63,6 +96,7 @@ const NotificationsPage = ({ user, onLogout }) => {
       case "comment":
         return <MessageCircle className="w-10 h-10 text-blue-500" />;
       case "follow":
+      case "follow_request":
         return <UserPlus className="w-10 h-10 text-pink-500" />;
       default:
         return <Heart className="w-10 h-10 text-gray-500" />;
@@ -77,6 +111,8 @@ const NotificationsPage = ({ user, onLogout }) => {
         return "commented on your post";
       case "follow":
         return "started following you";
+      case "follow_request":
+        return "requested to follow you";
       default:
         return "interacted with you";
     }
