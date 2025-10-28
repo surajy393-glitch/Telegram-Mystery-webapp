@@ -129,7 +129,10 @@ const FeedPage = ({ user, onLogout }) => {
         setSelectedImage(null);
         setIsAnonymous(false);
         setShowCreatePost(false);
-        fetchFeed();
+        // Wait a moment for backend to process, then refresh feed
+        setTimeout(() => {
+          fetchFeed();
+        }, 500);
       }
     } catch (error) {
       console.error('Error creating post:', error);
