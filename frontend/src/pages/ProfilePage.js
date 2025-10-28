@@ -415,22 +415,27 @@ const ProfilePage = ({ user, onLogout }) => {
               {/* Action Buttons */}
               <div className="flex gap-2 mt-6">
                 <Button
-                  onClick={() => handleFollowToggle(viewingUser?.id, viewingUser?.isFollowing)}
+                  onClick={() => handleFollowToggle(viewingUser?.id, viewingUser?.isFollowing, viewingUser?.hasRequested)}
                   data-testid="follow-user-btn"
-                  variant={viewingUser?.isFollowing ? "outline" : "default"}
+                  variant={viewingUser?.isFollowing ? "outline" : (viewingUser?.hasRequested ? "outline" : "default")}
                   disabled={followingInProgress.has(viewingUser?.id)}
-                  className={viewingUser?.isFollowing 
-                    ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-3 text-sm" 
-                    : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-3 text-sm"
+                  className={
+                    viewingUser?.hasRequested
+                      ? "flex-1 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 rounded-xl py-3 text-sm cursor-default"
+                      : viewingUser?.isFollowing 
+                        ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-3 text-sm" 
+                        : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-3 text-sm"
                   }
                 >
                   {followingInProgress.has(viewingUser?.id) ? (
                     <div className="flex items-center justify-center gap-1">
                       <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs">{viewingUser?.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                      <span className="text-xs">
+                        {viewingUser?.isFollowing ? 'Unfollowing...' : (viewingUser?.hasRequested ? 'Canceling...' : 'Requesting...')}
+                      </span>
                     </div>
                   ) : (
-                    viewingUser?.isFollowing ? "Following" : "Follow"
+                    viewingUser?.hasRequested ? "Requested" : (viewingUser?.isFollowing ? "Following" : "Follow")
                   )}
                 </Button>
                 
