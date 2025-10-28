@@ -3629,6 +3629,17 @@ async def reject_follow_request(userId: str, current_user: User = Depends(get_cu
     
     return {"message": "Follow request rejected"}
 
+@api_router.post("/users/{userId}/cancel-follow-request")
+async def cancel_follow_request(userId: str, current_user: User = Depends(get_current_user)):
+    """Cancel a follow request that was sent to another user"""
+    # Remove from the target user's follow requests
+    await db.users.update_one(
+        {"id": userId},
+        {"$pull": {"followRequests": current_user.id}}
+    )
+    
+    return {"message": "Follow request cancelled"}
+
 # My Profile Routes
 @api_router.get("/profile/posts")
 async def get_my_posts(current_user: User = Depends(get_current_user)):
