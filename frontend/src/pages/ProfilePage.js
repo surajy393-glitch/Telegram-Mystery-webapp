@@ -359,6 +359,14 @@ const ProfilePage = ({ user, onLogout }) => {
               <h2 className="text-3xl font-bold text-gray-800 mb-1">{viewingUser?.fullName}</h2>
               <p className="text-lg text-gray-600 mb-2">@{viewingUser?.username}</p>
               
+              {/* Private Account Badge */}
+              {viewingUser?.isPrivate && (
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Lock className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-600">Private Account</span>
+                </div>
+              )}
+              
               {viewingUser?.isPremium && (
                 <div className="inline-flex items-center gap-2 premium-badge mb-4">
                   <Crown className="w-4 h-4" />
