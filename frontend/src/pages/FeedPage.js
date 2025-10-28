@@ -1193,6 +1193,62 @@ const FeedPage = ({ user, onLogout }) => {
                 )}
               </>
             )}
+            
+            {/* Bottom Action Bar - Like, Send Message, Share */}
+            {viewingStories.userId !== user?.id && (
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                <div className="flex items-center gap-4 max-w-md mx-auto">
+                  {/* Like Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("token");
+                        const storyId = viewingStories.stories[currentStoryIndex]?.id;
+                        await axios.post(`${API_URL}/api/stories/${storyId}/like`, {}, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        alert('Liked!');
+                      } catch (error) {
+                        console.error('Error liking story:', error);
+                      }
+                    }}
+                    className="p-3 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <Heart className="w-7 h-7 text-white" />
+                  </button>
+                  
+                  {/* Send Message Button */}
+                  <button
+                    onClick={() => {
+                      alert(`Send message to ${viewingStories.username}`);
+                      // You can implement navigation to chat here
+                    }}
+                    className="p-3 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <Send className="w-7 h-7 text-white" />
+                  </button>
+                  
+                  {/* Share Button */}
+                  <button
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: `${viewingStories.username}'s story`,
+                          url: `${window.location.origin}/story/${viewingStories.stories[currentStoryIndex]?.id}`
+                        });
+                      } else {
+                        const link = `${window.location.origin}/story/${viewingStories.stories[currentStoryIndex]?.id}`;
+                        navigator.clipboard.writeText(link);
+                        alert('Link copied to clipboard!');
+                      }
+                    }}
+                    className="p-3 hover:bg-white/20 rounded-full transition-colors ml-auto"
+                  >
+                    <Share2 className="w-7 h-7 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
