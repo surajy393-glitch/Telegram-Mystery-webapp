@@ -985,9 +985,18 @@ const HomePage = ({ user, onLogout }) => {
               {/* User Info */}
               <div className="absolute top-6 left-4 flex items-center gap-2 z-40">
                 <img
-                  src={viewingStories.userProfileImage || "https://via.placeholder.com/40"}
+                  src={
+                    viewingStories.userProfileImage 
+                      ? (viewingStories.userProfileImage.startsWith('http') || viewingStories.userProfileImage.startsWith('data:')
+                          ? viewingStories.userProfileImage 
+                          : `${process.env.REACT_APP_BACKEND_URL}${viewingStories.userProfileImage}`)
+                      : "https://via.placeholder.com/40"
+                  }
                   alt={viewingStories.username}
                   className="w-8 h-8 rounded-full border-2 border-white"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/40";
+                  }}
                 />
                 <span className="text-white font-semibold text-sm">{viewingStories.username}</span>
               </div>
