@@ -3828,8 +3828,8 @@ async def unsave_post(post_id: str, current_user: User = Depends(get_current_use
     return await save_post(post_id, current_user)
 
 @api_router.post("/posts/{post_id}/report")
-async def report_post(post_id: str, reason: str = Form(...), current_user: User = Depends(get_current_user)):
-    """Report a post"""
+async def report_post(post_id: str, report_data: ReportPostRequest, current_user: User = Depends(get_current_user)):
+    """Report a post with specified reason"""
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -3838,14 +3838,16 @@ async def report_post(post_id: str, reason: str = Form(...), current_user: User 
     report = {
         "id": str(uuid4()),
         "postId": post_id,
+        "postUserId": post.get("userId"),
         "reportedBy": current_user.id,
-        "reason": reason,
+        "reporterUsername": current_user.username,
+        "reason": report_data.reason,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     
     await db.post_reports.insert_one(report)
     
-    return {"message": "Report submitted successfully"}
+    return {"message": "Report submitted successfully", "success": True}
 
 @api_router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, current_user: User = Depends(get_current_user)):
