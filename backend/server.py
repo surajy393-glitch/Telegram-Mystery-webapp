@@ -2154,8 +2154,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     # Current values for progress display
     current_values = {
         "accountAgeDays": account_age_days,
-        "emailVerified": bool(current_user.email),
-        "phoneVerified": bool(getattr(current_user, 'mobile', None)),
+        "emailVerified": bool(getattr(current_user, 'emailVerified', False)),
+        "phoneVerified": bool(getattr(current_user, 'phoneVerified', False)),
         "postsCount": posts_count,
         "followersCount": len(current_user.followers),
         "violationsCount": getattr(current_user, 'violationsCount', 0),
