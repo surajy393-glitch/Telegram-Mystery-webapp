@@ -3218,10 +3218,15 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     for story in stories:
         user_id = story["userId"]
         if user_id not in stories_by_user:
+            # Get user's verification status
+            story_author = await db.users.find_one({"id": user_id}, {"isVerified": 1})
+            is_verified = story_author.get("isVerified", False) if story_author else False
+            
             stories_by_user[user_id] = {
                 "userId": user_id,
                 "username": story["username"],
                 "userProfileImage": story.get("userProfileImage"),
+                "isVerified": is_verified,
                 "stories": []
             }
         stories_by_user[user_id]["stories"].append({
