@@ -42,6 +42,7 @@ const SearchPage = ({ user, onLogout }) => {
     trending_hashtags: []
   });
   const [explorePosts, setExplorePosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(false);
