@@ -1533,7 +1533,9 @@ async def telegram_webapp_auth(initData: str = Form(...)):
         if existing_user:
             # User exists, log them in
             access_token = create_access_token(data={"sub": existing_user["id"]})
-            user_dict = {k: v for k, v in existing_user.items() if k not in ["password_hash", "_id"]}
+            user_dict = {k: (v.isoformat() if isinstance(v, datetime) else v) 
+                         for k, v in existing_user.items() 
+                         if k not in ["password_hash", "_id"]}
             
             return {
                 "success": True,
