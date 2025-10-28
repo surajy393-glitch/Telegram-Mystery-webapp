@@ -322,7 +322,7 @@ const SearchPage = ({ user, onLogout }) => {
             userItem.profileImage
               ? (userItem.profileImage.startsWith('data:') || userItem.profileImage.startsWith('http')
                   ? userItem.profileImage
-                  : `${API}${userItem.profileImage}`)
+                  : `${BACKEND_URL}${userItem.profileImage}`)
               : "https://via.placeholder.com/48"
           }
           alt={userItem.username}
