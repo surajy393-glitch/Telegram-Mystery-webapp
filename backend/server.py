@@ -1448,6 +1448,39 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "id": str(uuid4()),
             "fullName": f"{telegram_data.first_name} {telegram_data.last_name or ''}".strip(),
             "username": username,
+            "telegramId": telegram_data.id,
+            "telegramUsername": telegram_data.username,
+            "telegramFirstName": telegram_data.first_name,
+            "telegramLastName": telegram_data.last_name,
+            "telegramPhotoUrl": telegram_data.photo_url,
+            "email": f"tg{telegram_data.id}@luvhive.app",
+            "age": 18,
+            "gender": "Not specified",
+            "bio": "",
+            "profileImage": telegram_data.photo_url or '',
+            "authMethod": "telegram",
+            "isPremium": False,
+            "isPrivate": False,
+            "following": [],
+            "followers": [],
+            "blockedUsers": [],
+            "savedPosts": [],
+            "preferences": {"ageRange": [18, 100], "lookingFor": "Not specified"},
+            "interests": [],
+            "location": {"city": "", "country": ""},
+            "socialLinks": {},
+            "privacy": {"showAge": True, "showLocation": True},
+            "createdAt": datetime.now(timezone.utc)
+        }
+        
+        await db.users.insert_one(user_dict)
+        access_token = create_access_token(data={"sub": user_dict["id"]})
+        
+        return {
+            "message": "Telegram registration successful",
+            "access_token": access_token,
+            "user": user_dict
+        }
 
 @api_router.post("/auth/telegram-webapp")
 async def telegram_webapp_auth(initData: str = Form(...)):
