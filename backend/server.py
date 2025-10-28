@@ -224,6 +224,9 @@ class ProfileUpdate(BaseModel):
     bio: Optional[str] = None
     profileImage: Optional[str] = None
 
+class ReportPostRequest(BaseModel):
+    reason: str  # The report category/reason
+    
 class UserLogin(BaseModel):
     username: str
     password: str
