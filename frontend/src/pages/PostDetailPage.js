@@ -333,6 +333,55 @@ const PostDetailPage = ({ user }) => {
     }
   };
 
+  const handleHideLikes = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/hide-likes`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setPost(prev => ({
+        ...prev,
+        likesHidden: !prev.likesHidden
+      }));
+
+      alert(post?.likesHidden ? "Like count now visible" : "Like count hidden");
+      setShowPostMenu(false);
+    } catch (error) {
+      console.error("Error hiding likes:", error);
+      alert("Failed to hide likes");
+    }
+  };
+
+  const handleEditCaption = () => {
+    setEditedCaption(post?.caption || "");
+    setShowEditModal(true);
+    setShowPostMenu(false);
+  };
+
+  const submitEditCaption = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('caption', editedCaption);
+      
+      await axios.put(`${API}/posts/${postId}`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setPost(prev => ({
+        ...prev,
+        caption: editedCaption
+      }));
+
+      alert("Caption updated!");
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating caption:", error);
+      alert("Failed to update caption");
+    }
+  };
+
   const handleCopyLink = async () => {
     const postUrl = `${window.location.origin}/post/${postId}`;
     try {
