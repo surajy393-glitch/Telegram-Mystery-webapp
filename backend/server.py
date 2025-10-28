@@ -3531,7 +3531,14 @@ async def follow_user(userId: str, current_user: User = Depends(get_current_user
             {"$addToSet": {"followRequests": current_user.id}}
         )
         
-        # Create follow request notification
+        # Delete any existing follow request notifications first
+        await db.notifications.delete_many({
+            "userId": userId,
+            "fromUserId": current_user.id,
+            "type": "follow_request"
+        })
+        
+        # Create NEW follow request notification
         notification = Notification(
             userId=userId,
             fromUserId=current_user.id,
