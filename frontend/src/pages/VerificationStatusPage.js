@@ -121,101 +121,116 @@ const VerificationStatusPage = ({ user }) => {
     );
   }
 
-  const criteria = [
-    {
-      key: 'accountAge',
-      label: 'Account Age',
-      requirement: '45+ days old',
-      met: verificationData?.criteria?.accountAge || false,
-      value: verificationData?.currentValues?.accountAgeDays || 0,
-      progress: `${verificationData?.currentValues?.accountAgeDays || 0} days`
-    },
+  // Group criteria by category
+  const identitySecurityCriteria = [
     {
       key: 'emailVerified',
       label: 'Email Verified',
-      requirement: 'Email address verified',
+      requirement: 'Verify your email address',
       met: verificationData?.criteria?.emailVerified || false,
-      value: verificationData?.currentValues?.emailVerified ? 1 : 0,
       progress: verificationData?.currentValues?.emailVerified ? 'Verified' : 'Not verified'
     },
     {
       key: 'phoneVerified',
       label: 'Phone Verified',
-      requirement: 'Phone number verified',
+      requirement: 'Verify your phone number',
       met: verificationData?.criteria?.phoneVerified || false,
-      value: verificationData?.currentValues?.phoneVerified ? 1 : 0,
       progress: verificationData?.currentValues?.phoneVerified ? 'Verified' : 'Not verified'
+    }
+  ];
+
+  const profileCompletenessCriteria = [
+    {
+      key: 'profileComplete',
+      label: 'Complete Profile',
+      requirement: 'Fill all profile fields',
+      met: verificationData?.criteria?.profileComplete || false,
+      progress: verificationData?.currentValues?.profileComplete ? 'Complete' : 'Incomplete'
     },
     {
-      key: 'postsCount',
-      label: 'Posts',
-      requirement: '20+ posts',
-      met: verificationData?.criteria?.postsCount || false,
-      value: verificationData?.currentValues?.postsCount || 0,
-      progress: `${verificationData?.currentValues?.postsCount || 0}/20 posts`
-    },
+      key: 'personalityQuestions',
+      label: 'Personality Quiz',
+      requirement: 'Complete personality questions',
+      met: true,
+      progress: 'Completed'
+    }
+  ];
+
+  const tenureBehaviourCriteria = [
     {
-      key: 'followersCount',
-      label: 'Followers',
-      requirement: '100+ followers',
-      met: verificationData?.criteria?.followersCount || false,
-      value: verificationData?.currentValues?.followersCount || 0,
-      progress: `${verificationData?.currentValues?.followersCount || 0}/100 followers`
+      key: 'accountAge',
+      label: 'Account Age',
+      requirement: '45+ days old',
+      met: verificationData?.criteria?.accountAge || false,
+      progress: `${verificationData?.currentValues?.accountAgeDays || 0} days`
     },
     {
       key: 'noViolations',
       label: 'No Violations',
       requirement: 'Zero community violations',
       met: verificationData?.criteria?.noViolations || false,
-      value: verificationData?.currentValues?.violationsCount === 0 ? 1 : 0,
       progress: `${verificationData?.currentValues?.violationsCount || 0} violations`
-    },
-    {
-      key: 'profileComplete',
-      label: 'Complete Profile',
-      requirement: 'All profile fields filled',
-      met: verificationData?.criteria?.profileComplete || false,
-      value: verificationData?.currentValues?.profileComplete ? 1 : 0,
-      progress: verificationData?.currentValues?.profileComplete ? 'Complete' : 'Incomplete'
-    },
-    {
-      key: 'personalityQuestions',
-      label: 'Personality Quiz',
-      requirement: 'Answered personality questions',
-      met: verificationData?.criteria?.personalityQuestions || false,
-      value: verificationData?.currentValues?.personalityQuestions ? 1 : 0,
-      progress: verificationData?.currentValues?.personalityQuestions ? 'Completed' : 'Not completed'
-    },
-    {
-      key: 'profileViews',
-      label: 'Profile Views',
-      requirement: '1000+ profile views',
-      met: verificationData?.criteria?.profileViews || false,
-      value: verificationData?.currentValues?.profileViews || 0,
-      progress: `${verificationData?.currentValues?.profileViews || 0}/1000 views`
-    },
-    {
-      key: 'avgStoryViews',
-      label: 'Story Engagement',
-      requirement: '70+ avg story views',
-      met: verificationData?.criteria?.avgStoryViews || false,
-      value: verificationData?.currentValues?.avgStoryViews || 0,
-      progress: `${verificationData?.currentValues?.avgStoryViews || 0}/70 avg views`
-    },
-    {
-      key: 'totalLikes',
-      label: 'Total Likes',
-      requirement: '1000+ total likes',
-      met: verificationData?.criteria?.totalLikes || false,
-      value: verificationData?.currentValues?.totalLikes || 0,
-      progress: `${verificationData?.currentValues?.totalLikes || 0}/1000 likes`
     }
   ];
 
-  const metCriteria = criteria.filter(c => c.met).length;
-  const totalCriteria = criteria.length;
-  // If user is verified, show 100% regardless of individual criteria
-  const overallProgress = verificationData?.isVerified ? 100 : Math.round((metCriteria / totalCriteria) * 100);
+  // Pathways
+  const pathways = [
+    {
+      id: 'highEngagement',
+      name: '🔥 High Engagement Pathway',
+      description: 'For active community members with strong presence',
+      met: verificationData?.pathways?.highEngagement || false,
+      requirements: [
+        { label: '20+ Posts', met: verificationData?.criteria?.postsCount, value: `${verificationData?.currentValues?.postsCount || 0}/20` },
+        { label: '100+ Followers', met: verificationData?.criteria?.followersCount, value: `${verificationData?.currentValues?.followersCount || 0}/100` },
+        { label: '1000+ Total Likes', met: verificationData?.criteria?.totalLikes, value: `${verificationData?.currentValues?.totalLikes || 0}/1000` },
+        { label: '70+ Avg Story Views', met: verificationData?.criteria?.avgStoryViews, value: `${verificationData?.currentValues?.avgStoryViews || 0}/70` },
+        { label: '1000+ Profile Views', met: verificationData?.criteria?.profileViews, value: `${verificationData?.currentValues?.profileViews || 0}/1000` }
+      ]
+    },
+    {
+      id: 'moderateEngagement',
+      name: '⭐ Moderate Engagement Pathway',
+      description: 'For consistent users with longer account history',
+      met: verificationData?.pathways?.moderateEngagement || false,
+      requirements: [
+        { label: '10+ Posts', met: verificationData?.currentValues?.moderateEngagementPosts, value: `${verificationData?.currentValues?.postsCount || 0}/10` },
+        { label: '50+ Followers', met: verificationData?.currentValues?.moderateEngagementFollowers, value: `${verificationData?.currentValues?.followersCount || 0}/50` },
+        { label: '90+ Days Old', met: verificationData?.currentValues?.moderateEngagementTenure, value: `${verificationData?.currentValues?.accountAgeDays || 0}/90` },
+        { label: '500+ Likes OR 40+ Avg Story Views', met: verificationData?.currentValues?.moderateEngagementLikes, value: 'Check engagement' }
+      ]
+    },
+    {
+      id: 'communityContribution',
+      name: '🏆 Community Contribution',
+      description: 'For moderators, event organizers, and active contributors',
+      met: verificationData?.pathways?.communityContribution || false,
+      requirements: [
+        { label: 'Coming Soon', met: false, value: 'Apply via moderator program' }
+      ]
+    },
+    {
+      id: 'crossPlatform',
+      name: '🔗 Cross-Platform Verified',
+      description: 'Already verified on Instagram, Twitter, or LinkedIn',
+      met: verificationData?.pathways?.crossPlatformVerified || false,
+      requirements: [
+        { label: 'Coming Soon', met: false, value: 'Link verified account' }
+      ]
+    }
+  ];
+
+  const allGroups = [
+    { title: '1. Identity & Security', criteria: identitySecurityCriteria, required: true },
+    { title: '2. Profile Completeness', criteria: profileCompletenessCriteria, required: true },
+    { title: '3. Tenure & Behaviour', criteria: tenureBehaviourCriteria, required: true }
+  ];
+
+  const basicRequirementsMet = identitySecurityCriteria.every(c => c.met) && 
+                                profileCompletenessCriteria.every(c => c.met) &&
+                                tenureBehaviourCriteria.every(c => c.met);
+
+  const anyPathwayMet = pathways.some(p => p.met);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
