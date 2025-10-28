@@ -120,6 +120,8 @@ class User(BaseModel):
     # Premium & Settings
     isPremium: bool = False
     isPrivate: bool = False  # Privacy setting for the account
+    isVerified: bool = False  # LuvHive Verified badge
+    verifiedAt: Optional[datetime] = None  # When verification was granted
     
     # Privacy Controls
     publicProfile: bool = True
