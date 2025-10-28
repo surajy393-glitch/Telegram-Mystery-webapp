@@ -96,6 +96,7 @@ const HomePage = ({ user, onLogout }) => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [newPost, setNewPost] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image" });
+  const [openPostMenu, setOpenPostMenu] = useState(null); // Track which post menu is open
 
   useEffect(() => {
     fetchFeed();
