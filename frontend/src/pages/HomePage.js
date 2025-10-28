@@ -1120,9 +1120,18 @@ const HomePage = ({ user, onLogout }) => {
               {/* Post Preview */}
               <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
                 <img
-                  src={commentingPost.userProfileImage || "https://via.placeholder.com/40"}
+                  src={
+                    commentingPost.userProfileImage 
+                      ? (commentingPost.userProfileImage.startsWith('http') || commentingPost.userProfileImage.startsWith('data:')
+                          ? commentingPost.userProfileImage 
+                          : `${process.env.REACT_APP_BACKEND_URL}${commentingPost.userProfileImage}`)
+                      : "https://via.placeholder.com/40"
+                  }
                   alt={commentingPost.username}
                   className="w-10 h-10 rounded-full object-cover border-2 border-pink-200"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/40";
+                  }}
                 />
                 <div>
                   <p className="font-semibold text-gray-800">{commentingPost.username}</p>
