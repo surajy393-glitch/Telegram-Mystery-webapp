@@ -747,30 +747,23 @@ const HomePage = ({ user, onLogout }) => {
                     }}
                     data-testid={`post-menu-${post.id}`}
                     style={{
-                      width: '40px',
-                      height: '40px',
+                      width: '50px',
+                      height: '50px',
                       borderRadius: '50%',
-                      backgroundColor: '#e5e7eb',
-                      border: '2px solid #9ca3af',
+                      backgroundColor: '#ff0000',
+                      border: '3px solid #000000',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      position: 'absolute',
+                      right: '10px',
+                      top: '10px',
+                      zIndex: 1000
                     }}
                   >
-                    <svg 
-                      width="24" 
-                      height="24" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="1"></circle>
-                      <circle cx="12" cy="5" r="1"></circle>
-                      <circle cx="12" cy="19" r="1"></circle>
-                    </svg>
+                    <span style={{color: 'white', fontSize: '24px', fontWeight: 'bold'}}>⋮</span>
                   </button>
 
                   {openPostMenu === post.id && (
