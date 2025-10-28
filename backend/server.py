@@ -4765,13 +4765,18 @@ async def register_for_mystery(
 @api_router.get("/auth/calculate-compatibility/{other_user_id}")
 async def calculate_compatibility(
     other_user_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Calculate vibe compatibility between current user and another user
     Based on interests (30%) and personality answers (70%)
     """
     try:
+        # Get current user's full data from database
+        user1_data = await db.users.find_one({"id": current_user.id})
+        if not user1_data:
+            raise HTTPException(status_code=404, detail="Current user not found")
+        
         # Get other user
         other_user = await db.users.find_one({"id": other_user_id})
         if not other_user:
@@ -4786,10 +4791,10 @@ async def calculate_compatibility(
             raise HTTPException(status_code=404, detail="User not found")
         
         # Get user data
-        user1_interests = current_user.get("interests", "").split(", ") if isinstance(current_user.get("interests"), str) else []
+        user1_interests = user1_data.get("interests", "").split(", ") if isinstance(user1_data.get("interests"), str) else []
         user2_interests = other_user.get("interests", "").split(", ") if isinstance(other_user.get("interests"), str) else []
         
-        user1_personality = current_user.get("personalityAnswers", {})
+        user1_personality = user1_data.get("personalityAnswers", {})
         user2_personality = other_user.get("personalityAnswers", {})
         
         # Calculate interest match (30% weight)
