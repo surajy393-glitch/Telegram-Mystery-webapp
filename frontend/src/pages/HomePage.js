@@ -1147,9 +1147,18 @@ const HomePage = ({ user, onLogout }) => {
                   {commentingPost.comments.map((comment, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <img
-                        src={comment.profileImage || "https://via.placeholder.com/32"}
+                        src={
+                          comment.profileImage 
+                            ? (comment.profileImage.startsWith('http') || comment.profileImage.startsWith('data:')
+                                ? comment.profileImage 
+                                : `${process.env.REACT_APP_BACKEND_URL}${comment.profileImage}`)
+                            : "https://via.placeholder.com/32"
+                        }
                         alt={comment.username || 'User'}
                         className="w-8 h-8 rounded-full object-cover border-2 border-pink-200 flex-shrink-0"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/32";
+                        }}
                       />
                       <div className="flex-1">
                         <p className="text-sm">
