@@ -41,6 +41,7 @@ const SearchPage = ({ user, onLogout }) => {
   const [trendingContent, setTrendingContent] = useState({
     trending_hashtags: []
   });
+  const [explorePosts, setExplorePosts] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,7 @@ const SearchPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     fetchTrendingContent();
+    fetchExplorePosts(); // Fetch explore posts on page load
     
     // Check for URL parameters
     const params = new URLSearchParams(location.search);
