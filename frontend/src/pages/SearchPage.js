@@ -359,15 +359,6 @@ const SearchPage = ({ user, onLogout }) => {
             userItem.isFollowing ? "Following" : "Follow"
           )}
         </Button>
-        <Link to={`/chat/${userItem.id}`}>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full"
-          >
-            Chat
-          </Button>
-        </Link>
       </div>
     </div>
   ));
