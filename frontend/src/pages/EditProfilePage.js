@@ -123,20 +123,23 @@ const EditProfilePage = ({ user, onLogout }) => {
         formDataToSend.append("profileImage", formData.profileImage);
       }
 
-      await axios.put(`${API}/auth/profile`, formDataToSend, {
+      const response = await axios.put(`${API}/auth/profile`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         }
       });
 
-      // Update local storage
-      const updatedUser = { ...user, ...formData };
+      // Update local storage with the response data
+      const updatedUser = response.data.user || response.data;
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
       alert("Profile updated successfully!");
-      navigate("/my-profile");
+      
+      // Navigate back to profile page
+      navigate("/my-profile", { replace: true });
     } catch (error) {
+      console.error("Profile update error:", error);
       alert(error.response?.data?.detail || "Failed to update profile");
     } finally {
       setLoading(false);
