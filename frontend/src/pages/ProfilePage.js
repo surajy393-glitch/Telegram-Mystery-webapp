@@ -195,7 +195,7 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   };
 
-  const handleFollowToggle = async (targetUserId, isFollowing) => {
+  const handleFollowToggle = async (targetUserId, isFollowing, hasRequested) => {
     // Prevent multiple simultaneous follow actions on same user
     if (followingInProgress.has(targetUserId)) {
       return;
@@ -211,35 +211,7 @@ const ProfilePage = ({ user, onLogout }) => {
       // Add to following in progress
       setFollowingInProgress(prev => new Set(prev).add(targetUserId));
 
-      // OPTIMISTIC UI UPDATE - Update immediately before API call
-      
-      // Update main viewing user if it's the target
-      if (viewingUser && viewingUser.id === targetUserId) {
-        setViewingUser(prev => ({
-          ...prev,
-          isFollowing: !isFollowing,
-          followersCount: !isFollowing 
-            ? prev.followersCount + 1 
-            : Math.max(0, prev.followersCount - 1)
-        }));
-      }
-
-      // Update users list
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === targetUserId 
-            ? { 
-                ...user, 
-                isFollowing: !isFollowing,
-                followersCount: !isFollowing 
-                  ? user.followersCount + 1 
-                  : Math.max(0, user.followersCount - 1)
-              }
-            : user
-        )
-      );
-
-      // Make API call in background
+      // Make API call
       const endpoint = isFollowing ? "unfollow" : "follow";
       console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user ${targetUserId}`);
       
@@ -248,6 +220,41 @@ const ProfilePage = ({ user, onLogout }) => {
       });
       
       console.log("Follow action response:", response.data);
+      
+      // Update state based on response
+      const wasRequestSent = response.data.requested === true;
+      
+      if (viewingUser && viewingUser.id === targetUserId) {
+        setViewingUser(prev => ({
+          ...prev,
+          isFollowing: wasRequestSent ? false : !isFollowing,
+          hasRequested: wasRequestSent ? true : false,
+          followersCount: (!isFollowing && !wasRequestSent) 
+            ? prev.followersCount + 1 
+            : (isFollowing ? Math.max(0, prev.followersCount - 1) : prev.followersCount)
+        }));
+      }
+
+      // Refresh profile data to get updated state
+      await fetchProfile();
+      
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      if (error.response) {
+        console.error("Response error:", error.response.data);
+        alert(error.response.data.detail || "Failed to follow/unfollow user");
+      } else {
+        alert("Failed to follow/unfollow user. Please try again.");
+      }
+    } finally {
+      // Remove from following in progress
+      setFollowingInProgress(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(targetUserId);
+        return newSet;
+      });
+    }
+  };
       
     } catch (error) {
       console.error("Error toggling follow:", error);
