@@ -1972,6 +1972,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "profileImage": current_user.profileImage,
         "isPremium": current_user.isPremium,
         "isPrivate": current_user.isPrivate,
+        "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
         "telegramLinked": current_user.telegramId is not None,
         "blockedUsers": current_user.blockedUsers,
         "mutedUsers": current_user.mutedUsers,  # Added for 3-dot menu functionality
@@ -1994,6 +1995,99 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "pushNotifications": current_user.pushNotifications,
         "emailNotifications": current_user.emailNotifications
     }
+
+@api_router.get("/auth/verification-status")
+async def check_verification_status(current_user: User = Depends(get_current_user)):
+    """Check current user's verification status and progress"""
+    user_data = await db.users.find_one({"id": current_user.id})
+    
+    # Calculate account age in days
+    created_at = user_data.get("createdAt")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    account_age_days = (datetime.now(timezone.utc) - created_at).days
+    
+    # Count posts
+    posts_count = await db.posts.count_documents({"userId": current_user.id, "isArchived": {"$ne": True}})
+    
+    # Count followers
+    followers_count = len(user_data.get("followers", []))
+    
+    # Count total likes received across all posts
+    posts = await db.posts.find({"userId": current_user.id}).to_list(1000)
+    total_likes = sum(len(post.get("likes", [])) for post in posts)
+    
+    # Count profile views (assuming we track this)
+    profile_views = user_data.get("profileViews", 0)
+    
+    # Calculate average story views
+    stories = await db.stories.find({"userId": current_user.id}).to_list(1000)
+    avg_story_views = 0
+    if stories:
+        total_story_views = sum(story.get("views", 0) for story in stories)
+        avg_story_views = total_story_views / len(stories) if len(stories) > 0 else 0
+    
+    # Check violations
+    violations_count = await db.violations.count_documents({"userId": current_user.id})
+    
+    # Check profile completeness
+    has_bio = bool(user_data.get("bio"))
+    has_profile_pic = bool(user_data.get("profileImage"))
+    has_location = bool(user_data.get("location", {}).get("city"))
+    
+    # Check personality questions
+    has_personality = bool(user_data.get("personalityAnswers"))
+    
+    # Dual verification
+    has_email = bool(user_data.get("email"))
+    has_phone = bool(user_data.get("mobileNumber"))
+    dual_verified = has_email and has_phone
+    
+    criteria = {
+        "dualVerification": {"met": dual_verified, "required": True, "description": "Email + Phone verified"},
+        "accountAge": {"met": account_age_days >= 45, "current": account_age_days, "required": 45, "description": "Account age 45+ days"},
+        "postsCount": {"met": posts_count >= 20, "current": posts_count, "required": 20, "description": "Minimum 20 posts"},
+        "followersCount": {"met": followers_count >= 100, "current": followers_count, "required": 100, "description": "100+ followers"},
+        "noViolations": {"met": violations_count == 0, "current": violations_count, "required": 0, "description": "No violations/reports"},
+        "completeProfile": {"met": has_bio and has_profile_pic and has_location, "description": "Complete profile (bio, photo, location)"},
+        "personalityAnswers": {"met": has_personality, "description": "Personality questions answered"},
+        "profileViews": {"met": profile_views >= 1000, "current": profile_views, "required": 1000, "description": "1000+ profile views"},
+        "avgStoryViews": {"met": avg_story_views >= 70, "current": int(avg_story_views), "required": 70, "description": "70+ average story views"},
+        "totalLikes": {"met": total_likes >= 1000, "current": total_likes, "required": 1000, "description": "1000+ total likes received"}
+    }
+    
+    criteria_met = sum(1 for c in criteria.values() if c["met"])
+    total_criteria = len(criteria)
+    
+    eligible = criteria_met == total_criteria
+    
+    return {
+        "isVerified": user_data.get("isVerified", False),
+        "eligible": eligible,
+        "criteriaMetCount": criteria_met,
+        "totalCriteria": total_criteria,
+        "criteria": criteria
+    }
+
+@api_router.post("/admin/verify-user/{username}")
+async def admin_verify_user(username: str, current_user: User = Depends(get_current_user)):
+    """Admin endpoint to manually verify users (for testing)"""
+    # In production, add proper admin authentication here
+    # For now, allowing any user to test
+    
+    target_user = await db.users.find_one({"username": username})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await db.users.update_one(
+        {"username": username},
+        {"$set": {
+            "isVerified": True,
+            "verifiedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": f"User {username} has been manually verified", "success": True}
 
 @api_router.put("/auth/profile")
 async def update_profile(
