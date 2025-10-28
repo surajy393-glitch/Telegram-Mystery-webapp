@@ -849,13 +849,65 @@ const FeedPage = ({ user, onLogout }) => {
               </label>
             )}
 
-            <textarea
-              value={newStory.caption}
-              onChange={(e) => setNewStory({ ...newStory, caption: e.target.value })}
-              placeholder="Add a caption (optional)"
-              className="w-full border border-gray-300 rounded-lg p-3 mb-4 mt-4 resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              rows="2"
-            />
+            <div className="relative">
+              <textarea
+                value={newStory.caption}
+                onChange={async (e) => {
+                  const value = e.target.value;
+                  setNewStory({ ...newStory, caption: value });
+                  
+                  // Check for @mention
+                  const lastWord = value.split(/\s/).pop();
+                  if (lastWord.startsWith('@') && lastWord.length > 1) {
+                    const searchTerm = lastWord.substring(1);
+                    try {
+                      const token = localStorage.getItem("token");
+                      const response = await axios.get(`${API_URL}/api/search?query=${searchTerm}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                      });
+                      setMentionSuggestions(response.data.users || []);
+                      setShowMentions(true);
+                    } catch (error) {
+                      console.error('Error fetching users for mention:', error);
+                    }
+                  } else {
+                    setShowMentions(false);
+                  }
+                }}
+                placeholder="Add a caption (optional). Use @ to mention someone"
+                className="w-full border border-gray-300 rounded-lg p-3 mb-4 mt-4 resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                rows="2"
+              />
+              
+              {/* Mention Suggestions */}
+              {showMentions && mentionSuggestions.length > 0 && (
+                <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+                  {mentionSuggestions.map((suggestedUser) => (
+                    <button
+                      key={suggestedUser.id}
+                      onClick={() => {
+                        const words = newStory.caption.split(/\s/);
+                        words.pop(); // Remove incomplete @mention
+                        words.push(`@${suggestedUser.username}`);
+                        setNewStory({ ...newStory, caption: words.join(' ') + ' ' });
+                        setShowMentions(false);
+                      }}
+                      className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-left"
+                    >
+                      <img
+                        src={suggestedUser.profileImage || 'https://via.placeholder.com/40'}
+                        alt={suggestedUser.username}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <div>
+                        <div className="font-semibold">{suggestedUser.username}</div>
+                        <div className="text-xs text-gray-500">{suggestedUser.fullName}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="flex space-x-2">
               <button
