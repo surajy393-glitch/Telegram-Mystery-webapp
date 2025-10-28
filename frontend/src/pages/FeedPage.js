@@ -991,7 +991,7 @@ const FeedPage = ({ user, onLogout }) => {
                               try {
                                 const token = localStorage.getItem("token");
                                 const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                                await axios.delete(`${API_URL}/api/social/stories/${storyId}`, {
+                                await axios.delete(`${API_URL}/api/stories/${storyId}`, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
                                 alert('Story deleted');
@@ -1015,7 +1015,7 @@ const FeedPage = ({ user, onLogout }) => {
                             try {
                               const token = localStorage.getItem("token");
                               const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                              await axios.post(`${API_URL}/api/social/stories/${storyId}/archive`, {}, {
+                              await axios.post(`${API_URL}/api/stories/${storyId}/archive`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                               });
                               alert('Story archived');
