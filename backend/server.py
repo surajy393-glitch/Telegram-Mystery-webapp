@@ -1283,6 +1283,7 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "posts": [],
             "savedPosts": [],
             "blockedUsers": [],
+            "mutedUsers": [],
             "hiddenStoryUsers": [],
             "isPremium": False,
             "isPrivate": False,
