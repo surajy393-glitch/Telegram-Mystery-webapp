@@ -3902,7 +3902,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "followersCount": len(user.get("followers", [])),
         "followingCount": len(user.get("following", [])),
         "isFollowing": is_following,
-        "createdAt": user["createdAt"].isoformat()
+        "createdAt": user.get("createdAt") if isinstance(user.get("createdAt"), str) else user.get("createdAt").isoformat() if user.get("createdAt") else None
     }
 
 @api_router.get("/users/{userId}/posts")
