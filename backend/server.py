@@ -2072,10 +2072,9 @@ async def check_verification_status(current_user: User = Depends(get_current_use
     }
 
 @api_router.post("/admin/verify-user/{username}")
-async def admin_verify_user(username: str, current_user: User = Depends(get_current_user)):
+async def admin_verify_user(username: str):
     """Admin endpoint to manually verify users (for testing)"""
-    # In production, add proper admin authentication here
-    # For now, allowing any user to test
+    # Public endpoint for testing - in production add proper admin auth
     
     target_user = await db.users.find_one({"username": username})
     if not target_user:
