@@ -3133,6 +3133,60 @@ async def like_post(post_id: str, current_user: User = Depends(get_current_user)
     
     return {"message": "Success", "likes": len(likes)}
 
+@api_router.post("/posts/{post_id}/unlike")
+async def unlike_post(post_id: str, current_user: User = Depends(get_current_user)):
+    """Alias for like endpoint - toggles like/unlike"""
+    return await like_post(post_id, current_user)
+
+@api_router.get("/posts/{post_id}/comments")
+async def get_post_comments(post_id: str, current_user: User = Depends(get_current_user)):
+    """Get all comments for a post"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    comments = post.get("comments", [])
+    return {"comments": comments}
+
+@api_router.post("/posts/{post_id}/comment")
+async def add_comment_to_post(post_id: str, text: str = Form(...), current_user: User = Depends(get_current_user)):
+    """Add a comment to a post"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    comment = {
+        "id": str(uuid4()),
+        "userId": current_user.id,
+        "username": current_user.username,
+        "userProfileImage": current_user.profileImage,
+        "text": text,
+        "likes": [],
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    comments = post.get("comments", [])
+    comments.append(comment)
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"comments": comments}}
+    )
+    
+    # Create notification if commenting on someone else's post
+    if post["userId"] != current_user.id:
+        notification = Notification(
+            userId=post["userId"],
+            fromUserId=current_user.id,
+            fromUsername=current_user.username,
+            fromUserImage=current_user.profileImage,
+            type="comment",
+            postId=post_id
+        )
+        await db.notifications.insert_one(notification.dict())
+    
+    return {"message": "Comment added", "comment": comment}
+
 # Chat Routes
 @api_router.post("/chat/send")
 async def send_message(receiverId: str, message: str, current_user: User = Depends(get_current_user)):
