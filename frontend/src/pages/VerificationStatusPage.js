@@ -430,12 +430,28 @@ const VerificationStatusPage = ({ user }) => {
         {/* Info Box - only for non-verified */}
         {!verificationData?.isVerified && (
         <div className="glass-effect rounded-3xl p-6 mt-6 shadow-xl bg-blue-50">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">💡 About Verification</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            The blue verified badge helps people know that notable accounts are authentic. 
-            To get verified, you need to meet all the criteria listed above. Keep engaging 
-            with the community, creating quality content, and building your presence on LuvHive!
+          <h3 className="text-lg font-bold text-gray-800 mb-2">💡 Multiple Ways to Get Verified</h3>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            We believe in recognizing value in different forms. You don't need millions of followers to get verified!
           </p>
+          <ul className="text-sm text-gray-700 space-y-2">
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 font-bold">•</span>
+              <span><strong>High Engagement:</strong> For active members with strong community presence</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 font-bold">•</span>
+              <span><strong>Moderate Engagement:</strong> Lower thresholds for accounts with longer history (90+ days)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 font-bold">•</span>
+              <span><strong>Community Contribution:</strong> Coming soon - for moderators and active contributors</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 font-bold">•</span>
+              <span><strong>Cross-Platform:</strong> Coming soon - link your verified social media accounts</span>
+            </li>
+          </ul>
         </div>
         )}
       </div>
