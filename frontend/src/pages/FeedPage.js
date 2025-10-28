@@ -570,7 +570,10 @@ const FeedPage = ({ user, onLogout }) => {
 
                 {/* Post Image - FIXED VERSION */}
                 {post.imageUrl ? (
-                  <div className="w-full">
+                  <div 
+                    className="w-full cursor-pointer"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
                     <img
                       src={post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http') 
                         ? post.imageUrl 
