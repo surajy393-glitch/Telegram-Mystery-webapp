@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, XCircle, Shield } from "lucide-react";
 import axios from "axios";
 
@@ -11,6 +12,15 @@ const VerificationStatusPage = ({ user }) => {
   const navigate = useNavigate();
   const [verificationData, setVerificationData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [verificationType, setVerificationType] = useState(''); // 'email' or 'phone'
+  const [verificationStep, setVerificationStep] = useState('send'); // 'send' or 'verify'
+  const [otpCode, setOtpCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   useEffect(() => {
     fetchVerificationStatus();
