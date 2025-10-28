@@ -244,16 +244,18 @@ async def add_comment(
             if not parent_exists:
                 raise HTTPException(status_code=404, detail="Parent comment not found")
         
+        # UNIFIED COMMENT FORMAT - matches /api/posts endpoint
         comment = {
             "id": str(uuid4()),
             "userId": userId if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
-            "userAvatar": user.get("profileImage") if not isAnonymous else None,
-            "content": content,
-            "createdAt": datetime.now(timezone.utc),
+            "userProfileImage": user.get("profileImage") if not isAnonymous else None,  # Changed from userAvatar
+            "text": content,  # Changed from content to text
+            "createdAt": datetime.now(timezone.utc).isoformat(),  # Changed to isoformat string
             "isAnonymous": isAnonymous,
             "parentCommentId": parentCommentId,
-            "likes": []
+            "likes": [],
+            "likesCount": 0  # Added likesCount
         }
         
         # Add comment to post
@@ -280,11 +282,7 @@ async def add_comment(
         
         return {
             "success": True,
-            "comment": {
-                "id": comment["id"],
-                "content": comment["content"],
-                "createdAt": comment["createdAt"].isoformat()
-            }
+            "comment": comment  # Return full comment object with all fields
         }
         
     except Exception as e:
