@@ -39,6 +39,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     email: "",
     mobileNumber: "",
     password: "",
+    confirmPassword: "",
     age: "",
     gender: "",
     city: "",
@@ -46,6 +47,8 @@ const DatingRegisterPage = ({ onLogin }) => {
     profilePhoto: null
   });
   
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
 
   const interestOptions = [
