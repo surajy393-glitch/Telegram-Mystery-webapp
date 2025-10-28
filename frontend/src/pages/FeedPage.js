@@ -966,7 +966,7 @@ const FeedPage = ({ user, onLogout }) => {
                 </div>
                 
                 {/* 3-Dot Menu for Own Stories - Right Side */}
-                {viewingStories.userId === user?.id && (
+                {viewingStories.userId === user?.id ? (
                   <div className="relative z-20">
                     <button
                       onClick={(e) => {
@@ -1062,6 +1062,74 @@ const FeedPage = ({ user, onLogout }) => {
                         >
                           <Share2 className="w-5 h-5" />
                           Share Story
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* 3-Dot Menu for Other People's Stories */
+                  <div className="relative z-20">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOpenStoryMenu(!openStoryMenu);
+                      }}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      <MoreVertical className="w-7 h-7 text-white" />
+                    </button>
+                    
+                    {openStoryMenu && (
+                      <div 
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button 
+                          onClick={async () => {
+                            const reason = prompt('Why are you reporting this story?');
+                            if (reason) {
+                              try {
+                                const token = localStorage.getItem("token");
+                                const storyId = viewingStories.stories[currentStoryIndex]?.id;
+                                await axios.post(`${API_URL}/api/stories/${storyId}/report`, 
+                                  { reason }, 
+                                  { headers: { Authorization: `Bearer ${token}` }}
+                                );
+                                alert('Report submitted. Thank you!');
+                                setOpenStoryMenu(false);
+                              } catch (error) {
+                                console.error('Error reporting story:', error);
+                                alert('Failed to submit report');
+                              }
+                            }
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3 border-b"
+                        >
+                          <AlertCircle className="w-5 h-5" />
+                          Report Story
+                        </button>
+                        
+                        <button 
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem("token");
+                              await axios.post(`${API_URL}/api/users/${viewingStories.userId}/mute`, {}, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              alert(`Muted ${viewingStories.username}. You won't see their posts anymore.`);
+                              setOpenStoryMenu(false);
+                              setShowStoryViewer(false);
+                            } catch (error) {
+                              console.error('Error muting user:', error);
+                              alert('Failed to mute user');
+                            }
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3"
+                        >
+                          <AlertCircle className="w-5 h-5" />
+                          Mute {viewingStories.username}
                         </button>
                       </div>
                     )}
