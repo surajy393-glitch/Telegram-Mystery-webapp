@@ -3708,6 +3708,23 @@ async def toggle_comments(post_id: str, current_user: User = Depends(get_current
     )
     return {"message": "Comments disabled" if not comments_disabled else "Comments enabled", "commentsDisabled": not comments_disabled}
 
+@api_router.put("/posts/{post_id}")
+async def edit_post_caption(post_id: str, caption: str = Form(...), current_user: User = Depends(get_current_user)):
+    """Edit post caption"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    if post["userId"] != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only edit your own posts")
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"caption": caption}}
+    )
+    
+    return {"message": "Caption updated successfully", "caption": caption}
+
 @api_router.put("/posts/{post_id}/caption")
 async def edit_caption(post_id: str, caption: str = Form(...), current_user: User = Depends(get_current_user)):
     post = await db.posts.find_one({"id": post_id})
