@@ -1448,6 +1448,119 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "id": str(uuid4()),
             "fullName": f"{telegram_data.first_name} {telegram_data.last_name or ''}".strip(),
             "username": username,
+
+@api_router.post("/auth/telegram-webapp")
+async def telegram_webapp_auth(initData: str = Form(...)):
+    """
+    Authenticate user via Telegram WebApp initData
+    """
+    import hmac
+    import hashlib
+    from urllib.parse import parse_qs
+    
+    # Get Telegram bot token from environment
+    telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not telegram_bot_token:
+        raise HTTPException(status_code=500, detail="Telegram bot not configured")
+    
+    # Parse initData
+    try:
+        params = parse_qs(initData)
+        hash_value = params.get('hash', [''])[0]
+        
+        # Create data check string
+        data_check_arr = []
+        for key, value in sorted(params.items()):
+            if key != 'hash':
+                if isinstance(value, list):
+                    data_check_arr.append(f"{key}={value[0]}")
+                else:
+                    data_check_arr.append(f"{key}={value}")
+        
+        data_check_string = '\n'.join(data_check_arr)
+        
+        # Verify hash
+        secret_key = hmac.new("WebAppData".encode(), telegram_bot_token.encode(), hashlib.sha256).digest()
+        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        
+        if calculated_hash != hash_value:
+            raise HTTPException(status_code=401, detail="Invalid Telegram WebApp data")
+        
+        # Parse user data
+        import json
+        user_data = json.loads(params.get('user', ['{}'])[0])
+        telegram_id = user_data.get('id')
+        
+        if not telegram_id:
+            raise HTTPException(status_code=400, detail="No user data in initData")
+        
+        # Check if user exists
+        existing_user = await db.users.find_one({"telegramId": telegram_id})
+        
+        if existing_user:
+            # User exists, log them in
+            access_token = create_access_token(data={"sub": existing_user["id"]})
+            user_dict = {k: v for k, v in existing_user.items() if k not in ["password_hash", "_id"]}
+            
+            return {
+                "success": True,
+                "message": "Telegram WebApp login successful",
+                "access_token": access_token,
+                "user": user_dict
+            }
+        else:
+            # Create new user
+            username = user_data.get('username') or f"user_{telegram_id}"
+            counter = 1
+            base_username = username
+            
+            while await db.users.find_one({"username": username}):
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            new_user = {
+                "id": str(uuid4()),
+                "fullName": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
+                "username": username,
+                "telegramId": telegram_id,
+                "telegramUsername": user_data.get('username'),
+                "telegramFirstName": user_data.get('first_name'),
+                "telegramLastName": user_data.get('last_name'),
+                "telegramPhotoUrl": user_data.get('photo_url'),
+                "email": f"tg{telegram_id}@luvhive.app",
+                "age": 18,
+                "gender": "Not specified",
+                "bio": "",
+                "profileImage": user_data.get('photo_url', ''),
+                "authMethod": "telegram_webapp",
+                "isPremium": False,
+                "isPrivate": False,
+                "following": [],
+                "followers": [],
+                "blockedUsers": [],
+                "savedPosts": [],
+                "preferences": {"ageRange": [18, 100], "lookingFor": "Not specified"},
+                "interests": [],
+                "location": {"city": "", "country": ""},
+                "socialLinks": {},
+                "privacy": {"showAge": True, "showLocation": True},
+                "createdAt": datetime.now(timezone.utc)
+            }
+            
+            await db.users.insert_one(new_user)
+            access_token = create_access_token(data={"sub": new_user["id"]})
+            
+            return {
+                "success": True,
+                "message": "Telegram WebApp registration successful",
+                "access_token": access_token,
+                "user": new_user
+            }
+            
+    except Exception as e:
+        logger.error(f"Telegram WebApp auth error: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to authenticate: {str(e)}")
+
             "email": f"tg{telegram_data.id}@luvhive.app",  # Valid email format
             "age": 25,  # Better default age
             "gender": "Other",  # Default gender - user can update later
