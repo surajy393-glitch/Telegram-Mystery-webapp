@@ -111,11 +111,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added mutedUsers: List[str] field to User model (line 143) and initialized it in all user registration flows to support silent muting feature"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: mutedUsers field working correctly. Fixed missing field in /auth/me endpoint (added line 1973). Tested mute/unmute operations - users are properly added/removed from mutedUsers list. Field is properly initialized in all registration flows."
 
   - task: "Mute/Unmute User Endpoints"
     implemented: true
