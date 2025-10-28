@@ -18,7 +18,9 @@ import NotificationsPage from "@/pages/NotificationsPage";
 import SearchPage from "@/pages/SearchPage";
 import PostDetailPage from "@/pages/PostDetailPage";
 import ChatPage from "@/pages/ChatPage";
+import TelegramAuthHandler from "@/components/TelegramAuthHandler";
 import { Toaster } from "@/components/ui/toaster";
+import { isTelegramWebApp } from "@/utils/telegramWebApp";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
