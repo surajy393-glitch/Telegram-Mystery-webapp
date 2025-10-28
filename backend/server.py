@@ -140,6 +140,7 @@ class User(BaseModel):
     following: List[str] = []  # List of user IDs
     savedPosts: List[str] = []  # List of post IDs
     blockedUsers: List[str] = []  # List of blocked user IDs
+    mutedUsers: List[str] = []  # List of muted user IDs (silent - they won't know)
     hiddenStoryUsers: List[str] = []  # List of user IDs whose stories are hidden
     lastUsernameChange: Optional[datetime] = None  # Track username changes
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
