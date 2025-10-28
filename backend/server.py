@@ -2390,35 +2390,61 @@ async def verify_phone_code(
     data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Verify phone with OTP"""
+    """Verify phone with OTP using Twilio Verify"""
     code = data.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="Verification code is required")
     
-    # Find verification code
-    verification = await db.verification_codes.find_one({
-        "userId": current_user.id,
-        "type": "phone",
-        "code": code
-    })
-    
-    if not verification:
+    try:
+        from twilio.rest import Client
+        
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        verify_service_sid = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
+        
+        if not account_sid or not auth_token or not verify_service_sid:
+            raise HTTPException(status_code=500, detail="SMS service not configured")
+        
+        # Get stored phone number
+        verification_record = await db.verification_codes.find_one({
+            "userId": current_user.id,
+            "type": "phone"
+        })
+        
+        if not verification_record or not verification_record.get("phone"):
+            raise HTTPException(status_code=400, detail="No verification request found. Please send code first.")
+        
+        phone_number = verification_record["phone"]
+        
+        client = Client(account_sid, auth_token)
+        
+        # Verify OTP with Twilio
+        verification_check = client.verify \
+            .v2 \
+            .services(verify_service_sid) \
+            .verification_checks \
+            .create(to=phone_number, code=code)
+        
+        if verification_check.status == 'approved':
+            # Update user phone and set as verified
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$set": {"mobile": phone_number, "phoneVerified": True}}
+            )
+            
+            # Delete used verification record
+            await db.verification_codes.delete_one({"_id": verification_record["_id"]})
+            
+            logger.info(f"Phone verified successfully for user {current_user.id}")
+            return {"message": "Phone verified successfully"}
+        else:
+            raise HTTPException(status_code=400, detail="Invalid verification code")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying phone code: {e}")
         raise HTTPException(status_code=400, detail="Invalid verification code")
-    
-    # Check if expired
-    if verification["expiresAt"] < datetime.now(timezone.utc):
-        raise HTTPException(status_code=400, detail="Verification code expired")
-    
-    # Update user phone and set as verified
-    await db.users.update_one(
-        {"id": current_user.id},
-        {"$set": {"mobile": verification["phone"], "phoneVerified": True}}
-    )
-    
-    # Delete used verification code
-    await db.verification_codes.delete_one({"_id": verification["_id"]})
-    
-    return {"message": "Phone verified successfully"}
 
 @api_router.put("/auth/settings")
 async def update_user_settings(
