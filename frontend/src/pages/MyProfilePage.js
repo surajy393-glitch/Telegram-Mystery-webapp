@@ -175,7 +175,10 @@ const MyProfilePage = ({ user, onLogout }) => {
 
             {/* Profile Stats */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl font-bold text-gray-800 mb-1">{profile?.fullName || 'No Name'}</h2>
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                <h2 className="text-3xl font-bold text-gray-800">{profile?.fullName || 'No Name'}</h2>
+                {profile?.isVerified && <VerifiedBadge size="lg" />}
+              </div>
               <p className="text-lg text-gray-600 mb-4">@{profile?.username || 'username'}</p>
 
               {/* Stats */}
