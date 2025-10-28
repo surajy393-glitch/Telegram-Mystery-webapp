@@ -1020,7 +1020,7 @@ const DatingRegisterPage = ({ onLogin }) => {
           ) : (
             <>
               <h2 className="text-2xl font-bold text-white mb-6 text-center">Dating Profile</h2>
-              <form onSubmit={handleFinalSubmit} className="space-y-5">
+              <form onSubmit={handleStep2Submit} className="space-y-5">
                 <div>
                   <Label htmlFor="city" className="text-white font-medium">City</Label>
                   <Input
