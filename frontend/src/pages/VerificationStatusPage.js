@@ -221,8 +221,30 @@ const VerificationStatusPage = ({ user }) => {
             ))}
           </div>
         </div>
+        )}
 
-        {/* Info Box */}
+        {/* Success message for verified users */}
+        {verificationData?.isVerified && (
+        <div className="glass-effect rounded-3xl p-6 shadow-xl bg-gradient-to-br from-green-50 to-blue-50">
+          <h3 className="text-xl font-bold text-gray-800 mb-3">🎉 Congratulations!</h3>
+          <p className="text-gray-700 leading-relaxed mb-4">
+            You are now a verified member of LuvHive! Your blue checkmark badge appears next to your username across the platform, helping others know your account is authentic.
+          </p>
+          <div className="bg-white bg-opacity-60 rounded-xl p-4">
+            <h4 className="font-semibold text-gray-800 mb-2">✨ Verified Badge Benefits:</h4>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>• Blue checkmark ☑️ on your profile</li>
+              <li>• Badge appears on all your posts</li>
+              <li>• Badge visible in story viewer</li>
+              <li>• Enhanced credibility and trust</li>
+              <li>• Stand out in search results</li>
+            </ul>
+          </div>
+        </div>
+        )}
+
+        {/* Info Box - only for non-verified */}
+        {!verificationData?.isVerified && (
         <div className="glass-effect rounded-3xl p-6 mt-6 shadow-xl bg-blue-50">
           <h3 className="text-lg font-bold text-gray-800 mb-2">💡 About Verification</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
@@ -231,6 +253,7 @@ const VerificationStatusPage = ({ user }) => {
             with the community, creating quality content, and building your presence on LuvHive!
           </p>
         </div>
+        )}
       </div>
     </div>
   );
