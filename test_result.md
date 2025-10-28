@@ -105,6 +105,21 @@
 user_problem_statement: "Fix search functionality - Users tab showing 'No users found' even though user exists. Issue: Backend was excluding current user from search results, preventing users from finding themselves or other users when searching."
 
 backend:
+  - task: "User Search Functionality - Allow users to appear in their own search results"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that searching for 'Luvsociety' in the Users tab shows 'No users found' even though the user exists and has posts visible in the Posts tab."
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: Root cause identified - backend was excluding current user from search results (line 3813: {id: {$ne: current_user.id}}). Removed self-exclusion filter to allow users to find themselves in search. This is standard behavior on Instagram and other social platforms. Changed base_filter to only exclude blocked users. Tested with Python script - search now returns 1 user (Luvsociety) when they search for themselves."
+  
   - task: "NEW FormData File Upload Flow - POST /api/posts"
     implemented: true
     working: true
