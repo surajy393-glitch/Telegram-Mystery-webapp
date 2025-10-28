@@ -3997,8 +3997,17 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Check if current user has requested to follow (for private accounts)
     has_requested = current_user.id in user.get("followRequests", [])
     
-    # Get user's posts count
-    posts = await db.posts.find({"userId": userId}).to_list(1000)
+    # Check if account is private
+    is_private = user.get("isPrivate", False)
+    
+    # Get user's posts count (only if can view)
+    can_view_posts = not is_private or is_following or userId == current_user.id
+    
+    if can_view_posts:
+        posts = await db.posts.find({"userId": userId}).to_list(1000)
+        posts_count = len(posts)
+    else:
+        posts_count = 0  # Hide post count for private accounts
     
     return {
         "id": user["id"],
@@ -4009,12 +4018,12 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "age": user.get("age"),
         "gender": user.get("gender"),
         "isPremium": user.get("isPremium", False),
-        "isPrivate": user.get("isPrivate", False),
+        "isPrivate": is_private,
         "followersCount": len(user.get("followers", [])),
         "followingCount": len(user.get("following", [])),
         "isFollowing": is_following,
         "hasRequested": has_requested,
-        "postsCount": len(posts),
+        "postsCount": posts_count,
         "createdAt": user.get("createdAt") if isinstance(user.get("createdAt"), str) else user.get("createdAt").isoformat() if user.get("createdAt") else None
     }
 
