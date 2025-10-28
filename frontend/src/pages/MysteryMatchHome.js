@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { isTelegramWebApp, getTelegramInitData, expandTelegramWebApp } from '../utils/telegramWebApp';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -12,10 +13,63 @@ const MysteryMatchHome = () => {
   const [loading, setLoading] = useState(true);
   const [finding, setFinding] = useState(false);
   const [error, setError] = useState('');
+  const [authenticating, setAuthenticating] = useState(false);
   
   // Get user data from localStorage (set during login)
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = userData.tg_user_id || userData.id; // Try tg_user_id first, fallback to MongoDB id
+
+  // Handle Telegram WebApp authentication
+  useEffect(() => {
+    const handleTelegramAuth = async () => {
+      // Check if running in Telegram WebApp
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for SDK
+      
+      if (!isTelegramWebApp()) {
+        console.log('Not in Telegram WebApp');
+        return;
+      }
+
+      // Check if already authenticated
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('Already authenticated');
+        return;
+      }
+
+      console.log('✅ Telegram WebApp detected - auto authenticating');
+      setAuthenticating(true);
+      expandTelegramWebApp();
+
+      const initData = getTelegramInitData();
+      
+      if (!initData) {
+        console.error('No initData available');
+        setAuthenticating(false);
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('initData', initData);
+        
+        const response = await axios.post(`${API_URL}/api/auth/telegram-webapp`, formData);
+        
+        if (response.data.success) {
+          console.log('✅ Auto-auth successful');
+          localStorage.setItem('token', response.data.access_token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          setAuthenticating(false);
+          window.location.reload(); // Reload to update user state
+        }
+      } catch (error) {
+        console.error('❌ Auto-auth failed:', error);
+        setAuthenticating(false);
+      }
+    };
+
+    handleTelegramAuth();
+  }, []);
 
   useEffect(() => {
     if (!userId) {
