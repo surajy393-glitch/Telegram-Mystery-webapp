@@ -739,32 +739,17 @@ const HomePage = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  {/* 3-Dot Menu - CRITICAL FIX */}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenPostMenu(openPostMenu === post.id ? null : post.id);
-                    }}
-                    data-testid={`post-menu-${post.id}`}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ff0000',
-                      border: '3px solid #000000',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      position: 'absolute',
-                      right: '10px',
-                      top: '10px',
-                      zIndex: 1000
-                    }}
-                  >
-                    <span style={{color: 'white', fontSize: '24px', fontWeight: 'bold'}}>⋮</span>
-                  </button>
+                  {/* 3-Dot Menu */}
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPostMenu(openPostMenu === post.id ? null : post.id);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <MoreVertical className="w-6 h-6" />
+                    </button>
 
                   {openPostMenu === post.id && (
                     <div 
