@@ -797,6 +797,7 @@ const HomePage = ({ user, onLogout }) => {
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  </div>
                 </div>
 
                 {/* Post Media */}
