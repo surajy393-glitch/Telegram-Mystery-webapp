@@ -4046,6 +4046,56 @@ async def get_explore_posts(current_user: User = Depends(get_current_user), limi
         logger.error(f"Error fetching explore posts: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.get("/search/explore")
+async def get_explore_posts(current_user: User = Depends(get_current_user), limit: int = 30):
+    """
+    Get explore posts for the search page (Instagram-style)
+    Returns posts from public accounts, excluding blocked users
+    """
+    try:
+        # Find users who are not private and not blocked
+        public_users = await db.users.find({
+            "$and": [
+                {"id": {"$nin": current_user.blockedUsers}},
+                {"isPrivate": {"$ne": True}}
+            ]
+        }).to_list(1000)
+        
+        public_user_ids = [user["id"] for user in public_users]
+        
+        # Get posts from public users
+        posts = await db.posts.find({
+            "$and": [
+                {"userId": {"$in": public_user_ids}},
+                {"isArchived": {"$ne": True}}
+            ]
+        }).sort("createdAt", -1).limit(limit).to_list(limit)
+        
+        explore_posts = []
+        for post in posts:
+            explore_posts.append({
+                "id": post["id"],
+                "userId": post["userId"],
+                "username": post["username"],
+                "userProfileImage": post.get("userProfileImage"),
+                "caption": post.get("caption", ""),
+                "imageUrl": post.get("imageUrl"),
+                "mediaUrl": post.get("mediaUrl"),
+                "mediaType": post.get("mediaType", "image"),
+                "likesCount": len(post.get("likes", [])),
+                "commentsCount": len(post.get("comments", [])),
+                "userLiked": current_user.id in post.get("likes", []),
+                "createdAt": post["createdAt"].isoformat() if isinstance(post.get("createdAt"), datetime) else post.get("createdAt")
+            })
+        
+        logger.info(f"✅ Explore: Returned {len(explore_posts)} posts for user {current_user.username}")
+        return {"posts": explore_posts}
+        
+    except Exception as e:
+        logger.error(f"Error fetching explore posts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/admin/fix-duplicate-usernames")
 async def fix_duplicate_usernames():
     """
