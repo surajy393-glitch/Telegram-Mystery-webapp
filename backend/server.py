@@ -2288,8 +2288,8 @@ async def send_email_verification(
     
     return {"message": "Verification code sent to your email", "debug_code": otp}
 
-@api_router.post("/auth/verify-email")
-async def verify_email(
+@api_router.post("/auth/verify-email-code")
+async def verify_email_code(
     data: dict,
     current_user: User = Depends(get_current_user)
 ):
