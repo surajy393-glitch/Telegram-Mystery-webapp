@@ -75,15 +75,22 @@ const SearchPage = ({ user, onLogout }) => {
 
     try {
       const token = localStorage.getItem("token");
+      console.log('Fetching trending content with token:', token ? 'present' : 'missing');
+      
       const response = await axios.get(`${API}/search/trending`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Trending response:', response.data);
       
       // Cache the result
       trendingCache.set(cacheKey, response.data);
       setTrendingContent(response.data);
     } catch (error) {
       console.error("Error fetching trending content:", error);
+      console.error("Error details:", error.response?.data);
+      // Set empty data to avoid showing loading state forever
+      setTrendingContent({trending_hashtags: [], trending_users: []});
     }
   }, []);
 
