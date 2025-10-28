@@ -740,13 +740,16 @@ const HomePage = ({ user, onLogout }) => {
                   </div>
 
                   {/* 3-Dot Menu - Custom Implementation */}
+                  <div style={{background: 'red', color: 'white', padding: '10px'}}>TEST VISIBLE</div>
                   <div className="relative">
                     <button 
                       onClick={() => setOpenPostMenu(openPostMenu === post.id ? null : post.id)}
                       className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                       data-testid={`post-menu-${post.id}`}
+                      style={{background: 'blue', padding: '20px'}}
                     >
                       <MoreVertical className="w-6 h-6 text-gray-700" />
+                      <span style={{color: 'white'}}>MENU</span>
                     </button>
                     
                     {openPostMenu === post.id && (
