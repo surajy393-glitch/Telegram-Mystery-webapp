@@ -746,9 +746,9 @@ const HomePage = ({ user, onLogout }) => {
                         e.stopPropagation();
                         setOpenPostMenu(openPostMenu === post.id ? null : post.id);
                       }}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                     >
-                      <MoreVertical className="w-6 h-6" />
+                      <MoreVertical className="w-6 h-6 text-gray-700" />
                     </button>
                     
                     {openPostMenu === post.id && (
