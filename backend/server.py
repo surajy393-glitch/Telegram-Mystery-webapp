@@ -4343,12 +4343,19 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
     
     # Search posts (if type is "posts" or "all")
     if search_type in ["posts", "all"]:
-        # Find posts from non-blocked users and public accounts
-        blocked_users = current_user.blockedUsers  # Don't exclude own posts
+        # Find posts from non-blocked users and non-private accounts (unless following)
+        blocked_users = current_user.blockedUsers
+        
+        # Get all users to check privacy settings
+        all_users = await db.users.find({}).to_list(10000)
+        user_privacy_map = {u["id"]: (u.get("isPrivate", False), u["id"] in current_user.following or u.get("followers", []) and current_user.id in u.get("followers", [])) for u in all_users}
+        
+        # Get user IDs of private accounts that current user is NOT following
+        private_non_following_users = [uid for uid, (is_private, is_following) in user_privacy_map.items() if is_private and not is_following]
         
         post_filter = {
             "$and": [
-                {"userId": {"$nin": blocked_users}},
+                {"userId": {"$nin": blocked_users + private_non_following_users}},  # Exclude blocked + private non-following
                 {"isArchived": {"$ne": True}},
                 {
                     "$or": [
