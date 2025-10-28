@@ -1183,7 +1183,7 @@ const FeedPage = ({ user, onLogout }) => {
               </>
             )}
             
-            {/* Bottom Action Bar - Like, Send Message, Share */}
+            {/* Bottom Action Bar - Like and Share */}
             {viewingStories.userId !== user?.id && (
               <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/70 to-transparent">
                 <div className="flex items-center gap-4 max-w-md mx-auto">
@@ -1204,17 +1204,6 @@ const FeedPage = ({ user, onLogout }) => {
                     className="p-3 hover:bg-white/20 rounded-full transition-colors"
                   >
                     <Heart className="w-7 h-7 text-white" />
-                  </button>
-                  
-                  {/* Send Message Button */}
-                  <button
-                    onClick={() => {
-                      alert(`Send message to ${viewingStories.username}`);
-                      // You can implement navigation to chat here
-                    }}
-                    className="p-3 hover:bg-white/20 rounded-full transition-colors"
-                  >
-                    <Send className="w-7 h-7 text-white" />
                   </button>
                   
                   {/* Share Button */}
