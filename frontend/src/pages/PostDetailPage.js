@@ -298,31 +298,138 @@ const PostDetailPage = ({ user }) => {
 
                 {/* Comments */}
                 <div className="space-y-4">
-                  {comments.map((comment, idx) => (
-                    <div key={idx} className="flex gap-3">
-                      {comment.userProfileImage ? (
-                        <img
-                          src={`${BACKEND_URL}${comment.userProfileImage}`}
-                          alt={comment.username}
-                          className="w-8 h-8 rounded-full object-cover"
-                          onError={(e) => e.target.src = "https://via.placeholder.com/32"}
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold text-sm">
-                          {comment.username?.[0]?.toUpperCase() || "U"}
+                  {comments.filter(c => !c.parentCommentId).map((comment) => {
+                    const commentLikes = comment.likes || [];
+                    const userLiked = commentLikes.includes(user?.id);
+                    const replies = comments.filter(c => c.parentCommentId === comment.id);
+                    
+                    return (
+                      <div key={comment.id}>
+                        {/* Main Comment */}
+                        <div className="flex gap-3">
+                          {comment.userProfileImage ? (
+                            <img
+                              src={`${BACKEND_URL}${comment.userProfileImage}`}
+                              alt={comment.username}
+                              className="w-8 h-8 rounded-full object-cover"
+                              onError={(e) => e.target.src = "https://via.placeholder.com/32"}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold text-sm">
+                              {comment.username?.[0]?.toUpperCase() || "U"}
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <span className="font-semibold mr-2">{comment.username}</span>
+                                <span className="text-gray-800">{comment.text}</span>
+                              </div>
+                              <button 
+                                onClick={() => handleLikeComment(comment.id)}
+                                className="ml-2"
+                              >
+                                <Heart 
+                                  className={`w-4 h-4 ${userLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                                />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                              <span>{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Now'}</span>
+                              {comment.likesCount > 0 && (
+                                <span className="font-semibold">{comment.likesCount} likes</span>
+                              )}
+                              <button 
+                                onClick={() => setReplyingTo(comment.id)}
+                                className="font-semibold hover:text-gray-700"
+                              >
+                                Reply
+                              </button>
+                            </div>
+                            
+                            {/* Reply Input */}
+                            {replyingTo === comment.id && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  placeholder={`Reply to ${comment.username}...`}
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  onKeyPress={(e) => e.key === 'Enter' && handleReply(comment.id)}
+                                  className="flex-1 text-sm border-b border-gray-300 outline-none py-1"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => handleReply(comment.id)}
+                                  className="text-pink-600 text-sm font-semibold"
+                                >
+                                  Post
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setReplyingTo(null);
+                                    setReplyText("");
+                                  }}
+                                  className="text-gray-500 text-sm"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      <div className="flex-1">
-                        <div>
-                          <span className="font-semibold mr-2">{comment.username}</span>
-                          <span className="text-gray-800">{comment.text}</span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                          <span>{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Now'}</span>
-                        </div>
+                        
+                        {/* Replies */}
+                        {replies.length > 0 && (
+                          <div className="ml-11 mt-3 space-y-3">
+                            {replies.map((reply) => {
+                              const replyLikes = reply.likes || [];
+                              const userLikedReply = replyLikes.includes(user?.id);
+                              
+                              return (
+                                <div key={reply.id} className="flex gap-3">
+                                  {reply.userProfileImage ? (
+                                    <img
+                                      src={`${BACKEND_URL}${reply.userProfileImage}`}
+                                      alt={reply.username}
+                                      className="w-7 h-7 rounded-full object-cover"
+                                      onError={(e) => e.target.src = "https://via.placeholder.com/28"}
+                                    />
+                                  ) : (
+                                    <div className="w-7 h-7 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold text-xs">
+                                      {reply.username?.[0]?.toUpperCase() || "U"}
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1">
+                                        <span className="font-semibold mr-2 text-sm">{reply.username}</span>
+                                        <span className="text-gray-800 text-sm">{reply.text}</span>
+                                      </div>
+                                      <button 
+                                        onClick={() => handleLikeComment(reply.id)}
+                                        className="ml-2"
+                                      >
+                                        <Heart 
+                                          className={`w-3 h-3 ${userLikedReply ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                                        />
+                                      </button>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                                      <span>{reply.createdAt ? new Date(reply.createdAt).toLocaleDateString() : 'Now'}</span>
+                                      {reply.likesCount > 0 && (
+                                        <span className="font-semibold">{reply.likesCount} likes</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
