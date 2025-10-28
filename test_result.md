@@ -260,18 +260,30 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.0"
-  test_sequence: 0
-  run_ui: false
+  version: "4.0"
+  test_sequence: 1
+  run_ui: true
   three_dot_menu_implementation_date: "2025-01-30"
+  luvhive_verified_implementation_date: "2025-10-28"
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "LuvHive Verified - isVerified field in User model"
+    - "Admin Manual Verification Endpoint"
+    - "Verification Status Endpoint"
+    - "Include isVerified in Feed and Story Endpoints"
+    - "VerifiedBadge Component"
+    - "Display Verified Badge on MyProfilePage"
+    - "Display Verified Badge on ProfilePage"
+    - "Display Verified Badge on Posts in FeedPage"
+    - "Display Verified Badge on Stories in FeedPage"
+    - "Verification Status Page"
+    - "Add LuvHive Verified Button to Settings"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_needed: false
-  frontend_testing_needed: false
+  backend_testing_needed: true
+  frontend_testing_needed: true
   three_dot_menu_backend_complete: true
 
 agent_communication:
