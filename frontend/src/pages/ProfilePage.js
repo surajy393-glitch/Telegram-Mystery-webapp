@@ -312,11 +312,13 @@ const ProfilePage = ({ user, onLogout }) => {
         {/* Header */}
         <header className="glass-effect border-b border-pink-100">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link to="/home">
-              <Button variant="ghost" className="hover:bg-pink-50">
-                <ArrowLeft className="w-5 h-5 text-pink-600" />
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              className="hover:bg-pink-50"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-5 h-5 text-pink-600" />
+            </Button>
             <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">
               @{viewingUser?.username}
             </h1>
