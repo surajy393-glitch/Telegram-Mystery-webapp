@@ -1948,6 +1948,9 @@ async def reset_password(request: ResetPasswordRequest):
 
 @api_router.get("/auth/me")
 async def get_me(current_user: User = Depends(get_current_user)):
+    # Get fresh data from database for accurate counts
+    user_data = await db.users.find_one({"id": current_user.id})
+    
     return {
         "id": current_user.id,
         "fullName": current_user.fullName,
@@ -1961,6 +1964,10 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "isPrivate": current_user.isPrivate,
         "telegramLinked": current_user.telegramId is not None,
         "blockedUsers": current_user.blockedUsers,
+        
+        # Followers/Following counts - ADDED
+        "followersCount": len(user_data.get("followers", [])) if user_data else 0,
+        "followingCount": len(user_data.get("following", [])) if user_data else 0,
         
         # Privacy Controls
         "appearInSearch": current_user.appearInSearch,
