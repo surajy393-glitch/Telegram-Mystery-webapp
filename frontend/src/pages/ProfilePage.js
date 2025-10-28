@@ -105,15 +105,18 @@ const ProfilePage = ({ user, onLogout }) => {
     setShowVibeCompatibility(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(`${API}/ai/vibe-compatibility`, {
-        targetUserId: viewingUser.id
-      }, {
+      console.log(`Fetching vibe compatibility for user: ${viewingUser.id}`);
+      
+      const response = await axios.get(`${API}/auth/calculate-compatibility/${viewingUser.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setVibeScore(response.data.compatibility);
+      
+      console.log("Vibe compatibility response:", response.data);
+      setVibeScore(response.data);
     } catch (error) {
       console.error("Error calculating vibe compatibility:", error);
       alert("Failed to calculate vibe compatibility. Please try again.");
+      setShowVibeCompatibility(false);
     }
   };
 
