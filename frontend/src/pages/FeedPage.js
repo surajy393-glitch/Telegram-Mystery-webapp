@@ -518,45 +518,163 @@ const FeedPage = ({ user, onLogout }) => {
             {posts.map((post) => (
               <div key={post.id} className="bg-white rounded-lg shadow-sm">
                 {/* Post Header */}
-                <div className="p-4 flex items-center space-x-3">
-                  <img
-                    src={
-                      post.isAnonymous 
-                        ? "https://via.placeholder.com/40?text=?" 
-                        : (post.userAvatar 
-                            ? (post.userAvatar.startsWith('data:') || post.userAvatar.startsWith('http') 
-                                ? post.userAvatar 
-                                : `${API_URL}${post.userAvatar}`)
-                            : "https://via.placeholder.com/40")
-                    }
-                    alt={post.username}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                    onError={(e) => e.target.src = "https://via.placeholder.com/40"}
-                  />
-                  <div>
-                    <h3 
-                      className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
-                      onClick={async () => {
-                        if (post.isAnonymous) return;
-                        
-                        // Check if user profile is private
-                        try {
-                          const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
-                          if (response.data.isPrivate && response.data.id !== user.id) {
-                            alert('This account is private');
-                          } else {
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={
+                        post.isAnonymous 
+                          ? "https://via.placeholder.com/40?text=?" 
+                          : (post.userAvatar 
+                              ? (post.userAvatar.startsWith('data:') || post.userAvatar.startsWith('http') 
+                                  ? post.userAvatar 
+                                  : `${API_URL}${post.userAvatar}`)
+                              : "https://via.placeholder.com/40")
+                      }
+                      alt={post.username}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                      onError={(e) => e.target.src = "https://via.placeholder.com/40"}
+                    />
+                    <div>
+                      <h3 
+                        className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
+                        onClick={async () => {
+                          if (post.isAnonymous) return;
+                          
+                          // Check if user profile is private
+                          try {
+                            const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
+                            if (response.data.isPrivate && response.data.id !== user.id) {
+                              alert('This account is private');
+                            } else {
+                              navigate(`/profile/${post.userId}`);
+                            }
+                          } catch (error) {
+                            console.error('Error checking profile:', error);
                             navigate(`/profile/${post.userId}`);
                           }
-                        } catch (error) {
-                          console.error('Error checking profile:', error);
-                          navigate(`/profile/${post.userId}`);
-                        }
-                      }}
-                    >
-                      {post.isAnonymous ? 'Anonymous' : post.username}
-                    </h3>
-                    <p className="text-xs text-gray-500">{post.timeAgo}</p>
+                        }}
+                      >
+                        {post.isAnonymous ? 'Anonymous' : post.username}
+                      </h3>
+                      <p className="text-xs text-gray-500">{post.timeAgo}</p>
+                    </div>
                   </div>
+
+                  {/* 3-Dot Menu */}
+                  {!post.isAnonymous && (
+                    <div className="relative ml-auto flex-shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenPostMenu(openPostMenu === post.id ? null : post.id);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                      >
+                        <MoreVertical className="w-6 h-6 text-gray-700" />
+                      </button>
+                      
+                      {openPostMenu === post.id && (
+                        <div 
+                          className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {post.userId === user?.id ? (
+                            // Own post options
+                            <>
+                              <button onClick={() => { alert('Archive feature'); setOpenPostMenu(null); }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b">
+                                <Download className="w-5 h-5" />
+                                Archive
+                              </button>
+                              <button onClick={() => { alert('Delete post'); setOpenPostMenu(null); }} className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3">
+                                <Trash2 className="w-5 h-5" />
+                                Delete
+                              </button>
+                            </>
+                          ) : (
+                            // Other user's post options
+                            <>
+                              <button onClick={async () => { 
+                                try {
+                                  await axios.post(`${API_URL}/api/users/${post.userId}/follow`, {}, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                  });
+                                  alert('Following user');
+                                  setOpenPostMenu(null);
+                                } catch (error) {
+                                  console.error('Error following:', error);
+                                }
+                              }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b">
+                                <UserIconLucide className="w-5 h-5" />
+                                Follow @{post.username}
+                              </button>
+                              <button onClick={async () => { 
+                                try {
+                                  await axios.post(`${API_URL}/api/users/${post.userId}/unfollow`, {}, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                  });
+                                  alert('Unfollowed user');
+                                  setOpenPostMenu(null);
+                                } catch (error) {
+                                  console.error('Error unfollowing:', error);
+                                }
+                              }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b">
+                                <UserIconLucide className="w-5 h-5" />
+                                Unfollow @{post.username}
+                              </button>
+                              <button onClick={async () => { 
+                                try {
+                                  await axios.post(`${API_URL}/api/users/${post.userId}/mute`, {}, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                  });
+                                  alert('User muted. You won\'t see their posts anymore.');
+                                  setOpenPostMenu(null);
+                                } catch (error) {
+                                  console.error('Error muting:', error);
+                                }
+                              }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b">
+                                <AlertCircle className="w-5 h-5" />
+                                Mute User
+                              </button>
+                              <button onClick={async () => { 
+                                if (window.confirm('Block this user?')) {
+                                  try {
+                                    await axios.post(`${API_URL}/api/users/${post.userId}/block`, {}, {
+                                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                    });
+                                    alert('User blocked');
+                                    setOpenPostMenu(null);
+                                  } catch (error) {
+                                    console.error('Error blocking:', error);
+                                  }
+                                }
+                              }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b text-orange-600">
+                                <AlertCircle className="w-5 h-5" />
+                                Block User
+                              </button>
+                              <button onClick={async () => { 
+                                const reason = prompt('Report reason:');
+                                if (reason) {
+                                  try {
+                                    await axios.post(`${API_URL}/api/posts/${post.id}/report`, 
+                                      { reason }, 
+                                      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }}
+                                    );
+                                    alert('Report submitted');
+                                    setOpenPostMenu(null);
+                                  } catch (error) {
+                                    console.error('Error reporting:', error);
+                                  }
+                                }
+                              }} className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3">
+                                <AlertCircle className="w-5 h-5" />
+                                Report Post
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Post Content */}
