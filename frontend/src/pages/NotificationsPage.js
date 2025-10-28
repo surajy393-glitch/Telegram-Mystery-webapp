@@ -176,6 +176,31 @@ const NotificationsPage = ({ user, onLogout }) => {
                     <p className="text-xs text-gray-500 mt-1">
                       {getRelativeTime(notif.createdAt)}
                     </p>
+                    
+                    {/* Follow Request Actions */}
+                    {notif.type === 'follow_request' && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAcceptFollowRequest(notif.fromUserId);
+                          }}
+                          className="bg-pink-500 hover:bg-pink-600 text-white text-sm py-1 px-4 rounded-lg"
+                        >
+                          Confirm
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRejectFollowRequest(notif.fromUserId);
+                          }}
+                          variant="outline"
+                          className="border-gray-300 text-gray-700 hover:bg-gray-100 text-sm py-1 px-4 rounded-lg"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   {notif.postId && (
                     <div className="w-12 h-12 flex-shrink-0">
