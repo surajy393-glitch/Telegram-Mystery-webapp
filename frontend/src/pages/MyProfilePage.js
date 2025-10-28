@@ -209,23 +209,29 @@ const MyProfilePage = ({ user, onLogout }) => {
                   {myPosts.map((post) => (
                     <div
                       key={post.id}
+                      onClick={() => navigate(`/post/${post.id}`)}
                       className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl"
                       data-testid={`my-post-${post.id}`}
                     >
                       {post.mediaType === "video" ? (
-                        <video src={post.mediaUrl} className="w-full h-full object-cover" />
+                        <video src={post.mediaUrl || post.imageUrl} className="w-full h-full object-cover" />
                       ) : (
-                        <img src={post.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+                        <img 
+                          src={post.imageUrl || post.mediaUrl || `${BACKEND_URL}${post.mediaUrl}`} 
+                          alt="Post" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => e.target.src = "https://via.placeholder.com/400"}
+                        />
                       )}
                       {/* Hover Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
                         <div className="flex items-center gap-1">
                           <span>❤️</span>
-                          <span className="font-semibold">{post.likes.length}</span>
+                          <span className="font-semibold">{post.likesCount || 0}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <span>💬</span>
-                          <span className="font-semibold">{post.comments.length}</span>
+                          <span className="font-semibold">{post.commentsCount || 0}</span>
                         </div>
                       </div>
                     </div>
