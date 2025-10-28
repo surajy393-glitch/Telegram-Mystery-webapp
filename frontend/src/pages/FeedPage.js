@@ -934,13 +934,15 @@ const FeedPage = ({ user, onLogout }) => {
       {/* Story Viewer */}
       {showStoryViewer && viewingStories && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          {/* Close button - moved to make room for 3-dot menu */}
           <button
             onClick={() => {
               setShowStoryViewer(false);
               setViewingStories(null);
               setCurrentStoryIndex(0);
+              setOpenStoryMenu(false);
             }}
-            className="absolute top-4 right-4 text-white text-4xl z-20 w-12 h-12 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
+            className="absolute top-4 left-4 text-white text-4xl z-20 w-12 h-12 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
           >
             ×
           </button>
