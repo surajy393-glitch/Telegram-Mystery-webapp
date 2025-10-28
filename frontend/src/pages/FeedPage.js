@@ -583,28 +583,30 @@ const FeedPage = ({ user, onLogout }) => {
                       onError={(e) => e.target.src = "https://via.placeholder.com/40"}
                     />
                     <div>
-                      <h3 
-                        className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
-                        onClick={async () => {
-                          if (post.isAnonymous) return;
-                          
-                          // Check if user profile is private
-                          try {
-                            const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
-                            if (response.data.isPrivate && response.data.id !== user.id) {
-                              alert('This account is private');
-                            } else {
+                      <div className="flex items-center gap-1">
+                        <h3 
+                          className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
+                          onClick={async () => {
+                            if (post.isAnonymous) return;
+                            
+                            // Check if user profile is private
+                            try {
+                              const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
+                              if (response.data.isPrivate && response.data.id !== user.id) {
+                                alert('This account is private');
+                              } else {
+                                navigate(`/profile/${post.userId}`);
+                              }
+                            } catch (error) {
+                              console.error('Error checking profile:', error);
                               navigate(`/profile/${post.userId}`);
                             }
-                          } catch (error) {
-                            console.error('Error checking profile:', error);
-                            navigate(`/profile/${post.userId}`);
-                          }
-                        }}
-                      >
-                        <span>{post.isAnonymous ? 'Anonymous' : post.username}</span>
-                        {!post.isAnonymous && post.isVerified && <VerifiedBadge size="sm" className="ml-1" />}
-                      </h3>
+                          }}
+                        >
+                          {post.isAnonymous ? 'Anonymous' : post.username}
+                        </h3>
+                        {!post.isAnonymous && post.isVerified && <VerifiedBadge size="sm" />}
+                      </div>
                       <p className="text-xs text-gray-500">{post.timeAgo}</p>
                     </div>
                   </div>
