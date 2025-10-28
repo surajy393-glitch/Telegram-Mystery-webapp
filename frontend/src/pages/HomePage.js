@@ -410,15 +410,70 @@ const HomePage = ({ user, onLogout }) => {
     }
   };
 
-  const handleReportPost = async (postId, reason) => {
+  const handleFollowFromPost = async (postUserId) => {
     try {
-      // In a real app, you'd send this to backend
-      console.log(`Reporting post ${postId} for reason: ${reason}`);
-      alert(`Post reported for: ${reason}\n\nThank you for helping keep LuvHive safe!`);
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${postUserId}/follow`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Following successfully!");
+      fetchFeed(); // Refresh feed
+    } catch (error) {
+      console.error("Error following:", error);
+      alert("Failed to follow");
+    }
+  };
+
+  const handleMuteUser = async (postUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${postUserId}/mute`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("User muted. You won't see their posts anymore.");
+      fetchFeed(); // Refresh feed to remove muted user's posts
+    } catch (error) {
+      console.error("Error muting user:", error);
+      alert("Failed to mute user");
+    }
+  };
+
+  const handleBlockUser = async (postUserId) => {
+    if (window.confirm("Are you sure you want to block this user? They won't be able to see your posts or follow you.")) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.post(`${API}/users/${postUserId}/block`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert("User blocked successfully");
+        fetchFeed(); // Refresh feed to remove blocked user's posts
+      } catch (error) {
+        console.error("Error blocking user:", error);
+        alert("Failed to block user");
+      }
+    }
+  };
+
+  const handleReportPost = async (reason) => {
+    if (!reportingPost) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${reportingPost.id}/report`, 
+        { reason }, 
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      alert("Report submitted successfully. Thank you for helping keep LuvHive safe!");
       setShowReportDialog(false);
       setReportingPost(null);
     } catch (error) {
       console.error("Error reporting post:", error);
+      alert("Failed to submit report. Please try again.");
     }
   };
 
