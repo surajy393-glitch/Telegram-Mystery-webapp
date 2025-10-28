@@ -3406,11 +3406,16 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
     
     posts_list = []
     for post in posts:
+        # Get post author's verification status
+        post_author = await db.users.find_one({"id": post["userId"]}, {"isVerified": 1})
+        is_verified = post_author.get("isVerified", False) if post_author else False
+        
         post_data = {
             "id": post["id"],
             "userId": post["userId"],
             "username": post["username"],
             "userProfileImage": post.get("userProfileImage"),
+            "isVerified": is_verified,
             "mediaType": post.get("mediaType", "image"),  # Default to image if missing
             "mediaUrl": post.get("mediaUrl", ""),
             "caption": post.get("caption", ""),
