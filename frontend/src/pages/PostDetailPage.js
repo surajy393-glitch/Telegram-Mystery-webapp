@@ -410,14 +410,102 @@ const PostDetailPage = ({ user }) => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       {/* Header with Back Button */}
       <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl font-bold">Post</h1>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-bold">Post</h1>
+          </div>
+          
+          {/* 3-Dot Menu for Post */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPostMenu(!showPostMenu);
+              }}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <MoreVertical className="w-6 h-6" />
+            </button>
+            
+            {showPostMenu && (
+              <div 
+                className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {post?.userId === user?.id ? (
+                  // Own post options
+                  <>
+                    <button
+                      onClick={handleArchivePost}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <Archive className="w-5 h-5" />
+                      Archive
+                    </button>
+                    <button
+                      onClick={handleTurnOffComments}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      {post?.commentsDisabled ? "Turn on comments" : "Turn off comments"}
+                    </button>
+                    <button
+                      onClick={handleCopyLink}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <LinkIcon className="w-5 h-5" />
+                      Copy link
+                    </button>
+                    <button
+                      onClick={handleDeletePost}
+                      className="w-full px-4 py-3 text-left text-red-600 hover:bg-gray-50 flex items-center gap-3"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  // Others' post options
+                  <>
+                    <button
+                      onClick={handleSavePost}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <Bookmark className={`w-5 h-5 ${post?.isSaved ? 'fill-current' : ''}`} />
+                      {post?.isSaved ? "Unsave" : "Save"}
+                    </button>
+                    <button
+                      onClick={handleReportPost}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <Flag className="w-5 h-5" />
+                      Report
+                    </button>
+                    <button
+                      onClick={handleCopyLink}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <LinkIcon className="w-5 h-5" />
+                      Copy link
+                    </button>
+                    <button
+                      onClick={() => handleBlockUser(post?.userId, post?.username)}
+                      className="w-full px-4 py-3 text-left text-red-600 hover:bg-gray-50 flex items-center gap-3"
+                    >
+                      <Ban className="w-5 h-5" />
+                      Block {post?.username}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
