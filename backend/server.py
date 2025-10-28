@@ -2041,7 +2041,17 @@ async def update_profile(
             {"$set": update_data}
         )
     
-    return {"message": "Profile updated successfully"}
+    # Fetch and return updated user data
+    updated_user = await db.users.find_one({"id": current_user.id})
+    if updated_user:
+        # Remove password hash before returning
+        updated_user.pop("password_hash", None)
+        updated_user.pop("_id", None)
+    
+    return {
+        "message": "Profile updated successfully",
+        "user": updated_user
+    }
 
 @api_router.put("/auth/settings")
 async def update_user_settings(
