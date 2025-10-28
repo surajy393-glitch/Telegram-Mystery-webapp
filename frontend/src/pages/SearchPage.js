@@ -876,7 +876,12 @@ const SearchPage = ({ user, onLogout }) => {
       {selectedPost && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedPost(null)}
+          onClick={() => {
+            setSelectedPost(null);
+            setShowComments(false);
+            setPostComments([]);
+            setNewComment("");
+          }}
         >
           <div 
             className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row"
