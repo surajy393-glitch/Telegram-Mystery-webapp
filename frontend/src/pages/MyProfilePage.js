@@ -300,17 +300,35 @@ const MyProfilePage = ({ user, onLogout }) => {
                   {archivedItems.map((item) => (
                     <div
                       key={item.id}
+                      onClick={() => item.type === 'post' && navigate(`/post/${item.id}`)}
                       className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl"
                       data-testid={`archived-${item.id}`}
                     >
                       {item.mediaType === "video" ? (
-                        <video src={item.mediaUrl} className="w-full h-full object-cover" />
+                        <video src={item.mediaUrl || item.imageUrl} className="w-full h-full object-cover" />
                       ) : (
-                        <img src={item.mediaUrl} alt={item.type} className="w-full h-full object-cover" />
+                        <img 
+                          src={item.imageUrl || item.mediaUrl || `${BACKEND_URL}${item.mediaUrl}`} 
+                          alt={item.type} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => e.target.src = "https://via.placeholder.com/400"}
+                        />
                       )}
                       <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
                         {item.type}
                       </div>
+                      {item.type === 'post' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
+                          <div className="flex items-center gap-1">
+                            <span>❤️</span>
+                            <span className="font-semibold">{item.likesCount || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>💬</span>
+                            <span className="font-semibold">{item.commentsCount || 0}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
