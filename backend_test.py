@@ -5999,6 +5999,330 @@ class LuvHiveAPITester:
         
         return self.results['failed'] == 0
 
+    # ========== LUVHIVE VERIFIED TESTS ==========
+    
+    def test_admin_verify_user_success(self):
+        """Test POST /api/admin/verify-user/{username} with existing users"""
+        try:
+            # Test with Luvsociety
+            response = self.session.post(f"{API_BASE}/admin/verify-user/Luvsociety")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'success' in data and data['success']:
+                    self.log_result("Admin Verify User - Luvsociety", True, 
+                                  f"Successfully verified Luvsociety: {data['message']}")
+                else:
+                    self.log_result("Admin Verify User - Luvsociety", False, 
+                                  f"Unexpected response format: {data}")
+            else:
+                self.log_result("Admin Verify User - Luvsociety", False, 
+                              f"Status: {response.status_code}", response.text)
+            
+            # Test with Luststorm
+            response2 = self.session.post(f"{API_BASE}/admin/verify-user/Luststorm")
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                if 'message' in data2 and 'success' in data2 and data2['success']:
+                    self.log_result("Admin Verify User - Luststorm", True, 
+                                  f"Successfully verified Luststorm: {data2['message']}")
+                else:
+                    self.log_result("Admin Verify User - Luststorm", False, 
+                                  f"Unexpected response format: {data2}")
+            else:
+                self.log_result("Admin Verify User - Luststorm", False, 
+                              f"Status: {response2.status_code}", response2.text)
+                
+        except Exception as e:
+            self.log_result("Admin Verify User", False, "Exception occurred", str(e))
+    
+    def test_admin_verify_user_not_found(self):
+        """Test POST /api/admin/verify-user/{username} with non-existent user"""
+        try:
+            response = self.session.post(f"{API_BASE}/admin/verify-user/nonexistentuser12345")
+            
+            if response.status_code == 404:
+                self.log_result("Admin Verify User - Not Found", True, 
+                              "Correctly returned 404 for non-existent user")
+            else:
+                self.log_result("Admin Verify User - Not Found", False, 
+                              f"Expected 404, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Admin Verify User - Not Found", False, "Exception occurred", str(e))
+    
+    def test_verification_status_endpoint(self):
+        """Test GET /api/verification/status endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/verification/status")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields
+                required_fields = ['isVerified', 'criteria', 'currentValues', 'allCriteriaMet']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"Missing fields: {missing_fields}")
+                    return
+                
+                # Check criteria structure (11 criteria)
+                expected_criteria = [
+                    'accountAge', 'emailVerified', 'phoneVerified', 'postsCount', 
+                    'followersCount', 'noViolations', 'profileComplete', 
+                    'personalityQuestions', 'profileViews', 'avgStoryViews', 'totalLikes'
+                ]
+                
+                criteria = data['criteria']
+                missing_criteria = [c for c in expected_criteria if c not in criteria]
+                
+                if missing_criteria:
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"Missing criteria: {missing_criteria}")
+                    return
+                
+                # Check currentValues structure
+                current_values = data['currentValues']
+                expected_values = [
+                    'accountAgeDays', 'emailVerified', 'phoneVerified', 'postsCount',
+                    'followersCount', 'violationsCount', 'profileComplete',
+                    'personalityQuestions', 'profileViews', 'avgStoryViews', 'totalLikes'
+                ]
+                
+                missing_values = [v for v in expected_values if v not in current_values]
+                
+                if missing_values:
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"Missing current values: {missing_values}")
+                    return
+                
+                # Verify data types
+                if not isinstance(data['isVerified'], bool):
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"isVerified should be boolean, got {type(data['isVerified'])}")
+                    return
+                
+                if not isinstance(data['allCriteriaMet'], bool):
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"allCriteriaMet should be boolean, got {type(data['allCriteriaMet'])}")
+                    return
+                
+                # Check that all criteria are boolean
+                invalid_criteria = [k for k, v in criteria.items() if not isinstance(v, bool)]
+                if invalid_criteria:
+                    self.log_result("Verification Status Endpoint", False, 
+                                  f"Criteria should be boolean: {invalid_criteria}")
+                    return
+                
+                self.log_result("Verification Status Endpoint", True, 
+                              f"✅ All 11 criteria present, isVerified: {data['isVerified']}, allCriteriaMet: {data['allCriteriaMet']}")
+                
+            else:
+                self.log_result("Verification Status Endpoint", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Verification Status Endpoint", False, "Exception occurred", str(e))
+    
+    def test_verification_status_requires_auth(self):
+        """Test that verification status endpoint requires authentication"""
+        try:
+            # Create session without auth token
+            unauth_session = requests.Session()
+            
+            response = unauth_session.get(f"{API_BASE}/verification/status")
+            
+            if response.status_code == 401:
+                self.log_result("Verification Status Auth Required", True, 
+                              "Correctly requires authentication")
+            else:
+                self.log_result("Verification Status Auth Required", False, 
+                              f"Expected 401, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Verification Status Auth Required", False, "Exception occurred", str(e))
+    
+    def test_feed_includes_isverified(self):
+        """Test GET /api/posts/feed includes isVerified field for each post"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts = data['posts']
+                    
+                    if len(posts) == 0:
+                        self.log_result("Feed Includes isVerified", True, 
+                                      "No posts in feed to check (empty feed is valid)")
+                        return
+                    
+                    # Check that all posts have isVerified field
+                    posts_without_verified = []
+                    verified_posts = []
+                    
+                    for post in posts:
+                        if 'isVerified' not in post:
+                            posts_without_verified.append(post.get('id', 'unknown'))
+                        elif post['isVerified']:
+                            verified_posts.append(f"{post.get('username', 'unknown')} (id: {post.get('id', 'unknown')})")
+                    
+                    if posts_without_verified:
+                        self.log_result("Feed Includes isVerified", False, 
+                                      f"Posts missing isVerified field: {posts_without_verified}")
+                    else:
+                        self.log_result("Feed Includes isVerified", True, 
+                                      f"✅ All {len(posts)} posts have isVerified field. Verified posts: {len(verified_posts)} ({', '.join(verified_posts[:3])}{'...' if len(verified_posts) > 3 else ''})")
+                else:
+                    self.log_result("Feed Includes isVerified", False, 
+                                  "Response missing 'posts' array")
+            else:
+                self.log_result("Feed Includes isVerified", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Feed Includes isVerified", False, "Exception occurred", str(e))
+    
+    def test_stories_feed_includes_isverified(self):
+        """Test GET /api/stories/feed includes isVerified field for each story group"""
+        try:
+            response = self.session.get(f"{API_BASE}/stories/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'stories' in data and isinstance(data['stories'], list):
+                    story_groups = data['stories']
+                    
+                    if len(story_groups) == 0:
+                        self.log_result("Stories Feed Includes isVerified", True, 
+                                      "No story groups in feed to check (empty feed is valid)")
+                        return
+                    
+                    # Check that all story groups have isVerified field
+                    groups_without_verified = []
+                    verified_groups = []
+                    
+                    for group in story_groups:
+                        if 'isVerified' not in group:
+                            groups_without_verified.append(group.get('userId', 'unknown'))
+                        elif group['isVerified']:
+                            verified_groups.append(f"{group.get('username', 'unknown')} (id: {group.get('userId', 'unknown')})")
+                    
+                    if groups_without_verified:
+                        self.log_result("Stories Feed Includes isVerified", False, 
+                                      f"Story groups missing isVerified field: {groups_without_verified}")
+                    else:
+                        self.log_result("Stories Feed Includes isVerified", True, 
+                                      f"✅ All {len(story_groups)} story groups have isVerified field. Verified groups: {len(verified_groups)} ({', '.join(verified_groups[:3])}{'...' if len(verified_groups) > 3 else ''})")
+                else:
+                    self.log_result("Stories Feed Includes isVerified", False, 
+                                  "Response missing 'stories' array")
+            else:
+                self.log_result("Stories Feed Includes isVerified", False, 
+                              f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Stories Feed Includes isVerified", False, "Exception occurred", str(e))
+    
+    def test_verified_users_in_feeds(self):
+        """Test that verified users (Luvsociety, Luststorm) show isVerified=True in feeds"""
+        try:
+            # First verify the users
+            self.session.post(f"{API_BASE}/admin/verify-user/Luvsociety")
+            self.session.post(f"{API_BASE}/admin/verify-user/Luststorm")
+            
+            # Check posts feed
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            verified_users_in_posts = []
+            unverified_users_in_posts = []
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                for post in posts:
+                    username = post.get('username', '')
+                    is_verified = post.get('isVerified', False)
+                    
+                    if username in ['Luvsociety', 'Luststorm']:
+                        if is_verified:
+                            verified_users_in_posts.append(username)
+                        else:
+                            unverified_users_in_posts.append(username)
+            
+            # Check stories feed
+            response2 = self.session.get(f"{API_BASE}/stories/feed")
+            
+            verified_users_in_stories = []
+            unverified_users_in_stories = []
+            
+            if response2.status_code == 200:
+                data2 = response2.json()
+                story_groups = data2.get('stories', [])
+                
+                for group in story_groups:
+                    username = group.get('username', '')
+                    is_verified = group.get('isVerified', False)
+                    
+                    if username in ['Luvsociety', 'Luststorm']:
+                        if is_verified:
+                            verified_users_in_stories.append(username)
+                        else:
+                            unverified_users_in_stories.append(username)
+            
+            # Report results
+            if unverified_users_in_posts or unverified_users_in_stories:
+                self.log_result("Verified Users in Feeds", False, 
+                              f"Expected verified users showing as unverified - Posts: {unverified_users_in_posts}, Stories: {unverified_users_in_stories}")
+            else:
+                self.log_result("Verified Users in Feeds", True, 
+                              f"✅ Verified users correctly showing - Posts: {verified_users_in_posts}, Stories: {verified_users_in_stories}")
+                
+        except Exception as e:
+            self.log_result("Verified Users in Feeds", False, "Exception occurred", str(e))
+
+    def run_luvhive_verified_tests(self):
+        """Run only LuvHive Verified tests"""
+        print("🔵 Starting LuvHive Verified Backend Tests")
+        print("=" * 60)
+        
+        # Register test user for authentication
+        if not self.register_test_user():
+            print("❌ Failed to register test user. Aborting tests.")
+            return False
+        
+        # Run LuvHive Verified tests
+        self.test_admin_verify_user_success()
+        self.test_admin_verify_user_not_found()
+        self.test_verification_status_endpoint()
+        self.test_verification_status_requires_auth()
+        self.test_feed_includes_isverified()
+        self.test_stories_feed_includes_isverified()
+        self.test_verified_users_in_feeds()
+        
+        # Print results
+        print("\n" + "=" * 60)
+        print("🏁 LuvHive Verified Test Results")
+        print("=" * 60)
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        print(f"Total Tests: {self.results['passed'] + self.results['failed']}")
+        
+        if self.results['errors']:
+            print("\nFAILED TESTS:")
+            for error in self.results['errors']:
+                print(f"- {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"  Error: {error['error']}")
+        
+        return self.results['failed'] == 0
+
 if __name__ == "__main__":
     import sys
     tester = LuvHiveAPITester()
