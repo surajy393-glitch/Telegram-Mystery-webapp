@@ -186,11 +186,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated GET /api/search/explore endpoint to filter out posts from both muted and blocked users. Combined exclusion list ensures muted/blocked users don't appear in explore feed."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE EXPLORE FILTERING TESTING COMPLETE: All 2 test scenarios passed (100% success rate). DETAILED RESULTS: 1) ✅ Explore Excludes Muted Users - Verified no posts from muted users appear in explore (tested with 8 explore posts), 2) ✅ Explore Excludes Blocked Users - Verified no posts from blocked users appear in explore (tested with 8 explore posts). Filtering logic working perfectly for explore endpoint."
 
   - task: "Save/Unsave Post Endpoints"
     implemented: true
