@@ -3894,12 +3894,12 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
                 "userId": post["userId"],
                 "username": post["username"],
                 "userProfileImage": post.get("userProfileImage"),
-                "mediaType": post["mediaType"],
-                "mediaUrl": post["mediaUrl"],
-                "caption": post.get("caption", ""),
+                "postType": post.get("postType", "text"),
+                "imageUrl": post.get("imageUrl"),
+                "content": post.get("content", ""),
                 "likes": len(post.get("likes", [])),
                 "comments": len(post.get("comments", [])),
-                "createdAt": post["createdAt"].isoformat(),
+                "createdAt": post["createdAt"].isoformat() if "createdAt" in post else None,
                 "isLiked": current_user.id in post.get("likes", []),
                 "isSaved": post["id"] in current_user.savedPosts
             })
