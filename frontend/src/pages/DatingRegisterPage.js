@@ -1017,7 +1017,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                 </Button>
               </form>
             </>
-          ) : (
+          ) : step === 2 ? (
             <>
               <h2 className="text-2xl font-bold text-white mb-6 text-center">Dating Profile</h2>
               <form onSubmit={handleStep2Submit} className="space-y-5">
