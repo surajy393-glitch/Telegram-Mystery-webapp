@@ -2361,8 +2361,8 @@ async def send_phone_verification(
     
     return {"message": "Verification code sent to your phone", "debug_code": otp}
 
-@api_router.post("/auth/verify-phone")
-async def verify_phone(
+@api_router.post("/auth/verify-phone-code")
+async def verify_phone_code(
     data: dict,
     current_user: User = Depends(get_current_user)
 ):
