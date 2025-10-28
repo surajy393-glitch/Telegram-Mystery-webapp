@@ -218,17 +218,13 @@ metadata:
   three_dot_menu_implementation_date: "2025-01-30"
 
 test_plan:
-  current_focus:
-    - "Add mutedUsers field to User model and registration"
-    - "Mute/Unmute User Endpoints"
-    - "Report Post Endpoint Enhancement"
-    - "Feed Filtering - Exclude Muted and Blocked Users"
-    - "Explore Filtering - Exclude Muted and Blocked Users"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_needed: true
+  backend_testing_needed: false
   frontend_testing_needed: false
+  three_dot_menu_backend_complete: true
 
 agent_communication:
   - agent: "main"
