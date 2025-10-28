@@ -5424,6 +5424,47 @@ class LuvHiveAPITester:
         
         return self.results['failed'] == 0
     
+    def run_explore_tests(self):
+        """Run explore endpoint tests"""
+        print("=" * 60)
+        print("EXPLORE ENDPOINT TESTING")
+        print("=" * 60)
+        print(f"Testing against: {API_BASE}")
+        print()
+        
+        # Login with Luvsociety user
+        print("🔐 Logging in with Luvsociety user...")
+        if not self.login_existing_user("Luvsociety", "Luvsociety"):
+            print("❌ Failed to login with Luvsociety user. Cannot proceed with tests.")
+            return False
+        
+        print("\n📊 Testing Explore Endpoint...")
+        print("-" * 50)
+        
+        # Run all explore tests
+        self.test_explore_endpoint_returns_posts()
+        self.test_explore_excludes_blocked_users()
+        self.test_explore_excludes_private_accounts()
+        self.test_explore_response_format()
+        self.test_explore_sorted_by_created_at()
+        
+        # Summary
+        print("\n" + "=" * 60)
+        print("EXPLORE ENDPOINT TEST SUMMARY")
+        print("=" * 60)
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        print(f"Total Tests: {self.results['passed'] + self.results['failed']}")
+        
+        if self.results['errors']:
+            print("\nFAILED TESTS:")
+            for error in self.results['errors']:
+                print(f"- {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"  Error: {error['error']}")
+        
+        return self.results['failed'] == 0
+    
     def run_telegram_tests_only(self):
         """Run only Telegram authentication tests"""
         print("=" * 60)
