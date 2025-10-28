@@ -1293,6 +1293,7 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "hiddenStoryUsers": [],
             "isPremium": False,
             "isPrivate": False,
+            "isVerified": False,
             "isOnline": True,
             "lastSeen": datetime.now(timezone.utc).isoformat(),
             
