@@ -131,7 +131,8 @@ const VerificationStatusPage = ({ user }) => {
 
   const metCriteria = criteria.filter(c => c.met).length;
   const totalCriteria = criteria.length;
-  const overallProgress = Math.round((metCriteria / totalCriteria) * 100);
+  // If user is verified, show 100% regardless of individual criteria
+  const overallProgress = verificationData?.isVerified ? 100 : Math.round((metCriteria / totalCriteria) * 100);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
@@ -153,17 +154,21 @@ const VerificationStatusPage = ({ user }) => {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Verification Status Card */}
-        <div className="glass-effect rounded-3xl p-8 mb-6 shadow-xl animate-fadeIn">
+        <div className={`glass-effect rounded-3xl p-8 mb-6 shadow-xl animate-fadeIn ${verificationData?.isVerified ? 'bg-gradient-to-br from-green-50 to-blue-50' : ''}`}>
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 mb-4">
-              <Shield className="w-12 h-12 text-white" />
+            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 ${verificationData?.isVerified ? 'bg-gradient-to-br from-green-500 to-blue-500' : 'bg-gradient-to-br from-blue-500 to-cyan-500'}`}>
+              {verificationData?.isVerified ? (
+                <CheckCircle2 className="w-12 h-12 text-white" />
+              ) : (
+                <Shield className="w-12 h-12 text-white" />
+              )}
             </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              {verificationData?.isVerified ? 'You\'re Verified!' : 'Verification Progress'}
+              {verificationData?.isVerified ? '🎉 You\'re Verified!' : 'Verification Progress'}
             </h2>
             <p className="text-gray-600">
               {verificationData?.isVerified 
-                ? 'Your account has been verified with the blue checkmark'
+                ? 'Your account has been verified with the blue checkmark ☑️'
                 : `${metCriteria} of ${totalCriteria} criteria met`}
             </p>
           </div>
@@ -171,14 +176,15 @@ const VerificationStatusPage = ({ user }) => {
           {/* Progress Bar */}
           <div className="bg-gray-200 rounded-full h-4 overflow-hidden mb-2">
             <div 
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500 ease-out"
+              className={`h-full transition-all duration-500 ease-out ${verificationData?.isVerified ? 'bg-gradient-to-r from-green-500 to-blue-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'}`}
               style={{ width: `${overallProgress}%` }}
             />
           </div>
           <p className="text-right text-sm text-gray-600 font-semibold">{overallProgress}% Complete</p>
         </div>
 
-        {/* Verification Criteria */}
+        {/* Show criteria only if not verified yet */}
+        {!verificationData?.isVerified && (
         <div className="glass-effect rounded-3xl p-6 shadow-xl">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Verification Criteria</h3>
           <div className="space-y-3">
