@@ -963,7 +963,10 @@ const FeedPage = ({ user, onLogout }) => {
                     className="w-10 h-10 rounded-full border-2 border-white"
                   />
                   <div>
-                    <h3 className="text-white font-semibold">{viewingStories.username}</h3>
+                    <div className="flex items-center gap-1">
+                      <h3 className="text-white font-semibold">{viewingStories.username}</h3>
+                      {viewingStories.isVerified && <VerifiedBadge size="sm" />}
+                    </div>
                     <p className="text-white text-xs opacity-75">
                       {new Date(viewingStories.stories[currentStoryIndex]?.createdAt).toLocaleString()}
                     </p>
