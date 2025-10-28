@@ -406,21 +406,21 @@ const ProfilePage = ({ user, onLogout }) => {
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-2 mt-6">
                 <Button
                   onClick={() => handleFollowToggle(viewingUser?.id, viewingUser?.isFollowing)}
                   data-testid="follow-user-btn"
                   variant={viewingUser?.isFollowing ? "outline" : "default"}
                   disabled={followingInProgress.has(viewingUser?.id)}
                   className={viewingUser?.isFollowing 
-                    ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-4" 
-                    : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-4"
+                    ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-3 text-sm" 
+                    : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-3 text-sm"
                   }
                 >
                   {followingInProgress.has(viewingUser?.id) ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      <span>{viewingUser?.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                    <div className="flex items-center justify-center gap-1">
+                      <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-xs">{viewingUser?.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
                     </div>
                   ) : (
                     viewingUser?.isFollowing ? "Following" : "Follow"
@@ -430,19 +430,20 @@ const ProfilePage = ({ user, onLogout }) => {
                 <Button
                   onClick={handleVibeCompatibility}
                   data-testid="vibe-compatibility-btn"
-                  className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl py-4"
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl py-3 text-sm"
                 >
-                  <Zap className="w-5 h-5 mr-2" />
-                  Vibe Check
+                  <Zap className="w-4 h-4 mr-1" />
+                  Vibe
                 </Button>
                 
-                <Link to={`/chat/${viewingUser?.id}`}>
+                <Link to={`/chat/${viewingUser?.id}`} className="flex-1">
                   <Button
                     data-testid="premium-chat-user-btn"
                     variant="outline"
-                    className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 rounded-xl py-4 px-6"
+                    className="w-full border-2 border-purple-500 text-purple-600 hover:bg-purple-50 rounded-xl py-3 text-sm"
                   >
-                    Premium Chat
+                    <Crown className="w-4 h-4 mr-1" />
+                    Chat
                   </Button>
                 </Link>
               </div>
