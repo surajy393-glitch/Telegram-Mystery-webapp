@@ -313,9 +313,16 @@ const SearchPage = ({ user, onLogout }) => {
     >
       <Link to={`/profile/${userItem.id}`}>
         <img
-          src={userItem.profileImage || "https://via.placeholder.com/48"}
+          src={
+            userItem.profileImage
+              ? (userItem.profileImage.startsWith('data:') || userItem.profileImage.startsWith('http')
+                  ? userItem.profileImage
+                  : `${API}${userItem.profileImage}`)
+              : "https://via.placeholder.com/48"
+          }
           alt={userItem.username}
           className="w-12 h-12 rounded-full object-cover border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-colors"
+          onError={(e) => e.target.src = "https://via.placeholder.com/48"}
         />
       </Link>
       <div className="flex-1">
