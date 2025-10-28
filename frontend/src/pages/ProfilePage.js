@@ -422,7 +422,7 @@ const ProfilePage = ({ user, onLogout }) => {
                   className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl py-4"
                 >
                   <Zap className="w-5 h-5 mr-2" />
-                  Vibe Compatibility
+                  Vibe Check
                 </Button>
                 
                 <Link to={`/chat/${viewingUser?.id}`}>
