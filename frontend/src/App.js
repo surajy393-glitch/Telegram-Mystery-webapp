@@ -105,11 +105,7 @@ function App() {
           <Route 
             path="/mystery" 
             element={
-              isAuthenticated ? (
-                <MysteryMatchHome user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/" replace />
-              )
+              <MysteryMatchHome user={user} onLogout={handleLogout} />
             } 
           />
           <Route 
