@@ -2328,38 +2328,62 @@ async def send_phone_verification(
     data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Send phone verification code"""
+    """Send phone verification code via Twilio Verify"""
     phone = data.get("phone")
     if not phone:
         raise HTTPException(status_code=400, detail="Phone number is required")
     
-    # Generate 6-digit OTP
-    import random
-    otp = str(random.randint(100000, 999999))
-    
-    # Store OTP in database with expiry (10 minutes)
-    from datetime import timedelta
-    expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
-    
-    await db.verification_codes.update_one(
-        {"userId": current_user.id, "type": "phone"},
-        {
-            "$set": {
-                "userId": current_user.id,
-                "type": "phone",
-                "code": otp,
-                "phone": phone,
-                "expiresAt": expiry,
-                "createdAt": datetime.now(timezone.utc)
-            }
-        },
-        upsert=True
-    )
-    
-    # TODO: Send actual SMS with OTP (for now, just log it)
-    print(f"📱 Phone Verification Code for {phone}: {otp}")
-    
-    return {"message": "Verification code sent to your phone", "debug_code": otp}
+    try:
+        from twilio.rest import Client
+        
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        verify_service_sid = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
+        
+        if not account_sid or not auth_token or not verify_service_sid:
+            raise HTTPException(status_code=500, detail="SMS service not configured")
+        
+        client = Client(account_sid, auth_token)
+        
+        # Format mobile number (add +91 if not present)
+        formatted_number = phone.strip()
+        if not formatted_number.startswith('+'):
+            if formatted_number.startswith('91'):
+                formatted_number = '+' + formatted_number
+            else:
+                formatted_number = '+91' + formatted_number
+        
+        # Send OTP via Twilio Verify
+        verification = client.verify \
+            .v2 \
+            .services(verify_service_sid) \
+            .verifications \
+            .create(to=formatted_number, channel='sms')
+        
+        # Store phone number for verification
+        await db.verification_codes.update_one(
+            {"userId": current_user.id, "type": "phone"},
+            {
+                "$set": {
+                    "userId": current_user.id,
+                    "type": "phone",
+                    "phone": formatted_number,
+                    "createdAt": datetime.now(timezone.utc)
+                }
+            },
+            upsert=True
+        )
+        
+        logger.info(f"Twilio SMS OTP sent: {verification.status} to {formatted_number}")
+        
+        return {
+            "message": "Verification code sent to your phone",
+            "status": verification.status
+        }
+        
+    except Exception as e:
+        logger.error(f"Error sending phone verification: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {str(e)}")
 
 @api_router.post("/auth/verify-phone-code")
 async def verify_phone_code(
