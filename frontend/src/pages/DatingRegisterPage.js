@@ -604,9 +604,13 @@ const DatingRegisterPage = ({ onLogin }) => {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-pink-500' : 'bg-gray-300'} text-white font-bold`}>
               1
             </div>
-            <div className={`w-16 h-1 ${step >= 2 ? 'bg-pink-500' : 'bg-gray-300'}`}></div>
+            <div className={`w-12 h-1 ${step >= 2 ? 'bg-pink-500' : 'bg-gray-300'}`}></div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-pink-500' : 'bg-gray-300'} text-white font-bold`}>
               2
+            </div>
+            <div className={`w-12 h-1 ${step >= 3 ? 'bg-pink-500' : 'bg-gray-300'}`}></div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-pink-500' : 'bg-gray-300'} text-white font-bold`}>
+              3
             </div>
           </div>
 
