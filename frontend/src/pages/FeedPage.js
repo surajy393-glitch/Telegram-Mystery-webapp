@@ -235,32 +235,55 @@ const FeedPage = ({ user, onLogout }) => {
     }
   };
 
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink, setShareLink] = useState('');
+
   const handleShare = async (post) => {
     const shareUrl = `${window.location.origin}/post/${post.id}`;
     const shareText = `Check out this post by ${post.username} on LuvHive!`;
 
-    try {
-      // Try native share API (works on mobile)
-      if (navigator.share) {
+    // Try native share first (mobile)
+    if (navigator.share) {
+      try {
         await navigator.share({
           title: 'LuvHive Post',
           text: shareText,
           url: shareUrl
         });
-      } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Link copied to clipboard!');
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return; // User cancelled, do nothing
+        }
       }
+    }
+
+    // Fallback: Show modal with copy option
+    setShareLink(shareUrl);
+    setShowShareModal(true);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      alert('Link copied to clipboard!');
+      setShowShareModal(false);
     } catch (error) {
-      // If share cancelled or failed, try clipboard
+      // Manual copy fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = shareLink;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
       try {
-        await navigator.clipboard.writeText(shareUrl);
+        document.execCommand('copy');
         alert('Link copied to clipboard!');
+        setShowShareModal(false);
       } catch (err) {
-        console.error('Error sharing:', err);
-        alert('Unable to share. Link: ' + shareUrl);
+        console.error('Failed to copy:', err);
       }
+      document.body.removeChild(textArea);
     }
   };
 
