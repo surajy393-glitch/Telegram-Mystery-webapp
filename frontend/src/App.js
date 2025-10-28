@@ -66,10 +66,19 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
+          {/* Telegram WebApp Auth Route */}
+          <Route 
+            path="/telegram-auth" 
+            element={
+              <TelegramAuthHandler onAuthSuccess={handleLogin} />
+            } 
+          />
           <Route 
             path="/" 
             element={
-              isAuthenticated ? (
+              isTelegramWebApp() && !isAuthenticated ? (
+                <TelegramAuthHandler onAuthSuccess={handleLogin} />
+              ) : isAuthenticated ? (
                 <Navigate to="/feed" replace />
               ) : (
                 <LandingPage />
