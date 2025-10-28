@@ -3073,6 +3073,33 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
     
     return {"posts": posts_list}
 
+@api_router.get("/posts/{post_id}")
+async def get_single_post(post_id: str, current_user: User = Depends(get_current_user)):
+    """Get a single post by ID"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Get current user's saved posts
+    user = await db.users.find_one({"id": current_user.id})
+    saved_posts = user.get("savedPosts", [])
+    
+    return {
+        "id": post["id"],
+        "userId": post["userId"],
+        "username": post["username"],
+        "userProfileImage": post.get("userProfileImage"),
+        "imageUrl": post.get("imageUrl"),
+        "mediaType": post.get("mediaType", "image"),
+        "mediaUrl": post.get("mediaUrl", ""),
+        "caption": post.get("caption", ""),
+        "likesCount": len(post.get("likes", [])),
+        "commentsCount": len(post.get("comments", [])),
+        "userLiked": current_user.id in post.get("likes", []),
+        "isSaved": post["id"] in saved_posts,
+        "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"]
+    }
+
 @api_router.post("/posts/{post_id}/like")
 async def like_post(post_id: str, current_user: User = Depends(get_current_user)):
     post = await db.posts.find_one({"id": post_id})
