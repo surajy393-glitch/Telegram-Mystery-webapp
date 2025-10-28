@@ -102,6 +102,7 @@ const SearchPage = ({ user, onLogout }) => {
     // Check cache first
     const cachedResult = searchCache.get(cacheKey);
     if (cachedResult) {
+      console.log('🔍 Using cached results:', cachedResult);
       setSearchResults(cachedResult);
       return;
     }
@@ -111,7 +112,7 @@ const SearchPage = ({ user, onLogout }) => {
 
     try {
       const token = localStorage.getItem("token");
-      console.log('Searching for:', query, 'type:', type, 'token:', token ? 'present' : 'missing');
+      console.log('🔍 Searching:', { query, type, hasToken: !!token });
       
       const response = await axios.post(`${API}/search`, {
         query: query.trim(),
@@ -120,14 +121,18 @@ const SearchPage = ({ user, onLogout }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Search results:', response.data);
+      console.log('✅ Search API Response:', response.data);
+      console.log('📊 Users count:', response.data.users?.length || 0);
+      console.log('📊 Posts count:', response.data.posts?.length || 0);
+      console.log('📊 Hashtags count:', response.data.hashtags?.length || 0);
+      console.log('👥 Users data:', response.data.users);
       
       // Cache the result
       searchCache.set(cacheKey, response.data);
       setSearchResults(response.data);
     } catch (error) {
-      console.error("Error searching:", error);
-      console.error("Error response:", error.response?.data);
+      console.error("❌ Error searching:", error);
+      console.error("❌ Error response:", error.response?.data);
       alert(`Search failed: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
