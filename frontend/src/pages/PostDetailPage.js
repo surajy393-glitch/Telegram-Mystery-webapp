@@ -14,6 +14,7 @@ const PostDetailPage = ({ user }) => {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [showMenuFor, setShowMenuFor] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
