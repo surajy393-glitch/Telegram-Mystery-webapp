@@ -2139,8 +2139,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     # Criteria checks
     criteria = {
         "accountAge": account_age_days >= 45,
-        "emailVerified": bool(current_user.email),  # Assuming email exists = verified
-        "phoneVerified": bool(getattr(current_user, 'mobile', None)),  # Check if mobile exists
+        "emailVerified": bool(getattr(current_user, 'emailVerified', False)),  # Check emailVerified field
+        "phoneVerified": bool(getattr(current_user, 'phoneVerified', False)),  # Check phoneVerified field
         "postsCount": posts_count >= 20,
         "followersCount": len(current_user.followers) >= 100,
         "noViolations": (getattr(current_user, 'violationsCount', 0)) == 0,
