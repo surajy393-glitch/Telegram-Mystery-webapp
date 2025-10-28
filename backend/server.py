@@ -3837,8 +3837,10 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
         # Try text search first, fallback to regex
         try:
             exact_users = await db.users.find(text_search_filter).skip(skip).limit(limit).to_list(limit)
+            logger.info(f"🔍 Search: Text search for '{query}' found {len(exact_users)} exact matches")
         except:
             exact_users = await db.users.find(regex_filter).skip(skip).limit(limit).to_list(limit)
+            logger.info(f"🔍 Search: Regex search for '{query}' found {len(exact_users)} exact matches")
         user_ids_found = {user["id"] for user in exact_users}
         
         # Then, search for partial matches, excluding exact matches
