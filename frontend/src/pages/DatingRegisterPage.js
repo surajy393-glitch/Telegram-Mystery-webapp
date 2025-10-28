@@ -1181,13 +1181,13 @@ const DatingRegisterPage = ({ onLogin }) => {
                   </div>
                 ))}
 
-                <div className="bg-white bg-opacity-10 rounded-xl p-4 text-white text-sm">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 bg-opacity-90 rounded-xl p-4 shadow-lg">
                   <div className="flex items-start space-x-2">
-                    <span className="text-xl">💡</span>
+                    <span className="text-2xl">💡</span>
                     <div>
-                      <p className="font-semibold mb-1">How It Works</p>
-                      <p className="text-white text-opacity-80 mb-2">Your answers help us match you with people who share similar vibes and interests.</p>
-                      <p className="text-white text-opacity-70 text-xs">
+                      <p className="font-bold text-white text-lg mb-2">How It Works</p>
+                      <p className="text-white font-medium mb-2">Your answers help us match you with people who share similar vibes and interests.</p>
+                      <p className="text-white font-semibold text-sm">
                         ✨ The more honest you are, the better your matches will be!
                       </p>
                     </div>
