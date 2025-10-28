@@ -60,10 +60,15 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
   const handleLikeComment = async (commentId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/social/comments/${commentId}/like`, 
-        { userId: user.id },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
+      const formData = new FormData();
+      formData.append('userId', user.id);
+      
+      await axios.post(`${API_URL}/api/social/comments/${commentId}/like`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       fetchComments();
     } catch (error) {
       console.error('Error liking comment:', error);
