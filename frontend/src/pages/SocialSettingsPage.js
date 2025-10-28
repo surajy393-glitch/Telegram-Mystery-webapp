@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle } from 'lucide-react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const SocialSettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -13,11 +17,81 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     notifyOnComments: true,
     notifyOnFollows: true,
   });
+  const [loading, setLoading] = useState(true);
 
-  const handleToggle = (key) => {
-    setSettings({ ...settings, [key]: !settings[key] });
-    // TODO: Save to backend
+  // Fetch user settings on mount
+  useEffect(() => {
+    fetchUserSettings();
+  }, []);
+
+  const fetchUserSettings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Map backend settings to frontend state
+      setSettings({
+        privateProfile: response.data.isPrivate || false,
+        allowAnonymousMessages: response.data.allowDirectMessages !== false,
+        showOnlineStatus: response.data.showOnlineStatus !== false,
+        allowStoryReplies: response.data.allowStoryReplies !== false,
+        notifyOnLikes: response.data.pushNotifications !== false,
+        notifyOnComments: response.data.pushNotifications !== false,
+        notifyOnFollows: response.data.pushNotifications !== false,
+      });
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleToggle = async (key) => {
+    const newValue = !settings[key];
+    
+    // Optimistically update UI
+    setSettings({ ...settings, [key]: newValue });
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Map frontend setting key to backend setting key
+      const settingMap = {
+        privateProfile: 'isPrivate',
+        allowAnonymousMessages: 'allowDirectMessages',
+        showOnlineStatus: 'showOnlineStatus',
+        allowStoryReplies: 'allowStoryReplies',
+        notifyOnLikes: 'pushNotifications',
+        notifyOnComments: 'pushNotifications',
+        notifyOnFollows: 'pushNotifications',
+      };
+      
+      const backendKey = settingMap[key];
+      
+      // Save to backend
+      await axios.put(`${API}/auth/settings`, 
+        { [backendKey]: newValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      console.log(`Setting ${key} updated to ${newValue}`);
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      // Revert on error
+      setSettings({ ...settings, [key]: !newValue });
+      alert('Failed to update settings. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
