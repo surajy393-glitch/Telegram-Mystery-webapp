@@ -918,7 +918,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                         key={interest}
                         type="button"
                         onClick={() => toggleInterest(interest)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition break-words text-center w-full ${
                           formData.interests.includes(interest)
                             ? 'bg-pink-500 text-white'
                             : 'bg-white bg-opacity-20 text-white border border-white border-opacity-30 hover:bg-opacity-30'
