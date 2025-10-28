@@ -189,6 +189,30 @@ backend:
         agent: "main"
         comment: "Verified existing POST /api/posts/{post_id}/save and POST /api/posts/{post_id}/unsave endpoints exist and functional. These toggle saved posts in user's savedPosts array."
 
+metadata:
+  created_by: "main_agent"
+  version: "3.0"
+  test_sequence: 0
+  run_ui: false
+  three_dot_menu_implementation_date: "2025-01-30"
+
+test_plan:
+  current_focus:
+    - "Add mutedUsers field to User model and registration"
+    - "Mute/Unmute User Endpoints"
+    - "Report Post Endpoint Enhancement"
+    - "Feed Filtering - Exclude Muted and Blocked Users"
+    - "Explore Filtering - Exclude Muted and Blocked Users"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+  backend_testing_needed: true
+  frontend_testing_needed: false
+
+agent_communication:
+  - agent: "main"
+    message: "BACKEND IMPLEMENTATION COMPLETE for 3-dot menu feature. Implemented: 1) Added mutedUsers field to User model and all registration flows, 2) Created mute/unmute endpoints (POST /api/users/{userId}/mute and /api/users/{userId}/unmute) - silent hiding of posts without notifying the muted user, 3) Verified block/unblock endpoints exist and functional, 4) Enhanced report post endpoint to use JSON with detailed report data including all requested categories, 5) Updated feed filtering to exclude both muted and blocked users from feed, 6) Updated explore filtering to exclude both muted and blocked users. Ready for backend testing with deep_testing_backend_v2."
+
 frontend:
   - task: "User Search Functionality - Allow users to appear in their own search results"
     implemented: true
