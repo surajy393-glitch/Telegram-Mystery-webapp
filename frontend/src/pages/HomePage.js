@@ -740,7 +740,7 @@ const HomePage = ({ user, onLogout }) => {
                   </div>
 
                   {/* 3-Dot Menu */}
-                  <div className="relative">
+                  <div className="relative" style={{minWidth: '50px'}}>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -748,8 +748,15 @@ const HomePage = ({ user, onLogout }) => {
                       }}
                       className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                       data-testid={`post-menu-${post.id}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#f3f4f6',
+                        border: '1px solid #d1d5db'
+                      }}
                     >
-                      <MoreVertical className="w-6 h-6 text-gray-700" />
+                      <MoreVertical className="w-6 h-6 text-gray-700" style={{display: 'block'}} />
                     </button>
                     
                     {openPostMenu === post.id && (
