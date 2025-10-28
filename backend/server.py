@@ -4329,6 +4329,45 @@ async def unblock_user(userId: str, current_user: User = Depends(get_current_use
     
     return {"message": "User unblocked successfully"}
 
+@api_router.post("/users/{userId}/mute")
+async def mute_user(userId: str, current_user: User = Depends(get_current_user)):
+    """
+    Mute a user - their posts won't appear in your feed but they won't know
+    Different from blocking: they can still see your posts and interact
+    """
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot mute yourself")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add to muted users list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$addToSet": {"mutedUsers": userId}}
+    )
+    
+    return {"message": "User muted successfully"}
+
+@api_router.post("/users/{userId}/unmute")
+async def unmute_user(userId: str, current_user: User = Depends(get_current_user)):
+    """Unmute a user"""
+    if userId == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot unmute yourself")
+    
+    target_user = await db.users.find_one({"id": userId})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Remove from muted users list
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$pull": {"mutedUsers": userId}}
+    )
+    
+    return {"message": "User unmuted successfully"}
+
 # Search functionality
 class SearchRequest(BaseModel):
     query: str
