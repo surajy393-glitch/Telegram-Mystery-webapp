@@ -838,7 +838,6 @@ const HomePage = ({ user, onLogout }) => {
                         )}
                       </div>
                     )}
-                  </div>
                 </div>
 
                 {/* Post Media */}
