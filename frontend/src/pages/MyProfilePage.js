@@ -63,6 +63,46 @@ const MyProfilePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleShowFollowers = async () => {
+    if (!profile?.id) return;
+    
+    setShowFollowersDialog(true);
+    setLoadingFollowers(true);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/${profile.id}/followers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFollowersList(response.data.followers || []);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      alert("Failed to load followers");
+    } finally {
+      setLoadingFollowers(false);
+    }
+  };
+
+  const handleShowFollowing = async () => {
+    if (!profile?.id) return;
+    
+    setShowFollowingDialog(true);
+    setLoadingFollowing(true);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/${profile.id}/following`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFollowingList(response.data.following || []);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      alert("Failed to load following");
+    } finally {
+      setLoadingFollowing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-50 to-white">
