@@ -2991,6 +2991,51 @@ async def delete_story(story_id: str, current_user: User = Depends(get_current_u
     
     return {"message": "Story deleted successfully"}
 
+@api_router.post("/stories/{story_id}/like")
+async def like_story(story_id: str, current_user: User = Depends(get_current_user)):
+    """Like a story and send notification to story owner"""
+    story = await db.stories.find_one({"id": story_id})
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+    
+    # Add like to story
+    await db.stories.update_one(
+        {"id": story_id},
+        {"$addToSet": {"likes": current_user.id}}
+    )
+    
+    # Send notification to story owner if it's not their own story
+    if story["userId"] != current_user.id:
+        notification = {
+            "id": str(uuid4()),
+            "userId": story["userId"],  # Story owner receives notification
+            "fromUserId": current_user.id,
+            "fromUsername": current_user.username,
+            "type": "story_like",
+            "message": f"{current_user.username} liked your story",
+            "storyId": story_id,
+            "read": False,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {"message": "Story liked successfully"}
+
+@api_router.delete("/stories/{story_id}/like")
+async def unlike_story(story_id: str, current_user: User = Depends(get_current_user)):
+    """Unlike a story"""
+    story = await db.stories.find_one({"id": story_id})
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+    
+    # Remove like from story
+    await db.stories.update_one(
+        {"id": story_id},
+        {"$pull": {"likes": current_user.id}}
+    )
+    
+    return {"message": "Story unliked successfully"}
+
 @api_router.get("/stories/feed")
 async def get_stories_feed(current_user: User = Depends(get_current_user)):
     # Get all stories that haven't expired
