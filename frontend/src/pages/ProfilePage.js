@@ -256,7 +256,8 @@ const ProfilePage = ({ user, onLogout }) => {
       }
 
       // Refresh profile data to get updated state
-      await fetchProfile();
+      await fetchUserProfile(targetUserId);
+      await fetchUserPosts(targetUserId);
       
     } catch (error) {
       console.error("Error toggling follow:", error);
