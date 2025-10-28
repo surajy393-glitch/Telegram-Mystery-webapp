@@ -414,7 +414,7 @@ const SearchPage = ({ user, onLogout }) => {
               post.imageUrl
                 ? (post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http')
                     ? post.imageUrl
-                    : `${API}${post.imageUrl}`)
+                    : `${BACKEND_URL}${post.imageUrl}`)
                 : "https://via.placeholder.com/400"
             }
             alt="Post" 
