@@ -12,6 +12,8 @@ const PostDetailPage = ({ user }) => {
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
