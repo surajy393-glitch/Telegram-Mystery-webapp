@@ -965,17 +965,19 @@ const FeedPage = ({ user, onLogout }) => {
                   </div>
                 </div>
                 
-                {/* 3-Dot Menu for Own Stories */}
+                {/* 3-Dot Menu for Own Stories - Right Side */}
                 {viewingStories.userId === user?.id && (
-                  <div className="relative">
+                  <div className="relative z-20">
                     <button
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         setOpenStoryMenu(!openStoryMenu);
                       }}
                       className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      style={{ pointerEvents: 'auto' }}
                     >
-                      <MoreVertical className="w-6 h-6 text-white" />
+                      <MoreVertical className="w-7 h-7 text-white" />
                     </button>
                     
                     {openStoryMenu && (
