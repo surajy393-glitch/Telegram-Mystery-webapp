@@ -1576,6 +1576,7 @@ async def telegram_webapp_auth(initData: str = Form(...)):
                 "following": [],
                 "followers": [],
                 "blockedUsers": [],
+                "mutedUsers": [],
                 "savedPosts": [],
                 "preferences": {"ageRange": [18, 100], "lookingFor": "Not specified"},
                 "interests": [],
