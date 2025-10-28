@@ -2119,7 +2119,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     user_stories = await db.stories.find({"userId": current_user.id}).to_list(length=None)
     avg_story_views = 0
     if user_stories:
-        total_views = sum(story.get("views", 0) for story in user_stories)
+        # views is a list of user IDs who viewed, so count the length
+        total_views = sum(len(story.get("views", [])) for story in user_stories)
         avg_story_views = total_views / len(user_stories)
     
     # Check profile completeness
