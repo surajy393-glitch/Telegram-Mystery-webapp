@@ -244,6 +244,121 @@ const PostDetailPage = ({ user }) => {
     }
   };
 
+  const handleSavePost = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = post?.isSaved ? 'unsave' : 'save';
+      
+      await axios.post(`${API}/posts/${postId}/${endpoint}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setPost(prev => ({
+        ...prev,
+        isSaved: !prev.isSaved
+      }));
+
+      alert(post?.isSaved ? "Post removed from saved" : "Post saved!");
+      setShowPostMenu(false);
+    } catch (error) {
+      console.error("Error saving post:", error);
+      alert("Failed to save post");
+    }
+  };
+
+  const handleArchivePost = async () => {
+    if (!window.confirm("Archive this post? You can find it in your profile's archive tab.")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/archive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert("Post archived");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error archiving post:", error);
+      alert("Failed to archive post");
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!window.confirm("Delete this post permanently?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/posts/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert("Post deleted");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post");
+    }
+  };
+
+  const handleReportPost = async () => {
+    setShowReportModal(true);
+    setShowPostMenu(false);
+  };
+
+  const submitReport = async () => {
+    if (!reportReason.trim()) {
+      alert("Please provide a reason for reporting");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API}/posts/${postId}/report`,
+        { reason: reportReason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert("Post reported. We'll review it shortly.");
+      setShowReportModal(false);
+      setReportReason("");
+    } catch (error) {
+      console.error("Error reporting post:", error);
+      alert("Failed to report post");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const postUrl = `${window.location.origin}/post/${postId}`;
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      alert("Link copied to clipboard!");
+      setShowPostMenu(false);
+    } catch (error) {
+      alert("Failed to copy link");
+    }
+  };
+
+  const handleTurnOffComments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/posts/${postId}/toggle-comments`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert(post?.commentsDisabled ? "Comments enabled" : "Comments disabled");
+      setPost(prev => ({
+        ...prev,
+        commentsDisabled: !prev.commentsDisabled
+      }));
+      setShowPostMenu(false);
+    } catch (error) {
+      console.error("Error toggling comments:", error);
+      alert("Failed to toggle comments");
+    }
+  };
+
+
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/post/${postId}`;
     
