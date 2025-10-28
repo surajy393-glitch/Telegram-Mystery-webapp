@@ -1594,55 +1594,6 @@ async def telegram_webapp_auth(initData: str = Form(...)):
         logger.error(f"Telegram WebApp auth error: {e}")
         raise HTTPException(status_code=400, detail=f"Failed to authenticate: {str(e)}")
 
-            "email": f"tg{telegram_data.id}@luvhive.app",  # Valid email format
-            "age": 25,  # Better default age
-            "gender": "Other",  # Default gender - user can update later
-            "bio": "New LuvHive user from Telegram! 💬✨",  # Better default bio
-            "telegramId": telegram_data.id,
-            "telegramUsername": telegram_data.username,
-            "telegramFirstName": telegram_data.first_name,
-            "telegramLastName": telegram_data.last_name,
-            "telegramPhotoUrl": telegram_data.photo_url,
-            "profileImage": telegram_data.photo_url or "",  # Use Telegram photo as profile image
-            "authMethod": "telegram",
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-            "followers": [],
-            "following": [],
-            "posts": [],
-            "isPremium": False,
-            "isOnline": True,
-            "lastSeen": datetime.now(timezone.utc).isoformat(),
-            "preferences": {  # Add fields that EditProfile expects
-                "showAge": True,
-                "showOnlineStatus": True, 
-                "allowMessages": True
-            },
-            "privacy": {
-                "profileVisibility": "public",
-                "showLastSeen": True
-            },
-            "socialLinks": {  # Initialize social links for EditProfile
-                "instagram": "",
-                "twitter": "",
-                "website": ""
-            },
-            "interests": [],  # Initialize interests array
-            "location": "",  # Initialize location
-            "appearInSearch": True,  # Make searchable by default
-            "lastUsernameChange": None
-        }
-        
-        await db.users.insert_one(user_dict)
-        
-        # Generate token
-        access_token = create_access_token(data={"sub": user_dict["id"]})
-        
-        return {
-            "message": "Telegram registration successful",
-            "access_token": access_token,
-            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id"]}
-        }
-
 @api_router.post("/auth/telegram-signin")
 async def telegram_signin(request: TelegramSigninRequest):
     """
