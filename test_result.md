@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement 3-dot menu on other users' posts with Follow/Unfollow, Mute User, Block User, Save Post, and Report Post functionalities. Mute should silently hide posts (they won't know), Block should be stronger (they might realize). Report categories should include harassment, self-harm, hate speech, illegal activities, adult content, spam, misinformation, and copyright violation."
+user_problem_statement: "Implement LuvHive Verified badge system with blue checkmark for verified users. Backend should track isVerified field, provide verification status endpoint showing progress on 11 criteria (45+ days account age, email/phone verified, 20+ posts, 100+ followers, 0 violations, complete profile, personality questions, 1000+ profile views, 70+ avg story views, 1000+ total likes). Frontend should display blue verification badge on profiles, posts, and stories, and provide a verification status page accessible from settings showing user's progress towards verification. Manual admin verification endpoint for testing."
 
 backend:
   - task: "Add mutedUsers field to User model and registration"
