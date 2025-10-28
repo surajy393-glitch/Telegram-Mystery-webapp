@@ -928,8 +928,9 @@ const SearchPage = ({ user, onLogout }) => {
                 </button>
               </div>
 
-              {/* Caption */}
+              {/* Caption and Comments */}
               <div className="p-4 flex-1 overflow-y-auto">
+                {/* Caption */}
                 {selectedPost.caption && (
                   <div className="flex gap-3 mb-4">
                     {selectedPost.userProfileImage ? (
@@ -950,25 +951,94 @@ const SearchPage = ({ user, onLogout }) => {
                     </div>
                   </div>
                 )}
+
+                {/* Comments Section */}
+                {showComments && (
+                  <div className="space-y-4">
+                    {postComments.map((comment, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        {comment.userProfileImage ? (
+                          <img
+                            src={`${BACKEND_URL}${comment.userProfileImage}`}
+                            alt={comment.username}
+                            className="w-8 h-8 rounded-full object-cover"
+                            onError={(e) => e.target.src = "https://via.placeholder.com/32"}
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold text-sm">
+                            {comment.username?.[0]?.toUpperCase() || "U"}
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div>
+                            <span className="font-semibold mr-2">{comment.username}</span>
+                            <span className="text-gray-800">{comment.text}</span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                            <span>{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Now'}</span>
+                            <button className="hover:text-gray-700">
+                              <Heart className="w-3 h-3 inline mr-1" />
+                              {comment.likesCount || 0}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
               <div className="p-4 border-t">
                 <div className="flex items-center gap-4 mb-3">
-                  <button className="hover:opacity-70 transition-opacity">
+                  <button 
+                    onClick={() => handleLikePost(selectedPost.id)}
+                    className="hover:opacity-70 transition-opacity"
+                  >
                     <Heart className={`w-7 h-7 ${selectedPost.userLiked ? 'fill-red-500 text-red-500' : ''}`} />
                   </button>
-                  <button className="hover:opacity-70 transition-opacity">
+                  <button 
+                    onClick={() => fetchPostComments(selectedPost.id)}
+                    className="hover:opacity-70 transition-opacity"
+                  >
                     <MessageCircle className="w-7 h-7" />
                   </button>
-                  <button className="hover:opacity-70 transition-opacity">
+                  <button 
+                    onClick={() => handleSharePost(selectedPost.id)}
+                    className="hover:opacity-70 transition-opacity"
+                  >
                     <Send className="w-7 h-7" />
                   </button>
                 </div>
                 <p className="font-semibold text-sm mb-1">{selectedPost.likesCount || 0} likes</p>
-                <p className="text-gray-500 text-xs">
+                <button 
+                  onClick={() => fetchPostComments(selectedPost.id)}
+                  className="text-gray-500 text-sm mb-3 hover:text-gray-700"
+                >
+                  View all {selectedPost.commentsCount || 0} comments
+                </button>
+                <p className="text-gray-500 text-xs mb-3">
                   {selectedPost.createdAt ? new Date(selectedPost.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
+
+                {/* Add Comment Input */}
+                <div className="flex items-center gap-2 border-t pt-3">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddComment(selectedPost.id)}
+                    className="flex-1 outline-none text-sm"
+                  />
+                  <button
+                    onClick={() => handleAddComment(selectedPost.id)}
+                    disabled={!newComment.trim()}
+                    className={`text-sm font-semibold ${newComment.trim() ? 'text-pink-600 hover:text-pink-700' : 'text-gray-300'}`}
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
             </div>
           </div>
