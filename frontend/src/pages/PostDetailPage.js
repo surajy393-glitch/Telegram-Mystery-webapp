@@ -519,14 +519,57 @@ const PostDetailPage = ({ user }) => {
                                         <span className="font-semibold mr-2 text-sm">{reply.username}</span>
                                         <span className="text-gray-800 text-sm">{reply.text}</span>
                                       </div>
-                                      <button 
-                                        onClick={() => handleLikeComment(reply.id)}
-                                        className="ml-2"
-                                      >
-                                        <Heart 
-                                          className={`w-3 h-3 ${userLikedReply ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-                                        />
-                                      </button>
+                                      <div className="flex items-center gap-1">
+                                        <button 
+                                          onClick={() => handleLikeComment(reply.id)}
+                                          className="ml-2"
+                                        >
+                                          <Heart 
+                                            className={`w-3 h-3 ${userLikedReply ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                                          />
+                                        </button>
+                                        
+                                        {/* 3-dot menu for replies */}
+                                        <div className="relative">
+                                          <button
+                                            onClick={() => setShowMenuFor(showMenuFor === reply.id ? null : reply.id)}
+                                            className="p-1 hover:bg-gray-100 rounded-full"
+                                          >
+                                            <MoreVertical className="w-3 h-3 text-gray-500" />
+                                          </button>
+                                          
+                                          {showMenuFor === reply.id && (
+                                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
+                                              {reply.userId === user?.id ? (
+                                                <button
+                                                  onClick={() => handleDeleteComment(reply.id)}
+                                                  className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                                                >
+                                                  <Trash2 className="w-3 h-3" />
+                                                  Delete
+                                                </button>
+                                              ) : (
+                                                <>
+                                                  <button
+                                                    onClick={() => handleReportComment(reply.id, reply.userId)}
+                                                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                                                  >
+                                                    <Flag className="w-3 h-3" />
+                                                    Report
+                                                  </button>
+                                                  <button
+                                                    onClick={() => handleBlockUser(reply.userId, reply.username)}
+                                                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                                                  >
+                                                    <Ban className="w-3 h-3" />
+                                                    Block User
+                                                  </button>
+                                                </>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
                                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                                       <span>{reply.createdAt ? new Date(reply.createdAt).toLocaleDateString() : 'Now'}</span>
