@@ -165,6 +165,73 @@ const PostDetailPage = ({ user }) => {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/posts/${postId}/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Remove from local state
+      setComments(prev => prev.filter(c => c.id !== commentId));
+      
+      // Update comment count
+      setPost(prev => ({
+        ...prev,
+        commentsCount: Math.max(0, prev.commentsCount - 1)
+      }));
+
+      setShowMenuFor(null);
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert("Failed to delete comment");
+    }
+  };
+
+  const handleReportComment = async (commentId, commentUserId) => {
+    const reason = window.prompt("Why are you reporting this comment?");
+    if (!reason) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API}/posts/${postId}/comment/${commentId}/report`,
+        { reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert("Comment reported. We'll review it shortly.");
+      setShowMenuFor(null);
+    } catch (error) {
+      console.error("Error reporting comment:", error);
+      alert("Failed to report comment");
+    }
+  };
+
+  const handleBlockUser = async (userId, username) => {
+    if (!window.confirm(`Block ${username}? You won't see their posts or comments.`)) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API}/users/${userId}/block`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert(`${username} has been blocked`);
+      
+      // Remove all comments from blocked user
+      setComments(prev => prev.filter(c => c.userId !== userId));
+      setShowMenuFor(null);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      alert("Failed to block user");
+    }
+  };
+
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/post/${postId}`;
     
