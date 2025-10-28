@@ -4078,6 +4078,11 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     else:
         posts_count = 0  # Hide post count for private accounts
     
+    followers_count = len(user.get("followers", []))
+    following_count = len(user.get("following", []))
+    
+    logger.info(f"Profile API called for user {user.get('username')} - Followers: {followers_count}, Following: {following_count}")
+    
     return {
         "id": user["id"],
         "username": user["username"],
@@ -4088,8 +4093,8 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "gender": user.get("gender"),
         "isPremium": user.get("isPremium", False),
         "isPrivate": is_private,
-        "followersCount": len(user.get("followers", [])),
-        "followingCount": len(user.get("following", [])),
+        "followersCount": followers_count,
+        "followingCount": following_count,
         "isFollowing": is_following,
         "hasRequested": has_requested,
         "postsCount": posts_count,
