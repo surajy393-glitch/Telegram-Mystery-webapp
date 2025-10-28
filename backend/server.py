@@ -4528,6 +4528,7 @@ async def register_for_mystery(
     mobileNumber: str = Form(None),
     emailVerified: bool = Form(False),
     mobileVerified: bool = Form(False),
+    personalityAnswers: str = Form("{}"),
     profilePhoto: UploadFile = File(None)
 ):
     """
