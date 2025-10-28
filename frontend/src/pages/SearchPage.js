@@ -707,54 +707,62 @@ const SearchPage = ({ user, onLogout }) => {
             </div>
           </div>
         ) : (
-          // Trending Content (Default View)
+          // Explore Posts Grid (Instagram-style Default View)
           <div>
-            <div className="mb-8">
+            <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-pink-600" />
-                Discover & Search
+                Explore
               </h2>
-              <p className="text-gray-600">Explore trending hashtags and discover content</p>
+              <p className="text-gray-600">Discover posts from the community</p>
             </div>
 
-            {/* Trending Hashtags */}
-            <div className="glass-effect rounded-3xl p-6 shadow-xl max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Hash className="w-5 h-5 text-pink-600" />
-                Trending Hashtags
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {trendingContent.trending_hashtags.length > 0 ? (
-                  trendingContent.trending_hashtags.map((item, index) => (
-                    <div
-                      key={index}
-                      onClick={() => {
-                        setSearchQuery(item.hashtag);
-                        handleSearch(item.hashtag, "posts");
-                      }}
-                      className="flex items-center justify-between p-4 rounded-xl hover:bg-pink-50 transition-colors cursor-pointer border border-pink-100 bg-white"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-                          <Hash className="w-5 h-5 text-pink-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800">{item.hashtag}</p>
-                          <p className="text-sm text-gray-600">{item.count} posts</p>
-                        </div>
+            {/* Explore Posts Grid */}
+            {explorePosts.length > 0 ? (
+              <div className="grid grid-cols-3 gap-1 md:gap-2">
+                {explorePosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    to={`/profile/${post.userId}`}
+                    className="aspect-square relative group overflow-hidden rounded-sm hover:opacity-90 transition-opacity"
+                  >
+                    {/* Post Image */}
+                    {post.imageUrl || post.mediaUrl ? (
+                      <img
+                        src={post.imageUrl || `${BACKEND_URL}${post.mediaUrl}`}
+                        alt={post.caption || "Post"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+                        <Image className="w-12 h-12 text-pink-300" />
                       </div>
-                      <TrendingUp className="w-4 h-4 text-pink-600" />
+                    )}
+                    
+                    {/* Hover Overlay with Stats */}
+                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
+                      <div className="flex items-center gap-2 text-white">
+                        <Heart className="w-6 h-6 fill-white" />
+                        <span className="font-semibold">{post.likesCount || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white">
+                        <MessageCircle className="w-6 h-6 fill-white" />
+                        <span className="font-semibold">{post.commentsCount || 0}</span>
+                      </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center text-gray-600 py-8">
-                    <Hash className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p>No trending hashtags found</p>
-                    <p className="text-sm">Start exploring and discover trending topics!</p>
-                  </div>
-                )}
+                  </Link>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-16">
+                <Image className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-600 text-lg">No posts to explore yet</p>
+                <p className="text-gray-500 text-sm mt-2">Check back later for content from the community</p>
+              </div>
+            )}
           </div>
         )}
       </div>
