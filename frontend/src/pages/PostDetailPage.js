@@ -393,14 +393,59 @@ const PostDetailPage = ({ user }) => {
                                 <span className="font-semibold mr-2">{comment.username}</span>
                                 <span className="text-gray-800">{comment.text}</span>
                               </div>
-                              <button 
-                                onClick={() => handleLikeComment(comment.id)}
-                                className="ml-2"
-                              >
-                                <Heart 
-                                  className={`w-4 h-4 ${userLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-                                />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={() => handleLikeComment(comment.id)}
+                                  className="ml-2"
+                                >
+                                  <Heart 
+                                    className={`w-4 h-4 ${userLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                                  />
+                                </button>
+                                
+                                {/* 3-dot menu */}
+                                <div className="relative">
+                                  <button
+                                    onClick={() => setShowMenuFor(showMenuFor === comment.id ? null : comment.id)}
+                                    className="p-1 hover:bg-gray-100 rounded-full"
+                                  >
+                                    <MoreVertical className="w-4 h-4 text-gray-500" />
+                                  </button>
+                                  
+                                  {showMenuFor === comment.id && (
+                                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
+                                      {comment.userId === user?.id ? (
+                                        // Own comment - show delete
+                                        <button
+                                          onClick={() => handleDeleteComment(comment.id)}
+                                          className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50 flex items-center gap-2"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                          Delete
+                                        </button>
+                                      ) : (
+                                        // Others' comments - show report and block
+                                        <>
+                                          <button
+                                            onClick={() => handleReportComment(comment.id, comment.userId)}
+                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                          >
+                                            <Flag className="w-4 h-4" />
+                                            Report
+                                          </button>
+                                          <button
+                                            onClick={() => handleBlockUser(comment.userId, comment.username)}
+                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50 flex items-center gap-2"
+                                          >
+                                            <Ban className="w-4 h-4" />
+                                            Block User
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                               <span>{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Now'}</span>
