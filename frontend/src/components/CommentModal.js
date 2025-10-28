@@ -18,7 +18,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
 
   const fetchComments = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/social/posts/${post.id}/comments`);
+      const response = await axios.get(`${API_URL}/api/social/posts/${post.id}/comments?userId=${user.id}`);
       setComments(response.data.comments || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
