@@ -22,6 +22,15 @@ const PostDetailPage = ({ user }) => {
     fetchComments();
   }, [postId]);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowMenuFor(null);
+    if (showMenuFor) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showMenuFor]);
+
   const fetchPostDetails = async () => {
     try {
       const token = localStorage.getItem("token");
