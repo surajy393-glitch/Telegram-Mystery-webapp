@@ -2090,6 +2090,79 @@ async def admin_verify_user(username: str):
     
     return {"message": f"User {username} has been manually verified", "success": True}
 
+@api_router.get("/verification/status")
+async def get_verification_status(current_user: User = Depends(get_current_user)):
+    """Get current user's verification status and progress"""
+    
+    # Calculate account age in days
+    created_at = current_user.createdAt if hasattr(current_user, 'createdAt') else datetime.now(timezone.utc).isoformat()
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+    account_age_days = (datetime.now(timezone.utc) - created_at).days
+    
+    # Get posts count
+    posts_count = await db.posts.count_documents({"userId": current_user.id})
+    
+    # Get total likes on user's posts
+    user_posts = await db.posts.find({"userId": current_user.id}).to_list(length=None)
+    total_likes = sum(post.get("likesCount", 0) for post in user_posts)
+    
+    # Get story views (average)
+    user_stories = await db.stories.find({"userId": current_user.id}).to_list(length=None)
+    avg_story_views = 0
+    if user_stories:
+        total_views = sum(story.get("views", 0) for story in user_stories)
+        avg_story_views = total_views / len(user_stories)
+    
+    # Check profile completeness
+    profile_complete = all([
+        current_user.fullName,
+        current_user.bio,
+        current_user.profileImage,
+        current_user.gender,
+        current_user.age
+    ])
+    
+    # Check personality questions
+    personality_questions = bool(current_user.personality_answers) if hasattr(current_user, 'personality_answers') else False
+    
+    # Criteria checks
+    criteria = {
+        "accountAge": account_age_days >= 45,
+        "emailVerified": bool(current_user.email),  # Assuming email exists = verified
+        "phoneVerified": bool(getattr(current_user, 'mobile', None)),  # Check if mobile exists
+        "postsCount": posts_count >= 20,
+        "followersCount": (current_user.followersCount if hasattr(current_user, 'followersCount') else 0) >= 100,
+        "noViolations": (getattr(current_user, 'violationsCount', 0)) == 0,
+        "profileComplete": profile_complete,
+        "personalityQuestions": personality_questions,
+        "profileViews": (getattr(current_user, 'profileViews', 0)) >= 1000,
+        "avgStoryViews": avg_story_views >= 70,
+        "totalLikes": total_likes >= 1000
+    }
+    
+    # Current values for progress display
+    current_values = {
+        "accountAgeDays": account_age_days,
+        "emailVerified": bool(current_user.email),
+        "phoneVerified": bool(getattr(current_user, 'mobile', None)),
+        "postsCount": posts_count,
+        "followersCount": current_user.followersCount if hasattr(current_user, 'followersCount') else 0,
+        "violationsCount": getattr(current_user, 'violationsCount', 0),
+        "profileComplete": profile_complete,
+        "personalityQuestions": personality_questions,
+        "profileViews": getattr(current_user, 'profileViews', 0),
+        "avgStoryViews": int(avg_story_views),
+        "totalLikes": total_likes
+    }
+    
+    return {
+        "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
+        "criteria": criteria,
+        "currentValues": current_values,
+        "allCriteriaMet": all(criteria.values())
+    }
+
 @api_router.put("/auth/profile")
 async def update_profile(
     fullName: str = Form(None), 
