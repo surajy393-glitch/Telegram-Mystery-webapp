@@ -184,6 +184,16 @@ function App() {
             } 
           />
           <Route 
+            path="/verification-status" 
+            element={
+              isAuthenticated ? (
+                <VerificationStatusPage user={user} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/notifications" 
             element={
               isAuthenticated ? (
