@@ -3522,7 +3522,8 @@ async def follow_user(userId: str, current_user: User = Depends(get_current_user
         # Check if already requested
         follow_requests = target_user.get("followRequests", [])
         if current_user.id in follow_requests:
-            raise HTTPException(status_code=400, detail="Follow request already sent")
+            # Already requested - do nothing, return success
+            return {"message": "Follow request already sent", "requested": True}
         
         # Add to follow requests instead of followers
         await db.users.update_one(
