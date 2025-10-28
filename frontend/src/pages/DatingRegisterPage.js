@@ -676,7 +676,7 @@ const DatingRegisterPage = ({ onLogin }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white hover:text-pink-200 focus:outline-none"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 focus:outline-none bg-white rounded-full p-1"
                     >
                       {showPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -690,6 +690,45 @@ const DatingRegisterPage = ({ onLogin }) => {
                       )}
                     </button>
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-white font-medium">Confirm Password</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      className={`bg-white bg-opacity-90 text-gray-900 placeholder:text-gray-500 border-white border-opacity-30 focus:border-pink-400 rounded-xl pr-12 font-medium ${
+                        formData.confirmPassword && formData.password !== formData.confirmPassword 
+                          ? 'border-red-500' 
+                          : ''
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 focus:outline-none bg-white rounded-full p-1"
+                    >
+                      {showConfirmPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M14.12 14.12l1.414 1.414M9.878 9.878l-4.414-4.414m14.071 14.071L20.95 20.95M9.878 9.878l4.242 4.242" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-red-300 text-sm mt-1">Passwords don't match</p>
+                  )}
                 </div>
 
                 <div>
