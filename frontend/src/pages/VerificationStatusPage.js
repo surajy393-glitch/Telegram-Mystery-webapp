@@ -291,56 +291,120 @@ const VerificationStatusPage = ({ user }) => {
           <p className="text-right text-sm text-gray-600 font-semibold">{overallProgress}% Complete</p>
         </div>
 
-        {/* Show criteria only if not verified yet */}
+        {/* Show grouped criteria if not verified yet */}
         {!verificationData?.isVerified && (
-        <div className="glass-effect rounded-3xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Verification Criteria</h3>
-          <div className="space-y-3">
-            {criteria.map((criterion) => {
-              const isVerifiable = (criterion.key === 'emailVerified' || criterion.key === 'phoneVerified') && !criterion.met;
-              
-              return (
-                <div 
-                  key={criterion.key}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    criterion.met 
-                      ? 'bg-green-50 border-green-300' 
-                      : isVerifiable 
-                      ? 'bg-blue-50 border-blue-300 cursor-pointer hover:border-blue-400 hover:shadow-md' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                  onClick={() => isVerifiable && handleVerificationClick(criterion.key === 'emailVerified' ? 'email' : 'phone')}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {criterion.met ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-gray-400" />
-                        )}
-                        <h4 className="font-semibold text-gray-800">{criterion.label}</h4>
-                        {isVerifiable && (
-                          <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full ml-2">
-                            Click to Verify
-                          </span>
-                        )}
+        <>
+          {/* Basic Requirements */}
+          <div className="glass-effect rounded-3xl p-6 shadow-xl mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Basic Requirements</h3>
+            <p className="text-sm text-gray-600 mb-4">Complete all sections below to qualify for verification</p>
+            
+            {allGroups.map((group, groupIdx) => (
+              <div key={groupIdx} className="mb-6 last:mb-0">
+                <h4 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  {group.title}
+                  {group.criteria.every(c => c.met) && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </h4>
+                <div className="space-y-3">
+                  {group.criteria.map((criterion) => {
+                    const isVerifiable = (criterion.key === 'emailVerified' || criterion.key === 'phoneVerified') && !criterion.met;
+                    
+                    return (
+                      <div 
+                        key={criterion.key}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          criterion.met 
+                            ? 'bg-green-50 border-green-300' 
+                            : isVerifiable 
+                            ? 'bg-blue-50 border-blue-300 cursor-pointer hover:border-blue-400 hover:shadow-md' 
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                        onClick={() => isVerifiable && handleVerificationClick(criterion.key === 'emailVerified' ? 'email' : 'phone')}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              {criterion.met ? (
+                                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                              ) : (
+                                <XCircle className="w-5 h-5 text-gray-400" />
+                              )}
+                              <h4 className="font-semibold text-gray-800">{criterion.label}</h4>
+                              {isVerifiable && (
+                                <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full ml-2">
+                                  Click to Verify
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 ml-7">{criterion.requirement}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-sm font-medium ${
+                              criterion.met ? 'text-green-600' : 'text-gray-500'
+                            }`}>
+                              {criterion.progress}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 ml-7">{criterion.requirement}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-medium ${
-                        criterion.met ? 'text-green-600' : 'text-gray-500'
-                      }`}>
-                        {criterion.progress}
-                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Verification Pathways */}
+          <div className="glass-effect rounded-3xl p-6 shadow-xl mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Choose Your Pathway to Verification</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {basicRequirementsMet 
+                ? "✅ Basic requirements met! Complete ANY ONE pathway below to qualify for verification."
+                : "⚠️ Complete basic requirements first, then choose one pathway to pursue."}
+            </p>
+
+            <div className="space-y-4">
+              {pathways.map((pathway) => (
+                <div 
+                  key={pathway.id}
+                  className={`p-5 rounded-xl border-2 transition-all ${
+                    pathway.met 
+                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-400 shadow-lg' 
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h4 className="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
+                        {pathway.name}
+                        {pathway.met && <CheckCircle2 className="w-6 h-6 text-green-600" />}
+                      </h4>
+                      <p className="text-sm text-gray-600">{pathway.description}</p>
                     </div>
                   </div>
+                  
+                  <div className="space-y-2 mt-3">
+                    {pathway.requirements.map((req, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          {req.met ? (
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-gray-400" />
+                          )}
+                          <span className={req.met ? 'text-green-700 font-medium' : 'text-gray-600'}>
+                            {req.label}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">{req.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
+        </>
         )}
 
         {/* Success message for verified users */}
