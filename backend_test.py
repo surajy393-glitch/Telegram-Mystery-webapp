@@ -5447,11 +5447,13 @@ class LuvHiveAPITester:
         print(f"Testing against: {API_BASE}")
         print()
         
-        # Login with Luvsociety user
-        print("🔐 Logging in with Luvsociety user...")
+        # Try to login with Luvsociety user first, if fails, register a new user
+        print("🔐 Attempting to login with Luvsociety user...")
         if not self.login_existing_user("Luvsociety", "Luvsociety"):
-            print("❌ Failed to login with Luvsociety user. Cannot proceed with tests.")
-            return False
+            print("⚠️  Could not login with Luvsociety user, registering new test user...")
+            if not self.register_test_user():
+                print("❌ Failed to register test user. Cannot proceed with tests.")
+                return False
         
         print("\n📊 Testing Explore Endpoint...")
         print("-" * 50)
