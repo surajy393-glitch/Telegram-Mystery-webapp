@@ -445,11 +445,15 @@ const FeedPage = ({ user, onLogout }) => {
 
               {selectedImage && (
                 <div className="mb-4 relative">
-                  <img
-                    src={URL.createObjectURL(selectedImage)}
-                    alt="Preview"
-                    className="w-full rounded-lg max-h-64 object-cover"
-                  />
+                  {selectedImage.type.startsWith('video/') ? (
+                    <video src={URL.createObjectURL(selectedImage)} controls className="w-full rounded-lg max-h-64" />
+                  ) : (
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="Preview"
+                      className="w-full rounded-lg max-h-64 object-cover"
+                    />
+                  )}
                   <button
                     onClick={() => setSelectedImage(null)}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
@@ -463,12 +467,12 @@ const FeedPage = ({ user, onLogout }) => {
                 <label className="flex items-center space-x-2 cursor-pointer text-gray-600 hover:text-pink-600">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={(e) => setSelectedImage(e.target.files[0])}
                     className="hidden"
                   />
                   <ImageIcon size={20} />
-                  <span>Add Photo</span>
+                  <span>Add Photo/Video</span>
                 </label>
 
                 <label className="flex items-center space-x-2 cursor-pointer">
