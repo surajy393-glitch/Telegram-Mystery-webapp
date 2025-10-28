@@ -119,6 +119,105 @@ const SearchPage = ({ user, onLogout }) => {
     }
   }, []);
 
+  const handleLikePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const isLiked = selectedPost.userLiked;
+      const endpoint = isLiked ? 'unlike' : 'like';
+      
+      // Optimistic update
+      setSelectedPost(prev => ({
+        ...prev,
+        userLiked: !isLiked,
+        likesCount: isLiked ? prev.likesCount - 1 : prev.likesCount + 1
+      }));
+
+      // Update in explore posts list
+      setExplorePosts(prev => prev.map(post => 
+        post.id === postId 
+          ? { ...post, userLiked: !isLiked, likesCount: isLiked ? post.likesCount - 1 : post.likesCount + 1 }
+          : post
+      ));
+
+      await axios.post(`${API}/posts/${postId}/${endpoint}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error("Error liking post:", error);
+      // Rollback on error
+      setSelectedPost(prev => ({
+        ...prev,
+        userLiked: !prev.userLiked,
+        likesCount: prev.userLiked ? prev.likesCount + 1 : prev.likesCount - 1
+      }));
+    }
+  };
+
+  const fetchPostComments = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/posts/${postId}/comments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPostComments(response.data.comments || []);
+      setShowComments(true);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      setPostComments([]);
+    }
+  };
+
+  const handleAddComment = async (postId) => {
+    if (!newComment.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(`${API}/posts/${postId}/comment`, 
+        { text: newComment },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Add new comment to list
+      setPostComments(prev => [...prev, response.data.comment]);
+      
+      // Update comment count
+      setSelectedPost(prev => ({
+        ...prev,
+        commentsCount: prev.commentsCount + 1
+      }));
+
+      setNewComment("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      alert("Failed to add comment");
+    }
+  };
+
+  const handleSharePost = async (postId) => {
+    const shareUrl = `${window.location.origin}/post/${postId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Check out this post!',
+          text: selectedPost.caption || 'Check out this post on LuvHive',
+          url: shareUrl
+        });
+      } catch (error) {
+        console.log("Share cancelled or failed:", error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard!");
+      } catch (error) {
+        console.error("Failed to copy:", error);
+        alert("Failed to copy link");
+      }
+    }
+  };
+
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
 
