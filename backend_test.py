@@ -1239,6 +1239,481 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Search Authentication Required", False, "Exception occurred", str(e))
     
+    # ========== 3-DOT MENU FEATURE TESTS ==========
+    
+    def test_mute_user_success(self):
+        """Test POST /api/users/{userId}/mute - successful muting"""
+        if not self.test_user_id:
+            self.log_result("Mute User Success", False, "No test user ID available")
+            return
+        
+        try:
+            response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/mute")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'muted' in data['message'].lower():
+                    # Verify user is added to mutedUsers list
+                    me_response = self.session.get(f"{API_BASE}/auth/me")
+                    if me_response.status_code == 200:
+                        me_data = me_response.json()
+                        if self.test_user_id in me_data.get('mutedUsers', []):
+                            self.log_result("Mute User Success", True, f"Successfully muted user: {data['message']}")
+                        else:
+                            self.log_result("Mute User Success", False, "User not added to mutedUsers list")
+                    else:
+                        self.log_result("Mute User Success", False, "Could not verify mute operation")
+                else:
+                    self.log_result("Mute User Success", False, f"Unexpected response: {data}")
+            else:
+                self.log_result("Mute User Success", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Mute User Success", False, "Exception occurred", str(e))
+    
+    def test_mute_self_prevention(self):
+        """Test POST /api/users/{userId}/mute - cannot mute yourself"""
+        try:
+            response = self.session.post(f"{API_BASE}/users/{self.current_user_id}/mute")
+            
+            if response.status_code == 400:
+                self.log_result("Mute Self Prevention", True, "Correctly prevented self-muting")
+            else:
+                self.log_result("Mute Self Prevention", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Mute Self Prevention", False, "Exception occurred", str(e))
+    
+    def test_mute_nonexistent_user(self):
+        """Test POST /api/users/{userId}/mute - muting non-existent user"""
+        try:
+            fake_user_id = "nonexistent-user-12345"
+            response = self.session.post(f"{API_BASE}/users/{fake_user_id}/mute")
+            
+            if response.status_code == 404:
+                self.log_result("Mute Nonexistent User", True, "Correctly returned 404 for non-existent user")
+            else:
+                self.log_result("Mute Nonexistent User", False, f"Expected 404, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Mute Nonexistent User", False, "Exception occurred", str(e))
+    
+    def test_unmute_user_success(self):
+        """Test POST /api/users/{userId}/unmute - successful unmuting"""
+        if not self.test_user_id:
+            self.log_result("Unmute User Success", False, "No test user ID available")
+            return
+        
+        try:
+            # First ensure the user is muted
+            mute_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/mute")
+            
+            if mute_response.status_code == 200:
+                # Now test unmuting
+                response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/unmute")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'message' in data and 'unmuted' in data['message'].lower():
+                        # Verify user is removed from mutedUsers list
+                        me_response = self.session.get(f"{API_BASE}/auth/me")
+                        if me_response.status_code == 200:
+                            me_data = me_response.json()
+                            if self.test_user_id not in me_data.get('mutedUsers', []):
+                                self.log_result("Unmute User Success", True, f"Successfully unmuted user: {data['message']}")
+                            else:
+                                self.log_result("Unmute User Success", False, "User still in mutedUsers list after unmuting")
+                        else:
+                            self.log_result("Unmute User Success", False, "Could not verify unmute operation")
+                    else:
+                        self.log_result("Unmute User Success", False, f"Unexpected response: {data}")
+                else:
+                    self.log_result("Unmute User Success", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Unmute User Success", False, "Could not mute user first for testing")
+                
+        except Exception as e:
+            self.log_result("Unmute User Success", False, "Exception occurred", str(e))
+    
+    def test_unmute_self_prevention(self):
+        """Test POST /api/users/{userId}/unmute - cannot unmute yourself"""
+        try:
+            response = self.session.post(f"{API_BASE}/users/{self.current_user_id}/unmute")
+            
+            if response.status_code == 400:
+                self.log_result("Unmute Self Prevention", True, "Correctly prevented self-unmuting")
+            else:
+                self.log_result("Unmute Self Prevention", False, f"Expected 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Unmute Self Prevention", False, "Exception occurred", str(e))
+    
+    def test_unmute_nonexistent_user(self):
+        """Test POST /api/users/{userId}/unmute - unmuting non-existent user"""
+        try:
+            fake_user_id = "nonexistent-user-12345"
+            response = self.session.post(f"{API_BASE}/users/{fake_user_id}/unmute")
+            
+            if response.status_code == 404:
+                self.log_result("Unmute Nonexistent User", True, "Correctly returned 404 for non-existent user")
+            else:
+                self.log_result("Unmute Nonexistent User", False, f"Expected 404, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Unmute Nonexistent User", False, "Exception occurred", str(e))
+    
+    def create_test_post_for_reporting(self):
+        """Create a test post for report testing"""
+        try:
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Test post for reporting functionality"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/create", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('id')
+            else:
+                self.log_result("Create Test Post for Reporting", False, f"Status: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Create Test Post for Reporting", False, "Exception occurred", str(e))
+            return None
+    
+    def test_report_post_success(self):
+        """Test POST /api/posts/{post_id}/report - successful report submission"""
+        post_id = self.create_test_post_for_reporting()
+        if not post_id:
+            self.log_result("Report Post Success", False, "Could not create test post")
+            return
+        
+        try:
+            report_data = {
+                "reason": "Harassment or bullying"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/{post_id}/report", json=report_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'report' in data['message'].lower():
+                    self.log_result("Report Post Success", True, f"Successfully reported post: {data['message']}")
+                else:
+                    self.log_result("Report Post Success", False, f"Unexpected response: {data}")
+            else:
+                self.log_result("Report Post Success", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Report Post Success", False, "Exception occurred", str(e))
+    
+    def test_report_post_different_reasons(self):
+        """Test POST /api/posts/{post_id}/report with different report reasons"""
+        post_id = self.create_test_post_for_reporting()
+        if not post_id:
+            self.log_result("Report Post Different Reasons", False, "Could not create test post")
+            return
+        
+        try:
+            report_reasons = [
+                "Spam or scam",
+                "Hate speech or violence", 
+                "Adult content",
+                "Misinformation",
+                "Copyright violation"
+            ]
+            
+            success_count = 0
+            for reason in report_reasons:
+                report_data = {"reason": reason}
+                response = self.session.post(f"{API_BASE}/posts/{post_id}/report", json=report_data)
+                
+                if response.status_code == 200:
+                    success_count += 1
+            
+            if success_count == len(report_reasons):
+                self.log_result("Report Post Different Reasons", True, 
+                              f"Successfully tested {success_count} different report reasons")
+            else:
+                self.log_result("Report Post Different Reasons", False, 
+                              f"Only {success_count}/{len(report_reasons)} report reasons worked")
+                
+        except Exception as e:
+            self.log_result("Report Post Different Reasons", False, "Exception occurred", str(e))
+    
+    def test_report_nonexistent_post(self):
+        """Test POST /api/posts/{post_id}/report - reporting non-existent post"""
+        try:
+            fake_post_id = "nonexistent-post-12345"
+            report_data = {"reason": "Spam or scam"}
+            
+            response = self.session.post(f"{API_BASE}/posts/{fake_post_id}/report", json=report_data)
+            
+            if response.status_code == 404:
+                self.log_result("Report Nonexistent Post", True, "Correctly returned 404 for non-existent post")
+            else:
+                self.log_result("Report Nonexistent Post", False, f"Expected 404, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Report Nonexistent Post", False, "Exception occurred", str(e))
+    
+    def test_feed_excludes_muted_users(self):
+        """Test GET /api/posts/feed excludes posts from muted users"""
+        if not self.test_user_id:
+            self.log_result("Feed Excludes Muted Users", False, "No test user ID available")
+            return
+        
+        try:
+            # First mute the test user
+            mute_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/mute")
+            
+            if mute_response.status_code == 200:
+                # Get feed posts
+                response = self.session.get(f"{API_BASE}/posts/feed")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    posts = data.get('posts', [])
+                    
+                    # Check if any post is from the muted user
+                    muted_posts = [post for post in posts if post['userId'] == self.test_user_id]
+                    
+                    if len(muted_posts) == 0:
+                        self.log_result("Feed Excludes Muted Users", True, 
+                                      f"No posts from muted user found in {len(posts)} feed posts")
+                    else:
+                        self.log_result("Feed Excludes Muted Users", False, 
+                                      f"Found {len(muted_posts)} posts from muted user in feed")
+                else:
+                    self.log_result("Feed Excludes Muted Users", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Feed Excludes Muted Users", False, "Could not mute user for testing")
+                
+        except Exception as e:
+            self.log_result("Feed Excludes Muted Users", False, "Exception occurred", str(e))
+    
+    def test_feed_excludes_blocked_users_updated(self):
+        """Test GET /api/posts/feed excludes posts from blocked users (updated)"""
+        if not self.test_user_id:
+            self.log_result("Feed Excludes Blocked Users Updated", False, "No test user ID available")
+            return
+        
+        try:
+            # First block the test user
+            block_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/block")
+            
+            if block_response.status_code == 200:
+                # Get feed posts
+                response = self.session.get(f"{API_BASE}/posts/feed")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    posts = data.get('posts', [])
+                    
+                    # Check if any post is from the blocked user
+                    blocked_posts = [post for post in posts if post['userId'] == self.test_user_id]
+                    
+                    if len(blocked_posts) == 0:
+                        self.log_result("Feed Excludes Blocked Users Updated", True, 
+                                      f"No posts from blocked user found in {len(posts)} feed posts")
+                    else:
+                        self.log_result("Feed Excludes Blocked Users Updated", False, 
+                                      f"Found {len(blocked_posts)} posts from blocked user in feed")
+                else:
+                    self.log_result("Feed Excludes Blocked Users Updated", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Feed Excludes Blocked Users Updated", False, "Could not block user for testing")
+                
+        except Exception as e:
+            self.log_result("Feed Excludes Blocked Users Updated", False, "Exception occurred", str(e))
+    
+    def test_feed_includes_saved_liked_fields(self):
+        """Test GET /api/posts/feed includes isSaved and isLiked fields"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if len(posts) == 0:
+                    self.log_result("Feed Includes Saved/Liked Fields", True, 
+                                  "No posts in feed to check (empty result is valid)")
+                    return
+                
+                # Check first post has required fields
+                first_post = posts[0]
+                required_fields = ['isSaved', 'isLiked']
+                missing_fields = [field for field in required_fields if field not in first_post]
+                
+                if len(missing_fields) == 0:
+                    self.log_result("Feed Includes Saved/Liked Fields", True, 
+                                  f"Feed posts include isSaved and isLiked fields")
+                else:
+                    self.log_result("Feed Includes Saved/Liked Fields", False, 
+                                  f"Missing fields in feed posts: {missing_fields}")
+            else:
+                self.log_result("Feed Includes Saved/Liked Fields", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Feed Includes Saved/Liked Fields", False, "Exception occurred", str(e))
+    
+    def test_explore_excludes_muted_users_updated(self):
+        """Test GET /api/search/explore excludes posts from muted users (updated)"""
+        if not self.test_user_id:
+            self.log_result("Explore Excludes Muted Users Updated", False, "No test user ID available")
+            return
+        
+        try:
+            # First mute the test user
+            mute_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/mute")
+            
+            if mute_response.status_code == 200:
+                # Get explore posts
+                response = self.session.get(f"{API_BASE}/search/explore")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    posts = data.get('posts', [])
+                    
+                    # Check if any post is from the muted user
+                    muted_posts = [post for post in posts if post['userId'] == self.test_user_id]
+                    
+                    if len(muted_posts) == 0:
+                        self.log_result("Explore Excludes Muted Users Updated", True, 
+                                      f"No posts from muted user found in {len(posts)} explore posts")
+                    else:
+                        self.log_result("Explore Excludes Muted Users Updated", False, 
+                                      f"Found {len(muted_posts)} posts from muted user in explore")
+                else:
+                    self.log_result("Explore Excludes Muted Users Updated", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Explore Excludes Muted Users Updated", False, "Could not mute user for testing")
+                
+        except Exception as e:
+            self.log_result("Explore Excludes Muted Users Updated", False, "Exception occurred", str(e))
+    
+    def test_save_post_functionality(self):
+        """Test POST /api/posts/{post_id}/save functionality"""
+        post_id = self.create_test_post_for_reporting()
+        if not post_id:
+            self.log_result("Save Post Functionality", False, "Could not create test post")
+            return
+        
+        try:
+            # Test saving the post
+            response = self.session.post(f"{API_BASE}/posts/{post_id}/save")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and ('saved' in data['message'].lower() or 'unsaved' in data['message'].lower()):
+                    self.log_result("Save Post Functionality", True, f"Save/unsave toggle working: {data['message']}")
+                else:
+                    self.log_result("Save Post Functionality", False, f"Unexpected response: {data}")
+            else:
+                self.log_result("Save Post Functionality", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Save Post Functionality", False, "Exception occurred", str(e))
+    
+    def test_unsave_post_functionality(self):
+        """Test POST /api/posts/{post_id}/unsave functionality"""
+        post_id = self.create_test_post_for_reporting()
+        if not post_id:
+            self.log_result("Unsave Post Functionality", False, "Could not create test post")
+            return
+        
+        try:
+            # First save the post
+            save_response = self.session.post(f"{API_BASE}/posts/{post_id}/save")
+            
+            if save_response.status_code == 200:
+                # Now test unsaving
+                response = self.session.post(f"{API_BASE}/posts/{post_id}/unsave")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'message' in data and ('saved' in data['message'].lower() or 'unsaved' in data['message'].lower()):
+                        self.log_result("Unsave Post Functionality", True, f"Unsave functionality working: {data['message']}")
+                    else:
+                        self.log_result("Unsave Post Functionality", False, f"Unexpected response: {data}")
+                else:
+                    self.log_result("Unsave Post Functionality", False, f"Status: {response.status_code}", response.text)
+            else:
+                self.log_result("Unsave Post Functionality", False, "Could not save post first for testing")
+                
+        except Exception as e:
+            self.log_result("Unsave Post Functionality", False, "Exception occurred", str(e))
+    
+    def test_comprehensive_3dot_menu_scenario(self):
+        """Test comprehensive 3-dot menu scenario with multiple users"""
+        if not self.test_user_id:
+            self.log_result("Comprehensive 3-Dot Menu Scenario", False, "No test user ID available")
+            return
+        
+        try:
+            # Create a third user for comprehensive testing
+            third_user_data = {
+                "fullName": "Charlie Wilson",
+                "username": f"charlie_test_{datetime.now().strftime('%H%M%S')}",
+                "age": 30,
+                "gender": "male",
+                "password": "TestPass789!"
+            }
+            
+            third_user_response = self.session.post(f"{API_BASE}/auth/register", json=third_user_data)
+            
+            if third_user_response.status_code != 200:
+                self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Could not create third user")
+                return
+            
+            third_user_id = third_user_response.json()['user']['id']
+            
+            # User A (current) mutes User B (test_user_id)
+            mute_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/mute")
+            
+            # User A blocks User C (third_user_id)
+            block_response = self.session.post(f"{API_BASE}/users/{third_user_id}/block")
+            
+            if mute_response.status_code == 200 and block_response.status_code == 200:
+                # Verify User A's feed doesn't show posts from User B or User C
+                feed_response = self.session.get(f"{API_BASE}/posts/feed")
+                
+                if feed_response.status_code == 200:
+                    feed_data = feed_response.json()
+                    posts = feed_data.get('posts', [])
+                    
+                    # Check for posts from muted or blocked users
+                    excluded_posts = [post for post in posts if post['userId'] in [self.test_user_id, third_user_id]]
+                    
+                    if len(excluded_posts) == 0:
+                        # Create and report a post
+                        post_id = self.create_test_post_for_reporting()
+                        if post_id:
+                            report_response = self.session.post(f"{API_BASE}/posts/{post_id}/report", 
+                                                              json={"reason": "Spam or scam"})
+                            
+                            if report_response.status_code == 200:
+                                self.log_result("Comprehensive 3-Dot Menu Scenario", True, 
+                                              "✅ Complete scenario: User A muted User B, blocked User C, feed excludes both, post reported successfully")
+                            else:
+                                self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Report functionality failed")
+                        else:
+                            self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Could not create post for reporting")
+                    else:
+                        self.log_result("Comprehensive 3-Dot Menu Scenario", False, 
+                                      f"Feed still shows {len(excluded_posts)} posts from muted/blocked users")
+                else:
+                    self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Could not get feed")
+            else:
+                self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Could not mute/block users for testing")
+                
+        except Exception as e:
+            self.log_result("Comprehensive 3-Dot Menu Scenario", False, "Exception occurred", str(e))
+    
     # ========== ENHANCED AUTHENTICATION TESTS ==========
     
     def test_enhanced_registration_with_mobile(self):
