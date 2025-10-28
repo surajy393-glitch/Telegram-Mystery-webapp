@@ -3488,6 +3488,9 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Get user's posts
     posts = await db.posts.find({"userId": userId}).sort("createdAt", -1).to_list(1000)
     
+    # Check if current user has requested to follow (for private accounts)
+    has_requested = current_user.id in user.get("followRequests", [])
+    
     return {
         "id": user["id"],
         "username": user["username"],
@@ -3497,7 +3500,8 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "isPrivate": user.get("isPrivate", False),
         "followersCount": len(user.get("followers", [])),
         "followingCount": len(user.get("following", [])),
-        "isFollowing": user["id"] in current_user.following,
+        "isFollowing": current_user.id in user.get("followers", []),
+        "hasRequested": has_requested,
         "postsCount": len(posts)
     }
 
