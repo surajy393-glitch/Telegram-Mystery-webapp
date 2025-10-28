@@ -722,10 +722,10 @@ const SearchPage = ({ user, onLogout }) => {
             {explorePosts.length > 0 ? (
               <div className="grid grid-cols-3 gap-1 md:gap-2">
                 {explorePosts.map((post) => (
-                  <Link
+                  <div
                     key={post.id}
-                    to={`/profile/${post.userId}`}
-                    className="aspect-square relative group overflow-hidden rounded-sm hover:opacity-90 transition-opacity"
+                    onClick={() => setSelectedPost(post)}
+                    className="aspect-square relative group overflow-hidden rounded-sm hover:opacity-90 transition-opacity cursor-pointer"
                   >
                     {/* Post Image */}
                     {post.imageUrl || post.mediaUrl ? (
@@ -754,7 +754,7 @@ const SearchPage = ({ user, onLogout }) => {
                         <span className="font-semibold">{post.commentsCount || 0}</span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (
