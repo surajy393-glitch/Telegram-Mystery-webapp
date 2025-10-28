@@ -739,31 +739,46 @@ const HomePage = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  {/* 3-Dot Menu */}
-                  <div className="relative" style={{minWidth: '50px'}}>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenPostMenu(openPostMenu === post.id ? null : post.id);
-                      }}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                      data-testid={`post-menu-${post.id}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#f3f4f6',
-                        border: '1px solid #d1d5db'
-                      }}
+                  {/* 3-Dot Menu - CRITICAL FIX */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenPostMenu(openPostMenu === post.id ? null : post.id);
+                    }}
+                    data-testid={`post-menu-${post.id}`}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      backgroundColor: '#e5e7eb',
+                      border: '2px solid #9ca3af',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }}
+                  >
+                    <svg 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2"
                     >
-                      <MoreVertical className="w-6 h-6 text-gray-700" style={{display: 'block'}} />
-                    </button>
-                    
-                    {openPostMenu === post.id && (
-                      <div 
-                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="12" cy="5" r="1"></circle>
+                      <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                  </button>
+
+                  {openPostMenu === post.id && (
+                    <div 
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{position: 'absolute', top: '45px', right: '0'}}
+                    >
                         {post.userId === user?.id ? (
                           // Own post options
                           <>
