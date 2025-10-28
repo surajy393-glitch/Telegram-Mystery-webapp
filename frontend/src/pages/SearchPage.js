@@ -926,7 +926,12 @@ const SearchPage = ({ user, onLogout }) => {
                   <span className="font-semibold text-gray-800">{selectedPost.username}</span>
                 </Link>
                 <button
-                  onClick={() => setSelectedPost(null)}
+                  onClick={() => {
+                    setSelectedPost(null);
+                    setShowComments(false);
+                    setPostComments([]);
+                    setNewComment("");
+                  }}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   <X className="w-5 h-5" />
