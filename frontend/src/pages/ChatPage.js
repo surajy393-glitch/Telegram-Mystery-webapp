@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Crown } from "lucide-react";
@@ -17,6 +17,7 @@ const API = `${BACKEND_URL}/api`;
 
 const ChatPage = ({ user }) => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatUser, setChatUser] = useState(null);
