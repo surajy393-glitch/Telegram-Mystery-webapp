@@ -291,7 +291,7 @@ async def add_comment(
 
 # Get comments for a post
 @social_router.get("/posts/{postId}/comments")
-async def get_post_comments(postId: str):
+async def get_post_comments(postId: str, userId: Optional[str] = None):
     """Get all comments for a post with nested replies"""
     try:
         post = await db.posts.find_one({"id": postId})
@@ -306,6 +306,9 @@ async def get_post_comments(postId: str):
         
         for comment in comments:
             comment_id = comment.get("id")
+            likes = comment.get("likes", [])
+            user_liked = userId in likes if userId else False
+            
             comment_data = {
                 "id": comment_id,
                 "userId": comment.get("userId"),
@@ -314,8 +317,8 @@ async def get_post_comments(postId: str):
                 "content": comment.get("content"),
                 "createdAt": comment.get("createdAt"),
                 "timeAgo": get_time_ago(comment.get("createdAt")),
-                "likesCount": len(comment.get("likes", [])),
-                "userLiked": False,  # TODO: Add user-specific like status
+                "likesCount": len(likes),
+                "userLiked": user_liked,
                 "parentCommentId": comment.get("parentCommentId"),
                 "replies": []
             }
