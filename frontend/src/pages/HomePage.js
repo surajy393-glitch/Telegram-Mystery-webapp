@@ -750,13 +750,12 @@ const HomePage = ({ user, onLogout }) => {
                     >
                       <MoreVertical className="w-6 h-6" />
                     </button>
-
-                  {openPostMenu === post.id && (
-                    <div 
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
-                      onClick={(e) => e.stopPropagation()}
-                      style={{position: 'absolute', top: '45px', right: '0'}}
-                    >
+                    
+                    {openPostMenu === post.id && (
+                      <div 
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {post.userId === user?.id ? (
                           // Own post options
                           <>
