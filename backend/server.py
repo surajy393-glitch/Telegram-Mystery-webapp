@@ -3511,29 +3511,57 @@ async def follow_user(userId: str, current_user: User = Depends(get_current_user
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Add to following list
-    await db.users.update_one(
-        {"id": current_user.id},
-        {"$addToSet": {"following": userId}}
-    )
+    # Check if account is private
+    is_private = target_user.get("isPrivate", False)
     
-    # Add to followers list
-    await db.users.update_one(
-        {"id": userId},
-        {"$addToSet": {"followers": current_user.id}}
-    )
-    
-    # Create notification
-    notification = Notification(
-        userId=userId,
-        fromUserId=current_user.id,
-        fromUsername=current_user.username,
-        fromUserImage=current_user.profileImage,
-        type="follow"
-    )
-    await db.notifications.insert_one(notification.dict())
-    
-    return {"message": "User followed successfully"}
+    if is_private:
+        # Check if already requested
+        follow_requests = target_user.get("followRequests", [])
+        if current_user.id in follow_requests:
+            raise HTTPException(status_code=400, detail="Follow request already sent")
+        
+        # Add to follow requests instead of followers
+        await db.users.update_one(
+            {"id": userId},
+            {"$addToSet": {"followRequests": current_user.id}}
+        )
+        
+        # Create follow request notification
+        notification = Notification(
+            userId=userId,
+            fromUserId=current_user.id,
+            fromUsername=current_user.username,
+            fromUserImage=current_user.profileImage,
+            type="follow_request"
+        )
+        await db.notifications.insert_one(notification.dict())
+        
+        return {"message": "Follow request sent", "requested": True}
+    else:
+        # Public account - follow immediately
+        # Add to following list
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$addToSet": {"following": userId}}
+        )
+        
+        # Add to followers list
+        await db.users.update_one(
+            {"id": userId},
+            {"$addToSet": {"followers": current_user.id}}
+        )
+        
+        # Create notification
+        notification = Notification(
+            userId=userId,
+            fromUserId=current_user.id,
+            fromUsername=current_user.username,
+            fromUserImage=current_user.profileImage,
+            type="follow"
+        )
+        await db.notifications.insert_one(notification.dict())
+        
+        return {"message": "User followed successfully", "requested": False}
 
 @api_router.post("/users/{userId}/unfollow")
 async def unfollow_user(userId: str, current_user: User = Depends(get_current_user)):
