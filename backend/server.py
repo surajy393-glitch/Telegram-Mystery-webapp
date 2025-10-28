@@ -4749,6 +4749,101 @@ async def register_for_mystery(
         logger.error(f"Registration error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Calculate Vibe Compatibility between two users
+@api_router.get("/auth/calculate-compatibility/{other_user_id}")
+async def calculate_compatibility(
+    other_user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Calculate vibe compatibility between current user and another user
+    Based on interests (30%) and personality answers (70%)
+    """
+    try:
+        # Get other user
+        other_user = await db.users.find_one({"id": other_user_id})
+        if not other_user:
+            # Try finding by tg_user_id
+            try:
+                tg_id = int(other_user_id)
+                other_user = await db.users.find_one({"tg_user_id": tg_id})
+            except:
+                pass
+        
+        if not other_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get user data
+        user1_interests = current_user.get("interests", "").split(", ") if isinstance(current_user.get("interests"), str) else []
+        user2_interests = other_user.get("interests", "").split(", ") if isinstance(other_user.get("interests"), str) else []
+        
+        user1_personality = current_user.get("personalityAnswers", {})
+        user2_personality = other_user.get("personalityAnswers", {})
+        
+        # Calculate interest match (30% weight)
+        interest_score = 0
+        if user1_interests and user2_interests:
+            common_interests = set(user1_interests) & set(user2_interests)
+            total_interests = set(user1_interests) | set(user2_interests)
+            if total_interests:
+                interest_score = len(common_interests) / len(total_interests)
+        
+        # Calculate personality match (70% weight)
+        personality_score = 0
+        matching_answers = []
+        
+        if user1_personality and user2_personality:
+            total_questions = len(user1_personality)
+            matches = 0
+            
+            for question_id, answer1 in user1_personality.items():
+                answer2 = user2_personality.get(question_id)
+                if answer2 and answer1 == answer2:
+                    matches += 1
+                    matching_answers.append({
+                        "question_id": question_id,
+                        "answer": answer1
+                    })
+            
+            if total_questions > 0:
+                personality_score = matches / total_questions
+        
+        # Calculate total compatibility (weighted average)
+        total_score = (interest_score * 0.3) + (personality_score * 0.7)
+        compatibility_percentage = int(total_score * 100)
+        
+        # Generate compatibility message
+        if compatibility_percentage >= 80:
+            message = "Amazing match! 🔥 You two are incredibly compatible!"
+        elif compatibility_percentage >= 60:
+            message = "Great match! ✨ You have a lot in common!"
+        elif compatibility_percentage >= 40:
+            message = "Good match! 💫 You share some interesting similarities!"
+        else:
+            message = "Opposites attract! 🌟 You might discover new perspectives!"
+        
+        # Get common interests
+        common_interests_list = list(set(user1_interests) & set(user2_interests))
+        
+        return {
+            "compatibility_percentage": compatibility_percentage,
+            "message": message,
+            "interest_score": int(interest_score * 100),
+            "personality_score": int(personality_score * 100),
+            "common_interests": common_interests_list,
+            "matching_answers": matching_answers,
+            "details": {
+                "interests_weight": 30,
+                "personality_weight": 70
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error calculating compatibility: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== NOTIFICATION ENDPOINTS ====================
 
 # Get unread notification count
