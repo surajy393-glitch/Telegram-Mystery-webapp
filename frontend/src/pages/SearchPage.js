@@ -503,7 +503,7 @@ const SearchPage = ({ user, onLogout }) => {
                           src={
                             suggestion.avatar.startsWith('data:') || suggestion.avatar.startsWith('http')
                               ? suggestion.avatar
-                              : `${API}${suggestion.avatar}`
+                              : `${BACKEND_URL}${suggestion.avatar}`
                           }
                           alt=""
                           className="w-8 h-8 rounded-full object-cover"
