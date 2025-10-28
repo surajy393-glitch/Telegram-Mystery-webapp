@@ -490,7 +490,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     }
   };
 
-  const handleFinalSubmit = async (e) => {
+  const handleStep2Submit = (e) => {
     e.preventDefault();
     
     if (!formData.city) {
@@ -506,6 +506,27 @@ const DatingRegisterPage = ({ onLogin }) => {
       toast({
         title: "Interests Required",
         description: "Please select at least one interest",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Move to step 3 for personality questions
+    setStep(3);
+  };
+
+  const handleFinalSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Check if all personality questions are answered
+    const unansweredQuestions = personalityQuestions.filter(
+      q => !formData.personalityAnswers[q.id]
+    );
+    
+    if (unansweredQuestions.length > 0) {
+      toast({
+        title: "Answer All Questions",
+        description: `Please answer all ${personalityQuestions.length} personality questions to continue`,
         variant: "destructive"
       });
       return;
@@ -527,6 +548,7 @@ const DatingRegisterPage = ({ onLogin }) => {
       formDataToSend.append("interests", formData.interests.join(", "));
       formDataToSend.append("emailVerified", emailVerified);
       formDataToSend.append("mobileVerified", mobileVerified);
+      formDataToSend.append("personalityAnswers", JSON.stringify(formData.personalityAnswers));
       
       // Add profile photo if uploaded
       if (formData.profilePhoto) {
