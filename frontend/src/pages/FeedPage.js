@@ -29,6 +29,7 @@ const FeedPage = ({ user, onLogout }) => {
   const [showMentions, setShowMentions] = useState(false);
   const [showStoryReportDialog, setShowStoryReportDialog] = useState(false);
   const [reportingStory, setReportingStory] = useState(null);
+  const [storyLikes, setStoryLikes] = useState({}); // Track which stories are liked
 
   useEffect(() => {
     if (user) {
