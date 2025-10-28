@@ -55,18 +55,18 @@ const VerificationStatusPage = ({ user }) => {
       const token = localStorage.getItem("token");
       
       if (verificationType === 'email') {
-        await axios.post(`${API}/auth/send-email-verification`, 
+        const response = await axios.post(`${API}/auth/send-email-verification`, 
           { email },
           { headers: { Authorization: `Bearer ${token}` }}
         );
-        setMessage('Verification code sent to your email!');
+        setMessage(`Code sent! For testing: ${response.data.debug_code}`);
         setMessageType('success');
       } else {
-        await axios.post(`${API}/auth/send-phone-verification`, 
+        const response = await axios.post(`${API}/auth/send-phone-verification`, 
           { phone: phoneNumber },
           { headers: { Authorization: `Bearer ${token}` }}
         );
-        setMessage('Verification code sent to your phone!');
+        setMessage(`Code sent! For testing: ${response.data.debug_code}`);
         setMessageType('success');
       }
       setVerificationStep('verify');
