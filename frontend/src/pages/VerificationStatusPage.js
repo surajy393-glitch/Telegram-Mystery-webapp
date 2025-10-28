@@ -349,6 +349,93 @@ const VerificationStatusPage = ({ user }) => {
         </div>
         )}
       </div>
+
+      {/* Verification Dialog */}
+      <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Verify Your {verificationType === 'email' ? 'Email' : 'Phone Number'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {verificationStep === 'send' ? (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    {verificationType === 'email' ? 'Email Address' : 'Phone Number'}
+                  </label>
+                  {verificationType === 'email' ? (
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Enter your phone number"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={sendVerificationCode}
+                  disabled={verifying || (verificationType === 'email' ? !email : !phoneNumber)}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  {verifying ? 'Sending...' : 'Send Verification Code'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Enter Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
+                  />
+                </div>
+                
+                <Button 
+                  onClick={verifyCode}
+                  disabled={verifying || otpCode.length !== 6}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                >
+                  {verifying ? 'Verifying...' : 'Verify Code'}
+                </Button>
+                
+                <button
+                  onClick={() => setVerificationStep('send')}
+                  className="w-full text-sm text-blue-600 hover:underline"
+                >
+                  Didn't receive code? Send again
+                </button>
+              </>
+            )}
+            
+            {message && (
+              <div className={`p-3 rounded-lg ${
+                messageType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              }`}>
+                {message}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
