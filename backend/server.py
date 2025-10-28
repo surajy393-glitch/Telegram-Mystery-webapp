@@ -2095,9 +2095,12 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     """Get current user's verification status and progress"""
     
     # Calculate account age in days
-    created_at = current_user.createdAt if hasattr(current_user, 'createdAt') else datetime.now(timezone.utc).isoformat()
+    created_at = current_user.createdAt if hasattr(current_user, 'createdAt') else datetime.now(timezone.utc)
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+    elif created_at.tzinfo is None:
+        # If datetime is naive, assume it's UTC
+        created_at = created_at.replace(tzinfo=timezone.utc)
     account_age_days = (datetime.now(timezone.utc) - created_at).days
     
     # Get posts count
