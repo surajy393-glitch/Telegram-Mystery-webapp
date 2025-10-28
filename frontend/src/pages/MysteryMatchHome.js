@@ -108,8 +108,13 @@ const MysteryMatchHome = () => {
   };
 
   const fetchStats = async () => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUserId = userData.tg_user_id || userData.id;
+    
+    if (!currentUserId) return;
+    
     try {
-      const response = await axios.get(`${API_URL}/api/mystery/stats/${userId}`);
+      const response = await axios.get(`${API_URL}/api/mystery/stats/${currentUserId}`);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -117,8 +122,13 @@ const MysteryMatchHome = () => {
   };
 
   const fetchMatches = async () => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUserId = userData.tg_user_id || userData.id;
+    
+    if (!currentUserId) return;
+    
     try {
-      const response = await axios.get(`${API_URL}/api/mystery/my-matches/${userId}`);
+      const response = await axios.get(`${API_URL}/api/mystery/my-matches/${currentUserId}`);
       setActiveMatches(response.data.matches || []);
     } catch (error) {
       console.error('Error fetching matches:', error);
