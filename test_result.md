@@ -102,9 +102,94 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix search functionality - Users tab showing 'No users found' even though user exists. Issue: Backend was excluding current user from search results, preventing users from finding themselves or other users when searching."
+user_problem_statement: "Implement 3-dot menu on other users' posts with Follow/Unfollow, Mute User, Block User, Save Post, and Report Post functionalities. Mute should silently hide posts (they won't know), Block should be stronger (they might realize). Report categories should include harassment, self-harm, hate speech, illegal activities, adult content, spam, misinformation, and copyright violation."
 
 backend:
+  - task: "Add mutedUsers field to User model and registration"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added mutedUsers: List[str] field to User model (line 143) and initialized it in all user registration flows to support silent muting feature"
+
+  - task: "Mute/Unmute User Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created POST /api/users/{userId}/mute and POST /api/users/{userId}/unmute endpoints. Muting adds user to mutedUsers list (silent - they won't know). Different from blocking: muted users can still see your posts and interact, but their posts won't appear in your feed."
+
+  - task: "Block/Unblock User Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Verified existing POST /api/users/{userId}/block and POST /api/users/{userId}/unblock endpoints at lines 4266 and 4314. Block removes from following/followers, adds to blockedUsers list (stronger restriction - they might realize)."
+
+  - task: "Report Post Endpoint Enhancement"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced POST /api/posts/{post_id}/report endpoint to accept JSON with ReportPostRequest model instead of Form data. Added more report details including postUserId, reporterUsername. Report categories include: harassment/bullying, self-harm, hate speech/violence, illegal activities, adult content, spam/scam, misinformation, copyright violation."
+
+  - task: "Feed Filtering - Exclude Muted and Blocked Users"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated GET /api/posts/feed endpoint to filter out posts from both muted and blocked users. Combined blockedUsers and mutedUsers lists, excluded from feed query. Muted users' posts will not appear in feed but they won't know they're muted."
+
+  - task: "Explore Filtering - Exclude Muted and Blocked Users"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated GET /api/search/explore endpoint to filter out posts from both muted and blocked users. Combined exclusion list ensures muted/blocked users don't appear in explore feed."
+
+  - task: "Save/Unsave Post Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Verified existing POST /api/posts/{post_id}/save and POST /api/posts/{post_id}/unsave endpoints exist and functional. These toggle saved posts in user's savedPosts array."
+
+frontend:
   - task: "User Search Functionality - Allow users to appear in their own search results"
     implemented: true
     working: true
