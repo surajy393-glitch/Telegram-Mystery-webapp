@@ -2136,21 +2136,69 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     ])
     
     # Personality questions are mandatory during registration, so always true
-    personality_questions = True  # Always completed during registration
+    personality_questions = True
     
-    # Criteria checks
+    # Alternative pathways calculations
+    # Pathway 1: High engagement (original pathway)
+    high_engagement = (
+        posts_count >= 20 and
+        len(current_user.followers) >= 100 and
+        total_likes >= 1000 and
+        avg_story_views >= 70 and
+        getattr(current_user, 'profileViews', 0) >= 1000
+    )
+    
+    # Pathway 2: Moderate engagement with longer tenure
+    moderate_engagement = (
+        posts_count >= 10 and
+        len(current_user.followers) >= 50 and
+        account_age_days >= 90 and
+        (total_likes >= 500 or avg_story_views >= 40)
+    )
+    
+    # Pathway 3: Community contribution (future: moderator, reports, endorsements)
+    community_contribution = getattr(current_user, 'communityBadge', False)
+    
+    # Pathway 4: Cross-platform verified (future: linked verified accounts)
+    cross_platform_verified = getattr(current_user, 'crossPlatformVerified', False)
+    
+    # User qualifies if they meet basic requirements + at least one pathway
+    basic_requirements_met = (
+        account_age_days >= 45 and
+        bool(getattr(current_user, 'emailVerified', False)) and
+        bool(getattr(current_user, 'phoneVerified', False)) and
+        getattr(current_user, 'violationsCount', 0) == 0 and
+        profile_complete
+    )
+    
+    meets_any_pathway = high_engagement or moderate_engagement or community_contribution or cross_platform_verified
+    auto_eligible = basic_requirements_met and meets_any_pathway
+    
+    # Criteria checks (grouped for display)
     criteria = {
+        # Identity & Security
+        "emailVerified": bool(getattr(current_user, 'emailVerified', False)),
+        "phoneVerified": bool(getattr(current_user, 'phoneVerified', False)),
+        
+        # Profile Completeness
+        "profileComplete": profile_complete,
+        "personalityQuestions": True,
+        
+        # Tenure & Behaviour
         "accountAge": account_age_days >= 45,
-        "emailVerified": bool(getattr(current_user, 'emailVerified', False)),  # Check emailVerified field
-        "phoneVerified": bool(getattr(current_user, 'phoneVerified', False)),  # Check phoneVerified field
+        "noViolations": getattr(current_user, 'violationsCount', 0) == 0,
+        
+        # Activity & Engagement (High pathway)
         "postsCount": posts_count >= 20,
         "followersCount": len(current_user.followers) >= 100,
-        "noViolations": (getattr(current_user, 'violationsCount', 0)) == 0,
-        "profileComplete": profile_complete,
-        "personalityQuestions": True,  # Always true - mandatory during registration
-        "profileViews": (getattr(current_user, 'profileViews', 0)) >= 1000,
+        "totalLikes": total_likes >= 1000,
         "avgStoryViews": avg_story_views >= 70,
-        "totalLikes": total_likes >= 1000
+        "profileViews": getattr(current_user, 'profileViews', 0) >= 1000,
+        
+        # Alternative Pathways
+        "moderateEngagement": moderate_engagement,
+        "communityContribution": community_contribution,
+        "crossPlatformVerified": cross_platform_verified
     }
     
     # Current values for progress display
@@ -2162,17 +2210,28 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "followersCount": len(current_user.followers),
         "violationsCount": getattr(current_user, 'violationsCount', 0),
         "profileComplete": profile_complete,
-        "personalityQuestions": True,  # Always completed
+        "personalityQuestions": True,
         "profileViews": getattr(current_user, 'profileViews', 0),
         "avgStoryViews": int(avg_story_views),
-        "totalLikes": total_likes
+        "totalLikes": total_likes,
+        "moderateEngagementPosts": posts_count >= 10,
+        "moderateEngagementFollowers": len(current_user.followers) >= 50,
+        "moderateEngagementTenure": account_age_days >= 90,
+        "moderateEngagementLikes": total_likes >= 500 or avg_story_views >= 40
     }
     
     return {
         "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
         "criteria": criteria,
         "currentValues": current_values,
-        "allCriteriaMet": all(criteria.values())
+        "autoEligible": auto_eligible,
+        "pathways": {
+            "highEngagement": high_engagement,
+            "moderateEngagement": moderate_engagement,
+            "communityContribution": community_contribution,
+            "crossPlatformVerified": cross_platform_verified
+        },
+        "allCriteriaMet": auto_eligible
     }
 
 @api_router.put("/auth/profile")
