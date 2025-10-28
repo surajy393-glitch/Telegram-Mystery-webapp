@@ -515,17 +515,7 @@ const FeedPage = ({ user, onLogout }) => {
           </div>
         ) : (
           <div className="space-y-6">
-            {posts.filter(post => {
-              // Show all posts from other users
-              if (post.userId !== user?.id) return true;
-              
-              // For own posts, only show if created within last 1 minute
-              const postTime = new Date(post.createdAt || post.timeAgo);
-              const now = new Date();
-              const diffInMinutes = (now - postTime) / (1000 * 60);
-              
-              return diffInMinutes < 1; // Show only if less than 1 minute old
-            }).map((post) => (
+            {posts.filter(post => post.userId !== user?.id).map((post) => (
               <div key={post.id} className="bg-white rounded-lg shadow-sm">
                 {/* Post Header */}
                 <div className="p-4 flex items-center justify-between">
