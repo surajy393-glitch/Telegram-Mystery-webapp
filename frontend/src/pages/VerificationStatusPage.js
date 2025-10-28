@@ -232,6 +232,16 @@ const VerificationStatusPage = ({ user }) => {
 
   const anyPathwayMet = pathways.some(p => p.met);
 
+  // Calculate overall progress
+  const basicCount = [...identitySecurityCriteria, ...profileCompletenessCriteria, ...tenureBehaviourCriteria].filter(c => c.met).length;
+  const basicTotal = identitySecurityCriteria.length + profileCompletenessCriteria.length + tenureBehaviourCriteria.length;
+  const overallProgress = verificationData?.isVerified ? 100 : Math.round((basicCount / basicTotal) * 100);
+
+  // Flatten all criteria for display
+  const criteria = [...identitySecurityCriteria, ...profileCompletenessCriteria, ...tenureBehaviourCriteria];
+  const metCriteria = criteria.filter(c => c.met).length;
+  const totalCriteria = criteria.length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Header */}
