@@ -871,6 +871,7 @@ const HomePage = ({ user, onLogout }) => {
             ))
           )}
         </div>
+      </div>
 
       {/* Create Post Dialog */}
       <Dialog open={showCreatePost} onOpenChange={setShowCreatePost}>
