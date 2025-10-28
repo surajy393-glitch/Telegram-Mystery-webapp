@@ -255,48 +255,6 @@ const ProfilePage = ({ user, onLogout }) => {
       });
     }
   };
-      
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-      
-      // ROLLBACK optimistic update on error
-      if (viewingUser && viewingUser.id === targetUserId) {
-        setViewingUser(prev => ({
-          ...prev,
-          isFollowing: isFollowing, // Revert back
-          followersCount: isFollowing 
-            ? prev.followersCount + 1 
-            : Math.max(0, prev.followersCount - 1)
-        }));
-      }
-
-      // Rollback users list
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === targetUserId 
-            ? { 
-                ...user, 
-                isFollowing: isFollowing, // Revert back
-                followersCount: isFollowing 
-                  ? user.followersCount + 1 
-                  : Math.max(0, user.followersCount - 1)
-              }
-            : user
-        )
-      );
-
-      if (error.response) {
-        console.error("Response error:", error.response.data);
-      }
-    } finally {
-      // Remove from following in progress
-      setFollowingInProgress(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(targetUserId);
-        return newSet;
-      });
-    }
-  };
 
   if (loading) {
     return (
