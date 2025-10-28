@@ -599,10 +599,7 @@ const FeedPage = ({ user, onLogout }) => {
                   </button>
 
                   <button
-                    onClick={() => {
-                      setSelectedPost(post);
-                      setShowCommentModal(true);
-                    }}
+                    onClick={() => navigate(`/post/${post.id}`)}
                     className="flex items-center space-x-2 text-gray-600 hover:text-pink-600"
                   >
                     <MessageCircle size={20} />
