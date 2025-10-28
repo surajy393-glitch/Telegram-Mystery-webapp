@@ -235,6 +235,35 @@ const FeedPage = ({ user, onLogout }) => {
     }
   };
 
+  const handleShare = async (post) => {
+    const shareUrl = `${window.location.origin}/post/${post.id}`;
+    const shareText = `Check out this post by ${post.username} on LuvHive!`;
+
+    try {
+      // Try native share API (works on mobile)
+      if (navigator.share) {
+        await navigator.share({
+          title: 'LuvHive Post',
+          text: shareText,
+          url: shareUrl
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copied to clipboard!');
+      }
+    } catch (error) {
+      // If share cancelled or failed, try clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copied to clipboard!');
+      } catch (err) {
+        console.error('Error sharing:', err);
+        alert('Unable to share. Link: ' + shareUrl);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
