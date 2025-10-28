@@ -747,6 +747,7 @@ const HomePage = ({ user, onLogout }) => {
                         setOpenPostMenu(openPostMenu === post.id ? null : post.id);
                       }}
                       className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      data-testid={`post-menu-${post.id}`}
                     >
                       <MoreVertical className="w-6 h-6 text-gray-700" />
                     </button>
