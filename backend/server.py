@@ -3448,12 +3448,15 @@ async def get_my_posts(current_user: User = Depends(get_current_user)):
     for post in posts:
         posts_list.append({
             "id": post["id"],
-            "mediaType": post["mediaType"],
-            "mediaUrl": post["mediaUrl"],
+            "mediaType": post.get("mediaType", "image"),  # Use .get() with default
+            "mediaUrl": post.get("mediaUrl"),
+            "imageUrl": post.get("imageUrl"),  # Add imageUrl support
             "caption": post.get("caption", ""),
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
             "createdAt": post["createdAt"].isoformat(),
+            "likesCount": len(post.get("likes", [])),
+            "commentsCount": len(post.get("comments", [])),
             "isLiked": current_user.id in post.get("likes", []),
             "isSaved": post["id"] in current_user.savedPosts
         })
