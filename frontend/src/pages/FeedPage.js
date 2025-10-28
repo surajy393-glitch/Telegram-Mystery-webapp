@@ -208,6 +208,37 @@ const FeedPage = ({ user, onLogout }) => {
     }
   };
 
+  const processMentions = async (text) => {
+    if (!text) return text;
+    
+    // Find all @mentions in the text
+    const mentionRegex = /@(\w+)/g;
+    const mentions = [];
+    let match;
+    
+    while ((match = mentionRegex.exec(text)) !== null) {
+      mentions.push(match[1]);
+    }
+    
+    if (mentions.length > 0) {
+      try {
+        // Send notifications to mentioned users
+        const token = localStorage.getItem("token");
+        await axios.post(`${API_URL}/api/notifications/mentions`, {
+          mentionedUsernames: mentions,
+          type: 'story_mention',
+          content: text
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.error('Error processing mentions:', error);
+      }
+    }
+    
+    return text;
+  };
+
   const handleCreateStory = async () => {
     if (!newStory.mediaFile) {
       alert('Please select an image or video');
