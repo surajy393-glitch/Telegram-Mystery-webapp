@@ -1466,6 +1466,7 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "following": [],
             "followers": [],
             "blockedUsers": [],
+            "mutedUsers": [],
             "savedPosts": [],
             "preferences": {"ageRange": [18, 100], "lookingFor": "Not specified"},
             "interests": [],
