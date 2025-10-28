@@ -85,13 +85,13 @@ const VerificationStatusPage = ({ user }) => {
       const token = localStorage.getItem("token");
       
       if (verificationType === 'email') {
-        await axios.post(`${API}/auth/verify-email`, 
+        await axios.post(`${API}/auth/verify-email-code`, 
           { code: otpCode },
           { headers: { Authorization: `Bearer ${token}` }}
         );
         setMessage('Email verified successfully!');
       } else {
-        await axios.post(`${API}/auth/verify-phone`, 
+        await axios.post(`${API}/auth/verify-phone-code`, 
           { code: otpCode },
           { headers: { Authorization: `Bearer ${token}` }}
         );
