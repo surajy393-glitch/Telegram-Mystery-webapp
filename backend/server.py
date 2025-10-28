@@ -2113,7 +2113,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     
     # Get total likes on user's posts
     user_posts = await db.posts.find({"userId": current_user.id}).to_list(length=None)
-    total_likes = sum(post.get("likesCount", 0) for post in user_posts)
+    # likes is a list of user IDs who liked, so count the length
+    total_likes = sum(len(post.get("likes", [])) for post in user_posts)
     
     # Get story views (average)
     user_stories = await db.stories.find({"userId": current_user.id}).to_list(length=None)
