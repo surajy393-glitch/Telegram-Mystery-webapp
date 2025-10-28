@@ -574,9 +574,18 @@ const HomePage = ({ user, onLogout }) => {
             <Link to="/profile">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 p-0.5 cursor-pointer hover:scale-105 transition-transform">
                 <img
-                  src={user?.profileImage || "https://via.placeholder.com/40"}
+                  src={
+                    user?.profileImage 
+                      ? (user.profileImage.startsWith('http') || user.profileImage.startsWith('data:')
+                          ? user.profileImage 
+                          : `${process.env.REACT_APP_BACKEND_URL}${user.profileImage}`)
+                      : "https://via.placeholder.com/40"
+                  }
                   alt="Profile"
                   className="w-full h-full rounded-full object-cover border-2 border-white"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/40";
+                  }}
                 />
               </div>
             </Link>
