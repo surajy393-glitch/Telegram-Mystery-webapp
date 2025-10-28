@@ -1470,6 +1470,7 @@ async def telegram_auth(telegram_data: TelegramAuthRequest):
             "authMethod": "telegram",
             "isPremium": False,
             "isPrivate": False,
+            "isVerified": False,
             "following": [],
             "followers": [],
             "blockedUsers": [],
