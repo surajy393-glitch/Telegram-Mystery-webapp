@@ -359,9 +359,18 @@ const ProfilePage = ({ user, onLogout }) => {
           <div className="glass-effect rounded-3xl p-8 mb-8 shadow-xl animate-fadeIn">
             <div className="text-center">
               <img
-                src={viewingUser?.profileImage || "https://via.placeholder.com/120"}
+                src={
+                  viewingUser?.profileImage 
+                    ? (viewingUser.profileImage.startsWith('http') || viewingUser.profileImage.startsWith('data:')
+                        ? viewingUser.profileImage 
+                        : `${BACKEND_URL}${viewingUser.profileImage}`)
+                    : "https://via.placeholder.com/120"
+                }
                 alt={viewingUser?.username}
                 className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-pink-200 shadow-lg mb-4"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/120";
+                }}
               />
               <h2 className="text-3xl font-bold text-gray-800 mb-1">{viewingUser?.fullName}</h2>
               <p className="text-lg text-gray-600 mb-2">@{viewingUser?.username}</p>
