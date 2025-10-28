@@ -402,34 +402,22 @@ const SearchPage = ({ user, onLogout }) => {
       </div>
 
       {/* Post Media */}
-      <div className="aspect-square">
-        {post.mediaType === "video" ? (
-          <video 
-            src={
-              post.mediaUrl
-                ? (post.mediaUrl.startsWith('data:') || post.mediaUrl.startsWith('http')
-                    ? post.mediaUrl
-                    : `${API}${post.mediaUrl}`)
-                : ""
-            }
-            className="w-full h-full object-cover" 
-            controls 
-          />
-        ) : (
+      {post.imageUrl && (
+        <div className="aspect-square">
           <img 
             src={
-              post.mediaUrl
-                ? (post.mediaUrl.startsWith('data:') || post.mediaUrl.startsWith('http')
-                    ? post.mediaUrl
-                    : `${API}${post.mediaUrl}`)
+              post.imageUrl
+                ? (post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http')
+                    ? post.imageUrl
+                    : `${API}${post.imageUrl}`)
                 : "https://via.placeholder.com/400"
             }
             alt="Post" 
             className="w-full h-full object-cover"
             onError={(e) => e.target.src = "https://via.placeholder.com/400"}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Post Actions */}
       <div className="p-4">
