@@ -27,6 +27,8 @@ const FeedPage = ({ user, onLogout }) => {
   const [newStory, setNewStory] = useState({ mediaUrl: "", caption: "", mediaType: "image", mediaFile: null });
   const [mentionSuggestions, setMentionSuggestions] = useState([]);
   const [showMentions, setShowMentions] = useState(false);
+  const [showStoryReportDialog, setShowStoryReportDialog] = useState(false);
+  const [reportingStory, setReportingStory] = useState(null);
 
   useEffect(() => {
     if (user) {
