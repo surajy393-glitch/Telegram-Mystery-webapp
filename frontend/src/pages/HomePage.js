@@ -740,7 +740,7 @@ const HomePage = ({ user, onLogout }) => {
                   </div>
 
                   {/* 3-Dot Menu */}
-                  <div className="relative flex-shrink-0">
+                  <div className="relative ml-auto flex-shrink-0">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
