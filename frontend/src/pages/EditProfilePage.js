@@ -44,7 +44,7 @@ const EditProfilePage = ({ user, onLogout }) => {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found, redirecting to login");
-        navigate("/");
+        navigate("/login");
         return;
       }
       
@@ -67,7 +67,7 @@ const EditProfilePage = ({ user, onLogout }) => {
         console.error("Authentication failed, redirecting to login");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate("/");
+        navigate("/login");
       } else {
         alert("Failed to load profile. Please try again.");
       }
