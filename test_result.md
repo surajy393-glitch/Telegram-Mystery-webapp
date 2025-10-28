@@ -294,9 +294,10 @@ test_plan:
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_needed: true
+  backend_testing_needed: false
   frontend_testing_needed: true
   three_dot_menu_backend_complete: true
+  luvhive_verified_backend_complete: true
 
 agent_communication:
   - agent: "main"
