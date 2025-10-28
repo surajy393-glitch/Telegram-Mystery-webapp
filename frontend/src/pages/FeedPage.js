@@ -1089,23 +1089,10 @@ const FeedPage = ({ user, onLogout }) => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button 
-                          onClick={async () => {
-                            const reason = prompt('Why are you reporting this story?');
-                            if (reason) {
-                              try {
-                                const token = localStorage.getItem("token");
-                                const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                                await axios.post(`${API_URL}/api/stories/${storyId}/report`, 
-                                  { reason }, 
-                                  { headers: { Authorization: `Bearer ${token}` }}
-                                );
-                                alert('Report submitted. Thank you!');
-                                setOpenStoryMenu(false);
-                              } catch (error) {
-                                console.error('Error reporting story:', error);
-                                alert('Failed to submit report');
-                              }
-                            }
+                          onClick={() => {
+                            setReportingStory(viewingStories.stories[currentStoryIndex]);
+                            setShowStoryReportDialog(true);
+                            setOpenStoryMenu(false);
                           }}
                           className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-3 border-b"
                         >
