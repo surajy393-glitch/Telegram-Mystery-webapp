@@ -396,7 +396,7 @@ const ProfilePage = ({ user, onLogout }) => {
                   disabled={followingInProgress.has(viewingUser?.id)}
                   className={
                     viewingUser?.hasRequested
-                      ? "flex-1 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 rounded-xl py-3 text-sm cursor-default"
+                      ? "flex-1 border-2 border-gray-400 text-gray-700 hover:bg-gray-50 rounded-xl py-3 text-sm"
                       : viewingUser?.isFollowing 
                         ? "flex-1 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 rounded-xl py-3 text-sm" 
                         : "flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl py-3 text-sm"
@@ -406,7 +406,7 @@ const ProfilePage = ({ user, onLogout }) => {
                     <div className="flex items-center justify-center gap-1">
                       <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                       <span className="text-xs">
-                        {viewingUser?.isFollowing ? 'Unfollowing...' : (viewingUser?.hasRequested ? 'Canceling...' : 'Requesting...')}
+                        {viewingUser?.hasRequested ? 'Canceling...' : (viewingUser?.isFollowing ? 'Unfollowing...' : 'Requesting...')}
                       </span>
                     </div>
                   ) : (
