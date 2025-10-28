@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test Complete FormData File Upload Flow - THE REAL FIX! Frontend now sends FormData with actual File object (not base64 JSON), Backend has new endpoints POST /api/posts and POST /api/stories that accept multipart/form-data, Backend receives UploadFile, converts to base64, uploads to Telegram with sendPhoto/sendVideo, Returns proper Telegram URLs"
+user_problem_statement: "Fix search functionality - Users tab showing 'No users found' even though user exists. Issue: Backend was excluding current user from search results, preventing users from finding themselves or other users when searching."
 
 backend:
   - task: "NEW FormData File Upload Flow - POST /api/posts"
