@@ -1194,17 +1194,30 @@ const FeedPage = ({ user, onLogout }) => {
                       try {
                         const token = localStorage.getItem("token");
                         const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                        await axios.post(`${API_URL}/api/stories/${storyId}/like`, {}, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
-                        alert('Liked!');
+                        const isLiked = storyLikes[storyId];
+                        
+                        if (isLiked) {
+                          // Unlike
+                          await axios.delete(`${API_URL}/api/stories/${storyId}/like`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
+                          setStoryLikes({ ...storyLikes, [storyId]: false });
+                        } else {
+                          // Like
+                          await axios.post(`${API_URL}/api/stories/${storyId}/like`, {}, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
+                          setStoryLikes({ ...storyLikes, [storyId]: true });
+                        }
                       } catch (error) {
-                        console.error('Error liking story:', error);
+                        console.error('Error toggling story like:', error);
                       }
                     }}
                     className="p-3 hover:bg-white/20 rounded-full transition-colors"
                   >
-                    <Heart className="w-7 h-7 text-white" />
+                    <Heart 
+                      className={`w-7 h-7 ${storyLikes[viewingStories.stories[currentStoryIndex]?.id] ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                    />
                   </button>
                   
                   {/* Share Button */}
