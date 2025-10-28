@@ -686,6 +686,8 @@ async def cmd_mymatches(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ---------- bottom-menu taps ----------
 async def on_btn_find(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle find button"""
+    pass
 
 
 async def handle_close_webapp_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
