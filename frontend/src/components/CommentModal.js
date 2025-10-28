@@ -85,7 +85,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
 
   const renderComment = (comment, isReply = false) => (
     <div key={comment.id} className={`${isReply ? 'ml-12 mt-2' : 'mt-4'}`}>
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-start">
         {/* Profile Image */}
         <img
           src={
@@ -96,16 +96,16 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
               : "https://via.placeholder.com/32"
           }
           alt={comment.username}
-          className="w-8 h-8 rounded-full object-cover cursor-pointer"
+          className="w-8 h-8 rounded-full object-cover cursor-pointer flex-shrink-0"
           onClick={() => handleUsernameClick(comment.userId, comment.username)}
           onError={(e) => e.target.src = "https://via.placeholder.com/32"}
         />
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {/* Username and Comment */}
           <div className="bg-gray-100 rounded-2xl px-4 py-2">
             <p
-              className="font-semibold text-sm cursor-pointer hover:text-pink-600"
+              className="font-semibold text-sm cursor-pointer hover:text-pink-600 inline"
               onClick={() => handleUsernameClick(comment.userId, comment.username)}
             >
               {comment.username}
@@ -113,18 +113,12 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
             <p className="text-sm text-gray-800 mt-1">{comment.content}</p>
           </div>
 
-          {/* Comment Actions */}
+          {/* Comment Actions - Time and Reply */}
           <div className="flex items-center gap-4 mt-1 px-2 text-xs text-gray-500">
             <span>{comment.timeAgo || 'Just now'}</span>
             <button
-              onClick={() => handleLikeComment(comment.id)}
-              className={`font-semibold ${comment.userLiked ? 'text-pink-600' : 'hover:text-pink-600'}`}
-            >
-              Like {comment.likesCount > 0 && `(${comment.likesCount})`}
-            </button>
-            <button
               onClick={() => setReplyingTo(comment)}
-              className="font-semibold hover:text-pink-600"
+              className="font-semibold hover:text-gray-700"
             >
               Reply
             </button>
@@ -135,6 +129,21 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
             <div className="mt-2">
               {comment.replies.map(reply => renderComment(reply, true))}
             </div>
+          )}
+        </div>
+
+        {/* Heart Icon on Right Side */}
+        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() => handleLikeComment(comment.id)}
+            className="focus:outline-none"
+          >
+            <Heart
+              className={`w-4 h-4 ${comment.userLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+            />
+          </button>
+          {comment.likesCount > 0 && (
+            <span className="text-xs text-gray-600">{comment.likesCount}</span>
           )}
         </div>
       </div>
