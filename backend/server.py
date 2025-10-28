@@ -3624,9 +3624,12 @@ async def get_archived(current_user: User = Depends(get_current_user)):
         posts_list.append({
             "id": post["id"],
             "type": "post",
-            "mediaType": post["mediaType"],
-            "mediaUrl": post["mediaUrl"],
+            "mediaType": post.get("mediaType", "image"),
+            "mediaUrl": post.get("mediaUrl"),
+            "imageUrl": post.get("imageUrl"),
             "caption": post.get("caption", ""),
+            "likesCount": len(post.get("likes", [])),
+            "commentsCount": len(post.get("comments", [])),
             "createdAt": post["createdAt"].isoformat()
         })
     
@@ -3634,8 +3637,9 @@ async def get_archived(current_user: User = Depends(get_current_user)):
         posts_list.append({
             "id": story["id"],
             "type": "story",
-            "mediaType": story["mediaType"],
-            "mediaUrl": story["mediaUrl"],
+            "mediaType": story.get("mediaType", "image"),
+            "mediaUrl": story.get("mediaUrl"),
+            "imageUrl": story.get("imageUrl"),
             "caption": story.get("caption", ""),
             "createdAt": story["createdAt"].isoformat()
         })
