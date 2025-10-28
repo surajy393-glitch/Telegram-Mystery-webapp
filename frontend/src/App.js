@@ -14,6 +14,7 @@ import StoriesPage from "@/pages/StoriesPage";
 import SocialSettingsPage from "@/pages/SocialSettingsPage";
 import EditProfilePage from "@/pages/EditProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
+import VerificationStatusPage from "@/pages/VerificationStatusPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SearchPage from "@/pages/SearchPage";
 import PostDetailPage from "@/pages/PostDetailPage";
