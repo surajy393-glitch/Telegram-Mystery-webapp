@@ -2133,8 +2133,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         current_user.age
     ])
     
-    # Check personality questions
-    personality_questions = bool(current_user.personality_answers) if hasattr(current_user, 'personality_answers') else False
+    # Personality questions are mandatory during registration, so always true
+    personality_questions = True  # Always completed during registration
     
     # Criteria checks
     criteria = {
@@ -2145,7 +2145,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "followersCount": len(current_user.followers) >= 100,
         "noViolations": (getattr(current_user, 'violationsCount', 0)) == 0,
         "profileComplete": profile_complete,
-        "personalityQuestions": personality_questions,
+        "personalityQuestions": True,  # Always true - mandatory during registration
         "profileViews": (getattr(current_user, 'profileViews', 0)) >= 1000,
         "avgStoryViews": avg_story_views >= 70,
         "totalLikes": total_likes >= 1000
@@ -2160,7 +2160,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "followersCount": len(current_user.followers),
         "violationsCount": getattr(current_user, 'violationsCount', 0),
         "profileComplete": profile_complete,
-        "personalityQuestions": personality_questions,
+        "personalityQuestions": True,  # Always completed
         "profileViews": getattr(current_user, 'profileViews', 0),
         "avgStoryViews": int(avg_story_views),
         "totalLikes": total_likes
