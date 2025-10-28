@@ -17,6 +17,8 @@ const PostDetailPage = ({ user }) => {
   const [showMenuFor, setShowMenuFor] = useState(null);
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editedCaption, setEditedCaption] = useState("");
   const [reportReason, setReportReason] = useState("");
   const [loading, setLoading] = useState(true);
 
