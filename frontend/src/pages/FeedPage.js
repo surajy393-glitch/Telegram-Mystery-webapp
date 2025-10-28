@@ -810,18 +810,6 @@ const FeedPage = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* Comment Modal */}
-      <CommentModal
-        post={selectedPost}
-        user={user}
-        isOpen={showCommentModal}
-        onClose={() => {
-          setShowCommentModal(false);
-          setSelectedPost(null);
-        }}
-        onCommentAdded={fetchFeed}
-      />
-
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
