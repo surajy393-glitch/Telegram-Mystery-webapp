@@ -769,6 +769,109 @@ const SearchPage = ({ user, onLogout }) => {
           </div>
         )}
       </div>
+
+      {/* Post Detail Modal */}
+      {selectedPost && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPost(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Post Image Section */}
+            <div className="md:w-3/5 bg-black flex items-center justify-center">
+              {selectedPost.imageUrl || selectedPost.mediaUrl ? (
+                <img
+                  src={selectedPost.imageUrl || `${BACKEND_URL}${selectedPost.mediaUrl}`}
+                  alt={selectedPost.caption || "Post"}
+                  className="w-full h-full object-contain max-h-[90vh]"
+                />
+              ) : (
+                <div className="w-full h-96 bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+                  <Image className="w-20 h-20 text-pink-300" />
+                </div>
+              )}
+            </div>
+
+            {/* Post Details Section */}
+            <div className="md:w-2/5 flex flex-col">
+              {/* Header */}
+              <div className="p-4 border-b flex items-center justify-between">
+                <Link 
+                  to={`/profile/${selectedPost.userId}`}
+                  className="flex items-center gap-3"
+                  onClick={() => setSelectedPost(null)}
+                >
+                  {selectedPost.userProfileImage ? (
+                    <img
+                      src={`${BACKEND_URL}${selectedPost.userProfileImage}`}
+                      alt={selectedPost.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                      onError={(e) => e.target.src = "https://via.placeholder.com/40"}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold">
+                      {selectedPost.username?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                  <span className="font-semibold text-gray-800">{selectedPost.username}</span>
+                </Link>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Caption */}
+              <div className="p-4 flex-1 overflow-y-auto">
+                {selectedPost.caption && (
+                  <div className="flex gap-3 mb-4">
+                    {selectedPost.userProfileImage ? (
+                      <img
+                        src={`${BACKEND_URL}${selectedPost.userProfileImage}`}
+                        alt={selectedPost.username}
+                        className="w-8 h-8 rounded-full object-cover"
+                        onError={(e) => e.target.src = "https://via.placeholder.com/32"}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold text-sm">
+                        {selectedPost.username?.[0]?.toUpperCase() || "U"}
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-semibold mr-2">{selectedPost.username}</span>
+                      <span className="text-gray-800">{selectedPost.caption}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="p-4 border-t">
+                <div className="flex items-center gap-4 mb-3">
+                  <button className="hover:opacity-70 transition-opacity">
+                    <Heart className={`w-7 h-7 ${selectedPost.userLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                  </button>
+                  <button className="hover:opacity-70 transition-opacity">
+                    <MessageCircle className="w-7 h-7" />
+                  </button>
+                  <button className="hover:opacity-70 transition-opacity">
+                    <Send className="w-7 h-7" />
+                  </button>
+                </div>
+                <p className="font-semibold text-sm mb-1">{selectedPost.likesCount || 0} likes</p>
+                <p className="text-gray-500 text-xs">
+                  {selectedPost.createdAt ? new Date(selectedPost.createdAt).toLocaleDateString() : 'Recently'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
