@@ -3149,7 +3149,7 @@ async def get_post_comments(post_id: str, current_user: User = Depends(get_curre
     return {"comments": comments}
 
 @api_router.post("/posts/{post_id}/comment")
-async def add_comment_to_post(post_id: str, text: str = Form(...), current_user: User = Depends(get_current_user)):
+async def add_comment_to_post(post_id: str, text: str = Form(...), parentCommentId: Optional[str] = Form(None), current_user: User = Depends(get_current_user)):
     """Add a comment to a post"""
     post = await db.posts.find_one({"id": post_id})
     if not post:
@@ -3162,6 +3162,8 @@ async def add_comment_to_post(post_id: str, text: str = Form(...), current_user:
         "userProfileImage": current_user.profileImage,
         "text": text,
         "likes": [],
+        "likesCount": 0,
+        "parentCommentId": parentCommentId,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     
@@ -3186,6 +3188,40 @@ async def add_comment_to_post(post_id: str, text: str = Form(...), current_user:
         await db.notifications.insert_one(notification.dict())
     
     return {"message": "Comment added", "comment": comment}
+
+@api_router.post("/posts/{post_id}/comment/{comment_id}/like")
+async def like_comment(post_id: str, comment_id: str, current_user: User = Depends(get_current_user)):
+    """Like/unlike a comment"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    comments = post.get("comments", [])
+    comment_found = False
+    
+    for comment in comments:
+        if comment["id"] == comment_id:
+            comment_found = True
+            likes = comment.get("likes", [])
+            
+            if current_user.id in likes:
+                likes.remove(current_user.id)
+            else:
+                likes.append(current_user.id)
+            
+            comment["likes"] = likes
+            comment["likesCount"] = len(likes)
+            break
+    
+    if not comment_found:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"comments": comments}}
+    )
+    
+    return {"message": "Success", "likes": len(likes)}
 
 # Chat Routes
 @api_router.post("/chat/send")
