@@ -270,37 +270,49 @@ const VerificationStatusPage = ({ user }) => {
         <div className="glass-effect rounded-3xl p-6 shadow-xl">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Verification Criteria</h3>
           <div className="space-y-3">
-            {criteria.map((criterion) => (
-              <div 
-                key={criterion.key}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  criterion.met 
-                    ? 'bg-green-50 border-green-300' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      {criterion.met ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-gray-400" />
-                      )}
-                      <h4 className="font-semibold text-gray-800">{criterion.label}</h4>
+            {criteria.map((criterion) => {
+              const isVerifiable = (criterion.key === 'emailVerified' || criterion.key === 'phoneVerified') && !criterion.met;
+              
+              return (
+                <div 
+                  key={criterion.key}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    criterion.met 
+                      ? 'bg-green-50 border-green-300' 
+                      : isVerifiable 
+                      ? 'bg-blue-50 border-blue-300 cursor-pointer hover:border-blue-400 hover:shadow-md' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                  onClick={() => isVerifiable && handleVerificationClick(criterion.key === 'emailVerified' ? 'email' : 'phone')}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {criterion.met ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-gray-400" />
+                        )}
+                        <h4 className="font-semibold text-gray-800">{criterion.label}</h4>
+                        {isVerifiable && (
+                          <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full ml-2">
+                            Click to Verify
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 ml-7">{criterion.requirement}</p>
                     </div>
-                    <p className="text-sm text-gray-600 ml-7">{criterion.requirement}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-medium ${
-                      criterion.met ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {criterion.progress}
-                    </p>
+                    <div className="text-right">
+                      <p className={`text-sm font-medium ${
+                        criterion.met ? 'text-green-600' : 'text-gray-500'
+                      }`}>
+                        {criterion.progress}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         )}
