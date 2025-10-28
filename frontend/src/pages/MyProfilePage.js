@@ -181,11 +181,17 @@ const MyProfilePage = ({ user, onLogout }) => {
                   <p className="text-2xl font-bold text-pink-600">{myPosts.length}</p>
                   <p className="text-sm text-gray-600">Posts</p>
                 </div>
-                <div className="text-center">
+                <div 
+                  className="text-center cursor-pointer hover:opacity-70 transition-opacity"
+                  onClick={handleShowFollowers}
+                >
                   <p className="text-2xl font-bold text-pink-600">{profile?.followersCount || 0}</p>
                   <p className="text-sm text-gray-600">Followers</p>
                 </div>
-                <div className="text-center">
+                <div 
+                  className="text-center cursor-pointer hover:opacity-70 transition-opacity"
+                  onClick={handleShowFollowing}
+                >
                   <p className="text-2xl font-bold text-pink-600">{profile?.followingCount || 0}</p>
                   <p className="text-sm text-gray-600">Following</p>
                 </div>
