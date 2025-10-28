@@ -770,9 +770,21 @@ const HomePage = ({ user, onLogout }) => {
                             <Bookmark className={`w-4 h-4 mr-3 ${post.isSaved ? "fill-pink-500 text-pink-500" : ""}`} />
                             {post.isSaved ? "Unsave" : "Save"} Post
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleFollowFromPost(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <UserIcon className="w-4 h-4 mr-3" />
+                            Follow @{post.username}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUnfollowFromPost(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
                             <UserIcon className="w-4 h-4 mr-3" />
                             Unfollow @{post.username}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMuteUser(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <AlertCircle className="w-4 h-4 mr-3" />
+                            Mute User
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleBlockUser(post.userId)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                            <AlertCircle className="w-4 h-4 mr-3 text-orange-600" />
+                            <span className="text-orange-600">Block User</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => { setReportingPost(post); setShowReportDialog(true); }} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
                             <AlertCircle className="w-4 h-4 mr-3" />
