@@ -97,6 +97,7 @@ async def create_post(
             "userId": userId if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
+            "userProfileImage": user.get("profileImage") if not isAnonymous else None,  # Add user profile image
             "content": content if content else "",  # Allow empty content if image is present
             "postType": postType,
             "imageUrl": image_url,
