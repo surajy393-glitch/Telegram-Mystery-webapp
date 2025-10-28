@@ -429,6 +429,16 @@ const DatingRegisterPage = ({ onLogin }) => {
     }));
   };
   
+  const selectPersonalityAnswer = (questionId, value) => {
+    setFormData(prev => ({
+      ...prev,
+      personalityAnswers: {
+        ...prev.personalityAnswers,
+        [questionId]: value
+      }
+    }));
+  };
+  
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
