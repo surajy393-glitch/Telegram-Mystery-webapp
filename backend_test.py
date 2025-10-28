@@ -6333,9 +6333,11 @@ if __name__ == "__main__":
             success = tester.run_telegram_tests_only()
         elif sys.argv[1] == "explore":
             success = tester.run_explore_tests()
+        elif sys.argv[1] == "verified":
+            success = tester.run_luvhive_verified_tests()
         else:
             print(f"Unknown test suite: {sys.argv[1]}")
-            print("Available options: telegram, explore")
+            print("Available options: telegram, explore, verified")
             sys.exit(1)
     else:
         success = tester.run_all_tests()
