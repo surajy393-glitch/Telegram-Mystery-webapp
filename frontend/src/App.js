@@ -199,6 +199,16 @@ function App() {
             } 
           />
           <Route 
+            path="/post/:postId" 
+            element={
+              isAuthenticated ? (
+                <PostDetailPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
             path="/profile/:userId" 
             element={
               isAuthenticated ? (
