@@ -518,36 +518,7 @@ const FeedPage = ({ user, onLogout }) => {
           </div>
         ) : (
           <div className="space-y-6">
-            {posts.filter(post => {
-              // Always show posts from other users
-              if (post.userId !== user?.id) return true;
-              
-              // For own posts, only show if created within last 1 minute
-              try {
-                console.log('Checking own post:', {
-                  postId: post.id,
-                  createdAt: post.createdAt,
-                  userId: post.userId,
-                  currentUserId: user?.id
-                });
-                
-                const postTime = new Date(post.createdAt);
-                const now = new Date();
-                const diffInMinutes = (now - postTime) / (1000 * 60);
-                
-                console.log('Time difference in minutes:', diffInMinutes);
-                
-                // Show only if less than 1 minute old
-                const shouldShow = diffInMinutes < 1;
-                console.log('Should show post?', shouldShow);
-                
-                return shouldShow;
-              } catch (error) {
-                console.error('Error parsing date for own post:', error);
-                // If can't parse date, hide own post
-                return false;
-              }
-            }).map((post) => (
+            {posts.map((post) => (
               <div key={post.id} className="bg-white rounded-lg shadow-sm">
                 {/* Post Header */}
                 <div className="p-4 flex items-center justify-between">
