@@ -463,7 +463,16 @@ const ProfilePage = ({ user, onLogout }) => {
           </div>
 
           {/* User Posts Grid */}
-          {userPosts && userPosts.length > 0 && (
+          {viewingUser?.isPrivate && !viewingUser?.isFollowing ? (
+            <div className="glass-effect rounded-3xl p-12 shadow-xl text-center">
+              <Lock className="w-20 h-20 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">This Account is Private</h3>
+              <p className="text-gray-600 mb-4">Follow this account to see their photos and videos</p>
+              {viewingUser?.hasRequested && (
+                <p className="text-sm text-gray-500">Follow request sent</p>
+              )}
+            </div>
+          ) : userPosts && userPosts.length > 0 ? (
             <div className="glass-effect rounded-3xl p-6 shadow-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Posts</h3>
               <div className="grid grid-cols-3 gap-2">
@@ -478,7 +487,7 @@ const ProfilePage = ({ user, onLogout }) => {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Vibe Check Dialog */}
