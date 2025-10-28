@@ -1072,7 +1072,6 @@ def main():
     app.add_handler(CommandHandler("mymatches", cmd_mymatches), group=0)
     
     # Webapp callback handlers
-    from telegram.ext import CallbackQueryHandler
     app.add_handler(CallbackQueryHandler(handle_close_webapp_msg, pattern="^close_webapp_msg$"), group=0)
 
     # Referral command
