@@ -240,6 +240,7 @@ class Story(BaseModel):
     mediaUrl: str  # Base64 or file_id
     caption: Optional[str] = ""
     isArchived: bool = False
+    likes: List[str] = []  # List of user IDs who liked the story
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expiresAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(hours=24))
 
