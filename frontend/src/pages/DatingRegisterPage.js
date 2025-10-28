@@ -569,12 +569,12 @@ const DatingRegisterPage = ({ onLogin }) => {
 
       toast({
         title: "Registration Successful! 🎉",
-        description: "Welcome to LuvHive Mystery Match!",
+        description: "Welcome to LuvHive!",
       });
 
-      // Navigate to Mystery Match home
+      // Navigate to main home feed
       setTimeout(() => {
-        navigate("/mystery");
+        navigate("/");
       }, 500);
       
     } catch (error) {
