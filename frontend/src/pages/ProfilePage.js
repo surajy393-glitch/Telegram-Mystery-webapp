@@ -77,8 +77,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchUserProfile = async (targetUserId) => {
     try {
       const token = localStorage.getItem("token");
-      // fetch user details (no /profile suffix)
-      const response = await axios.get(`${API}/users/${targetUserId}`, {
+      const response = await axios.get(`${API}/users/${targetUserId}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setViewingUser(response.data);
