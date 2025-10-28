@@ -728,10 +728,11 @@ const HomePage = ({ user, onLogout }) => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button 
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
                         data-testid={`post-menu-${post.id}`}
+                        aria-label="Post options"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                        <MoreVertical className="w-6 h-6 text-gray-700" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
