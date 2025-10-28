@@ -5511,10 +5511,18 @@ if __name__ == "__main__":
     import sys
     tester = LuvHiveAPITester()
     
-    # Check if we should run only Telegram tests
-    if len(sys.argv) > 1 and sys.argv[1] == "telegram":
-        success = tester.run_telegram_tests_only()
+    # Check if we should run only specific tests
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "telegram":
+            success = tester.run_telegram_tests_only()
+        elif sys.argv[1] == "explore":
+            success = tester.run_explore_tests()
+        else:
+            print(f"Unknown test suite: {sys.argv[1]}")
+            print("Available options: telegram, explore")
+            sys.exit(1)
     else:
         success = tester.run_all_tests()
     
+    sys.exit(0 if success else 1)
     sys.exit(0 if success else 1)
