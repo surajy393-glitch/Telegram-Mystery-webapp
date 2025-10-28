@@ -3857,6 +3857,7 @@ async def search_content(search_request: SearchRequest, current_user: User = Dep
         ])
         
         partial_users = await db.users.find(partial_filter).limit(10).to_list(10)
+        logger.info(f"🔍 Search: Partial search for '{query}' found {len(partial_users)} additional matches")
         
         # Combine results with exact matches first
         all_users = exact_users + partial_users
