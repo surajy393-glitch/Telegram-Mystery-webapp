@@ -107,6 +107,63 @@ const PostDetailPage = ({ user }) => {
     }
   };
 
+  const handleLikeComment = async (commentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Optimistic update
+      setComments(prev => prev.map(comment => {
+        if (comment.id === commentId) {
+          const likes = comment.likes || [];
+          const userLiked = likes.includes(user.id);
+          return {
+            ...comment,
+            likes: userLiked 
+              ? likes.filter(id => id !== user.id)
+              : [...likes, user.id],
+            likesCount: userLiked ? (comment.likesCount || 0) - 1 : (comment.likesCount || 0) + 1
+          };
+        }
+        return comment;
+      }));
+
+      // Make API call - for now we'll update the post's comments array
+      const response = await axios.post(
+        `${API}/posts/${postId}/comment/${commentId}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (error) {
+      console.error("Error liking comment:", error);
+    }
+  };
+
+  const handleReply = async (commentId) => {
+    if (!replyText.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('text', replyText);
+      formData.append('parentCommentId', commentId);
+      
+      const response = await axios.post(
+        `${API}/posts/${postId}/comment`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Add reply to comments list
+      setComments(prev => [...prev, response.data.comment]);
+      
+      setReplyText("");
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      alert("Failed to add reply");
+    }
+  };
+
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/post/${postId}`;
     
