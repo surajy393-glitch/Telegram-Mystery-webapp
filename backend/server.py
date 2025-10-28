@@ -4351,6 +4351,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "age": user.get("age"),
         "gender": user.get("gender"),
         "isPremium": user.get("isPremium", False),
+        "isVerified": user.get("isVerified", False),
         "isPrivate": is_private,
         "followersCount": followers_count,
         "followingCount": following_count,
