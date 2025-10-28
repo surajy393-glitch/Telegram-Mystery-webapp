@@ -75,9 +75,7 @@ function App() {
           <Route 
             path="/" 
             element={
-              isTelegramWebApp() && !isAuthenticated ? (
-                <TelegramAuthHandler onAuthSuccess={handleLogin} />
-              ) : isAuthenticated ? (
+              isAuthenticated ? (
                 <Navigate to="/feed" replace />
               ) : (
                 <LandingPage />
