@@ -496,6 +496,20 @@ const PostDetailPage = ({ user }) => {
                   // Own post options
                   <>
                     <button
+                      onClick={handleEditCaption}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <Edit className="w-5 h-5" />
+                      Edit caption
+                    </button>
+                    <button
+                      onClick={handleHideLikes}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
+                    >
+                      <Heart className="w-5 h-5" />
+                      {post?.likesHidden ? "Show like count" : "Hide like count"}
+                    </button>
+                    <button
                       onClick={handleArchivePost}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
                     >
