@@ -215,9 +215,12 @@ const FeedPage = ({ user, onLogout }) => {
     }
 
     try {
+      // Process mentions in caption
+      const processedCaption = await processMentions(newStory.caption || '');
+      
       const formData = new FormData();
       formData.append('userId', user.id);
-      formData.append('content', newStory.caption || '');
+      formData.append('content', processedCaption);
       formData.append('storyType', newStory.mediaType);
       formData.append('isAnonymous', false);
       formData.append('image', newStory.mediaFile); // Send the actual file
