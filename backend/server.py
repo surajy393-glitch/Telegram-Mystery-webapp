@@ -2249,6 +2249,153 @@ async def update_profile(
         "user": updated_user
     }
 
+# Email and Phone Verification Endpoints
+@api_router.post("/auth/send-email-verification")
+async def send_email_verification(
+    data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Send email verification code"""
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Generate 6-digit OTP
+    import random
+    otp = str(random.randint(100000, 999999))
+    
+    # Store OTP in database with expiry (10 minutes)
+    from datetime import timedelta
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    await db.verification_codes.update_one(
+        {"userId": current_user.id, "type": "email"},
+        {
+            "$set": {
+                "userId": current_user.id,
+                "type": "email",
+                "code": otp,
+                "email": email,
+                "expiresAt": expiry,
+                "createdAt": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+    
+    # TODO: Send actual email with OTP (for now, just log it)
+    print(f"📧 Email Verification Code for {email}: {otp}")
+    
+    return {"message": "Verification code sent to your email", "debug_code": otp}
+
+@api_router.post("/auth/verify-email")
+async def verify_email(
+    data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Verify email with OTP"""
+    code = data.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Verification code is required")
+    
+    # Find verification code
+    verification = await db.verification_codes.find_one({
+        "userId": current_user.id,
+        "type": "email",
+        "code": code
+    })
+    
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Check if expired
+    if verification["expiresAt"] < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Verification code expired")
+    
+    # Update user email and set as verified
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"email": verification["email"], "emailVerified": True}}
+    )
+    
+    # Delete used verification code
+    await db.verification_codes.delete_one({"_id": verification["_id"]})
+    
+    return {"message": "Email verified successfully"}
+
+@api_router.post("/auth/send-phone-verification")
+async def send_phone_verification(
+    data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Send phone verification code"""
+    phone = data.get("phone")
+    if not phone:
+        raise HTTPException(status_code=400, detail="Phone number is required")
+    
+    # Generate 6-digit OTP
+    import random
+    otp = str(random.randint(100000, 999999))
+    
+    # Store OTP in database with expiry (10 minutes)
+    from datetime import timedelta
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    await db.verification_codes.update_one(
+        {"userId": current_user.id, "type": "phone"},
+        {
+            "$set": {
+                "userId": current_user.id,
+                "type": "phone",
+                "code": otp,
+                "phone": phone,
+                "expiresAt": expiry,
+                "createdAt": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+    
+    # TODO: Send actual SMS with OTP (for now, just log it)
+    print(f"📱 Phone Verification Code for {phone}: {otp}")
+    
+    return {"message": "Verification code sent to your phone", "debug_code": otp}
+
+@api_router.post("/auth/verify-phone")
+async def verify_phone(
+    data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Verify phone with OTP"""
+    code = data.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Verification code is required")
+    
+    # Find verification code
+    verification = await db.verification_codes.find_one({
+        "userId": current_user.id,
+        "type": "phone",
+        "code": code
+    })
+    
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Check if expired
+    if verification["expiresAt"] < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Verification code expired")
+    
+    # Update user phone and set as verified
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"mobile": verification["phone"], "phoneVerified": True}}
+    )
+    
+    # Delete used verification code
+    await db.verification_codes.delete_one({"_id": verification["_id"]})
+    
+    return {"message": "Phone verified successfully"}
+
 @api_router.put("/auth/settings")
 async def update_user_settings(
     request: dict,
