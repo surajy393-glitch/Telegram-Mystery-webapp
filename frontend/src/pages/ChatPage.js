@@ -112,11 +112,13 @@ const ChatPage = ({ user }) => {
       {/* Header */}
       <header className="glass-effect border-b border-pink-100">
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Link to="/home">
-            <Button variant="ghost" className="hover:bg-pink-50">
-              <ArrowLeft className="w-5 h-5 text-pink-600" />
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            className="hover:bg-pink-50"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="w-5 h-5 text-pink-600" />
+          </Button>
           {chatUser && (
             <>
               <img
