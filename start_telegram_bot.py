@@ -20,7 +20,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-BOT_TOKEN = "8494034049:AAEb5jiuYLUMmkjsIURx6RqhHJ4mj3bOI10"
+BOT_TOKEN = "7616389435:AAG9ZfKU-Ebib32NmVtchBBVh4gkxJ0BGN8"
+MEDIA_SINK_CHAT_ID = "-1003149424510"
 MONGO_URL = "mongodb://localhost:27017"
 DB_NAME = "luvhive_database"
 JWT_SECRET = "QlaolWgCBGayKjOvqKtma7bBjJDKT3q3SI9_nQYyHt0"
