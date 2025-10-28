@@ -4622,13 +4622,18 @@ async def get_trending_content(current_user: User = Depends(get_current_user)):
 async def get_explore_posts(current_user: User = Depends(get_current_user), limit: int = 30):
     """
     Get explore posts for the search page (Instagram-style)
-    Returns posts from public accounts, excluding blocked users
+    Returns posts from public accounts, excluding blocked and muted users
     """
     try:
-        # Find users who are not private and not blocked
+        # Get blocked and muted users to exclude
+        blocked_users = current_user.blockedUsers or []
+        muted_users = getattr(current_user, 'mutedUsers', []) or []
+        excluded_users = list(set(blocked_users + muted_users))
+        
+        # Find users who are not private, not blocked, and not muted
         public_users = await db.users.find({
             "$and": [
-                {"id": {"$nin": current_user.blockedUsers}},
+                {"id": {"$nin": excluded_users}},
                 {"isPrivate": {"$ne": True}}
             ]
         }).to_list(1000)
