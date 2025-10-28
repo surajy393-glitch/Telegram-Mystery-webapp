@@ -3201,6 +3201,8 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
         "commentsCount": len(post.get("comments", [])),
         "userLiked": current_user.id in post.get("likes", []),
         "isSaved": post["id"] in saved_posts,
+        "likesHidden": post.get("likesHidden", False),
+        "commentsDisabled": post.get("commentsDisabled", False),
         "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"]
     }
 
