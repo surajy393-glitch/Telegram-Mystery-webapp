@@ -1585,11 +1585,16 @@ async def telegram_webapp_auth(initData: str = Form(...)):
             await db.users.insert_one(new_user)
             access_token = create_access_token(data={"sub": new_user["id"]})
             
+            # Convert datetime to JSON-serializable format
+            user_response = {k: (v.isoformat() if isinstance(v, datetime) else v) 
+                             for k, v in new_user.items() 
+                             if k != "_id"}
+            
             return {
                 "success": True,
                 "message": "Telegram WebApp registration successful",
                 "access_token": access_token,
-                "user": new_user
+                "user": user_response
             }
             
     except Exception as e:
