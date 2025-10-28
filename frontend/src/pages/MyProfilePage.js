@@ -392,6 +392,100 @@ const MyProfilePage = ({ user, onLogout }) => {
           </Tabs>
         </div>
       </div>
+
+      {/* Followers Dialog */}
+      <Dialog open={showFollowersDialog} onOpenChange={setShowFollowersDialog}>
+        <DialogContent className="bg-white rounded-3xl max-w-md max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800">Followers</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-96">
+            {loadingFollowers ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full"></div>
+              </div>
+            ) : followersList.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No followers yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {followersList.map(follower => (
+                  <div key={follower.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
+                    <img 
+                      src={follower.profileImage || "https://via.placeholder.com/40"} 
+                      alt={follower.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 truncate">{follower.fullName}</p>
+                      <p className="text-sm text-gray-600 truncate">@{follower.username}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={follower.isFollowing ? "outline" : "default"}
+                      className={follower.isFollowing 
+                        ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full text-xs" 
+                        : "bg-pink-500 hover:bg-pink-600 text-white rounded-full text-xs"
+                      }
+                      onClick={() => navigate(`/profile/${follower.id}`)}
+                    >
+                      View
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Following Dialog */}
+      <Dialog open={showFollowingDialog} onOpenChange={setShowFollowingDialog}>
+        <DialogContent className="bg-white rounded-3xl max-w-md max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800">Following</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-96">
+            {loadingFollowing ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full"></div>
+              </div>
+            ) : followingList.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Not following anyone yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {followingList.map(following => (
+                  <div key={following.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
+                    <img 
+                      src={following.profileImage || "https://via.placeholder.com/40"} 
+                      alt={following.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 truncate">{following.fullName}</p>
+                      <p className="text-sm text-gray-600 truncate">@{following.username}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={following.isFollowing ? "outline" : "default"}
+                      className={following.isFollowing 
+                        ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full text-xs" 
+                        : "bg-pink-500 hover:bg-pink-600 text-white rounded-full text-xs"
+                      }
+                      onClick={() => navigate(`/profile/${following.id}`)}
+                    >
+                      View
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
