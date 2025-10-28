@@ -3619,7 +3619,14 @@ async def accept_follow_request(userId: str, current_user: User = Depends(get_cu
         {"$addToSet": {"following": current_user.id}}
     )
     
-    # Create notification
+    # DELETE the follow request notification
+    await db.notifications.delete_many({
+        "userId": current_user.id,
+        "fromUserId": userId,
+        "type": "follow_request"
+    })
+    
+    # Create NEW notification for accepted request
     requester = await db.users.find_one({"id": userId})
     if requester:
         notification = Notification(
