@@ -410,30 +410,6 @@ const SearchPage = ({ user, onLogout }) => {
     }
   };
 
-  const handleLikePost = async (postId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${API}/posts/${postId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      handleSearch(); // Refresh results
-    } catch (error) {
-      console.error("Error liking post:", error);
-    }
-  };
-
-  const handleSavePost = async (postId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${API}/posts/${postId}/save`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      handleSearch(); // Refresh results
-    } catch (error) {
-      console.error("Error saving post:", error);
-    }
-  };
-
   // Memoized user card component for better performance
   const UserCard = memo(({ userItem }) => (
     <div
