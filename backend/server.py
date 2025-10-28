@@ -2132,7 +2132,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "emailVerified": bool(current_user.email),  # Assuming email exists = verified
         "phoneVerified": bool(getattr(current_user, 'mobile', None)),  # Check if mobile exists
         "postsCount": posts_count >= 20,
-        "followersCount": (current_user.followersCount if hasattr(current_user, 'followersCount') else 0) >= 100,
+        "followersCount": len(current_user.followers) >= 100,
         "noViolations": (getattr(current_user, 'violationsCount', 0)) == 0,
         "profileComplete": profile_complete,
         "personalityQuestions": personality_questions,
