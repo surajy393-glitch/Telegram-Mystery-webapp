@@ -602,7 +602,8 @@ const FeedPage = ({ user, onLogout }) => {
                           }
                         }}
                       >
-                        {post.isAnonymous ? 'Anonymous' : post.username}
+                        <span>{post.isAnonymous ? 'Anonymous' : post.username}</span>
+                        {!post.isAnonymous && post.isVerified && <VerifiedBadge size="sm" className="ml-1" />}
                       </h3>
                       <p className="text-xs text-gray-500">{post.timeAgo}</p>
                     </div>
