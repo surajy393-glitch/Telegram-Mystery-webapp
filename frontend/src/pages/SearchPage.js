@@ -702,7 +702,7 @@ const SearchPage = ({ user, onLogout }) => {
                 {explorePosts.map((post) => (
                   <div
                     key={post.id}
-                    onClick={() => setSelectedPost(post)}
+                    onClick={() => navigate(`/post/${post.id}`)}
                     className="aspect-square relative group overflow-hidden rounded-sm hover:opacity-90 transition-opacity cursor-pointer"
                   >
                     {/* Post Image */}
