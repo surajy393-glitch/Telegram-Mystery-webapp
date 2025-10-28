@@ -27,12 +27,15 @@ const PostDetailPage = ({ user }) => {
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setShowMenuFor(null);
-    if (showMenuFor) {
+    const handleClickOutside = () => {
+      setShowMenuFor(null);
+      setShowPostMenu(false);
+    };
+    if (showMenuFor || showPostMenu) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [showMenuFor]);
+  }, [showMenuFor, showPostMenu]);
 
   const fetchPostDetails = async () => {
     try {
