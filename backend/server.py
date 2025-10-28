@@ -122,6 +122,8 @@ class User(BaseModel):
     isPrivate: bool = False  # Privacy setting for the account
     isVerified: bool = False  # LuvHive Verified badge
     verifiedAt: Optional[datetime] = None  # When verification was granted
+    emailVerified: bool = False  # Email verification status
+    phoneVerified: bool = False  # Phone verification status
     
     # Privacy Controls
     publicProfile: bool = True
