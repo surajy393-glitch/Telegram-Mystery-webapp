@@ -377,6 +377,16 @@ const DatingRegisterPage = ({ onLogin }) => {
       return;
     }
     
+    // Check if passwords match
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords don't match. Please check and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (formData.fullName && formData.username && (formData.email || mobileVerified) && formData.age && formData.gender && formData.password) {
       setStep(2);
     }
