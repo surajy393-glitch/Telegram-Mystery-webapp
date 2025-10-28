@@ -547,14 +547,20 @@ const PostDetailPage = ({ user }) => {
                                         {/* 3-dot menu for replies */}
                                         <div className="relative">
                                           <button
-                                            onClick={() => setShowMenuFor(showMenuFor === reply.id ? null : reply.id)}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setShowMenuFor(showMenuFor === reply.id ? null : reply.id);
+                                            }}
                                             className="p-1 hover:bg-gray-100 rounded-full"
                                           >
                                             <MoreVertical className="w-3 h-3 text-gray-500" />
                                           </button>
                                           
                                           {showMenuFor === reply.id && (
-                                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
+                                            <div 
+                                              className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10"
+                                              onClick={(e) => e.stopPropagation()}
+                                            >
                                               {reply.userId === user?.id ? (
                                                 <button
                                                   onClick={() => handleDeleteComment(reply.id)}
