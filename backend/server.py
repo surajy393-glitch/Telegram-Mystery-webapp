@@ -3223,6 +3223,57 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
     
     return {"message": "Success", "likes": len(likes)}
 
+@api_router.delete("/posts/{post_id}/comment/{comment_id}")
+async def delete_comment(post_id: str, comment_id: str, current_user: User = Depends(get_current_user)):
+    """Delete a comment (only by comment owner)"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    comments = post.get("comments", [])
+    comment_to_delete = None
+    
+    for comment in comments:
+        if comment["id"] == comment_id:
+            if comment["userId"] != current_user.id:
+                raise HTTPException(status_code=403, detail="You can only delete your own comments")
+            comment_to_delete = comment
+            break
+    
+    if not comment_to_delete:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Remove comment and its replies
+    updated_comments = [c for c in comments if c["id"] != comment_id and c.get("parentCommentId") != comment_id]
+    
+    await db.posts.update_one(
+        {"id": post_id},
+        {"$set": {"comments": updated_comments}}
+    )
+    
+    return {"message": "Comment deleted successfully"}
+
+@api_router.post("/posts/{post_id}/comment/{comment_id}/report")
+async def report_comment(post_id: str, comment_id: str, reason: str = Form(...), current_user: User = Depends(get_current_user)):
+    """Report a comment"""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Store report
+    report = {
+        "id": str(uuid4()),
+        "postId": post_id,
+        "commentId": comment_id,
+        "reportedBy": current_user.id,
+        "reason": reason,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.reports.insert_one(report)
+    
+    return {"message": "Report submitted successfully"}
+
 # Chat Routes
 @api_router.post("/chat/send")
 async def send_message(receiverId: str, message: str, current_user: User = Depends(get_current_user)):
