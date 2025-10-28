@@ -90,10 +90,6 @@ const MysteryMatchHome = () => {
   }, [user]); // Re-run when user state changes
 
   const fetchUserData = async () => {
-    // Existing fetchUserData logic
-  };
-  
-  const fetchUserData = async () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const currentUserId = userData.tg_user_id || userData.id;
     
