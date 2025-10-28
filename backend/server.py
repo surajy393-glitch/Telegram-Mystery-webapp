@@ -3639,6 +3639,13 @@ async def cancel_follow_request(userId: str, current_user: User = Depends(get_cu
         {"$pull": {"followRequests": current_user.id}}
     )
     
+    # Delete the follow request notification
+    await db.notifications.delete_many({
+        "userId": userId,
+        "fromUserId": current_user.id,
+        "type": "follow_request"
+    })
+    
     return {"message": "Follow request cancelled"}
 
 # My Profile Routes
