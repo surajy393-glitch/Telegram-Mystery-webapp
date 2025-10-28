@@ -986,6 +986,48 @@ const PostDetailPage = ({ user }) => {
           </div>
         </div>
       )}
+
+      {/* Edit Caption Modal */}
+      {showEditModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Edit Caption</h2>
+            
+            <textarea
+              value={editedCaption}
+              onChange={(e) => setEditedCaption(e.target.value)}
+              placeholder="Write a caption..."
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none outline-none focus:border-pink-600"
+              maxLength={2200}
+            />
+            <p className="text-xs text-gray-500 mt-1">{editedCaption.length}/2,200</p>
+            
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditedCaption("");
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitEditCaption}
+                className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
