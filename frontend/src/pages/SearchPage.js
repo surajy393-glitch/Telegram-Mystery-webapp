@@ -13,7 +13,9 @@ import {
   Heart,
   MessageCircle,
   Bookmark,
-  Filter
+  Filter,
+  X,
+  Send
 } from "lucide-react";
 import axios from "axios";
 import {
