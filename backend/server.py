@@ -2094,6 +2094,11 @@ async def admin_verify_user(username: str):
 async def get_verification_status(current_user: User = Depends(get_current_user)):
     """Get current user's verification status and progress"""
     
+    # Debug logging
+    print(f"🔍 Verification status check for user: {current_user.username}")
+    print(f"🔍 isVerified value: {getattr(current_user, 'isVerified', 'ATTRIBUTE_NOT_FOUND')}")
+    print(f"🔍 hasattr isVerified: {hasattr(current_user, 'isVerified')}")
+    
     # Calculate account age in days
     created_at = current_user.createdAt if hasattr(current_user, 'createdAt') else datetime.now(timezone.utc)
     if isinstance(created_at, str):
