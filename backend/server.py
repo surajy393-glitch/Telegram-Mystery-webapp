@@ -3655,6 +3655,68 @@ async def cancel_follow_request(userId: str, current_user: User = Depends(get_cu
     
     return {"message": "Follow request cancelled"}
 
+@api_router.get("/users/{userId}/followers")
+async def get_followers_list(userId: str, current_user: User = Depends(get_current_user)):
+    """Get list of followers for a user"""
+    user = await db.users.find_one({"id": userId})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check privacy
+    is_private = user.get("isPrivate", False)
+    is_following = current_user.id in user.get("followers", [])
+    
+    # Can only view if: own profile, public account, or following private account
+    if is_private and userId != current_user.id and not is_following:
+        raise HTTPException(status_code=403, detail="This account is private")
+    
+    follower_ids = user.get("followers", [])
+    followers = []
+    
+    for fid in follower_ids:
+        follower = await db.users.find_one({"id": fid})
+        if follower:
+            followers.append({
+                "id": follower["id"],
+                "username": follower["username"],
+                "fullName": follower["fullName"],
+                "profileImage": follower.get("profileImage"),
+                "isFollowing": fid in current_user.following
+            })
+    
+    return {"followers": followers}
+
+@api_router.get("/users/{userId}/following")
+async def get_following_list(userId: str, current_user: User = Depends(get_current_user)):
+    """Get list of users that this user is following"""
+    user = await db.users.find_one({"id": userId})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check privacy
+    is_private = user.get("isPrivate", False)
+    is_following = current_user.id in user.get("followers", [])
+    
+    # Can only view if: own profile, public account, or following private account
+    if is_private and userId != current_user.id and not is_following:
+        raise HTTPException(status_code=403, detail="This account is private")
+    
+    following_ids = user.get("following", [])
+    following = []
+    
+    for fid in following_ids:
+        followed_user = await db.users.find_one({"id": fid})
+        if followed_user:
+            following.append({
+                "id": followed_user["id"],
+                "username": followed_user["username"],
+                "fullName": followed_user["fullName"],
+                "profileImage": followed_user.get("profileImage"),
+                "isFollowing": fid in current_user.following
+            })
+    
+    return {"following": following}
+
 # My Profile Routes
 @api_router.get("/profile/posts")
 async def get_my_posts(current_user: User = Depends(get_current_user)):
