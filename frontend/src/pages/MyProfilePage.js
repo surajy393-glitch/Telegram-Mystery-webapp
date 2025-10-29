@@ -19,8 +19,6 @@ const MyProfilePage = ({ user, onLogout }) => {
   const [archivedItems, setArchivedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("posts");
-  const [showVerificationPopover, setShowVerificationPopover] = useState(false);
-  const [verificationDetails, setVerificationDetails] = useState(null);
   
   // Followers/Following dialog states
   const [showFollowersDialog, setShowFollowersDialog] = useState(false);
@@ -38,26 +36,6 @@ const MyProfilePage = ({ user, onLogout }) => {
     }
     fetchProfileData();
   }, [user]);
-
-  const fetchVerificationDetails = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching verification details for user:", user?.id);
-      const response = await axios.get(`${API}/users/${user.id}/verification-details`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log("Verification details received:", response.data);
-      setVerificationDetails(response.data);
-      setShowVerificationPopover(true);
-    } catch (error) {
-      console.error("Error fetching verification details:", error);
-      if (error.response?.status === 404) {
-        alert("Verification details are not available. You may not be verified yet.");
-      } else {
-        alert("Failed to load verification details. Please try again.");
-      }
-    }
-  };
 
   const fetchProfileData = async () => {
     try {
