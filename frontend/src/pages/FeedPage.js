@@ -109,22 +109,34 @@ const FeedPage = ({ user, onLogout }) => {
     }
   };
 
-  const fetchFeed = async () => {
+  const fetchFeed = async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/api/social/feed?userId=${user.id}&limit=20`);
-      console.log('Feed response:', response.data);
-      if (response.data.success) {
-        console.log('Posts received:', response.data.posts);
-        response.data.posts.forEach(post => {
-          console.log(`Post ${post.id}: imageUrl = ${post.imageUrl}, postType = ${post.postType}`);
-        });
-        setPosts(response.data.posts);
+      if (!append) setLoading(true);
+      else setLoadingMore(true);
+      
+      const response = await axios.get(`${API_URL}/api/social/feed?userId=${user.id}&page=${pageNum}&limit=10`);
+      const newPosts = response.data.posts || [];
+      
+      // Mark these posts as seen
+      const newSeenIds = new Set(seenPostIds);
+      newPosts.forEach(post => newSeenIds.add(post.id));
+      setSeenPostIds(newSeenIds);
+      
+      if (append) {
+        setPosts(prev => [...prev, ...newPosts]);
+      } else {
+        setPosts(newPosts);
       }
+      
+      // Check if there are more posts
+      setHasMore(newPosts.length === 10);
+      
+      console.log('✅ Fetched feed:', { page: pageNum, count: newPosts.length, hasMore: newPosts.length === 10 });
     } catch (error) {
-      console.error('Error fetching feed:', error);
+      console.error("Error fetching feed:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
