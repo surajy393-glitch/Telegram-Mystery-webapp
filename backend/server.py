@@ -4753,6 +4753,21 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Check privacy settings
+    is_private = user.get("isPrivate", False)
+    is_following = current_user.id in user.get("followers", [])
+    is_own_profile = userId == current_user.id
+    
+    # Only show posts if:
+    # 1. Account is public (not private), OR
+    # 2. Current user is following them, OR
+    # 3. It's the user's own profile
+    can_view_posts = not is_private or is_following or is_own_profile
+    
+    if not can_view_posts:
+        # Return empty posts list for private accounts where user is not following
+        return {"posts": []}
+    
     # Get user's non-archived posts
     posts = await db.posts.find({
         "userId": userId,
