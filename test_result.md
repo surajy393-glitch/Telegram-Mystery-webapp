@@ -824,6 +824,21 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
+  
+  - task: "Fix Posts Not Loading Despite Posts Count Showing"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that profile shows postsCount = 4 but posts grid is empty, only showing 'Posts Loading...' message. Root cause: fetchUserPosts being called with userId from URL params (could be username slug) instead of actual UUID from viewingUser object. Backend /api/users/{id}/posts endpoint expects UUID, returns empty array when given username. Frontend state userPosts remains empty [], triggering indefinite loading message. Response format also not robust - only checks response.data.posts, doesn't handle alternative formats."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ COMPREHENSIVE FIX APPLIED: 1) Created getAccountId() helper function to derive correct ID from user object (checks id, _id, user_id, tg_user_id) - same logic as 'About this account' modal. 2) Refactored useEffect: removed fetchUserPosts(userId) call from initial load, added separate useEffect that waits for viewingUser to load, then calls fetchUserPosts with derived accountId. 3) Updated auto-refresh useEffect to use getAccountId(viewingUser) instead of viewingUser.id. 4) Enhanced fetchUserPosts response handling: checks response.data.posts (array), response.data (array), or returns empty array - handles multiple API response formats. 5) Added postsLoading state (separate from main loading) to differentiate between 'actively loading' vs 'load failed'. 6) Updated UI: shows spinner during postsLoading, shows 'Unable to Load Posts' message if postsCount > 0 but userPosts empty after loading completes (with console hint). Frontend restarted (pid 4397). Now posts will load with correct UUID instead of username slug."
 
   - task: "Make Story Username Clickable in Story Viewer"
     implemented: true
