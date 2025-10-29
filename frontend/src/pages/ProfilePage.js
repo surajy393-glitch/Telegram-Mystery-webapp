@@ -89,15 +89,19 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchAccountInfo = async (userId) => {
     try {
+      console.log("Fetching account info for userId:", userId);
       const token = localStorage.getItem("token");
       const response = await axios.get(`${API}/users/${userId}/account-info`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log("Account info received:", response.data);
       setAccountInfo(response.data);
       setShowAccountInfo(true);
+      console.log("Dialog should now be visible");
     } catch (error) {
       console.error("Error fetching account info:", error);
-      alert("Failed to load account information. Please try again.");
+      console.error("Error details:", error.response?.data);
+      alert(`Failed to load account information: ${error.response?.data?.detail || error.message}`);
     }
   };
 
