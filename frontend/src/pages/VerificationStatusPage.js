@@ -191,13 +191,18 @@ const VerificationStatusPage = ({ user }) => {
     {
       id: 'moderateEngagement',
       name: '⭐ Moderate Engagement Pathway',
-      description: 'For consistent users with longer account history',
+      description: 'Lower thresholds for consistent users (90+ day accounts)',
       met: verificationData?.pathways?.moderateEngagement || false,
       requirements: [
         { label: '10+ Posts', met: verificationData?.currentValues?.moderateEngagementPosts, value: `${verificationData?.currentValues?.postsCount || 0}/10` },
         { label: '50+ Followers', met: verificationData?.currentValues?.moderateEngagementFollowers, value: `${verificationData?.currentValues?.followersCount || 0}/50` },
-        { label: '90+ Days Old', met: verificationData?.currentValues?.moderateEngagementTenure, value: `${verificationData?.currentValues?.accountAgeDays || 0}/90` },
-        { label: '500+ Likes OR 40+ Avg Story Views', met: verificationData?.currentValues?.moderateEngagementLikes, value: 'Check engagement' }
+        { label: '90+ Days Old', met: verificationData?.currentValues?.moderateEngagementTenure, value: `${verificationData?.currentValues?.accountAgeDays || 0}/90 days` },
+        { 
+          label: '500+ Likes OR 40+ Avg Story Views (either one)', 
+          met: verificationData?.currentValues?.moderateEngagementLikes, 
+          value: `Likes: ${verificationData?.currentValues?.totalLikes || 0}/500 | Views: ${verificationData?.currentValues?.avgStoryViews || 0}/40`,
+          isOr: true 
+        }
       ]
     },
     {
@@ -205,8 +210,10 @@ const VerificationStatusPage = ({ user }) => {
       name: '🏆 Community Contribution',
       description: 'For moderators, event organizers, and active contributors',
       met: verificationData?.pathways?.communityContribution || false,
+      comingSoon: true,
+      futureDetails: 'Qualify by: Moderating groups for 4+ weeks • Hosting 2+ successful events • 50+ helpful reports with staff approval',
       requirements: [
-        { label: 'Coming Soon', met: false, value: 'Apply via moderator program' }
+        { label: 'Coming Soon - Apply via moderator program', met: false, value: 'Not yet available' }
       ]
     },
     {
@@ -214,8 +221,10 @@ const VerificationStatusPage = ({ user }) => {
       name: '🔗 Cross-Platform Verified',
       description: 'Already verified on Instagram, Twitter, or LinkedIn',
       met: verificationData?.pathways?.crossPlatformVerified || false,
+      comingSoon: true,
+      futureDetails: 'Accepted platforms: Instagram, Twitter/X, LinkedIn, Facebook • You must post a verification code on that platform to prove ownership',
       requirements: [
-        { label: 'Coming Soon', met: false, value: 'Link verified account' }
+        { label: 'Coming Soon - Link verified social account', met: false, value: 'Not yet available' }
       ]
     }
   ];
