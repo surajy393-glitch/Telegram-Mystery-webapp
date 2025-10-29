@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, MessageCircle, Send, Image as ImageIcon, MoreVertical, Trash2, Flag, Ban, Bookmark, Archive, Link as LinkIcon, Edit } from "lucide-react";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const PostDetailPage = ({ user }) => {
   const { postId } = useParams();

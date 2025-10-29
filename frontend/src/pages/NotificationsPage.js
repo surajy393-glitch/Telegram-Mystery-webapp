@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const getRelativeTime = (dateString) => {
   const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';

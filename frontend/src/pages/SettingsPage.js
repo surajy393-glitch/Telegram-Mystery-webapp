@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const SettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();

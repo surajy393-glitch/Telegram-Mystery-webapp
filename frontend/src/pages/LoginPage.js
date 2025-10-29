@@ -7,8 +7,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();

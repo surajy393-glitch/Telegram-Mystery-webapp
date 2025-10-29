@@ -28,8 +28,7 @@ import HashtagText from "@/components/HashtagText";
 import SearchSkeleton from "@/components/LoadingSkeleton";
 import { searchCache, trendingCache } from "@/utils/cache";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const SearchPage = ({ user, onLogout }) => {
   const location = useLocation();

@@ -19,8 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // Use a fallback so API calls don't break when the env var is missing
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 // Utility function to linkify bio text (mentions and URLs)
 const LinkifyBio = ({ text }) => {

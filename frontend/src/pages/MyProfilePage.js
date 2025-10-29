@@ -8,8 +8,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import axios from "axios";
 
 // Use a fallback so API calls don't break when the env var is missing
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const MyProfilePage = ({ user, onLogout }) => {
   const navigate = useNavigate();

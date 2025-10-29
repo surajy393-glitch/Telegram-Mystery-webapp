@@ -14,8 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const RegisterPage = ({ onLogin }) => {
   const navigate = useNavigate();
