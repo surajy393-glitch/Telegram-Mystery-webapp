@@ -368,6 +368,10 @@ const ProfilePage = ({ user, onLogout }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
+                <DropdownMenuItem onClick={() => fetchAccountInfo(viewingUser.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                  <Info className="w-4 h-4 mr-3" />
+                  About this account
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleBlockUser} className="cursor-pointer hover:bg-red-50 text-red-600 rounded-lg py-3">
                   <Shield className="w-4 h-4 mr-3" />
                   Block
