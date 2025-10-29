@@ -804,7 +804,7 @@ frontend:
         agent: "main"
         comment: "Enhanced error handling in fetchVerificationDetails function with console logs and user-friendly error alerts. Dialog component is properly configured with Radix UI. Added debug logs to track API calls and responses. If user is not verified (404), shows alert message. For other errors, shows generic failure message."
   
-  - task: "Fix About This Account Dialog - Replace with Radix Dialog Portal"
+  - task: "Fix About This Account Dialog - Structural Bug Fix"
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js, frontend/src/components/ui/dialog.jsx"
@@ -821,6 +821,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "ENHANCED Z-INDEX FIX: Updated base Dialog component (dialog.jsx) to use very high z-index values: DialogOverlay now uses z-[99998] (was z-50), DialogContent uses z-[99999] (was z-50). This ensures the portal-rendered dialog appears above ALL content including transformed parent elements. Removed redundant z-[100000] override from ProfilePage.js as it's now handled in base component. DialogPortal still renders to document.body, bypassing parent transforms. Restarted frontend (pid 2193). Implementation is correct - Radix portal + maximum z-index should resolve visibility issue. Ready for user verification."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
 
   - task: "Make Story Username Clickable in Story Viewer"
     implemented: true
