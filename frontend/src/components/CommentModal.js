@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Heart, Send, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API = '/api';
 
 const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
   const [comments, setComments] = useState([]);
