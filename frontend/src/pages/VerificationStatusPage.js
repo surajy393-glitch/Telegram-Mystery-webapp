@@ -198,7 +198,9 @@ const VerificationStatusPage = ({ user }) => {
       label: 'Account Age',
       requirement: '45+ days old',
       met: verificationData?.criteria?.accountAge || false,
-      progress: `${verificationData?.currentValues?.accountAgeDays || 0} days`
+      progress: `${verificationData?.currentValues?.accountAgeDays || 0} days`,
+      hasHelp: true,
+      helpKey: 'accountAge'
     },
     {
       key: 'noViolations',
