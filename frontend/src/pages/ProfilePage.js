@@ -386,10 +386,20 @@ const ProfilePage = ({ user, onLogout }) => {
                     <VerifiedBadge size="md" />
                   </button>
                 )}
+                {viewingUser?.isFounder && (
+                  <span className="text-2xl" title="Official LuvHive Account">👑</span>
+                )}
               </div>
               
+              {/* Official Account Badge */}
+              {viewingUser?.isFounder && (
+                <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
+                  🏢 Official LuvHive Account
+                </div>
+              )}
+              
               {/* Verification Pathway Display */}
-              {viewingUser?.isVerified && viewingUser?.verificationPathway && (
+              {viewingUser?.isVerified && viewingUser?.verificationPathway && !viewingUser?.isFounder && (
                 <p className="text-xs text-gray-500 mb-2">
                   Verified via: {viewingUser.verificationPathway}
                 </p>
