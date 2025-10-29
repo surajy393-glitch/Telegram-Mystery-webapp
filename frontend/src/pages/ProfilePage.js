@@ -885,13 +885,19 @@ const ProfilePage = ({ user, onLogout }) => {
 
       {/* Verification Details Popover */}
       {/* About this account Dialog */}
+      {console.log("Rendering check - showAccountInfo:", showAccountInfo)}
+      {showAccountInfo && console.log("✅ Modal should be rendering now")}
       {showAccountInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          {console.log("🎨 Inside modal div - rendering backdrop and content")}
           <div 
-            className="fixed inset-0 bg-black/50" 
-            onClick={() => setShowAccountInfo(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm" 
+            onClick={() => {
+              console.log("Backdrop clicked - closing modal");
+              setShowAccountInfo(false);
+            }}
           />
-          <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 z-50">
+          <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 z-[10000] max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold mb-2">About this account</h2>
               <p className="text-sm text-gray-500 mb-4">
@@ -900,6 +906,7 @@ const ProfilePage = ({ user, onLogout }) => {
               
               {accountInfo ? (
                 <div className="space-y-4 py-4">
+                  {console.log("Rendering account info:", accountInfo)}
                   {/* Date Joined */}
                   <div className="flex items-start gap-3">
                     <div className="p-2 bg-gray-100 rounded-lg">
