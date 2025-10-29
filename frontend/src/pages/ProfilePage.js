@@ -764,6 +764,54 @@ const ProfilePage = ({ user, onLogout }) => {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      {/* Verification Details Popover */}
+      <Dialog open={showVerificationPopover} onOpenChange={setShowVerificationPopover}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-500" />
+              Verification Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {verificationDetails && (
+            <div className="space-y-4 py-4">
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-sm text-gray-700 mb-2">
+                  <span className="font-semibold">Verified via:</span> {verificationDetails.pathway}
+                </p>
+                <p className="text-xs text-gray-600">
+                  <span className="font-semibold">Verified on:</span> {new Date(verificationDetails.verifiedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              </div>
+              
+              <div className="text-sm text-gray-600 leading-relaxed">
+                <p className="font-semibold mb-2">About this pathway:</p>
+                {verificationDetails.pathway === 'High Engagement Pathway' && (
+                  <p>This user achieved verification through exceptional community engagement with 20+ posts, 100+ followers, and significant likes and views.</p>
+                )}
+                {verificationDetails.pathway === 'Moderate Engagement Pathway' && (
+                  <p>This user achieved verification through consistent activity over 90+ days with 10+ posts, 50+ followers, and strong engagement metrics.</p>
+                )}
+                {verificationDetails.pathway === 'Community Contribution' && (
+                  <p>This user achieved verification through valuable community contributions such as moderation, event organization, or helpful reporting.</p>
+                )}
+                {verificationDetails.pathway === 'Cross-Platform Verified' && (
+                  <p>This user achieved verification by linking their verified account from another major social media platform.</p>
+                )}
+              </div>
+              
+              <Button 
+                onClick={() => setShowVerificationPopover(false)}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Got it!
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
