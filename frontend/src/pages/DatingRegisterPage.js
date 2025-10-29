@@ -555,6 +555,7 @@ const DatingRegisterPage = ({ onLogin }) => {
       formDataToSend.append("age", parseInt(formData.age));
       formDataToSend.append("gender", formData.gender);
       formDataToSend.append("city", formData.city);
+      formDataToSend.append("country", formData.country);
       formDataToSend.append("interests", formData.interests.join(", "));
       formDataToSend.append("emailVerified", emailVerified);
       formDataToSend.append("mobileVerified", mobileVerified);
