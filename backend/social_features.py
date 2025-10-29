@@ -129,25 +129,59 @@ async def create_post(
 @social_router.get("/feed")
 async def get_feed(
     userId: str,
-    skip: int = 0,
-    limit: int = 20,
+    page: int = 1,
+    limit: int = 10,
     city: Optional[str] = None
 ):
-    """Get feed with posts"""
+    """Get feed with smart mix of new and unseen posts"""
     try:
-        # Build query
-        query = {}
+        skip = (page - 1) * limit
+        
+        # Get user to check blockedUsers and mutedUsers
+        current_user = await db.users.find_one({"id": userId})
+        if not current_user:
+            return {"success": False, "posts": []}
+        
+        blocked_users = current_user.get("blockedUsers", [])
+        muted_users = current_user.get("mutedUsers", [])
+        excluded_users = list(set(blocked_users + muted_users))
+        
+        # Build query to exclude blocked/muted users and own posts
+        query = {
+            "userId": {"$nin": excluded_users + [userId]}  # Exclude blocked, muted, and own posts
+        }
         
         # Filter by city if provided
         if city:
             query["city"] = city
         
-        # Get posts sorted by recent
-        posts = await db.posts.find(query)\
+        # Get total posts count for this query
+        total_posts = await db.posts.count_documents(query)
+        
+        # Smart algorithm: Mix of recent posts and older unseen posts
+        # 70% recent posts, 30% older posts (randomized)
+        recent_limit = int(limit * 0.7)
+        older_limit = limit - recent_limit
+        
+        # Get recent posts
+        recent_posts = await db.posts.find(query)\
             .sort("createdAt", -1)\
             .skip(skip)\
-            .limit(limit)\
-            .to_list(limit)
+            .limit(recent_limit)\
+            .to_list(recent_limit)
+        
+        # Get older posts (randomly sampled from earlier content)
+        older_skip = skip + (page * 50)  # Skip further ahead for older content
+        older_posts = await db.posts.find(query)\
+            .sort("createdAt", -1)\
+            .skip(older_skip)\
+            .limit(older_limit)\
+            .to_list(older_limit)
+        
+        # Merge and shuffle
+        import random
+        all_posts = recent_posts + older_posts
+        random.shuffle(all_posts)
         
         # Format posts
         formatted_posts = []
