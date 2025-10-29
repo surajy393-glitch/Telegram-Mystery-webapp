@@ -28,13 +28,25 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Check if user is authenticated - synchronously load from localStorage
     const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        setUser(JSON.parse(userData));
+    const userDataString = localStorage.getItem("user");
+    
+    console.log("🔍 App.js: Checking authentication...");
+    console.log("   Token present:", !!token);
+    console.log("   User data present:", !!userDataString);
+    
+    if (token && userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        console.log("✅ User loaded from localStorage:", userData.username);
+        console.log("   Profile Image:", userData.profileImage);
+        setIsAuthenticated(true);
+        setUser(userData);
+      } catch (error) {
+        console.error("❌ Failed to parse user data:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     }
     setLoading(false);
