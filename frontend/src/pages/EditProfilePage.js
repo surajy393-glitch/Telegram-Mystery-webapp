@@ -33,6 +33,7 @@ const EditProfilePage = ({ user, onLogout }) => {
         fullName: user.fullName || "",
         username: user.username || "",
         bio: user.bio || "",
+        country: user.country || "",
         profileImage: user.profileImage || ""
       });
     }
