@@ -106,7 +106,7 @@ const MysteryMatchHome = () => {
 
   const fetchStats = async () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const currentUserId = userData.tg_user_id || userData.id;
+    const currentUserId = userData.tg_user_id || userData.id || userData._id;
     
     if (!currentUserId) return;
     
@@ -120,7 +120,7 @@ const MysteryMatchHome = () => {
 
   const fetchMatches = async () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const currentUserId = userData.tg_user_id || userData.id;
+    const currentUserId = userData.tg_user_id || userData.id || userData._id;
     
     if (!currentUserId) return;
     
