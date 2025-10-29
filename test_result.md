@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Broken Images - Static Path Mismatch"
+  - task: "Fix Empty src Attribute - mediaUrl vs imageUrl Field Mismatch"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js, backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Posts fetch successfully (4 items) but browser error: 'An empty string (\"\") was passed to the src attribute.' UI shows broken image icons. Root causes: 1) Some posts use imageUrl field (legacy) instead of mediaUrl. Backend social_features.py sets image_url but get_user_posts returns only mediaUrl. 2) Frontend renders <img src=\"\"> when mediaUrl empty, causing browser to reload entire page and console error."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ COMPREHENSIVE EMPTY SRC FIX: FRONTEND (ProfilePage.js): 1) Enhanced getPostMediaUrl() helper that checks mediaUrl first (new format), then falls back to imageUrl (legacy format), trims whitespace, returns null if both empty. Integrates with existing getMediaSrc() to fix /api prefix. 2) Updated posts grid: if mediaUrl null, renders placeholder div with image icon instead of <img> element. Prevents empty src attribute entirely. 3) Added onError handlers: img/video elements log error and show placeholder image if load fails. BACKEND (server.py line 4793): Added imageUrl field to posts response: 'imageUrl': post.get('imageUrl') for backward compatibility. Now returns BOTH mediaUrl and imageUrl so frontend can choose. Both services restarted (backend pid 9239, frontend pid 9241). NOW: No empty src attributes, legacy posts with imageUrl display correctly, missing images show placeholder instead of broken icons."
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js, backend/social_features.py"
