@@ -29,12 +29,15 @@ const MyProfilePage = ({ user, onLogout }) => {
   const [loadingFollowing, setLoadingFollowing] = useState(false);
 
   useEffect(() => {
-    // Use user prop as immediate fallback
-    if (user) {
-      setProfile(user);
-      setLoading(false);
-    }
-    fetchProfileData();
+    // Wrap in an async function to ensure proper sequencing
+    const loadProfile = async () => {
+      // Use user prop as immediate fallback (do not toggle loading here)
+      if (user) {
+        setProfile(user);
+      }
+      await fetchProfileData(); // This will set loading to false in its finally block
+    };
+    loadProfile();
   }, [user]);
 
   const fetchProfileData = async () => {
