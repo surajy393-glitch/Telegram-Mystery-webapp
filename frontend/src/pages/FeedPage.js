@@ -72,6 +72,7 @@ const FeedPage = ({ user, onLogout }) => {
             username: story.username,
             userProfileImage: story.userAvatar,
             isVerified: story.isVerified || false,
+            isFounder: story.isFounder || false,
             stories: []
           };
         }
