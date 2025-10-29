@@ -1176,6 +1176,7 @@ async def register(user_data: UserRegister):
         username=clean_username,
         age=user_data.age,
         gender=user_data.gender,
+        country=user_data.country.strip(),
         password_hash=hashed_password,
         email=clean_email,
         authMethod=user_data.authMethod,
