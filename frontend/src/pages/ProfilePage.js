@@ -727,15 +727,18 @@ const ProfilePage = ({ user, onLogout }) => {
             <div className="glass-effect rounded-3xl p-6 shadow-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Posts</h3>
               <div className="grid grid-cols-3 gap-2">
-                {userPosts.slice(0, 9).map((post) => (
-                  <div key={post.id} className="aspect-square rounded-lg overflow-hidden">
-                    {post.mediaType === "video" ? (
-                      <video src={post.mediaUrl} className="w-full h-full object-cover" />
-                    ) : (
-                      <img src={post.mediaUrl} alt="Post" className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                ))}
+                {userPosts.slice(0, 9).map((post) => {
+                  const mediaSrc = getMediaSrc(post.mediaUrl);
+                  return (
+                    <div key={post.id} className="aspect-square rounded-lg overflow-hidden">
+                      {post.mediaType === "video" ? (
+                        <video src={mediaSrc} className="w-full h-full object-cover" controls />
+                      ) : (
+                        <img src={mediaSrc} alt="Post" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : viewingUser?.postsCount > 0 ? (
