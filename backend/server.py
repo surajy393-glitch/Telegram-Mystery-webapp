@@ -3721,9 +3721,10 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
     
     posts_list = []
     for post in posts:
-        # Get post author's verification status
-        post_author = await db.users.find_one({"id": post["userId"]}, {"isVerified": 1})
+        # Get post author's verification status and founder status
+        post_author = await db.users.find_one({"id": post["userId"]}, {"isVerified": 1, "isFounder": 1})
         is_verified = post_author.get("isVerified", False) if post_author else False
+        is_founder = post_author.get("isFounder", False) if post_author else False
         
         post_data = {
             "id": post["id"],
@@ -3731,6 +3732,7 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "username": post["username"],
             "userProfileImage": post.get("userProfileImage"),
             "isVerified": is_verified,
+            "isFounder": is_founder,
             "mediaType": post.get("mediaType", "image"),  # Default to image if missing
             "mediaUrl": post.get("mediaUrl", ""),
             "caption": post.get("caption", ""),
