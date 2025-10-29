@@ -12,8 +12,9 @@ export const useWebSocket = (matchId, userId) => {
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-  const WS_URL = BACKEND_URL.replace('http', 'ws');
+  // Use current origin and convert to WebSocket protocol
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const WS_URL = `${protocol}//${window.location.host}`;
 
   useEffect(() => {
     if (!matchId || !userId) return;
