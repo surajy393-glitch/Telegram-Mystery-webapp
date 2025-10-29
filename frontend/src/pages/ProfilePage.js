@@ -68,6 +68,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const [showVibeCompatibility, setShowVibeCompatibility] = useState(false);
   const [vibeScore, setVibeScore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [followingInProgress, setFollowingInProgress] = useState(new Set());
   const [showAccountInfo, setShowAccountInfo] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
