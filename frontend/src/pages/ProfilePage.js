@@ -905,7 +905,7 @@ const ProfilePage = ({ user, onLogout }) => {
           }
         }}
       >
-        <DialogContent className="max-w-md z-[100000]">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>About this account</DialogTitle>
             <DialogDescription>
