@@ -673,8 +673,9 @@ const ProfilePage = ({ user, onLogout }) => {
             </div>
           ) : viewingUser?.postsCount > 0 ? (
             <div className="glass-effect rounded-3xl p-6 shadow-xl">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Posts Loading...</h3>
-              <p className="text-gray-600 text-center">This user has {viewingUser.postsCount} posts</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Unable to Load Posts</h3>
+              <p className="text-gray-600 text-center">This user has {viewingUser.postsCount} posts but they couldn't be loaded.</p>
+              <p className="text-sm text-gray-500 text-center mt-2">Please check console logs for details.</p>
             </div>
           ) : (
             <div className="glass-effect rounded-3xl p-6 shadow-xl">
