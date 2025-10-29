@@ -1037,6 +1037,20 @@ const DatingRegisterPage = ({ onLogin }) => {
                 </div>
 
                 <div>
+                  <Label htmlFor="country" className="text-white font-medium">Country</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    type="text"
+                    placeholder="Enter your country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                    className="mt-2 bg-white bg-opacity-90 text-gray-900 placeholder:text-gray-500 border-white border-opacity-30 focus:border-pink-400 rounded-xl font-medium"
+                  />
+                </div>
+
+                <div>
                   <Label className="text-white font-medium mb-3 block">Interests (Select at least 1)</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {interestOptions.map(interest => (
