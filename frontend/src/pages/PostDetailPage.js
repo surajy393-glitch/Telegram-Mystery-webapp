@@ -584,7 +584,7 @@ const PostDetailPage = ({ user }) => {
             <div className="md:w-3/5 bg-black flex items-center justify-center">
               {post.imageUrl || post.mediaUrl ? (
                 <img
-                  src={post.imageUrl || `${BACKEND_URL}${post.mediaUrl}`}
+                  src={post.imageUrl || post.mediaUrl}
                   alt={post.caption || "Post"}
                   className="w-full object-contain max-h-[80vh]"
                 />
@@ -602,7 +602,7 @@ const PostDetailPage = ({ user }) => {
                 <div className="flex items-center gap-3">
                   {post.userProfileImage ? (
                     <img
-                      src={`${BACKEND_URL}${post.userProfileImage}`}
+                      src={post.userProfileImage || "https://via.placeholder.com/40"}
                       alt={post.username}
                       className="w-10 h-10 rounded-full object-cover cursor-pointer"
                       onClick={() => navigate(`/profile/${post.userId}`)}
@@ -629,7 +629,7 @@ const PostDetailPage = ({ user }) => {
                   <div className="flex gap-3 mb-6">
                     {post.userProfileImage ? (
                       <img
-                        src={`${BACKEND_URL}${post.userProfileImage}`}
+                        src={post.userProfileImage || "https://via.placeholder.com/40"}
                         alt={post.username}
                         className="w-8 h-8 rounded-full object-cover"
                         onError={(e) => e.target.src = "https://via.placeholder.com/32"}
@@ -659,7 +659,7 @@ const PostDetailPage = ({ user }) => {
                         <div className="flex gap-3">
                           {comment.userProfileImage ? (
                             <img
-                              src={`${BACKEND_URL}${comment.userProfileImage}`}
+                              src={comment.userProfileImage || "https://via.placeholder.com/32"}
                               alt={comment.username}
                               className="w-8 h-8 rounded-full object-cover"
                               onError={(e) => e.target.src = "https://via.placeholder.com/32"}
@@ -791,7 +791,7 @@ const PostDetailPage = ({ user }) => {
                                 <div key={reply.id} className="flex gap-3">
                                   {reply.userProfileImage ? (
                                     <img
-                                      src={`${BACKEND_URL}${reply.userProfileImage}`}
+                                      src={reply.userProfileImage || "https://via.placeholder.com/32"}
                                       alt={reply.username}
                                       className="w-7 h-7 rounded-full object-cover"
                                       onError={(e) => e.target.src = "https://via.placeholder.com/28"}
