@@ -148,12 +148,18 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchUserPosts = async (targetUserId) => {
     try {
       const token = localStorage.getItem("token");
+      console.log("Fetching posts for userId:", targetUserId);
+      console.log("Token exists:", !!token);
       const response = await axios.get(`${API}/users/${targetUserId}/posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log("Posts fetched successfully:", response.data.posts?.length || 0);
       setUserPosts(response.data.posts || []);
     } catch (error) {
       console.error("Error fetching user posts:", error);
+      console.error("Error status:", error.response?.status);
+      console.error("Error message:", error.response?.data?.detail);
+      setUserPosts([]);
     }
   };
 
