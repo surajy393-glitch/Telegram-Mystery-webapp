@@ -39,8 +39,19 @@ const FeedPage = ({ user, onLogout }) => {
       fetchStories();
       
       // Poll notification count every 30 seconds
-      const interval = setInterval(fetchNotificationCount, 30000);
-      return () => clearInterval(interval);
+      const notificationInterval = setInterval(fetchNotificationCount, 30000);
+      
+      // Auto-refresh feed and stories every 30 seconds
+      const feedRefreshInterval = setInterval(() => {
+        fetchFeed();
+        fetchStories();
+      }, 30000); // 30 seconds
+      
+      // Cleanup intervals on component unmount
+      return () => {
+        clearInterval(notificationInterval);
+        clearInterval(feedRefreshInterval);
+      };
     }
   }, [user]);
 
