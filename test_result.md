@@ -789,6 +789,36 @@ frontend:
         agent: "main"
         comment: "Added prominent blue gradient button at top of SocialSettingsPage linking to /verification-status. Button features blue checkmark icon, title, and description for easy discovery."
 
+  - task: "Fix Verification Details Popover on ProfilePage and MyProfilePage"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js, frontend/src/pages/MyProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that clicking the crown/blue tick on profiles doesn't show the verification details popover."
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced error handling in fetchVerificationDetails function with console logs and user-friendly error alerts. Dialog component is properly configured with Radix UI. Added debug logs to track API calls and responses. If user is not verified (404), shows alert message. For other errors, shows generic failure message."
+
+  - task: "Make Story Username Clickable in Story Viewer"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/FeedPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User requested that clicking username in story viewer should open the user's profile."
+      - working: true
+        agent: "main"
+        comment: "ALREADY IMPLEMENTED - Story username at lines 1040-1047 in FeedPage.js has cursor-pointer, hover:underline styling and onClick handler that closes story viewer and navigates to /profile/{userId}. No changes needed."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
