@@ -572,50 +572,35 @@ const DatingRegisterPage = ({ onLogin }) => {
       });
 
       const token = response.data.access_token;
-      
-      // Fetch a complete user profile after registration to avoid missing fields.
-      // This prevents issues with missing ID or profileImage immediately after sign-up.
+      let fullUser;
       try {
-        const meRes = await axios.get(`${API}/auth/me`, {
+        // Attempt to fetch the complete user record using the new token.
+        const meResponse = await axios.get(`${API}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const fullUser = meRes.data.user || meRes.data;
-        
-        // CRITICAL: Save to localStorage FIRST
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(fullUser));
-        
-        console.log("🎉 Registration successful! Full User data:", fullUser);
-        console.log("🖼️ Profile Image:", fullUser.profileImage);
-
-        // Call onLogin to update React state
-        onLogin(token, fullUser);
-
-        toast({
-          title: "Registration Successful! 🎉",
-          description: "Welcome to LuvHive!",
-        });
-
-        // Navigate immediately after localStorage is set (no setTimeout)
-        navigate("/home");
+        fullUser = meResponse.data.user || meResponse.data;
       } catch (err) {
-        // If the fetch fails, fall back to the user returned in the response.
-        const fallbackUser = response.data.user;
-        
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(fallbackUser));
-        
-        console.log("⚠️ Using fallback user data:", fallbackUser);
-        
-        onLogin(token, fallbackUser);
-
-        toast({
-          title: "Registration Successful! 🎉",
-          description: "Welcome to LuvHive!",
-        });
-
-        navigate("/home");
+        // Fall back to the user returned from registration if /auth/me fails.
+        fullUser = response.data.user;
       }
+
+      // Save token and full user to localStorage.
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(fullUser));
+
+      console.log("🎉 Registration successful! User data:", fullUser);
+      console.log("🖼️ Profile Image:", fullUser.profileImage);
+
+      // Update React state immediately so downstream components have access to the correct user.
+      onLogin(token, fullUser);
+
+      toast({
+        title: "Registration Successful! 🎉",
+        description: "Welcome to LuvHive!",
+      });
+
+      // Redirect the user to the feed.
+      navigate("/home");
       
     } catch (error) {
       toast({
