@@ -444,7 +444,7 @@ const ProfilePage = ({ user, onLogout }) => {
                   viewingUser?.profileImage 
                     ? (viewingUser.profileImage.startsWith('http') || viewingUser.profileImage.startsWith('data:')
                         ? viewingUser.profileImage 
-                        : `${BACKEND_URL}${viewingUser.profileImage}`)
+                        : viewingUser.profileImage)
                     : "https://via.placeholder.com/120"
                 }
                 alt={viewingUser?.username}
