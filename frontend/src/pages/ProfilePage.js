@@ -34,6 +34,8 @@ const ProfilePage = ({ user, onLogout }) => {
   const [vibeScore, setVibeScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [followingInProgress, setFollowingInProgress] = useState(new Set());
+  const [showVerificationPopover, setShowVerificationPopover] = useState(false);
+  const [verificationDetails, setVerificationDetails] = useState(null);
 
   // Check if we're viewing a specific user or discovery page
   const isViewingSpecificUser = !!userId;
