@@ -893,167 +893,153 @@ const ProfilePage = ({ user, onLogout }) => {
       </Dialog>
 
       {/* Verification Details Popover */}
-      {/* About this account Dialog */}
-      {console.log("Render check - showAccountInfo:", showAccountInfo, "accountInfo:", accountInfo)}
-      {showAccountInfo && console.log("✅ MODAL SHOULD BE VISIBLE - showAccountInfo is TRUE")}
-      {showAccountInfo && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{zIndex: 99999}}>
-          {console.log("🎨 RENDERING MODAL DIVS")}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
-            style={{zIndex: 99998}}
-            onClick={() => {
-              console.log("Backdrop clicked - closing");
-              setShowAccountInfo(false);
-              setAccountInfo(null);
-            }}
-          />
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full z-[100000] max-h-[90vh] overflow-y-auto" style={{zIndex: 100000}}>
-            {console.log("🎨 INSIDE WHITE MODAL BOX")}
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold">About this account</h2>
-                <button 
-                  onClick={() => {
-                    setShowAccountInfo(false);
-                    setAccountInfo(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="width" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-              <p className="text-sm text-gray-500 mb-4">
-                To help keep our community authentic, we're showing information about accounts on LuvHive.
-              </p>
-              
-              {/* Loading State */}
-              {!accountInfo && (
-                <div className="py-12 text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading account information...</p>
-                </div>
-              )}
-              
-              {/* Error State */}
-              {accountInfo?.error && (
-                <div className="py-8">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex">
-                      <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
-                      </svg>
-                      <div>
-                        <p className="font-semibold text-red-800">Failed to load</p>
-                        <p className="text-sm text-red-600 mt-1">{accountInfo.message}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setShowAccountInfo(false);
-                      setAccountInfo(null);
-                    }}
-                    className="w-full mt-4 bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
-              
-              {/* Success State - Account Info */}
-              {accountInfo && !accountInfo.error && (
-                <div className="space-y-4 py-4">
-                  {/* Date Joined */}
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">Date joined</p>
-                      <p className="text-sm text-gray-600">{accountInfo.dateJoined}</p>
-                    </div>
-                  </div>
+      
+      {/* About this account Dialog - Using Radix Portal to avoid CSS transform issues */}
+      <Dialog
+        open={showAccountInfo}
+        onOpenChange={(open) => {
+          console.log("Dialog onOpenChange called, open:", open);
+          setShowAccountInfo(open);
+          if (!open) {
+            setAccountInfo(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md z-[100000]">
+          <DialogHeader>
+            <DialogTitle>About this account</DialogTitle>
+            <DialogDescription>
+              To help keep our community authentic, we're showing information about accounts on LuvHive.
+            </DialogDescription>
+          </DialogHeader>
 
-                  {/* Country */}
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">Account based in</p>
-                      <p className="text-sm text-gray-600">{accountInfo.country}</p>
-                    </div>
-                  </div>
-
-                  {/* Verified Badge (if verified) */}
-                  {accountInfo.isVerified && (
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <Shield className="w-5 h-5 text-blue-500" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-gray-900">Verified</p>
-                          <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                          </svg>
-                        </div>
-                        {accountInfo.isFounder ? (
-                          <>
-                            <p className="text-sm text-gray-700 mb-1">
-                              <span className="font-semibold">👑 Official LuvHive Account</span>
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              This is the official account of LuvHive. Verified on {accountInfo.verifiedAt}.
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm text-gray-700 mb-1">
-                              Verified via: <span className="font-semibold">{accountInfo.verificationPathway}</span>
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              {accountInfo.verificationPathway === 'High Engagement Pathway' && 
-                                'Verified through exceptional community engagement with 20+ posts, 100+ followers, and significant likes and views.'}
-                              {accountInfo.verificationPathway === 'Moderate Engagement Pathway' && 
-                                'Verified through consistent activity over 90+ days with 10+ posts, 50+ followers, and strong engagement.'}
-                              {accountInfo.verificationPathway === 'Community Contribution' && 
-                                'Verified through valuable community contributions such as moderation or helpful reporting.'}
-                              {accountInfo.verificationPathway === 'Cross-Platform Verified' && 
-                                'Verified by linking a verified account from another major social platform.'}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={() => {
-                      setShowAccountInfo(false);
-                      setAccountInfo(null);
-                    }}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
+          {/* Loading State */}
+          {!accountInfo && (
+            <div className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading account information...</p>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+          {/* Error State */}
+          {accountInfo?.error && (
+            <div className="py-8">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex">
+                  <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-red-800">Failed to load</p>
+                    <p className="text-sm text-red-600 mt-1">{accountInfo.message}</p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAccountInfo(false);
+                  setAccountInfo(null);
+                }}
+                className="w-full mt-4 bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          )}
+
+          {/* Success State */}
+          {accountInfo && !accountInfo.error && (
+            <div className="space-y-4 py-4">
+              {/* Date Joined */}
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Date joined</p>
+                  <p className="text-sm text-gray-600">{accountInfo.dateJoined}</p>
+                </div>
+              </div>
+              
+              {/* Country */}
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Account based in</p>
+                  <p className="text-sm text-gray-600">{accountInfo.country}</p>
+                </div>
+              </div>
+              
+              {/* Verified Badge (if verified) */}
+              {accountInfo.isVerified && (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Shield className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-gray-900">Verified</p>
+                      <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19l12-12-1.41-1.41z" />
+                      </svg>
+                    </div>
+                    {accountInfo.isFounder ? (
+                      <>
+                        <p className="text-sm text-gray-700 mb-1">
+                          <span className="font-semibold">👑 Official LuvHive Account</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          This is the official account of LuvHive. Verified on {accountInfo.verifiedAt}.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-700 mb-1">
+                          Verified via: <span className="font-semibold">{accountInfo.verificationPathway}</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {accountInfo.verificationPathway === 'High Engagement Pathway' && 
+                            'Verified through exceptional community engagement with 20+ posts, 100+ followers, and significant likes and views.'}
+                          {accountInfo.verificationPathway === 'Moderate Engagement Pathway' && 
+                            'Verified through consistent activity over 90+ days with 10+ posts, 50+ followers, and strong engagement.'}
+                          {accountInfo.verificationPathway === 'Community Contribution' && 
+                            'Verified through valuable community contributions such as moderation or helpful reporting.'}
+                          {accountInfo.verificationPathway === 'Cross-Platform Verified' && 
+                            'Verified by linking a verified account from another major social platform.'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={() => {
+                  setShowAccountInfo(false);
+                  setAccountInfo(null);
+                }}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
