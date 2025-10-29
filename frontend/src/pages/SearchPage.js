@@ -329,7 +329,7 @@ const SearchPage = ({ user, onLogout }) => {
             userItem.profileImage
               ? (userItem.profileImage.startsWith('data:') || userItem.profileImage.startsWith('http')
                   ? userItem.profileImage
-                  : `${BACKEND_URL}${userItem.profileImage}`)
+                  : userItem.profileImage)
               : "https://via.placeholder.com/48"
           }
           alt={userItem.username}
@@ -386,7 +386,7 @@ const SearchPage = ({ user, onLogout }) => {
               post.userProfileImage
                 ? (post.userProfileImage.startsWith('data:') || post.userProfileImage.startsWith('http')
                     ? post.userProfileImage
-                    : `${BACKEND_URL}${post.userProfileImage}`)
+                    : post.userProfileImage)
                 : "https://via.placeholder.com/40"
             }
             alt={post.username}
@@ -412,7 +412,7 @@ const SearchPage = ({ user, onLogout }) => {
               post.imageUrl
                 ? (post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http')
                     ? post.imageUrl
-                    : `${BACKEND_URL}${post.imageUrl}`)
+                    : post.imageUrl)
                 : "https://via.placeholder.com/400"
             }
             alt="Post" 
@@ -501,7 +501,7 @@ const SearchPage = ({ user, onLogout }) => {
                           src={
                             suggestion.avatar.startsWith('data:') || suggestion.avatar.startsWith('http')
                               ? suggestion.avatar
-                              : `${BACKEND_URL}${suggestion.avatar}`
+                              : suggestion.avatar
                           }
                           alt=""
                           className="w-8 h-8 rounded-full object-cover"
@@ -708,7 +708,7 @@ const SearchPage = ({ user, onLogout }) => {
                     {/* Post Image */}
                     {post.imageUrl || post.mediaUrl ? (
                       <img
-                        src={post.imageUrl || `${BACKEND_URL}${post.mediaUrl}`}
+                        src={post.imageUrl || post.mediaUrl}
                         alt={post.caption || "Post"}
                         className="w-full h-full object-cover"
                         onError={(e) => {
