@@ -157,6 +157,7 @@ class UserRegister(BaseModel):
     username: str
     age: int
     gender: str
+    country: str  # Mandatory country field
     password: Optional[str] = None  # Optional for Telegram auth
     email: Optional[str] = None  # Optional for recovery
     authMethod: str = "password"  # "password" or "telegram"
