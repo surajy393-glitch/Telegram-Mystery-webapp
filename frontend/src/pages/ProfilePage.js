@@ -396,16 +396,22 @@ const ProfilePage = ({ user, onLogout }) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
                 <DropdownMenuItem 
-                  onClick={() => {
+                  onSelect={(e) => {
+                    e.preventDefault(); // Prevent dropdown from closing
+                    console.log("=== About Account Menu Item Clicked ===");
+                    console.log("viewingUser:", viewingUser);
+                    console.log("viewingUser.id:", viewingUser?.id);
+                    
                     if (viewingUser?.id) {
-                      console.log("Calling fetchAccountInfo with:", viewingUser.id);
+                      console.log("✅ Calling fetchAccountInfo with ID:", viewingUser.id);
                       fetchAccountInfo(viewingUser.id);
                     } else {
-                      console.error("viewingUser or viewingUser.id is undefined");
-                      alert("Unable to load account info. Please try refreshing the page.");
+                      console.error("❌ viewingUser or viewingUser.id is undefined");
+                      console.log("Full viewingUser object:", JSON.stringify(viewingUser));
+                      alert("Unable to load account info. User ID is missing. Please refresh.");
                     }
                   }} 
-                  className="cursor-pointer hover:bg-pink-50 rounded-lg py-3"
+                  className="cursor-pointer hover:bg-pink-50 rounded-lg py-3 flex items-center"
                 >
                   <Info className="w-4 h-4 mr-3" />
                   About this account
