@@ -77,7 +77,7 @@ const MysteryMatchHome = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const currentUserId = userData.tg_user_id || userData.id;
+    const currentUserId = userData.tg_user_id || userData.id || userData._id;
     
     if (!currentUserId || !token) {
       console.log('Waiting for authentication...');
@@ -92,7 +92,7 @@ const MysteryMatchHome = () => {
 
   const fetchUserData = async () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const currentUserId = userData.tg_user_id || userData.id;
+    const currentUserId = userData.tg_user_id || userData.id || userData._id;
     
     if (!currentUserId) return;
     
