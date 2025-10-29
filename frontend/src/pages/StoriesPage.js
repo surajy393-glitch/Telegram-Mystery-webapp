@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, X, Eye, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API = '/api';
 
 const StoriesPage = ({ user }) => {
   const navigate = useNavigate();
