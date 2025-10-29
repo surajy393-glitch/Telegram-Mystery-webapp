@@ -87,6 +87,24 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   }, [userId]);
 
+  // Auto-refresh posts when follow request is accepted
+  useEffect(() => {
+    // If the profile shows postsCount > 0 but we haven't loaded any posts yet,
+    // fetch them. This handles the case where a follow request was accepted after
+    // the initial profile load.
+    if (
+      viewingUser &&
+      viewingUser.postsCount > 0 &&
+      userPosts.length === 0 &&
+      (!viewingUser.isPrivate ||
+       viewingUser.isFollowing ||
+       viewingUser.id === user?.id)
+    ) {
+      console.log("Auto-fetching posts after follow acceptance");
+      fetchUserPosts(viewingUser.id);
+    }
+  }, [viewingUser]);
+
   const fetchAccountInfo = async (userId) => {
     try {
       console.log("Fetching account info for userId:", userId);
