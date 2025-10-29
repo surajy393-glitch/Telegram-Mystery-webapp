@@ -39,6 +39,19 @@ const MyProfilePage = ({ user, onLogout }) => {
     fetchProfileData();
   }, [user]);
 
+  const fetchVerificationDetails = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users/${user.id}/verification-details`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setVerificationDetails(response.data);
+      setShowVerificationPopover(true);
+    } catch (error) {
+      console.error("Error fetching verification details:", error);
+    }
+  };
+
   const fetchProfileData = async () => {
     try {
       const token = localStorage.getItem("token");
