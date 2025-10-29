@@ -1036,7 +1036,15 @@ const FeedPage = ({ user, onLogout }) => {
                   />
                   <div>
                     <div className="flex items-center gap-1">
-                      <h3 className="text-white font-semibold">{viewingStories.username}</h3>
+                      <h3 
+                        className="text-white font-semibold cursor-pointer hover:underline"
+                        onClick={() => {
+                          setShowStoryViewer(false);
+                          navigate(`/profile/${viewingStories.userId}`);
+                        }}
+                      >
+                        {viewingStories.username}
+                      </h3>
                       {viewingStories.isVerified && <VerifiedBadge size="sm" />}
                       {viewingStories.isFounder && <span className="text-lg" title="Official LuvHive">👑</span>}
                     </div>
