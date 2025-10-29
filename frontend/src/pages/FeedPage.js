@@ -31,6 +31,12 @@ const FeedPage = ({ user, onLogout }) => {
   const [showStoryReportDialog, setShowStoryReportDialog] = useState(false);
   const [reportingStory, setReportingStory] = useState(null);
   const [storyLikes, setStoryLikes] = useState({}); // Track which stories are liked
+  
+  // Infinite scroll states
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [seenPostIds, setSeenPostIds] = useState(new Set());
 
   useEffect(() => {
     if (user) {
