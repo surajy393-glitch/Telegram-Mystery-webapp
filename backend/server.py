@@ -4784,12 +4784,12 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
             created_at_str = created_at_val if created_at_val else ""
         
         posts_list.append({
-            "id": post["id"],
-            "userId": post["userId"],
-            "username": post["username"],
+            "id": post.get("id"),
+            "userId": post.get("userId"),
+            "username": post.get("username"),
             "userProfileImage": post.get("userProfileImage"),
-            "mediaType": post["mediaType"],
-            "mediaUrl": post["mediaUrl"],
+            "mediaType": post.get("mediaType", "image"),  # Default to image if missing
+            "mediaUrl": post.get("mediaUrl"),
             "caption": post.get("caption", ""),
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
