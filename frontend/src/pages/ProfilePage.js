@@ -423,7 +423,13 @@ const ProfilePage = ({ user, onLogout }) => {
                   </button>
                 )}
                 {viewingUser?.isFounder && (
-                  <span className="text-2xl" title="Official LuvHive Account">👑</span>
+                  <button
+                    onClick={() => fetchVerificationDetails(viewingUser.id)}
+                    className="hover:opacity-70 transition-opacity text-2xl"
+                    title="Official LuvHive Account - Click for details"
+                  >
+                    👑
+                  </button>
                 )}
               </div>
               
