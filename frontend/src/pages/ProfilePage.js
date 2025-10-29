@@ -90,13 +90,20 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchVerificationDetails = async (userId) => {
     try {
       const token = localStorage.getItem("token");
+      console.log("Fetching verification details for user:", userId);
       const response = await axios.get(`${API}/users/${userId}/verification-details`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log("Verification details received:", response.data);
       setVerificationDetails(response.data);
       setShowVerificationPopover(true);
     } catch (error) {
       console.error("Error fetching verification details:", error);
+      if (error.response?.status === 404) {
+        alert("This user is not verified or verification details are not available.");
+      } else {
+        alert("Failed to load verification details. Please try again.");
+      }
     }
   };
 
