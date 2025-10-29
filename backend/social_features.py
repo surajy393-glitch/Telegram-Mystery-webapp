@@ -185,7 +185,7 @@ async def get_feed(
         
         # Format posts
         formatted_posts = []
-        for post in posts:
+        for post in all_posts:
             # Get post author's current profile picture, verification, and founder status
             post_author = await db.users.find_one(
                 {"id": post.get("userId")}, 
