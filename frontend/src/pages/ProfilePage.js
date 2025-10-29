@@ -105,18 +105,36 @@ const ProfilePage = ({ user, onLogout }) => {
   }, [viewingUser]);
 
   const fetchAccountInfo = async (userId) => {
+    console.log("=== fetchAccountInfo CALLED ===");
+    console.log("userId parameter:", userId);
+    console.log("showAccountInfo before:", showAccountInfo);
+    
     try {
-      console.log("Fetching account info for userId:", userId);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API}/users/${userId}/account-info`, {
+      console.log("Token present:", !!token);
+      
+      const url = `${API}/users/${userId}/account-info`;
+      console.log("Fetching from URL:", url);
+      
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Account info received:", response.data);
+      
+      console.log("✅ Account info received:", response.data);
       setAccountInfo(response.data);
+      
+      console.log("Setting showAccountInfo to TRUE");
       setShowAccountInfo(true);
+      
+      // Force a small delay to ensure state updates
+      setTimeout(() => {
+        console.log("showAccountInfo after timeout:", showAccountInfo);
+      }, 100);
+      
       console.log("Dialog should now be visible");
     } catch (error) {
-      console.error("Error fetching account info:", error);
+      console.error("❌ Error fetching account info:", error);
+      console.error("Error status:", error.response?.status);
       console.error("Error details:", error.response?.data);
       alert(`Failed to load account information: ${error.response?.data?.detail || error.message}`);
     }
