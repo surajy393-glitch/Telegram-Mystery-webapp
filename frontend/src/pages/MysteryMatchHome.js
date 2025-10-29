@@ -53,7 +53,7 @@ const MysteryMatchHome = () => {
         const formData = new FormData();
         formData.append('initData', initData);
         
-        const response = await axios.post(`${API_URL}/api/auth/telegram-webapp`, formData);
+        const response = await axios.post(`${API}/auth/telegram-webapp`, formData);
         
         if (response.data.success) {
           console.log('✅ Auto-auth successful');
@@ -96,7 +96,7 @@ const MysteryMatchHome = () => {
     if (!currentUserId) return;
     
     try {
-      const response = await axios.get(`${API_URL}/api/users/${currentUserId}`);
+      const response = await axios.get(`${API}/users/${currentUserId}`);
       setUser(response.data);
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -110,7 +110,7 @@ const MysteryMatchHome = () => {
     if (!currentUserId) return;
     
     try {
-      const response = await axios.get(`${API_URL}/api/mystery/stats/${currentUserId}`);
+      const response = await axios.get(`${API}/mystery/stats/${currentUserId}`);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -124,7 +124,7 @@ const MysteryMatchHome = () => {
     if (!currentUserId) return;
     
     try {
-      const response = await axios.get(`${API_URL}/api/mystery/my-matches/${currentUserId}`);
+      const response = await axios.get(`${API}/mystery/my-matches/${currentUserId}`);
       setActiveMatches(response.data.matches || []);
     } catch (error) {
       console.error('Error fetching matches:', error);
@@ -138,7 +138,7 @@ const MysteryMatchHome = () => {
     setError('');
     
     try {
-      const response = await axios.post(`${API_URL}/api/mystery/find-match`, {
+      const response = await axios.post(`${API}/mystery/find-match`, {
         user_id: parseInt(userId),
         preferred_age_min: 18,
         preferred_age_max: 35,
