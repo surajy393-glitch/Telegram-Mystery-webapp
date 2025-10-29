@@ -475,6 +475,17 @@ const VerificationStatusPage = ({ user }) => {
                                 <XCircle className="w-5 h-5 text-gray-400" />
                               )}
                               <h4 className="font-semibold text-gray-800">{criterion.label}</h4>
+                              {criterion.hasHelp && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    showHelp(criterion.helpKey);
+                                  }}
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  <HelpCircle className="w-4 h-4" />
+                                </button>
+                              )}
                               {isVerifiable && (
                                 <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full ml-2">
                                   Click to Verify
