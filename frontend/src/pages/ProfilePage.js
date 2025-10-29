@@ -1025,16 +1025,14 @@ const ProfilePage = ({ user, onLogout }) => {
                   )}
                   
                   <button 
-                    onClick={() => setShowAccountInfo(false)}
+                    onClick={() => {
+                      setShowAccountInfo(false);
+                      setAccountInfo(null);
+                    }}
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
                   >
                     Close
                   </button>
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading account info...</p>
                 </div>
               )}
             </div>
