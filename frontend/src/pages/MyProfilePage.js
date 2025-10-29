@@ -59,7 +59,40 @@ const MyProfilePage = ({ user, onLogout }) => {
 
       if (profileRes.data) {
         console.log("✅ Profile data fetched, profileImage:", profileRes.data.profileImage);
-        setProfile(profileRes.data);
+        
+        // Merge with locally stored user to preserve a base64 profile image
+        // if the backend returns a null/empty profileImage (e.g. right after registration).
+        let mergedProfile = { ...profileRes.data };
+        try {
+          const localUserString = localStorage.getItem("user");
+          if (localUserString) {
+            const localUser = JSON.parse(localUserString);
+            // If server didn't return a profileImage but localStorage has one (e.g. base64 preview), use it
+            if (!mergedProfile.profileImage && localUser.profileImage) {
+              console.log(
+                "📸 No profileImage from server; using local preview from registration."
+              );
+              mergedProfile.profileImage = localUser.profileImage;
+            }
+          }
+        } catch (mergeErr) {
+          console.error("❌ Failed to merge local profile image:", mergeErr);
+        }
+        
+        // Persist merged profile in localStorage so other components see the image
+        try {
+          const localUserString2 = localStorage.getItem("user");
+          if (localUserString2) {
+            const localUser2 = JSON.parse(localUserString2);
+            const updatedUser = { ...localUser2, ...mergedProfile };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            console.log("✅ Updated localStorage with merged profile");
+          }
+        } catch (updateErr) {
+          console.error("❌ Failed to update localStorage with merged profile:", updateErr);
+        }
+        
+        setProfile(mergedProfile);
       }
       setMyPosts(postsRes.data.posts || []);
       setSavedPosts(savedRes.data.posts || []);
