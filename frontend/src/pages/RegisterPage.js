@@ -428,15 +428,14 @@ const RegisterPage = ({ onLogin }) => {
                         null
         };
 
-        // If the backend did not return a profileImage but the user uploaded a
-        // photo, use the local base64 preview from formData.
-        if (!normalizedUser.profileImage && formData.profileImage) {
+        // Always prefer the local base64 preview if user uploaded a photo
+        if (formData.profileImage) {
           normalizedUser.profileImage = formData.profileImage;
         }
 
         console.log("🎉 Registration successful! User data:", normalizedUser);
         console.log("🖼️ Profile Image:", normalizedUser.profileImage);
-        console.log("📸 Using base64 preview:", !fullUser.profileImage && !!formData.profileImage);
+        console.log("📸 Using base64 preview:", !!formData.profileImage);
         
         setShowSuccess(true);
         setTimeout(() => {
