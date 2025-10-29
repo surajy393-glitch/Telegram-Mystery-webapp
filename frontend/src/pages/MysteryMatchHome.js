@@ -17,7 +17,8 @@ const MysteryMatchHome = () => {
   
   // Get user data from localStorage (set during login)
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = userData.tg_user_id || userData.id; // Try tg_user_id first, fallback to MongoDB id
+  // Use tg_user_id first (Telegram), then id, then _id (MongoDB) as fallback
+  const userId = userData.tg_user_id || userData.id || userData._id;
 
   // Handle Telegram WebApp authentication
   useEffect(() => {
