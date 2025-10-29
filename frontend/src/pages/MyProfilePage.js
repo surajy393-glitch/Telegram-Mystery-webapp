@@ -162,16 +162,21 @@ const MyProfilePage = ({ user, onLogout }) => {
                   profile?.profileImage 
                     ? (profile.profileImage.startsWith('data:') || profile.profileImage.startsWith('http') 
                         ? profile.profileImage 
-                        : profile.profileImage)
+                        : profile.profileImage)  // Use path as-is from backend
                     : "https://via.placeholder.com/150"
                 }
                 alt={profile?.username}
                 className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg"
                 onError={(e) => {
-                  console.error('Profile image failed to load:', profile?.profileImage);
+                  console.error('❌ Profile image failed to load:', profile?.profileImage);
+                  console.error('   Image src attempted:', e.target.src);
                   e.target.src = "https://via.placeholder.com/150";
                 }}
-                onLoad={() => console.log('✅ Profile image loaded:', profile?.profileImage)}
+                onLoad={() => {
+                  console.log('✅ Profile image loaded successfully');
+                  console.log('   Image path:', profile?.profileImage);
+                  console.log('   Rendered src:', profile?.profileImage);
+                }}
               />
               {profile?.isPremium && (
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
