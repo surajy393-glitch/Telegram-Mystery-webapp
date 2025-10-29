@@ -604,9 +604,10 @@ const FeedPage = ({ user, onLogout }) => {
                             }
                           }}
                         >
-                          {post.isAnonymous ? 'Anonymous' : post.username}
-                        </h3>
-                        {!post.isAnonymous && post.isVerified && <VerifiedBadge size="sm" />}
+                        <span>{post.isAnonymous ? 'Anonymous' : post.username}</span>
+                        {!post.isAnonymous && post.isVerified && <VerifiedBadge size="sm" className="ml-1" />}
+                        {!post.isAnonymous && post.isFounder && <span className="text-base ml-1" title="Official LuvHive">👑</span>}
+                      </h3>
                       </div>
                       <p className="text-xs text-gray-500">{post.timeAgo}</p>
                     </div>
