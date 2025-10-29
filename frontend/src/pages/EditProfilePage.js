@@ -21,6 +21,7 @@ const EditProfilePage = ({ user, onLogout }) => {
     fullName: "",
     username: "",
     bio: "",
+    country: "",
     profileImage: ""
   });
 
