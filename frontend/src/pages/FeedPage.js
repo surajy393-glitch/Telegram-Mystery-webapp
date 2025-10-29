@@ -84,7 +84,7 @@ const FeedPage = ({ user, onLogout }) => {
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/notifications/unread-count`, {
+      const response = await axios.get(`/api/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotificationCount(response.data.count);
@@ -95,7 +95,7 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchStories = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/social/stories?userId=${user.id}`);
+      const response = await axios.get(`/api/social/stories?userId=${user.id}`);
       
       const stories = response.data.stories || [];
       
@@ -134,7 +134,7 @@ const FeedPage = ({ user, onLogout }) => {
       if (!append) setLoading(true);
       else setLoadingMore(true);
       
-      const response = await axios.get(`${API_URL}/api/social/feed?userId=${user.id}&page=${pageNum}&limit=10`);
+      const response = await axios.get(`/api/social/feed?userId=${user.id}&page=${pageNum}&limit=10`);
       const newPosts = response.data.posts || [];
       
       // Mark these posts as seen
@@ -178,7 +178,7 @@ const FeedPage = ({ user, onLogout }) => {
         formData.append('image', selectedImage);
       }
 
-      const response = await axios.post(`${API_URL}/api/social/posts`, formData, {
+      const response = await axios.post(`/api/social/posts`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -203,7 +203,7 @@ const FeedPage = ({ user, onLogout }) => {
       const formData = new FormData();
       formData.append('userId', user.id);
       
-      const response = await axios.post(`${API_URL}/api/social/posts/${postId}/like`, formData);
+      const response = await axios.post(`/api/social/posts/${postId}/like`, formData);
       
       if (response.data.success) {
         // Update local state
@@ -231,7 +231,7 @@ const FeedPage = ({ user, onLogout }) => {
       formData.append('content', commentText);
       formData.append('isAnonymous', false);
 
-      const response = await axios.post(`${API_URL}/api/social/posts/${postId}/comment`, formData);
+      const response = await axios.post(`/api/social/posts/${postId}/comment`, formData);
 
       if (response.data.success) {
         setCommentText('');
@@ -279,7 +279,7 @@ const FeedPage = ({ user, onLogout }) => {
       try {
         // Send notifications to mentioned users
         const token = localStorage.getItem("token");
-        await axios.post(`${API_URL}/api/notifications/mentions`, {
+        await axios.post(`/api/notifications/mentions`, {
           mentionedUsernames: mentions,
           type: 'story_mention',
           content: text
@@ -311,7 +311,7 @@ const FeedPage = ({ user, onLogout }) => {
       formData.append('isAnonymous', false);
       formData.append('image', newStory.mediaFile); // Send the actual file
 
-      const response = await axios.post(`${API_URL}/api/social/stories`, formData, {
+      const response = await axios.post(`/api/social/stories`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -457,7 +457,7 @@ const FeedPage = ({ user, onLogout }) => {
                           user?.profileImage 
                             ? (user.profileImage.startsWith('data:') || user.profileImage.startsWith('http') 
                                 ? user.profileImage 
-                                : `${API_URL}${user.profileImage}`)
+                                : `${user.profileImage}`)
                             : "https://via.placeholder.com/64"
                         }
                         alt="Your story"
@@ -626,7 +626,7 @@ const FeedPage = ({ user, onLogout }) => {
                           : (post.userAvatar 
                               ? (post.userAvatar.startsWith('data:') || post.userAvatar.startsWith('http') 
                                   ? post.userAvatar 
-                                  : `${API_URL}${post.userAvatar}`)
+                                  : `${post.userAvatar}`)
                               : "https://via.placeholder.com/40")
                       }
                       alt={post.username}
@@ -642,7 +642,7 @@ const FeedPage = ({ user, onLogout }) => {
                             
                             // Check if user profile is private
                             try {
-                              const response = await axios.get(`${API_URL}/api/users/${post.userId}`);
+                              const response = await axios.get(`/api/users/${post.userId}`);
                               if (response.data.isPrivate && response.data.id !== user.id) {
                                 alert('This account is private');
                               } else {
@@ -698,7 +698,7 @@ const FeedPage = ({ user, onLogout }) => {
                             <>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`${API_URL}/api/users/${post.userId}/follow`, {}, {
+                                  await axios.post(`/api/users/${post.userId}/follow`, {}, {
                                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                   });
                                   alert('Following user');
@@ -712,7 +712,7 @@ const FeedPage = ({ user, onLogout }) => {
                               </button>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`${API_URL}/api/users/${post.userId}/unfollow`, {}, {
+                                  await axios.post(`/api/users/${post.userId}/unfollow`, {}, {
                                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                   });
                                   alert('Unfollowed user');
@@ -726,7 +726,7 @@ const FeedPage = ({ user, onLogout }) => {
                               </button>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`${API_URL}/api/users/${post.userId}/mute`, {}, {
+                                  await axios.post(`/api/users/${post.userId}/mute`, {}, {
                                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                   });
                                   alert('User muted. You won\'t see their posts anymore.');
@@ -741,7 +741,7 @@ const FeedPage = ({ user, onLogout }) => {
                               <button onClick={async () => { 
                                 if (window.confirm('Block this user?')) {
                                   try {
-                                    await axios.post(`${API_URL}/api/users/${post.userId}/block`, {}, {
+                                    await axios.post(`/api/users/${post.userId}/block`, {}, {
                                       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                     });
                                     alert('User blocked');
@@ -758,7 +758,7 @@ const FeedPage = ({ user, onLogout }) => {
                                 const reason = prompt('Report reason:');
                                 if (reason) {
                                   try {
-                                    await axios.post(`${API_URL}/api/posts/${post.id}/report`, 
+                                    await axios.post(`/api/posts/${post.id}/report`, 
                                       { reason }, 
                                       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }}
                                     );
@@ -796,7 +796,7 @@ const FeedPage = ({ user, onLogout }) => {
                     <img
                       src={post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http') 
                         ? post.imageUrl 
-                        : `${API_URL}${post.imageUrl}`}
+                        : `${post.imageUrl}`}
                       alt="Post"
                       className="w-full max-h-96 object-cover"
                       onLoad={() => console.log('✅ Image loaded:', post.imageUrl)}
@@ -939,7 +939,7 @@ const FeedPage = ({ user, onLogout }) => {
                     const searchTerm = lastWord.substring(1);
                     try {
                       const token = localStorage.getItem("token");
-                      const response = await axios.get(`${API_URL}/api/search?query=${searchTerm}`, {
+                      const response = await axios.get(`/api/search?query=${searchTerm}`, {
                         headers: { Authorization: `Bearer ${token}` }
                       });
                       setMentionSuggestions(response.data.users || []);
@@ -1080,7 +1080,7 @@ const FeedPage = ({ user, onLogout }) => {
                               try {
                                 const token = localStorage.getItem("token");
                                 const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                                await axios.delete(`${API_URL}/api/stories/${storyId}`, {
+                                await axios.delete(`/api/stories/${storyId}`, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
                                 alert('Story deleted');
@@ -1104,7 +1104,7 @@ const FeedPage = ({ user, onLogout }) => {
                             try {
                               const token = localStorage.getItem("token");
                               const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                              await axios.post(`${API_URL}/api/stories/${storyId}/archive`, {}, {
+                              await axios.post(`/api/stories/${storyId}/archive`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                               });
                               alert('Story archived');
@@ -1191,7 +1191,7 @@ const FeedPage = ({ user, onLogout }) => {
                           onClick={async () => {
                             try {
                               const token = localStorage.getItem("token");
-                              await axios.post(`${API_URL}/api/users/${viewingStories.userId}/mute`, {}, {
+                              await axios.post(`/api/users/${viewingStories.userId}/mute`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                               });
                               alert(`Muted ${viewingStories.username}. You won't see their posts anymore.`);
@@ -1220,7 +1220,7 @@ const FeedPage = ({ user, onLogout }) => {
                 <video
                   src={
                     viewingStories.stories[currentStoryIndex]?.imageUrl 
-                      ? `${API_URL}${viewingStories.stories[currentStoryIndex].imageUrl}`
+                      ? `${viewingStories.stories[currentStoryIndex].imageUrl}`
                       : "https://via.placeholder.com/400"
                   }
                   controls
@@ -1234,7 +1234,7 @@ const FeedPage = ({ user, onLogout }) => {
                 <img
                   src={
                     viewingStories.stories[currentStoryIndex]?.imageUrl 
-                      ? `${API_URL}${viewingStories.stories[currentStoryIndex].imageUrl}`
+                      ? `${viewingStories.stories[currentStoryIndex].imageUrl}`
                       : "https://via.placeholder.com/400"
                   }
                   alt="Story"
@@ -1284,13 +1284,13 @@ const FeedPage = ({ user, onLogout }) => {
                         
                         if (isLiked) {
                           // Unlike
-                          await axios.delete(`${API_URL}/api/stories/${storyId}/like`, {
+                          await axios.delete(`/api/stories/${storyId}/like`, {
                             headers: { Authorization: `Bearer ${token}` }
                           });
                           setStoryLikes({ ...storyLikes, [storyId]: false });
                         } else {
                           // Like
-                          await axios.post(`${API_URL}/api/stories/${storyId}/like`, {}, {
+                          await axios.post(`/api/stories/${storyId}/like`, {}, {
                             headers: { Authorization: `Bearer ${token}` }
                           });
                           setStoryLikes({ ...storyLikes, [storyId]: true });
@@ -1374,7 +1374,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "I just don't like it" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1395,7 +1395,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Harassment or bullying" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1416,7 +1416,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Self-harm or dangerous content" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1437,7 +1437,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Hate speech or violence" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1458,7 +1458,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Illegal activities" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1479,7 +1479,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Adult content" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1500,7 +1500,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Spam or scam" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1521,7 +1521,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Misinformation" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
@@ -1542,7 +1542,7 @@ const FeedPage = ({ user, onLogout }) => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem("token");
-                    await axios.post(`${API_URL}/api/stories/${reportingStory?.id}/report`, 
+                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Copyright violation" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
                     );
