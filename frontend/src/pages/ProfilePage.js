@@ -473,7 +473,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
               {viewingUser?.bio && (
                 <div className="bg-pink-50 rounded-2xl p-4 mt-4 mb-6">
-                  <p className="text-gray-700">{viewingUser.bio}</p>
+                  <LinkifyBio text={viewingUser.bio} />
                 </div>
               )}
 
