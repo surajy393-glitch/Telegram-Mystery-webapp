@@ -503,6 +503,15 @@ const DatingRegisterPage = ({ onLogin }) => {
       return;
     }
 
+    if (!formData.country) {
+      toast({
+        title: "Country Required",
+        description: "Please enter your country",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (formData.interests.length === 0) {
       toast({
         title: "Interests Required",
