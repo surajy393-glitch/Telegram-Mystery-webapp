@@ -76,15 +76,32 @@ const ProfilePage = ({ user, onLogout }) => {
   const isViewingSpecificUser = !!userId;
   const isViewingOwnProfile = userId === user?.id;
 
+  // Helper function to derive the actual account ID from user object
+  const getAccountId = (userObj) => {
+    return userObj?.id || userObj?._id || userObj?.user_id || userObj?.tg_user_id;
+  };
+
   useEffect(() => {
     if (isViewingSpecificUser) {
       fetchUserProfile(userId);
-      fetchUserPosts(userId);
+      // Don't fetch posts immediately with URL userId - wait for profile to load
+      // Then use the actual ID from viewingUser
     } else {
       fetchProfile();
       fetchUsers();
     }
   }, [userId]);
+
+  // Fetch posts after profile loads with correct ID
+  useEffect(() => {
+    if (viewingUser && isViewingSpecificUser) {
+      const accountId = getAccountId(viewingUser);
+      console.log("🔍 Fetching posts with derived accountId:", accountId);
+      if (accountId) {
+        fetchUserPosts(accountId);
+      }
+    }
+  }, [viewingUser?.id, viewingUser?._id, viewingUser?.user_id, viewingUser?.tg_user_id]);
 
   // Auto-refresh posts when follow request is accepted
   useEffect(() => {
@@ -100,7 +117,10 @@ const ProfilePage = ({ user, onLogout }) => {
        viewingUser.id === user?.id)
     ) {
       console.log("Auto-fetching posts after follow acceptance");
-      fetchUserPosts(viewingUser.id);
+      const accountId = getAccountId(viewingUser);
+      if (accountId) {
+        fetchUserPosts(accountId);
+      }
     }
   }, [viewingUser]);
 
