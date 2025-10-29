@@ -122,6 +122,7 @@ const EditProfilePage = ({ user, onLogout }) => {
       formDataToSend.append("fullName", formData.fullName);
       formDataToSend.append("username", formData.username);
       formDataToSend.append("bio", formData.bio);
+      formDataToSend.append("country", formData.country);
       if (formData.profileImage && formData.profileImage !== profile.profileImage) {
         formDataToSend.append("profileImage", formData.profileImage);
       }
