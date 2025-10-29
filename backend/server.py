@@ -123,6 +123,7 @@ class User(BaseModel):
     isVerified: bool = False  # LuvHive Verified badge
     verifiedAt: Optional[datetime] = None  # When verification was granted
     verificationPathway: Optional[str] = None  # How user got verified (High Engagement, Moderate, etc.)
+    isFounder: bool = False  # Official LuvHive/Founder account
     emailVerified: bool = False  # Email verification status
     phoneVerified: bool = False  # Phone verification status
     
