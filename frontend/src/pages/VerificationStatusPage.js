@@ -50,6 +50,40 @@ const VerificationStatusPage = ({ user }) => {
     setShowVerifyDialog(true);
   };
 
+  const showHelp = (type) => {
+    const helpData = {
+      accountAge: {
+        title: '⏳ Why 45 Days?',
+        content: 'The 45-day waiting period helps us ensure account authenticity and prevents spam. Your account age is calculated from your registration date and cannot be accelerated. This requirement protects our community and maintains the value of verification.'
+      },
+      avgStoryViews: {
+        title: '📊 How Story Views Are Calculated',
+        content: 'Average story views = Total views across all your stories ÷ Number of stories posted. Each unique user view counts once per story. Stories expire after 24 hours but their view count is permanently recorded for this calculation.'
+      },
+      totalLikes: {
+        title: '❤️ Total Likes Calculation',
+        content: 'Total likes = Sum of all likes received on your posts. Each unique user like counts once per post. This metric shows your overall community engagement and content quality.'
+      },
+      profileViews: {
+        title: '👁️ Profile Views Tracking',
+        content: 'Profile views count unique visitors to your profile page. Multiple visits from the same user within 24 hours count as one view. This shows genuine interest in your profile.'
+      },
+      moderateOr: {
+        title: '🎯 Either/Or Condition',
+        content: 'For the Moderate Engagement pathway, you need EITHER 500+ total likes OR 40+ average story views. You don\'t need both - achieving just one of these metrics qualifies you. Choose the metric that fits your content style!'
+      },
+      pathways: {
+        title: '🛤️ Multiple Pathways Explained',
+        content: 'You only need to complete ONE pathway after meeting basic requirements. Choose the pathway that best matches your activity:\n\n• High Engagement: For very active users\n• Moderate Engagement: For consistent users with longer history\n• Community Contribution: For moderators and contributors (coming soon)\n• Cross-Platform: If you\'re verified elsewhere (coming soon)'
+      }
+    };
+    
+    if (helpData[type]) {
+      setHelpContent(helpData[type]);
+      setShowHelpDialog(true);
+    }
+  };
+
   const sendVerificationCode = async () => {
     setVerifying(true);
     setMessage('');
