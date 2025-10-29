@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, CheckCircle2, XCircle, Shield } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Shield, Info, HelpCircle } from "lucide-react";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
@@ -21,6 +21,8 @@ const VerificationStatusPage = ({ user }) => {
   const [verifying, setVerifying] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
+  const [helpContent, setHelpContent] = useState({ title: '', content: '' });
 
   useEffect(() => {
     fetchVerificationStatus();
