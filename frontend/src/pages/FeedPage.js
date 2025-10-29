@@ -862,6 +862,24 @@ const FeedPage = ({ user, onLogout }) => {
               </div>
             ))}
           </div>
+          
+          {/* Loading More Indicator */}
+          {loadingMore && (
+            <div className="flex justify-center py-8">
+              <div className="flex items-center space-x-2 text-gray-600">
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Loading more posts...</span>
+              </div>
+            </div>
+          )}
+          
+          {/* No More Posts */}
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>You're all caught up! 🎉</p>
+              <p className="text-sm mt-1">Check back later for more posts</p>
+            </div>
+          )}
         )}
       </div>
 
