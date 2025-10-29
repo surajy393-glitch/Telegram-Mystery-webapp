@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Posts Not Loading Despite Posts Count Showing - Comprehensive Solution"
+  - task: "Fix Posts Not Loading - Filter Mismatch & 401 Errors"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/src/pages/FeedPage.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Deep analysis revealed two critical issues: 1) FILTER MISMATCH: Profile endpoint counts posts with isArchived: {$ne: True} (includes posts without isArchived field), but get_user_posts filters with isArchived: False (only explicit False). Result: postsCount shows 4 but posts array empty because older posts lack isArchived field. 2) 401 ERRORS IN FEED: FeedPage.js onClick handler for post.username calls axios.get('/api/users/${post.userId}') WITHOUT Bearer token. API requires auth, returns 401, logs 'Error checking profile'. Though catch block navigates to profile, console shows noisy errors."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ CRITICAL FIXES APPLIED: BACKEND (server.py line 4765): Changed posts filter from isArchived: False to isArchived: {$ne: True}. This matches profile count logic and includes posts without isArchived field (default for older posts). Comment added: 'Use $ne: True to include posts without isArchived field (default behavior)'. FRONTEND (FeedPage.js line 645): Updated username onClick handler to pass Bearer token: const token = localStorage.getItem('token'); axios.get(`${API}/users/${post.userId}`, {headers: {Authorization: `Bearer ${token}`}}). This eliminates 401 'Error checking profile' console noise. Both services restarted (backend pid 6038, frontend pid 6040). NOW: Posts query returns all non-archived posts (including those without explicit isArchived field), feed username clicks authenticated properly."
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js, backend/server.py"
