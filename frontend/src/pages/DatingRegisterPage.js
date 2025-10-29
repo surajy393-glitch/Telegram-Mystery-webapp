@@ -596,10 +596,10 @@ const DatingRegisterPage = ({ onLogin }) => {
                       null
       };
 
-      // If the backend did not return a profileImage but the user uploaded a
-      // photo, use the local base64 preview. This ensures the DP shows
-      // immediately after registration instead of only after editing the profile.
-      if (!normalizedUser.profileImage && photoPreview) {
+      // Always prefer the local base64 preview of the uploaded photo if it exists.
+      // This guarantees the image is visible immediately after registration
+      // (the server may not return a valid path on the first fetch).
+      if (photoPreview) {
         normalizedUser.profileImage = photoPreview;
       }
 
