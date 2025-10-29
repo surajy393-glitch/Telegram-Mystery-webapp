@@ -61,13 +61,28 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       console.log("   Username:", response.data.username);
       console.log("   Profile Image:", response.data.profileImage);
       
-      setProfile(response.data);
+      // Merge with locally stored user to preserve base64 profile image if backend returns null
+      let mergedProfile = { ...response.data };
+      try {
+        const localUserString = localStorage.getItem("user");
+        if (localUserString) {
+          const localUser = JSON.parse(localUserString);
+          if (!mergedProfile.profileImage && localUser.profileImage) {
+            console.log("📸 EditProfile: Using local preview from registration");
+            mergedProfile.profileImage = localUser.profileImage;
+          }
+        }
+      } catch (mergeErr) {
+        console.error("❌ Failed to merge local profile image:", mergeErr);
+      }
+      
+      setProfile(mergedProfile);
       setFormData({
-        fullName: response.data.fullName || "",
-        username: response.data.username || "",
-        bio: response.data.bio || "",
-        country: response.data.country || "",
-        profileImage: response.data.profileImage || ""
+        fullName: mergedProfile.fullName || "",
+        username: mergedProfile.username || "",
+        bio: mergedProfile.bio || "",
+        country: mergedProfile.country || "",
+        profileImage: mergedProfile.profileImage || ""
       });
     } catch (error) {
       console.error("❌ EditProfile: Error fetching profile:", error);
