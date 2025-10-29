@@ -22,6 +22,42 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const API = `${BACKEND_URL}/api`;
 
+// Utility function to linkify bio text (mentions and URLs)
+const LinkifyBio = ({ text }) => {
+  if (!text) return null;
+  
+  const parts = text.split(/(@\w+|https?:\/\/[^\s]+)/g);
+  
+  return (
+    <p className="text-gray-700 leading-relaxed">
+      {parts.map((part, index) => {
+        if (part.startsWith('@')) {
+          // Make @mentions clickable
+          return (
+            <span key={index} className="text-blue-600 hover:underline cursor-pointer font-medium">
+              {part}
+            </span>
+          );
+        } else if (part.startsWith('http')) {
+          // Make URLs clickable
+          return (
+            <a 
+              key={index} 
+              href={part} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              {part}
+            </a>
+          );
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </p>
+  );
+};
+
 const ProfilePage = ({ user, onLogout }) => {
   const { userId } = useParams();
   const navigate = useNavigate();
