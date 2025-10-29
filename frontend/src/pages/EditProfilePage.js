@@ -190,7 +190,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
                   formData.profileImage 
                     ? (formData.profileImage.startsWith('data:') || formData.profileImage.startsWith('http') 
                         ? formData.profileImage 
-                        : `${BACKEND_URL}${formData.profileImage}`)
+                        : formData.profileImage)
                     : "https://via.placeholder.com/120"
                 }
                 alt="Profile"
