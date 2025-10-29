@@ -5423,6 +5423,7 @@ async def register_for_mystery(
     age: int = Form(...),
     gender: str = Form(...),
     city: str = Form(...),
+    country: str = Form(...),
     interests: str = Form(...),
     mobileNumber: str = Form(None),
     emailVerified: bool = Form(False),
