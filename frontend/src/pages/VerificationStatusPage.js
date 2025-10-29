@@ -725,6 +725,26 @@ const VerificationStatusPage = ({ user }) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Help Dialog */}
+      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{helpContent.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              {helpContent.content}
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowHelpDialog(false)}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            Got it!
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
