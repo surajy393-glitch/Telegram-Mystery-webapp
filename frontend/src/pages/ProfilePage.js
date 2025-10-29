@@ -107,7 +107,10 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchAccountInfo = async (userId) => {
     console.log("=== fetchAccountInfo CALLED ===");
     console.log("userId parameter:", userId);
-    console.log("showAccountInfo before:", showAccountInfo);
+    
+    // Open modal immediately with loading state
+    setShowAccountInfo(true);
+    setAccountInfo(null); // Reset to show loading
     
     try {
       const token = localStorage.getItem("token");
@@ -122,21 +125,18 @@ const ProfilePage = ({ user, onLogout }) => {
       
       console.log("✅ Account info received:", response.data);
       setAccountInfo(response.data);
+      console.log("Account info set, dialog should show content now");
       
-      console.log("Setting showAccountInfo to TRUE");
-      setShowAccountInfo(true);
-      
-      // Force a small delay to ensure state updates
-      setTimeout(() => {
-        console.log("showAccountInfo after timeout:", showAccountInfo);
-      }, 100);
-      
-      console.log("Dialog should now be visible");
     } catch (error) {
       console.error("❌ Error fetching account info:", error);
       console.error("Error status:", error.response?.status);
       console.error("Error details:", error.response?.data);
-      alert(`Failed to load account information: ${error.response?.data?.detail || error.message}`);
+      
+      // Show error in modal instead of closing
+      setAccountInfo({
+        error: true,
+        message: error.response?.data?.detail || error.message || "Failed to load account information"
+      });
     }
   };
 
