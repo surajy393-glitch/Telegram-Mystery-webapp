@@ -475,6 +475,8 @@ const VerificationStatusPage = ({ user }) => {
                   className={`p-5 rounded-xl border-2 transition-all ${
                     pathway.met 
                       ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-400 shadow-lg' 
+                      : pathway.comingSoon
+                      ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300'
                       : 'bg-white border-gray-200'
                   }`}
                 >
@@ -483,25 +485,31 @@ const VerificationStatusPage = ({ user }) => {
                       <h4 className="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
                         {pathway.name}
                         {pathway.met && <CheckCircle2 className="w-6 h-6 text-green-600" />}
+                        {pathway.comingSoon && <span className="text-xs bg-gray-400 text-white px-2 py-1 rounded-full ml-2">Coming Soon</span>}
                       </h4>
                       <p className="text-sm text-gray-600">{pathway.description}</p>
+                      {pathway.futureDetails && (
+                        <p className="text-xs text-gray-500 mt-2 italic">
+                          📋 {pathway.futureDetails}
+                        </p>
+                      )}
                     </div>
                   </div>
                   
                   <div className="space-y-2 mt-3">
                     {pathway.requirements.map((req, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
+                      <div key={idx} className={`flex items-center justify-between text-sm ${req.isOr ? 'bg-yellow-50 p-2 rounded-lg border border-yellow-200' : ''}`}>
+                        <div className="flex items-center gap-2 flex-1">
                           {req.met ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                           ) : (
-                            <XCircle className="w-4 h-4 text-gray-400" />
+                            <XCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           )}
-                          <span className={req.met ? 'text-green-700 font-medium' : 'text-gray-600'}>
+                          <span className={`${req.met ? 'text-green-700 font-medium' : 'text-gray-600'} ${req.isOr ? 'font-semibold' : ''}`}>
                             {req.label}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500">{req.value}</span>
+                        <span className="text-xs text-gray-500 ml-2">{req.value}</span>
                       </div>
                     ))}
                   </div>
