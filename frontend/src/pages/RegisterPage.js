@@ -408,40 +408,17 @@ const RegisterPage = ({ onLogin }) => {
       }
 
       const token = response.data.access_token;
-
-      // Track the most up-to-date user object.
-      // Default to the user returned from the registration response.
-      let updatedUser = response.data.user;
-
-      // Update profile with bio and/or image if provided
-      if (formData.bio || formData.profileImage) {
-        const formDataToSend = new FormData();
-        if (formData.bio) formDataToSend.append("bio", formData.bio);
-        if (formData.profileImage) formDataToSend.append("profileImage", formData.profileImage);
-
-        try {
-          const updateRes = await axios.put(`${API}/auth/profile`, formDataToSend, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data"
-            }
-          });
-          // Capture the updated user returned from the backend
-          if (updateRes.data && updateRes.data.user) {
-            updatedUser = updateRes.data.user;
-          }
-        } catch (err) {
-          // Log any profile update errors but continue the registration flow
-          console.error("Profile update failed during registration", err);
-        }
-      }
+      
+      // Use the user returned from registration directly.
+      // register-enhanced already includes bio and profileImage.
+      const newUser = response.data.user;
 
       // Show success popup
       setShowSuccess(true);
 
-      // Auto redirect after 2 seconds and use the updated user for login
+      // Auto redirect after 2 seconds and use the user for login
       setTimeout(() => {
-        onLogin(token, updatedUser);
+        onLogin(token, newUser);
         navigate("/home");
       }, 2000);
       
