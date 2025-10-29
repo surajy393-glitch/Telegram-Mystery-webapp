@@ -30,8 +30,10 @@ const MyProfilePage = ({ user, onLogout }) => {
   useEffect(() => {
     // Wrap in an async function to ensure proper sequencing
     const loadProfile = async () => {
+      console.log("📱 MyProfilePage: Loading profile, user prop:", user);
       // Use user prop as immediate fallback (do not toggle loading here)
       if (user) {
+        console.log("✅ Setting profile from user prop, profileImage:", user.profileImage);
         setProfile(user);
       }
       await fetchProfileData(); // This will set loading to false in its finally block
