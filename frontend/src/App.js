@@ -41,10 +41,12 @@ function App() {
   }, []);
 
   const handleLogin = (token, userData) => {
+    console.log("🔐 handleLogin called with user:", userData);
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
+    console.log("✅ User state updated, profileImage:", userData?.profileImage);
   };
 
   const handleLogout = () => {
