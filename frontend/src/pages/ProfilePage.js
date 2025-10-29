@@ -97,9 +97,9 @@ const ProfilePage = ({ user, onLogout }) => {
   useEffect(() => {
     if (viewingUser && isViewingSpecificUser) {
       const accountId = getAccountId(viewingUser);
-      console.log("🔍 Fetching posts with derived accountId:", accountId);
+      console.log('🔍 Fetching posts with derived accountId:', accountId, 'username:', viewingUser.username);
       if (accountId) {
-        fetchUserPosts(accountId);
+        fetchUserPosts(accountId, viewingUser.username);
       }
     }
   }, [viewingUser?.id, viewingUser?._id, viewingUser?.user_id, viewingUser?.tg_user_id]);
@@ -120,10 +120,10 @@ const ProfilePage = ({ user, onLogout }) => {
       console.log("Auto-fetching posts after follow acceptance");
       const accountId = getAccountId(viewingUser);
       if (accountId) {
-        fetchUserPosts(accountId);
+        fetchUserPosts(accountId, viewingUser.username);
       }
     }
-  }, [viewingUser]);
+  }, [viewingUser, userPosts.length]);
 
   const fetchAccountInfo = async (userId) => {
     console.log("=== fetchAccountInfo CALLED with ID:", userId);
