@@ -4617,6 +4617,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "gender": user.get("gender"),
         "isPremium": user.get("isPremium", False),
         "isVerified": user.get("isVerified", False),
+        "verificationPathway": user.get("verificationPathway"),
         "isPrivate": is_private,
         "followersCount": followers_count,
         "followingCount": following_count,
@@ -4624,6 +4625,26 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "hasRequested": has_requested,
         "postsCount": posts_count,
         "createdAt": user.get("createdAt") if isinstance(user.get("createdAt"), str) else user.get("createdAt").isoformat() if user.get("createdAt") else None
+    }
+
+@api_router.get("/users/{userId}/verification-details")
+async def get_user_verification_details(
+    userId: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get verification details for a user"""
+    user = await db.users.find_one({"id": userId})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.get("isVerified", False):
+        raise HTTPException(status_code=404, detail="User is not verified")
+    
+    return {
+        "pathway": user.get("verificationPathway", "High Engagement Pathway"),
+        "verifiedAt": user.get("verifiedAt", datetime.now(timezone.utc)).isoformat() if isinstance(user.get("verifiedAt"), datetime) else user.get("verifiedAt", datetime.now(timezone.utc).isoformat()),
+        "isVerified": True
     }
 
 @api_router.get("/users/{userId}/posts")
