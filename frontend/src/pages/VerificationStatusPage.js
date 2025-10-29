@@ -367,12 +367,24 @@ const VerificationStatusPage = ({ user }) => {
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               {verificationData?.isVerified ? '🎉 You\'re Verified!' : 'Verification Progress'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-lg text-gray-600 mb-4">
               {verificationData?.isVerified 
                 ? 'Your account has been verified with the blue checkmark ☑️'
-                : `${metCriteria} of ${totalCriteria} criteria met`}
+                : `${basicCount}/${basicTotal} basic requirements • ${pathways.filter(p => p.met).length}/4 pathways`}
             </p>
           </div>
+
+          {/* Smart Guidance */}
+          {smartGuidance && (
+            <div className={`${
+              smartGuidance.color === 'blue' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-green-100 text-green-800 border-green-300'
+            } border-2 rounded-xl p-4 mb-4`}>
+              <p className="text-sm font-medium flex items-center gap-2">
+                <span className="text-lg">{smartGuidance.color === 'blue' ? '🎯' : '🚀'}</span>
+                {smartGuidance.message}
+              </p>
+            </div>
+          )}
 
           {/* Progress Bar */}
           <div className="bg-gray-200 rounded-full h-4 overflow-hidden mb-2">
