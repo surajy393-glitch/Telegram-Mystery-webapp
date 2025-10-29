@@ -133,6 +133,13 @@ const SearchPage = ({ user, onLogout }) => {
 
     try {
       const token = localStorage.getItem("token");
+      
+      if (!token) {
+        console.error('❌ No token found in localStorage');
+        alert('Please log in again to search');
+        return;
+      }
+      
       console.log('🔍 Searching:', { query, type, hasToken: !!token });
       
       const response = await axios.post(`${API}/search`, {
@@ -154,6 +161,7 @@ const SearchPage = ({ user, onLogout }) => {
     } catch (error) {
       console.error("❌ Error searching:", error);
       console.error("❌ Error response:", error.response?.data);
+      console.error("❌ Token present:", !!localStorage.getItem("token"));
       alert(`Search failed: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
