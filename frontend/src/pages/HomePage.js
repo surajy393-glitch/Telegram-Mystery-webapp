@@ -647,7 +647,7 @@ const HomePage = ({ user, onLogout }) => {
                     user?.profileImage 
                       ? (user.profileImage.startsWith('http') || user.profileImage.startsWith('data:')
                           ? user.profileImage 
-                          : `${process.env.REACT_APP_BACKEND_URL}${user.profileImage}`)
+                          : `${user.profileImage}`)
                       : "https://via.placeholder.com/40"
                   }
                   alt="Profile"
@@ -735,7 +735,7 @@ const HomePage = ({ user, onLogout }) => {
                         post.userProfileImage 
                           ? (post.userProfileImage.startsWith('http') || post.userProfileImage.startsWith('data:')
                               ? post.userProfileImage 
-                              : `${process.env.REACT_APP_BACKEND_URL}${post.userProfileImage}`)
+                              : `${post.userProfileImage}`)
                           : "https://via.placeholder.com/40"
                       }
                       alt={post.username}
@@ -1093,7 +1093,7 @@ const HomePage = ({ user, onLogout }) => {
                     viewingStories.userProfileImage 
                       ? (viewingStories.userProfileImage.startsWith('http') || viewingStories.userProfileImage.startsWith('data:')
                           ? viewingStories.userProfileImage 
-                          : `${process.env.REACT_APP_BACKEND_URL}${viewingStories.userProfileImage}`)
+                          : `${viewingStories.userProfileImage}`)
                       : "https://via.placeholder.com/40"
                   }
                   alt={viewingStories.username}
@@ -1228,7 +1228,7 @@ const HomePage = ({ user, onLogout }) => {
                     commentingPost.userProfileImage 
                       ? (commentingPost.userProfileImage.startsWith('http') || commentingPost.userProfileImage.startsWith('data:')
                           ? commentingPost.userProfileImage 
-                          : `${process.env.REACT_APP_BACKEND_URL}${commentingPost.userProfileImage}`)
+                          : `${commentingPost.userProfileImage}`)
                       : "https://via.placeholder.com/40"
                   }
                   alt={commentingPost.username}
@@ -1255,7 +1255,7 @@ const HomePage = ({ user, onLogout }) => {
                           comment.profileImage 
                             ? (comment.profileImage.startsWith('http') || comment.profileImage.startsWith('data:')
                                 ? comment.profileImage 
-                                : `${process.env.REACT_APP_BACKEND_URL}${comment.profileImage}`)
+                                : `${comment.profileImage}`)
                             : "https://via.placeholder.com/32"
                         }
                         alt={comment.username || 'User'}
