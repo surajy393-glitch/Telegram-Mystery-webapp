@@ -25,7 +25,7 @@ const StoriesPage = ({ user }) => {
   const fetchStories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/social/stories?userId=${user.id}&limit=50`);
+      const response = await axios.get(`${API}/social/stories?userId=${user.id}&limit=50`);
       if (response.data.success) {
         setStories(response.data.stories);
       }
@@ -54,7 +54,7 @@ const StoriesPage = ({ user }) => {
         formData.append('image', selectedImage);
       }
 
-      const response = await axios.post(`${API_URL}/api/social/stories`, formData, {
+      const response = await axios.post(`${API}/social/stories`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -79,7 +79,7 @@ const StoriesPage = ({ user }) => {
     try {
       const formData = new FormData();
       formData.append('userId', user.id);
-      await axios.post(`${API_URL}/api/social/stories/${story.id}/view`, formData);
+      await axios.post(`${API}/social/stories/${story.id}/view`, formData);
       
       // Update local state
       setStories(stories.map(s => 
