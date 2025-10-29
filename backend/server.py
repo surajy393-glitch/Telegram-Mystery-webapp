@@ -2176,6 +2176,17 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     meets_any_pathway = high_engagement or moderate_engagement or community_contribution or cross_platform_verified
     auto_eligible = basic_requirements_met and meets_any_pathway
     
+    # Determine which pathway the user met
+    achieved_pathway = None
+    if high_engagement:
+        achieved_pathway = "High Engagement Pathway"
+    elif moderate_engagement:
+        achieved_pathway = "Moderate Engagement Pathway"
+    elif community_contribution:
+        achieved_pathway = "Community Contribution"
+    elif cross_platform_verified:
+        achieved_pathway = "Cross-Platform Verified"
+    
     # Criteria checks (grouped for display)
     criteria = {
         # Identity & Security
