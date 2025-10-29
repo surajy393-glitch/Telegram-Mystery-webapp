@@ -415,17 +415,57 @@ const RegisterPage = ({ onLogin }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const fullUser = meRes.data.user || meRes.data;
+        
+        // Normalize the user object to ensure profileImage field exists
+        const normalizedUser = {
+          ...fullUser,
+          profileImage: fullUser.profileImage ?? 
+                        fullUser.profile_image ?? 
+                        fullUser.profilePhoto ?? 
+                        fullUser.profile_photo_url ?? 
+                        fullUser.photo_url ?? 
+                        fullUser.profile_photo ?? 
+                        null
+        };
+
+        // If the backend did not return a profileImage but the user uploaded a
+        // photo, use the local base64 preview from formData.
+        if (!normalizedUser.profileImage && formData.profileImage) {
+          normalizedUser.profileImage = formData.profileImage;
+        }
+
+        console.log("🎉 Registration successful! User data:", normalizedUser);
+        console.log("🖼️ Profile Image:", normalizedUser.profileImage);
+        console.log("📸 Using base64 preview:", !fullUser.profileImage && !!formData.profileImage);
+        
         setShowSuccess(true);
         setTimeout(() => {
-          onLogin(token, fullUser);
+          onLogin(token, normalizedUser);
           navigate("/home");
         }, 2000);
       } catch (err) {
         // If the fetch fails, fall back to the user returned in the response.
         const fallbackUser = response.data.user;
+        
+        // Apply same normalization and fallback
+        const normalizedUser = {
+          ...fallbackUser,
+          profileImage: fallbackUser.profileImage ?? 
+                        fallbackUser.profile_image ?? 
+                        fallbackUser.profilePhoto ?? 
+                        fallbackUser.profile_photo_url ?? 
+                        fallbackUser.photo_url ?? 
+                        fallbackUser.profile_photo ?? 
+                        null
+        };
+
+        if (!normalizedUser.profileImage && formData.profileImage) {
+          normalizedUser.profileImage = formData.profileImage;
+        }
+        
         setShowSuccess(true);
         setTimeout(() => {
-          onLogin(token, fallbackUser);
+          onLogin(token, normalizedUser);
           navigate("/home");
         }, 2000);
       }
