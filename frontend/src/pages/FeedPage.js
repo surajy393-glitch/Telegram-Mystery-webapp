@@ -61,6 +61,26 @@ const FeedPage = ({ user, onLogout }) => {
     }
   }, [user]);
 
+  // Infinite scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user scrolled near bottom (within 500px)
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 500 && hasMore && !loadingMore && !loading) {
+        // Load next page
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchFeed(nextPage, true); // Append to existing posts
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [page, hasMore, loadingMore, loading]);
+
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem("token");
