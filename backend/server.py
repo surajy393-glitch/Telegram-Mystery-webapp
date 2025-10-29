@@ -5621,12 +5621,20 @@ async def register_for_mystery(
             logger.warning(f"Using generated pseudo_tg_id: {pseudo_tg_id} despite PostgreSQL error")
         
         # 5. Generate access token
-        token_data = {
-            "user_id": mongo_user_id,
-            "username": clean_username,
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        }
-        access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+        #
+        # IMPORTANT:
+        # The standard login flow uses create_access_token(data={"sub": user["id"]}) which stores
+        # the user ID in the "sub" claim of the JWT. Many authenticated endpoints,
+        # including /auth/me, rely on this claim to identify the current user. When we were
+        # generating tokens here using a custom payload with a "user_id" field, those endpoints
+        # would not find the expected "sub" claim and would treat the token as invalid. This
+        # manifested as 401 errors ("Invalid token") immediately after registration, causing
+        # pages like Mystery, Edit Profile, and Search to break until the user logged out and
+        # logged back in via the normal login flow. To fix this, we now generate the access
+        # token using the same helper and data structure as the login route: store the user ID
+        # under the "sub" key. The helper function will also handle the expiration.
+        token_data = {"sub": mongo_user_id}
+        access_token = create_access_token(token_data)
         
         # 6. Send welcome email (async, don't wait for it to complete)
         try:
