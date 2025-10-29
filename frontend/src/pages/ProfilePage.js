@@ -413,33 +413,33 @@ const ProfilePage = ({ user, onLogout }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   /*
-                   * Clicking "About this account" should always attempt to
-                   * retrieve the account info for the viewed user. The previous
-                   * implementation only checked `viewingUser.id`, which meant the
-                   * handler did nothing when that property was missing (for example,
-                   * when the ID is stored under `_id`, `user_id` or `tg_user_id`).
-                   * We now derive the ID from all possible fields before
-                   * calling `fetchAccountInfo`. If none are found, we alert the user.
+                   * The user ID might come under id, _id, user_id or tg_user_id, depending
+                   * on how the backend serialized it. Derive the ID from all possible fields.
                    */
                   onClick={() => {
+                    // Prefer id, then _id, then user_id, then tg_user_id
                     const accountId =
                       viewingUser?.id ||
                       viewingUser?._id ||
                       viewingUser?.user_id ||
                       viewingUser?.tg_user_id;
+
+                    // Always set the loading modal to visible first
+                    setShowAccountInfo(true);
+                    setAccountInfo(null);
+
                     if (accountId) {
-                      console.log("About this account clicked, fetching info for:", accountId);
+                      // Fetch and display the account info
                       fetchAccountInfo(accountId);
                     } else {
-                      console.error(
-                        "Unable to determine ID for account info. viewingUser:",
-                        viewingUser
-                      );
-                      alert(
-                        "Unable to load account info. User ID is missing. Please refresh."
-                      );
+                      // Without an ID we cannot call the endpoint. Show an error message.
+                      setAccountInfo({
+                        error: true,
+                        message:
+                          'Unable to determine user ID for account info. Please try again later.',
+                      });
                     }
                   }}
                   className="cursor-pointer hover:bg-pink-50 rounded-lg py-3 flex items-center"
