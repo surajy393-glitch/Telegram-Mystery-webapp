@@ -825,7 +825,23 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix 500 Internal Server Error - createdAt Type Handling"
+  - task: "Fix 500 Internal Server Error - Missing Field KeyErrors"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/src/pages/ProfilePage.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "500 errors still occurring. Backend logs show KeyError: 'mediaType' at line 4791. Some legacy posts missing required fields like mediaType, id, userId, username. Direct bracket notation post['field'] throws KeyError when field missing, causing 500 crash."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ BACKEND DEFENSIVE FIX: Updated get_user_posts (server.py lines 4786-4802) to use .get() for all fields instead of bracket notation. Changed: id/userId/username from post['field'] to post.get('field'), mediaType from post['mediaType'] to post.get('mediaType', 'image') with default. This prevents KeyError on legacy posts with missing fields. Backend restarted (pid 7657)."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ FRONTEND GRACEFUL FALLBACK: Added triple-fallback logic to fetchUserPosts (ProfilePage.js): 1) Try /users/{accountId}/posts (primary UUID endpoint), 2) If empty and postsCount > 0, try /users/{username}/posts (username fallback), 3) If still empty and postsCount > 0, fetch /posts/feed and filter by userId/username client-side. Also added catch block fallback: if 500 or 404 error, immediately try feed endpoint. This ensures UI never breaks even with backend issues. Console logs track each fallback attempt. Frontend restarted (pid 7270). NOW: Backend safe from KeyErrors, frontend shows posts even if user endpoint fails completely."
     implemented: true
     working: "NA"
     file: "backend/server.py"
