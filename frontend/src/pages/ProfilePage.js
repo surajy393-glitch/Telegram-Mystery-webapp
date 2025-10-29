@@ -536,8 +536,16 @@ const ProfilePage = ({ user, onLogout }) => {
                   onClick={() => {
                     console.log("TEST BUTTON CLICKED");
                     console.log("viewingUser:", viewingUser);
-                    if (viewingUser?.id) {
-                      fetchAccountInfo(viewingUser.id);
+                    const accountId =
+                      viewingUser?.id ||
+                      viewingUser?._id ||
+                      viewingUser?.user_id ||
+                      viewingUser?.tg_user_id;
+                    console.log("Resolved accountId:", accountId);
+                    if (accountId) {
+                      fetchAccountInfo(accountId);
+                    } else {
+                      alert("No ID found in viewingUser object");
                     }
                   }}
                   className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
