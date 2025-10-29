@@ -180,13 +180,26 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchUserProfile = async (targetUserId) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API}/users/${targetUserId}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      let response;
+      try {
+        // Attempt the detailed UUID-only endpoint
+        response = await axios.get(`${API}/users/${targetUserId}/profile`, { headers });
+      } catch (err) {
+        // Fallback to the generic endpoint that accepts usernames as well
+        console.log("Profile endpoint failed, trying fallback with username:", targetUserId);
+        response = await axios.get(`${API}/users/${targetUserId}`, { headers });
+      }
+      console.log("Profile fetched successfully:", response.data.username);
       setViewingUser(response.data);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      console.error('Error fetching user profile:', error);
+      // Log out if the token is invalid or expired
+      if (error.response?.status === 401) {
+        console.error("401 Unauthorized - logging out");
+        onLogout();
+      }
     } finally {
       setLoading(false);
     }
