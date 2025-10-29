@@ -970,6 +970,7 @@ const FeedPage = ({ user, onLogout }) => {
                     <div className="flex items-center gap-1">
                       <h3 className="text-white font-semibold">{viewingStories.username}</h3>
                       {viewingStories.isVerified && <VerifiedBadge size="sm" />}
+                      {viewingStories.isFounder && <span className="text-lg" title="Official LuvHive">👑</span>}
                     </div>
                     <p className="text-white text-xs opacity-75">
                       {new Date(viewingStories.stories[currentStoryIndex]?.createdAt).toLocaleString()}
