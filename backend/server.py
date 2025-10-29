@@ -2328,6 +2328,8 @@ async def update_profile(
         update_data["fullName"] = fullName
     if bio is not None:
         update_data["bio"] = bio
+    if country is not None:
+        update_data["country"] = country
     if profileImage is not None:
         update_data["profileImage"] = profileImage
         
