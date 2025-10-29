@@ -2286,7 +2286,8 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
 async def update_profile(
     fullName: str = Form(None), 
     username: str = Form(None), 
-    bio: str = Form(None), 
+    bio: str = Form(None),
+    country: str = Form(None),
     profileImage: str = Form(None), 
     current_user: User = Depends(get_current_user)
 ):
