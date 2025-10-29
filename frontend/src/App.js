@@ -167,7 +167,7 @@ function App() {
             path="/edit-profile" 
             element={
               isAuthenticated ? (
-                <EditProfilePage user={user} onLogout={handleLogout} />
+                <EditProfilePage user={user} onLogin={handleLogin} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/" replace />
               )
