@@ -284,6 +284,24 @@ const EditProfilePage = ({ user, onLogout }) => {
               </p>
             </div>
 
+            {/* Country */}
+            <div>
+              <Label htmlFor="country" className="text-gray-700 font-medium">
+                Country
+              </Label>
+              <Input
+                id="country"
+                name="country"
+                data-testid="country-input"
+                type="text"
+                placeholder="Enter your country"
+                value={formData.country}
+                onChange={handleChange}
+                required
+                className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+              />
+            </div>
+
             {/* Submit Button */}
             <Button
               type="submit"
