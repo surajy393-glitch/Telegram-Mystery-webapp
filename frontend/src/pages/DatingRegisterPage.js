@@ -574,7 +574,14 @@ const DatingRegisterPage = ({ onLogin }) => {
       const token = response.data.access_token;
       const userData = response.data.user;
 
-      // Save token and user data
+      // CRITICAL: Save to localStorage FIRST, then update state
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      console.log("🎉 Registration successful! User data:", userData);
+      console.log("🖼️ Profile Image:", userData.profileImage);
+
+      // Call onLogin to update React state
       onLogin(token, userData);
 
       toast({
@@ -582,10 +589,8 @@ const DatingRegisterPage = ({ onLogin }) => {
         description: "Welcome to LuvHive!",
       });
 
-      // Navigate directly to feed to avoid state update race condition
-      setTimeout(() => {
-        navigate("/home");
-      }, 500);
+      // Navigate immediately after localStorage is set (no setTimeout)
+      navigate("/home");
       
     } catch (error) {
       toast({
