@@ -649,6 +649,13 @@ const ProfilePage = ({ user, onLogout }) => {
                 )}
               </div>
             </div>
+          ) : postsLoading ? (
+            <div className="glass-effect rounded-3xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Loading Posts...</h3>
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+              </div>
+            </div>
           ) : userPosts && userPosts.length > 0 ? (
             <div className="glass-effect rounded-3xl p-6 shadow-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Posts</h3>
