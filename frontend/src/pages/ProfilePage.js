@@ -205,30 +205,47 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   };
 
-  const fetchUserPosts = async (targetUserId) => {
+  const fetchUserPosts = async (accountId, username) => {
     setPostsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching posts for userId:", targetUserId);
-      console.log("Token exists:", !!token);
-      const response = await axios.get(`${API}/users/${targetUserId}/posts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      // First, try to fetch posts by the internal UUID
+      console.log("Fetching posts with accountId:", accountId, "username:", username);
+      let response = await axios.get(`${API}/users/${accountId}/posts`, { headers });
       console.log("Posts API response:", response.data);
       
-      // Robust response handling - check multiple possible formats
-      const postsData = Array.isArray(response.data.posts)
+      let postsData = Array.isArray(response.data.posts)
         ? response.data.posts
         : Array.isArray(response.data)
         ? response.data
         : [];
+
+      // If no posts returned but postsCount shows > 0, try using the username slug
+      if (postsData.length === 0 && viewingUser?.postsCount > 0 && username) {
+        console.log("No posts with UUID, trying username fallback:", username);
+        const fallback = await axios.get(`${API}/users/${username}/posts`, { headers });
+        console.log("Fallback response:", fallback.data);
+        postsData = Array.isArray(fallback.data.posts)
+          ? fallback.data.posts
+          : Array.isArray(fallback.data)
+          ? fallback.data
+          : [];
+      }
       
       console.log("Posts fetched successfully:", postsData.length);
       setUserPosts(postsData);
     } catch (error) {
-      console.error("Error fetching user posts:", error);
-      console.error("Error status:", error.response?.status);
-      console.error("Error message:", error.response?.data?.detail);
+      console.error('Error fetching user posts:', error);
+      console.error('Error status:', error.response?.status);
+      console.error('Error message:', error.response?.data?.detail);
+      
+      // Handle expired or invalid tokens
+      if (error.response?.status === 401) {
+        console.error("401 Unauthorized - logging out");
+        onLogout();
+      }
       setUserPosts([]);
     } finally {
       setPostsLoading(false);
