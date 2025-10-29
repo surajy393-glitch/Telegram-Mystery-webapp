@@ -221,9 +221,9 @@ const VerificationStatusPage = ({ user }) => {
       requirements: [
         { label: '20+ Posts', met: verificationData?.criteria?.postsCount, value: `${verificationData?.currentValues?.postsCount || 0}/20` },
         { label: '100+ Followers', met: verificationData?.criteria?.followersCount, value: `${verificationData?.currentValues?.followersCount || 0}/100` },
-        { label: '1000+ Total Likes', met: verificationData?.criteria?.totalLikes, value: `${verificationData?.currentValues?.totalLikes || 0}/1000` },
-        { label: '70+ Avg Story Views', met: verificationData?.criteria?.avgStoryViews, value: `${verificationData?.currentValues?.avgStoryViews || 0}/70` },
-        { label: '1000+ Profile Views', met: verificationData?.criteria?.profileViews, value: `${verificationData?.currentValues?.profileViews || 0}/1000` }
+        { label: '1000+ Total Likes', met: verificationData?.criteria?.totalLikes, value: `${verificationData?.currentValues?.totalLikes || 0}/1000`, hasHelp: true, helpKey: 'totalLikes' },
+        { label: '70+ Avg Story Views', met: verificationData?.criteria?.avgStoryViews, value: `${verificationData?.currentValues?.avgStoryViews || 0}/70`, hasHelp: true, helpKey: 'avgStoryViews' },
+        { label: '1000+ Profile Views', met: verificationData?.criteria?.profileViews, value: `${verificationData?.currentValues?.profileViews || 0}/1000`, hasHelp: true, helpKey: 'profileViews' }
       ]
     },
     {
@@ -239,7 +239,9 @@ const VerificationStatusPage = ({ user }) => {
           label: '500+ Likes OR 40+ Avg Story Views (either one)', 
           met: verificationData?.currentValues?.moderateEngagementLikes, 
           value: `Likes: ${verificationData?.currentValues?.totalLikes || 0}/500 | Views: ${verificationData?.currentValues?.avgStoryViews || 0}/40`,
-          isOr: true 
+          isOr: true,
+          hasHelp: true,
+          helpKey: 'moderateOr'
         }
       ]
     },
