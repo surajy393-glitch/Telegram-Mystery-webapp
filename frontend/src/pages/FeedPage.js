@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus, Bell, Search, User, MoreVertical, Bookmark, UserIcon as UserIconLucide, AlertCircle, Trash2, Download } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 
 const FeedPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
