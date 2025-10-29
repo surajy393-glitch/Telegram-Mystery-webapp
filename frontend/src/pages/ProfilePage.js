@@ -890,15 +890,16 @@ const ProfilePage = ({ user, onLogout }) => {
       {/* Verification Details Popover */}
       {/* About this account Dialog */}
       {showAccountInfo && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{zIndex: 99999}}>
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            style={{zIndex: 99998}}
             onClick={() => {
               setShowAccountInfo(false);
               setAccountInfo(null);
             }}
           />
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full z-[10000] max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full z-[100000] max-h-[90vh] overflow-y-auto" style={{zIndex: 100000}}>
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-xl font-bold">About this account</h2>
