@@ -3528,15 +3528,19 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     for story in stories:
         user_id = story["userId"]
         if user_id not in stories_by_user:
-            # Get user's verification and founder status
-            story_author = await db.users.find_one({"id": user_id}, {"isVerified": 1, "isFounder": 1})
+            # Get user's current profile picture, verification, and founder status
+            story_author = await db.users.find_one(
+                {"id": user_id}, 
+                {"isVerified": 1, "isFounder": 1, "profileImage": 1}
+            )
             is_verified = story_author.get("isVerified", False) if story_author else False
             is_founder = story_author.get("isFounder", False) if story_author else False
+            current_profile_image = story_author.get("profileImage") if story_author else story.get("userProfileImage")
             
             stories_by_user[user_id] = {
                 "userId": user_id,
                 "username": story["username"],
-                "userProfileImage": story.get("userProfileImage"),
+                "userProfileImage": current_profile_image,  # Use current profile picture
                 "isVerified": is_verified,
                 "isFounder": is_founder,
                 "stories": []
