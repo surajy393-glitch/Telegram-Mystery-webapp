@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useWebSocket } from '../hooks/useWebSocket';
 import VibeCompatibility from '../components/VibeCompatibility';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API = '/api';
 
 const MysteryChatPage = () => {
   const { matchId } = useParams();
