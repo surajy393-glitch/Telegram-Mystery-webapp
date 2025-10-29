@@ -46,17 +46,21 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        console.error("No token found, redirecting to login");
+        console.error("❌ No token found, redirecting to login");
         navigate("/login");
         return;
       }
       
-      console.log("Fetching profile with token...");
+      console.log("📝 EditProfile: Fetching profile with token...");
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log("Profile data received:", response.data);
+      console.log("✅ EditProfile: Profile data received");
+      console.log("   Full Name:", response.data.fullName);
+      console.log("   Username:", response.data.username);
+      console.log("   Profile Image:", response.data.profileImage);
+      
       setProfile(response.data);
       setFormData({
         fullName: response.data.fullName || "",
@@ -66,9 +70,12 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
         profileImage: response.data.profileImage || ""
       });
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("❌ EditProfile: Error fetching profile:", error);
+      console.error("   Error status:", error.response?.status);
+      console.error("   Error detail:", error.response?.data?.detail);
+      
       if (error.response?.status === 401) {
-        console.error("Authentication failed, redirecting to login");
+        console.error("❌ Authentication failed, redirecting to login");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
