@@ -414,21 +414,34 @@ const ProfilePage = ({ user, onLogout }) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
                 <DropdownMenuItem 
-                  onSelect={(e) => {
-                    e.preventDefault(); // Prevent dropdown from closing
-                    console.log("=== About Account Menu Item Clicked ===");
-                    console.log("viewingUser:", viewingUser);
-                    console.log("viewingUser.id:", viewingUser?.id);
-                    
-                    if (viewingUser?.id) {
-                      console.log("✅ Calling fetchAccountInfo with ID:", viewingUser.id);
-                      fetchAccountInfo(viewingUser.id);
+                  /*
+                   * Clicking "About this account" should always attempt to
+                   * retrieve the account info for the viewed user. The previous
+                   * implementation only checked `viewingUser.id`, which meant the
+                   * handler did nothing when that property was missing (for example,
+                   * when the ID is stored under `_id`, `user_id` or `tg_user_id`).
+                   * We now derive the ID from all possible fields before
+                   * calling `fetchAccountInfo`. If none are found, we alert the user.
+                   */
+                  onClick={() => {
+                    const accountId =
+                      viewingUser?.id ||
+                      viewingUser?._id ||
+                      viewingUser?.user_id ||
+                      viewingUser?.tg_user_id;
+                    if (accountId) {
+                      console.log("About this account clicked, fetching info for:", accountId);
+                      fetchAccountInfo(accountId);
                     } else {
-                      console.error("❌ viewingUser or viewingUser.id is undefined");
-                      console.log("Full viewingUser object:", JSON.stringify(viewingUser));
-                      alert("Unable to load account info. User ID is missing. Please refresh.");
+                      console.error(
+                        "Unable to determine ID for account info. viewingUser:",
+                        viewingUser
+                      );
+                      alert(
+                        "Unable to load account info. User ID is missing. Please refresh."
+                      );
                     }
-                  }} 
+                  }}
                   className="cursor-pointer hover:bg-pink-50 rounded-lg py-3 flex items-center"
                 >
                   <Info className="w-4 h-4 mr-3" />
