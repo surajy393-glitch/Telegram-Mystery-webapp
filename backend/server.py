@@ -4775,6 +4775,14 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
         # Check if current user saved this post
         is_saved = post["id"] in current_user.savedPosts
         
+        # Handle createdAt - could be datetime object or string
+        created_at_val = post.get("createdAt")
+        if isinstance(created_at_val, datetime):
+            created_at_str = created_at_val.isoformat()
+        else:
+            # Already a string or None
+            created_at_str = created_at_val if created_at_val else ""
+        
         posts_list.append({
             "id": post["id"],
             "userId": post["userId"],
@@ -4790,7 +4798,7 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
             "likesHidden": post.get("likesHidden", False),
             "commentsDisabled": post.get("commentsDisabled", False),
             "isPinned": post.get("isPinned", False),
-            "createdAt": post["createdAt"].isoformat()
+            "createdAt": created_at_str
         })
     
     return {"posts": posts_list}
