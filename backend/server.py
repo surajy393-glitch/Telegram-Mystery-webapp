@@ -190,6 +190,7 @@ class EnhancedUserRegister(BaseModel):
     username: str
     age: int
     gender: str
+    country: str  # Mandatory country field
     password: str
     email: Optional[str] = None  # Optional email
     mobileNumber: Optional[str] = None  # Optional mobile number
