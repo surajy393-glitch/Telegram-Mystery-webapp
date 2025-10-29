@@ -4708,6 +4708,41 @@ async def get_user_verification_details(
         "isVerified": True
     }
 
+@api_router.get("/users/{userId}/account-info")
+async def get_user_account_info(
+    userId: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get account info for 'About this account' section (like Instagram)"""
+    user = await db.users.find_one({"id": userId})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Format createdAt as "Month Year" (e.g., "May 2015")
+    created_at = user.get("createdAt")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    date_joined = created_at.strftime("%B %Y") if created_at else "Unknown"
+    
+    response = {
+        "dateJoined": date_joined,
+        "country": user.get("country", "Not specified"),
+        "isVerified": user.get("isVerified", False),
+        "isFounder": user.get("isFounder", False)
+    }
+    
+    # Add verification details if user is verified
+    if user.get("isVerified", False):
+        response["verificationPathway"] = user.get("verificationPathway", "High Engagement Pathway")
+        verified_at = user.get("verifiedAt")
+        if isinstance(verified_at, str):
+            verified_at = datetime.fromisoformat(verified_at)
+        response["verifiedAt"] = verified_at.strftime("%B %Y") if verified_at else "Unknown"
+    
+    return response
+
+
 @api_router.get("/users/{userId}/posts")
 async def get_user_posts(userId: str, current_user: User = Depends(get_current_user)):
     """Get posts by a specific user"""
