@@ -807,7 +807,7 @@ frontend:
   - task: "Fix About This Account Dialog - Replace with Radix Dialog Portal"
     implemented: true
     working: "NA"
-    file: "frontend/src/pages/ProfilePage.js"
+    file: "frontend/src/pages/ProfilePage.js, frontend/src/components/ui/dialog.jsx"
     stuck_count: 1
     priority: "high"
     needs_retesting: true
@@ -818,6 +818,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "VERIFIED IMPLEMENTATION: Radix Dialog with portal already correctly implemented (lines 898-1042 ProfilePage.js). DialogContent component properly wraps in DialogPortal (dialog.jsx line 27), rendering to document.body to bypass CSS transform issues. Click handler (lines 409-440) correctly sets showAccountInfo(true) and setAccountInfo(null) before fetching. No old fixed overlay code exists. Implementation includes: loading spinner state, error state with user-friendly messages, success state with date joined/country/verification details, proper z-index (z-[100000]), and onOpenChange handler to reset state on close. Dialog structure: Dialog Root -> DialogPortal -> DialogOverlay + DialogContent. Ready for user testing to confirm dialog now appears correctly."
+      - working: "NA"
+        agent: "main"
+        comment: "ENHANCED Z-INDEX FIX: Updated base Dialog component (dialog.jsx) to use very high z-index values: DialogOverlay now uses z-[99998] (was z-50), DialogContent uses z-[99999] (was z-50). This ensures the portal-rendered dialog appears above ALL content including transformed parent elements. Removed redundant z-[100000] override from ProfilePage.js as it's now handled in base component. DialogPortal still renders to document.body, bypassing parent transforms. Restarted frontend (pid 2193). Implementation is correct - Radix portal + maximum z-index should resolve visibility issue. Ready for user verification."
 
   - task: "Make Story Username Clickable in Story Viewer"
     implemented: true
