@@ -5,8 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, CheckCircle2, XCircle, Shield, Info, HelpCircle } from "lucide-react";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 
 const VerificationStatusPage = ({ user }) => {
   const navigate = useNavigate();
