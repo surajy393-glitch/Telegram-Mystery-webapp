@@ -61,6 +61,7 @@ const EditProfilePage = ({ user, onLogout }) => {
         fullName: response.data.fullName || "",
         username: response.data.username || "",
         bio: response.data.bio || "",
+        country: response.data.country || "",
         profileImage: response.data.profileImage || ""
       });
     } catch (error) {
