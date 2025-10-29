@@ -77,6 +77,13 @@ const ProfilePage = ({ user, onLogout }) => {
   const isViewingSpecificUser = !!userId;
   const isViewingOwnProfile = userId === user?.id;
 
+  // Helper function to fix incorrect API prefix in media URLs
+  const getMediaSrc = (url) => {
+    if (!url) return "";
+    // Remove /api prefix if present - static files are served at /uploads, not /api/uploads
+    return url.startsWith("/api/uploads/") ? url.replace("/api", "") : url;
+  };
+
   // Helper function to derive the actual account ID from user object
   const getAccountId = (userObj) => {
     return userObj?.id || userObj?._id || userObj?.user_id || userObj?.tg_user_id;
