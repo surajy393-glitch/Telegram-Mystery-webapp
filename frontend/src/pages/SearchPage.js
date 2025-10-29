@@ -28,7 +28,7 @@ import HashtagText from "@/components/HashtagText";
 import SearchSkeleton from "@/components/LoadingSkeleton";
 import { searchCache, trendingCache } from "@/utils/cache";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8001";
 const API = `${BACKEND_URL}/api`;
 
 const SearchPage = ({ user, onLogout }) => {
