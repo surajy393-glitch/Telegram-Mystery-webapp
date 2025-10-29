@@ -512,7 +512,15 @@ const VerificationStatusPage = ({ user }) => {
 
           {/* Verification Pathways */}
           <div className="glass-effect rounded-3xl p-6 shadow-xl mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Choose Your Pathway to Verification</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-bold text-gray-800">Choose Your Pathway to Verification</h3>
+              <button
+                onClick={() => showHelp('pathways')}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            </div>
             <p className="text-sm text-gray-600 mb-4">
               {basicRequirementsMet 
                 ? "✅ Basic requirements met! Complete ANY ONE pathway below to qualify for verification."
