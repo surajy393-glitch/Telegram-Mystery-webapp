@@ -61,28 +61,45 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       console.log("   Username:", response.data.username);
       console.log("   Profile Image:", response.data.profileImage);
       
-      // Merge with locally stored user to preserve base64 profile image if backend returns null
-      let mergedProfile = { ...response.data };
+      // Merge profile image with any base64 preview saved in localStorage
+      let mergedData = { ...response.data };
       try {
         const localUserString = localStorage.getItem("user");
         if (localUserString) {
           const localUser = JSON.parse(localUserString);
-          if (!mergedProfile.profileImage && localUser.profileImage) {
+          // Prefer local base64 image if available
+          if (localUser.profileImage && localUser.profileImage.startsWith('data:')) {
+            console.log("📸 EditProfile: Using local base64 preview (preferred)");
+            mergedData.profileImage = localUser.profileImage;
+          } else if (!mergedData.profileImage && localUser.profileImage) {
             console.log("📸 EditProfile: Using local preview from registration");
-            mergedProfile.profileImage = localUser.profileImage;
+            mergedData.profileImage = localUser.profileImage;
           }
         }
       } catch (mergeErr) {
-        console.error("❌ Failed to merge local profile image:", mergeErr);
+        console.error("❌ Failed to merge profile image in EditProfile:", mergeErr);
       }
       
-      setProfile(mergedProfile);
+      // Update localStorage with merged profile so other pages stay consistent
+      try {
+        const localUserString2 = localStorage.getItem("user");
+        if (localUserString2) {
+          const localUser2 = JSON.parse(localUserString2);
+          const updatedUser = { ...localUser2, ...mergedData };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          console.log("✅ EditProfile: Updated localStorage with merged profile");
+        }
+      } catch (err) {
+        console.error("❌ Failed to update localStorage in EditProfile:", err);
+      }
+      
+      setProfile(mergedData);
       setFormData({
-        fullName: mergedProfile.fullName || "",
-        username: mergedProfile.username || "",
-        bio: mergedProfile.bio || "",
-        country: mergedProfile.country || "",
-        profileImage: mergedProfile.profileImage || ""
+        fullName: mergedData.fullName || "",
+        username: mergedData.username || "",
+        bio: mergedData.bio || "",
+        country: mergedData.country || "",
+        profileImage: mergedData.profileImage || ""
       });
     } catch (error) {
       console.error("❌ EditProfile: Error fetching profile:", error);
