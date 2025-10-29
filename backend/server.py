@@ -4760,9 +4760,10 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
         return {"posts": []}
     
     # Get user's non-archived posts by either userId or username
+    # Use $ne: True to include posts without isArchived field (default behavior)
     posts = await db.posts.find({
         "$and": [
-            {"isArchived": False},
+            {"isArchived": {"$ne": True}},
             {"$or": [{"userId": user["id"]}, {"username": user["username"]}]}
         ]
     }).sort("createdAt", -1).to_list(50)
