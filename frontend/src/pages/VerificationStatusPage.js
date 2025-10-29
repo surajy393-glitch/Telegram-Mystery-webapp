@@ -559,6 +559,17 @@ const VerificationStatusPage = ({ user }) => {
                           <span className={`${req.met ? 'text-green-700 font-medium' : 'text-gray-600'} ${req.isOr ? 'font-semibold' : ''}`}>
                             {req.label}
                           </span>
+                          {req.hasHelp && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showHelp(req.helpKey);
+                              }}
+                              className="text-blue-500 hover:text-blue-700 ml-1"
+                            >
+                              <HelpCircle className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                         <span className="text-xs text-gray-500 ml-2">{req.value}</span>
                       </div>
