@@ -25,8 +25,10 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
   });
 
   useEffect(() => {
+    console.log("📝 EditProfilePage mounted, user prop:", user);
     // If user prop exists, use it as fallback
     if (user) {
+      console.log("✅ Setting profile from user prop");
       setProfile(user);
       setFormData({
         fullName: user.fullName || "",
