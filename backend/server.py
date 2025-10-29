@@ -1285,6 +1285,7 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "mobileNumber": clean_mobile,
             "age": user_data.age,
             "gender": user_data.gender,
+            "country": user_data.country.strip(),
             "password_hash": hashed_password,
             "bio": clean_bio,
             "profileImage": clean_profile_image,
