@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix 500 Internal Server Error - Missing Field KeyErrors"
+  - task: "Fix Broken Images - Static Path Mismatch"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js, backend/social_features.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Posts array fetched successfully (4 items) but images not loading - broken icons in grid. Root cause: Backend sets mediaUrl as /api/uploads/posts/... but FastAPI static files are mounted at /uploads (not /api/uploads). Browser requests /api/uploads/posts/...jpg which doesn't exist (not served by any endpoint), resulting in 404 and broken images."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ DUAL FIX APPLIED - FRONTEND WORKAROUND + BACKEND PERMANENT: FRONTEND (ProfilePage.js): Added getMediaSrc() helper function that strips /api prefix from URLs. Logic: if url.startsWith('/api/uploads/') then url.replace('/api', '') else url. Applied to posts grid at line 723-731 - now uses mediaSrc = getMediaSrc(post.mediaUrl) before setting src attribute. This immediately fixes display of existing posts with wrong URLs. BACKEND PERMANENT FIX (social_features.py): Changed image_url generation in createPost (line 92) from f'/api/uploads/posts/{filename}' to f'/uploads/posts/{filename}'. Changed image_url generation in createStory (line 469) from f'/api/uploads/stories/{filename}' to f'/uploads/stories/{filename}'. Added comments: 'Static files are served at /uploads, not /api/uploads'. All new posts/stories will now have correct path from creation. Both services restarted (backend pid 8532, frontend pid 8534). NOW: Old posts display via frontend fix, new posts correct by default via backend fix."
     implemented: true
     working: "NA"
     file: "backend/server.py, frontend/src/pages/ProfilePage.js"
