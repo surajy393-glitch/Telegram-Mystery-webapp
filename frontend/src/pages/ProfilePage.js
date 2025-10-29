@@ -393,7 +393,7 @@ const ProfilePage = ({ user, onLogout }) => {
               
               {/* Official Account Badge */}
               {viewingUser?.isFounder && (
-                <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
+                <div className="inline-block bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full mb-2 shadow-md">
                   🏢 Official LuvHive Account
                 </div>
               )}
