@@ -582,9 +582,9 @@ const DatingRegisterPage = ({ onLogin }) => {
         description: "Welcome to LuvHive!",
       });
 
-      // Navigate to main home feed
+      // Navigate directly to feed to avoid state update race condition
       setTimeout(() => {
-        navigate("/");
+        navigate("/home");
       }, 500);
       
     } catch (error) {
