@@ -199,8 +199,17 @@ const ProfilePage = ({ user, onLogout }) => {
       const response = await axios.get(`${API}/users/${targetUserId}/posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Posts fetched successfully:", response.data.posts?.length || 0);
-      setUserPosts(response.data.posts || []);
+      console.log("Posts API response:", response.data);
+      
+      // Robust response handling - check multiple possible formats
+      const postsData = Array.isArray(response.data.posts)
+        ? response.data.posts
+        : Array.isArray(response.data)
+        ? response.data
+        : [];
+      
+      console.log("Posts fetched successfully:", postsData.length);
+      setUserPosts(postsData);
     } catch (error) {
       console.error("Error fetching user posts:", error);
       console.error("Error status:", error.response?.status);
