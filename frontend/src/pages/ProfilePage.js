@@ -894,17 +894,22 @@ const ProfilePage = ({ user, onLogout }) => {
 
       {/* Verification Details Popover */}
       {/* About this account Dialog */}
+      {console.log("Render check - showAccountInfo:", showAccountInfo, "accountInfo:", accountInfo)}
+      {showAccountInfo && console.log("✅ MODAL SHOULD BE VISIBLE - showAccountInfo is TRUE")}
       {showAccountInfo && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{zIndex: 99999}}>
+          {console.log("🎨 RENDERING MODAL DIVS")}
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
             style={{zIndex: 99998}}
             onClick={() => {
+              console.log("Backdrop clicked - closing");
               setShowAccountInfo(false);
               setAccountInfo(null);
             }}
           />
           <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full z-[100000] max-h-[90vh] overflow-y-auto" style={{zIndex: 100000}}>
+            {console.log("🎨 INSIDE WHITE MODAL BOX")}
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-xl font-bold">About this account</h2>
