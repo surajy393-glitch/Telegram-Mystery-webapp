@@ -18,7 +18,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
 
   const fetchComments = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/social/posts/${post.id}/comments?userId=${user.id}`);
+      const response = await axios.get(`${API}/social/posts/${post.id}/comments?userId=${user.id}`);
       setComments(response.data.comments || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -41,7 +41,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
         formData.append('parentCommentId', replyingTo.id);
       }
 
-      await axios.post(`${API_URL}/api/social/posts/${post.id}/comment`, formData, {
+      await axios.post(`${API}/social/posts/${post.id}/comment`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -63,7 +63,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
       const formData = new FormData();
       formData.append('userId', user.id);
       
-      await axios.post(`${API_URL}/api/social/comments/${commentId}/like`, formData, {
+      await axios.post(`${API}/social/comments/${commentId}/like`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -77,7 +77,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
 
   const handleUsernameClick = async (userId, username) => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/${userId}`);
+      const response = await axios.get(`${API}/users/${userId}`);
       if (response.data.isPrivate && response.data.id !== user.id) {
         alert('This account is private');
       } else {
