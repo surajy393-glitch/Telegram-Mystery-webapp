@@ -594,10 +594,24 @@ const VerificationStatusPage = ({ user }) => {
         {verificationData?.isVerified && (
         <div className="glass-effect rounded-3xl p-6 shadow-xl bg-gradient-to-br from-green-50 to-blue-50">
           <h3 className="text-xl font-bold text-gray-800 mb-3">🎉 Congratulations!</h3>
-          <p className="text-gray-700 leading-relaxed mb-4">
+          <p className="text-gray-700 leading-relaxed mb-2">
             You are now a verified member of LuvHive! Your blue checkmark badge appears next to your username across the platform, helping others know your account is authentic.
           </p>
-          <div className="bg-white bg-opacity-60 rounded-xl p-4">
+          
+          {verificationData?.verificationPathway && (
+            <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 mb-4">
+              <p className="text-sm font-semibold text-blue-800">
+                ✨ Verified via: {verificationData.verificationPathway}
+              </p>
+              {verificationData?.verifiedAt && (
+                <p className="text-xs text-blue-700 mt-1">
+                  Verified on: {new Date(verificationData.verifiedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              )}
+            </div>
+          )}
+          
+          <div className="bg-white bg-opacity-60 rounded-xl p-4 mb-4">
             <h4 className="font-semibold text-gray-800 mb-2">✨ Verified Badge Benefits:</h4>
             <ul className="space-y-2 text-sm text-gray-700">
               <li>• Blue checkmark ☑️ on your profile</li>
@@ -607,6 +621,21 @@ const VerificationStatusPage = ({ user }) => {
               <li>• Stand out in search results</li>
             </ul>
           </div>
+          
+          <Button
+            onClick={() => {
+              const text = `Just got verified on LuvHive! ✨ Achieved verification via the ${verificationData?.verificationPathway || 'verification program'}. 💙 #LuvHiveVerified`;
+              if (navigator.share) {
+                navigator.share({ text });
+              } else {
+                navigator.clipboard.writeText(text);
+                alert('Verification achievement copied to clipboard!');
+              }
+            }}
+            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+          >
+            🎊 Share Your Achievement
+          </Button>
         </div>
         )}
 
