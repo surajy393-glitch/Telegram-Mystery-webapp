@@ -193,8 +193,24 @@ const MyProfilePage = ({ user, onLogout }) => {
               <h2 className="text-3xl font-bold text-gray-800 mb-1">{profile?.fullName || 'No Name'}</h2>
               <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
                 <p className="text-lg text-gray-600">@{profile?.username || 'username'}</p>
-                {profile?.isVerified && <VerifiedBadge size="md" />}
-                {profile?.isFounder && <span className="text-2xl" title="Official LuvHive Account">👑</span>}
+                {profile?.isVerified && (
+                  <button
+                    onClick={fetchVerificationDetails}
+                    className="hover:opacity-70 transition-opacity"
+                    title="View verification details"
+                  >
+                    <VerifiedBadge size="md" />
+                  </button>
+                )}
+                {profile?.isFounder && (
+                  <button
+                    onClick={fetchVerificationDetails}
+                    className="hover:opacity-70 transition-opacity text-2xl"
+                    title="Official LuvHive Account - Click for details"
+                  >
+                    👑
+                  </button>
+                )}
               </div>
               
               {/* Official Account Badge */}
