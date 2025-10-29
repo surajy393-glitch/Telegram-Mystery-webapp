@@ -472,7 +472,8 @@ const ProfilePage = ({ user, onLogout }) => {
 
               <div className="flex justify-center gap-8 mt-6 mb-6">
                 <div>
-                  <p className="text-2xl font-bold text-pink-600">{viewingUser?.posts || userPosts?.length || 0}</p>
+                  {/* Use postsCount from the backend or fall back to the loaded posts length */}
+                  <p className="text-2xl font-bold text-pink-600">{viewingUser?.postsCount || userPosts?.length || 0}</p>
                   <p className="text-sm text-gray-600">Posts</p>
                 </div>
                 <div>
