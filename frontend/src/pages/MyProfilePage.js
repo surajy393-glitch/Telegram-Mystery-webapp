@@ -67,11 +67,13 @@ const MyProfilePage = ({ user, onLogout }) => {
           const localUserString = localStorage.getItem("user");
           if (localUserString) {
             const localUser = JSON.parse(localUserString);
-            // If server didn't return a profileImage but localStorage has one (e.g. base64 preview), use it
-            if (!mergedProfile.profileImage && localUser.profileImage) {
-              console.log(
-                "📸 No profileImage from server; using local preview from registration."
-              );
+            // Always prefer a base64 image stored locally (from registration)
+            // over a null or missing server image.
+            if (localUser.profileImage && localUser.profileImage.startsWith('data:')) {
+              console.log("📸 Using local base64 preview (preferred over server response)");
+              mergedProfile.profileImage = localUser.profileImage;
+            } else if (!mergedProfile.profileImage && localUser.profileImage) {
+              console.log("📸 No profileImage from server; using local preview");
               mergedProfile.profileImage = localUser.profileImage;
             }
           }
