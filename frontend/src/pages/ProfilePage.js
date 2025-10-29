@@ -418,23 +418,11 @@ const ProfilePage = ({ user, onLogout }) => {
               <h2 className="text-3xl font-bold text-gray-800 mb-1">{viewingUser?.fullName}</h2>
               <div className="flex items-center justify-center gap-1 mb-2">
                 <p className="text-lg text-gray-600">@{viewingUser?.username}</p>
-                {viewingUser?.isVerified && (
-                  <button 
-                    onClick={() => fetchVerificationDetails(viewingUser.id)}
-                    className="hover:opacity-70 transition-opacity"
-                    title="View verification details"
-                  >
-                    <VerifiedBadge size="md" />
-                  </button>
-                )}
+                {viewingUser?.isVerified && <VerifiedBadge size="md" />}
                 {viewingUser?.isFounder && (
-                  <button
-                    onClick={() => fetchVerificationDetails(viewingUser.id)}
-                    className="hover:opacity-70 transition-opacity text-2xl"
-                    title="Official LuvHive Account - Click for details"
-                  >
+                  <span className="text-2xl" title="Official LuvHive Account">
                     👑
-                  </button>
+                  </span>
                 )}
               </div>
               
