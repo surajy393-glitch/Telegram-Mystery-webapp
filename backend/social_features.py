@@ -476,10 +476,14 @@ async def get_stories(userId: str, skip: int = 0, limit: int = 50):
         # Format stories
         formatted_stories = []
         for story in stories:
-            # Get story author's verification and founder status
-            story_author = await db.users.find_one({"id": story.get("userId")}, {"isVerified": 1, "isFounder": 1})
+            # Get story author's current profile picture, verification, and founder status
+            story_author = await db.users.find_one(
+                {"id": story.get("userId")}, 
+                {"isVerified": 1, "isFounder": 1, "profileImage": 1}
+            )
             is_verified = story_author.get("isVerified", False) if story_author else False
             is_founder = story_author.get("isFounder", False) if story_author else False
+            current_profile_image = story_author.get("profileImage") if story_author else story.get("userAvatar")
             
             # Check if user viewed
             user_viewed = userId in story.get("views", [])
@@ -488,7 +492,7 @@ async def get_stories(userId: str, skip: int = 0, limit: int = 50):
                 "id": story["id"],
                 "userId": story.get("userId"),
                 "username": story.get("username"),
-                "userAvatar": story.get("userAvatar"),
+                "userAvatar": current_profile_image,  # Use current profile picture
                 "isVerified": is_verified,
                 "isFounder": is_founder,
                 "content": story.get("content"),
