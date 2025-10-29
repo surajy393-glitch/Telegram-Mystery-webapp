@@ -811,75 +811,96 @@ const ProfilePage = ({ user, onLogout }) => {
       </Dialog>
 
       {/* Verification Details Popover */}
-      <Dialog open={showVerificationPopover} onOpenChange={setShowVerificationPopover}>
+      {/* About this account Dialog */}
+      <Dialog open={showAccountInfo} onOpenChange={setShowAccountInfo}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-500" />
-              {verificationDetails?.pathway === "Official LuvHive Account" ? "Official Account" : "Verification Details"}
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold">About this account</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-1">
+              To help keep our community authentic, we're showing information about accounts on LuvHive.
+            </DialogDescription>
           </DialogHeader>
           
-          {verificationDetails && (
+          {accountInfo && (
             <div className="space-y-4 py-4">
-              {verificationDetails.pathway === "Official LuvHive Account" ? (
-                // Special display for Official LuvHive Account
-                <>
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">👑</span>
-                      <p className="font-bold text-gray-800">Official LuvHive Account</p>
+              {/* Date Joined */}
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Date joined</p>
+                  <p className="text-sm text-gray-600">{accountInfo.dateJoined}</p>
+                </div>
+              </div>
+
+              {/* Country */}
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Account based in</p>
+                  <p className="text-sm text-gray-600">{accountInfo.country}</p>
+                </div>
+              </div>
+
+              {/* Verified Badge (if verified) */}
+              {accountInfo.isVerified && (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Shield className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-gray-900">Verified</p>
+                      <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
                     </div>
-                    <p className="text-sm text-gray-700 mb-1">
-                      <span className="font-semibold">Founder & Admin</span>
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Verified on {new Date(verificationDetails.verifiedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-800 font-medium mb-1">⚠️ Impersonation Guard</p>
-                    <p className="text-xs text-red-700">
-                      If you see duplicate accounts claiming to be LuvHive, please report them via @LuvHiveSupport or through the report feature.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                // Regular verification display
-                <>
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm text-gray-700 mb-2">
-                      <span className="font-semibold">Verified via:</span> {verificationDetails.pathway}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      <span className="font-semibold">Verified on:</span> {new Date(verificationDetails.verifiedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600 leading-relaxed">
-                    <p className="font-semibold mb-2">About this pathway:</p>
-                    {verificationDetails.pathway === 'High Engagement Pathway' && (
-                      <p>This user achieved verification through exceptional community engagement with 20+ posts, 100+ followers, and significant likes and views.</p>
-                    )}
-                    {verificationDetails.pathway === 'Moderate Engagement Pathway' && (
-                      <p>This user achieved verification through consistent activity over 90+ days with 10+ posts, 50+ followers, and strong engagement metrics.</p>
-                    )}
-                    {verificationDetails.pathway === 'Community Contribution' && (
-                      <p>This user achieved verification through valuable community contributions such as moderation, event organization, or helpful reporting.</p>
-                    )}
-                    {verificationDetails.pathway === 'Cross-Platform Verified' && (
-                      <p>This user achieved verification by linking their verified account from another major social media platform.</p>
+                    {accountInfo.isFounder ? (
+                      <>
+                        <p className="text-sm text-gray-700 mb-1">
+                          <span className="font-semibold">👑 Official LuvHive Account</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          This is the official account of LuvHive. Verified on {accountInfo.verifiedAt}.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-700 mb-1">
+                          Verified via: <span className="font-semibold">{accountInfo.verificationPathway}</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {accountInfo.verificationPathway === 'High Engagement Pathway' && 
+                            'Verified through exceptional community engagement with 20+ posts, 100+ followers, and significant likes and views.'}
+                          {accountInfo.verificationPathway === 'Moderate Engagement Pathway' && 
+                            'Verified through consistent activity over 90+ days with 10+ posts, 50+ followers, and strong engagement.'}
+                          {accountInfo.verificationPathway === 'Community Contribution' && 
+                            'Verified through valuable community contributions such as moderation or helpful reporting.'}
+                          {accountInfo.verificationPathway === 'Cross-Platform Verified' && 
+                            'Verified by linking a verified account from another major social platform.'}
+                        </p>
+                      </>
                     )}
                   </div>
-                </>
+                </div>
               )}
               
               <Button 
-                onClick={() => setShowVerificationPopover(false)}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={() => setShowAccountInfo(false)}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white"
               >
-                Got it!
+                Close
               </Button>
             </div>
           )}
