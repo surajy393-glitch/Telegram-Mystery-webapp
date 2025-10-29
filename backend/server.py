@@ -2095,6 +2095,31 @@ async def admin_verify_user(username: str):
     
     return {"message": f"User {username} has been manually verified", "success": True}
 
+@api_router.post("/admin/set-founder/{username}")
+async def set_founder_account(username: str):
+    """Set an account as official founder/company account"""
+    
+    # Find user by username
+    target_user = await db.users.find_one({"username": {"$regex": f"^{username}$", "$options": "i"}})
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update user as founder and verify
+    await db.users.update_one(
+        {"id": target_user["id"]},
+        {
+            "$set": {
+                "isFounder": True,
+                "isVerified": True,
+                "verifiedAt": datetime.now(timezone.utc),
+                "verificationPathway": "Official LuvHive Account"
+            }
+        }
+    )
+    
+    return {"message": f"User {username} has been set as founder/official account", "success": True}
+
 @api_router.get("/verification/status")
 async def get_verification_status(current_user: User = Depends(get_current_user)):
     """Get current user's verification status and progress"""
