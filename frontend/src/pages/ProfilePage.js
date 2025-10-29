@@ -193,6 +193,7 @@ const ProfilePage = ({ user, onLogout }) => {
   };
 
   const fetchUserPosts = async (targetUserId) => {
+    setPostsLoading(true);
     try {
       const token = localStorage.getItem("token");
       console.log("Fetching posts for userId:", targetUserId);
@@ -216,6 +217,8 @@ const ProfilePage = ({ user, onLogout }) => {
       console.error("Error status:", error.response?.status);
       console.error("Error message:", error.response?.data?.detail);
       setUserPosts([]);
+    } finally {
+      setPostsLoading(false);
     }
   };
 
