@@ -4660,7 +4660,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     can_view_posts = not is_private or is_following or userId == current_user.id
     
     if can_view_posts:
-        posts = await db.posts.find({"userId": userId}).to_list(1000)
+        posts = await db.posts.find({"userId": userId, "isArchived": {"$ne": True}}).to_list(1000)
         posts_count = len(posts)
     else:
         posts_count = 0  # Hide post count for private accounts
