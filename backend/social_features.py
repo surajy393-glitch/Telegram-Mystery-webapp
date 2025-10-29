@@ -152,10 +152,14 @@ async def get_feed(
         # Format posts
         formatted_posts = []
         for post in posts:
-            # Get post author's verification status and founder status
-            post_author = await db.users.find_one({"id": post.get("userId")}, {"isVerified": 1, "isFounder": 1})
+            # Get post author's current profile picture, verification, and founder status
+            post_author = await db.users.find_one(
+                {"id": post.get("userId")}, 
+                {"isVerified": 1, "isFounder": 1, "profileImage": 1}
+            )
             is_verified = post_author.get("isVerified", False) if post_author else False
             is_founder = post_author.get("isFounder", False) if post_author else False
+            current_profile_image = post_author.get("profileImage") if post_author else post.get("userAvatar")
             
             # Get like count
             like_count = len(post.get("likes", []))
@@ -168,7 +172,7 @@ async def get_feed(
                 "id": post["id"],
                 "userId": post.get("userId"),
                 "username": post.get("username"),
-                "userAvatar": post.get("userAvatar"),
+                "userAvatar": current_profile_image,  # Use current profile picture
                 "isVerified": is_verified,
                 "isFounder": is_founder,
                 "content": post.get("content"),
