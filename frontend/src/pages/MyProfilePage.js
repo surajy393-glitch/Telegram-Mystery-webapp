@@ -292,7 +292,7 @@ const MyProfilePage = ({ user, onLogout }) => {
                         <video src={post.mediaUrl || post.imageUrl} className="w-full h-full object-cover" />
                       ) : (
                         <img 
-                          src={post.imageUrl || post.mediaUrl || `${BACKEND_URL}${post.mediaUrl}`} 
+                          src={post.imageUrl || post.mediaUrl} 
                           alt="Post" 
                           className="w-full h-full object-cover"
                           onError={(e) => e.target.src = "https://via.placeholder.com/400"}
@@ -336,7 +336,7 @@ const MyProfilePage = ({ user, onLogout }) => {
                         <video src={post.mediaUrl || post.imageUrl} className="w-full h-full object-cover" />
                       ) : (
                         <img 
-                          src={post.imageUrl || post.mediaUrl || `${BACKEND_URL}${post.mediaUrl}`} 
+                          src={post.imageUrl || post.mediaUrl} 
                           alt="Post" 
                           className="w-full h-full object-cover"
                           onError={(e) => e.target.src = "https://via.placeholder.com/400"}
