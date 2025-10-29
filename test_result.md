@@ -839,6 +839,8 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "✅ CRITICAL 500 ERROR FIX: Updated get_user_posts endpoint (server.py lines 4772-4800) to safely handle createdAt field. Added type checking before .isoformat() call: created_at_val = post.get('createdAt'); if isinstance(created_at_val, datetime): created_at_str = created_at_val.isoformat() else: created_at_str = created_at_val if created_at_val else ''. This handles three cases: 1) datetime object → call .isoformat(), 2) string value → use as-is, 3) None/missing → empty string. datetime already imported at line 18. Backend restarted (pid 6754). NOW: Posts endpoint handles both datetime objects and legacy string values without crashing. isArchived filter already using {$ne: True} from previous fix. 500 errors should be eliminated."
+  
+  - task: "Fix Posts Not Loading - Filter Mismatch & 401 Errors (BACKGROUND CONTEXT)"
     implemented: true
     working: "NA"
     file: "backend/server.py, frontend/src/pages/FeedPage.js, frontend/src/pages/ProfilePage.js"
