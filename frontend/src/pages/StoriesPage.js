@@ -162,7 +162,7 @@ const StoriesPage = ({ user }) => {
               >
                 {story.imageUrl ? (
                   <img
-                    src={API_URL + story.imageUrl}
+                    src={story.imageUrl}
                     alt="Story"
                     className="w-full h-full object-cover"
                   />
@@ -335,7 +335,7 @@ const StoriesPage = ({ user }) => {
             <div className="flex-1 flex items-center justify-center p-4">
               {viewingStory.imageUrl ? (
                 <img
-                  src={API_URL + viewingStory.imageUrl}
+                  src={viewingStory.imageUrl}
                   alt="Story"
                   className="max-w-full max-h-full object-contain rounded-lg"
                 />
