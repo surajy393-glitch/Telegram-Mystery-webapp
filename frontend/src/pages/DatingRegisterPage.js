@@ -572,25 +572,50 @@ const DatingRegisterPage = ({ onLogin }) => {
       });
 
       const token = response.data.access_token;
-      const userData = response.data.user;
-
-      // CRITICAL: Save to localStorage FIRST, then update state
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
       
-      console.log("🎉 Registration successful! User data:", userData);
-      console.log("🖼️ Profile Image:", userData.profileImage);
+      // Fetch a complete user profile after registration to avoid missing fields.
+      // This prevents issues with missing ID or profileImage immediately after sign-up.
+      try {
+        const meRes = await axios.get(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const fullUser = meRes.data.user || meRes.data;
+        
+        // CRITICAL: Save to localStorage FIRST
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(fullUser));
+        
+        console.log("🎉 Registration successful! Full User data:", fullUser);
+        console.log("🖼️ Profile Image:", fullUser.profileImage);
 
-      // Call onLogin to update React state
-      onLogin(token, userData);
+        // Call onLogin to update React state
+        onLogin(token, fullUser);
 
-      toast({
-        title: "Registration Successful! 🎉",
-        description: "Welcome to LuvHive!",
-      });
+        toast({
+          title: "Registration Successful! 🎉",
+          description: "Welcome to LuvHive!",
+        });
 
-      // Navigate immediately after localStorage is set (no setTimeout)
-      navigate("/home");
+        // Navigate immediately after localStorage is set (no setTimeout)
+        navigate("/home");
+      } catch (err) {
+        // If the fetch fails, fall back to the user returned in the response.
+        const fallbackUser = response.data.user;
+        
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(fallbackUser));
+        
+        console.log("⚠️ Using fallback user data:", fallbackUser);
+        
+        onLogin(token, fallbackUser);
+
+        toast({
+          title: "Registration Successful! 🎉",
+          description: "Welcome to LuvHive!",
+        });
+
+        navigate("/home");
+      }
       
     } catch (error) {
       toast({
