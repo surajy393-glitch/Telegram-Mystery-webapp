@@ -405,27 +405,32 @@ const ProfilePage = ({ user, onLogout }) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
                 <DropdownMenuItem
-                  /*
-                   * The user ID might come under id, _id, user_id or tg_user_id, depending
-                   * on how the backend serialized it. Derive the ID from all possible fields.
-                   */
+                  /* Always open the modal immediately and clear old data. */
                   onClick={() => {
-                    // Prefer id, then _id, then user_id, then tg_user_id
+                    console.log("🔴 ABOUT THIS ACCOUNT CLICKED!");
+                    console.log("viewingUser:", viewingUser);
+                    
+                    // Derive ID from all possible fields (id, _id, user_id, tg_user_id)
                     const accountId =
                       viewingUser?.id ||
                       viewingUser?._id ||
                       viewingUser?.user_id ||
                       viewingUser?.tg_user_id;
+                    
+                    console.log("Resolved accountId:", accountId);
 
-                    // Always set the loading modal to visible first
+                    // Show the dialog immediately so a spinner is visible
+                    console.log("Setting showAccountInfo = TRUE");
                     setShowAccountInfo(true);
                     setAccountInfo(null);
+                    console.log("Modal should be visible NOW");
 
                     if (accountId) {
-                      // Fetch and display the account info
+                      console.log("Calling fetchAccountInfo with:", accountId);
                       fetchAccountInfo(accountId);
                     } else {
-                      // Without an ID we cannot call the endpoint. Show an error message.
+                      console.error("NO ID FOUND!");
+                      // Display error inside the modal
                       setAccountInfo({
                         error: true,
                         message:
