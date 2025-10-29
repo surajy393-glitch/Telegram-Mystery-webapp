@@ -211,7 +211,7 @@ const ProfilePage = ({ user, onLogout }) => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      // First, try to fetch posts by the internal UUID
+      // 1. Try to load posts via the normal endpoint (now accepts UUID or username)
       console.log("Fetching posts with accountId:", accountId, "username:", username);
       let response = await axios.get(`${API}/users/${accountId}/posts`, { headers });
       console.log("Posts API response:", response.data);
@@ -222,7 +222,7 @@ const ProfilePage = ({ user, onLogout }) => {
         ? response.data
         : [];
 
-      // If no posts returned but postsCount shows > 0, try using the username slug
+      // 2. If no posts returned but postsCount shows > 0, try using the username slug
       if (postsData.length === 0 && viewingUser?.postsCount > 0 && username) {
         console.log("No posts with UUID, trying username fallback:", username);
         const fallback = await axios.get(`${API}/users/${username}/posts`, { headers });
@@ -234,6 +234,17 @@ const ProfilePage = ({ user, onLogout }) => {
           : [];
       }
       
+      // 3. If still empty and we expect posts, load the feed and filter by this user
+      if (postsData.length === 0 && viewingUser?.postsCount > 0) {
+        console.warn("User posts endpoint returned nothing; falling back to feed");
+        const feedResp = await axios.get(`${API}/posts/feed`, { headers });
+        const feedPosts = Array.isArray(feedResp.data.posts) ? feedResp.data.posts : [];
+        postsData = feedPosts.filter(
+          (p) => p.userId === accountId || p.username === username
+        );
+        console.log(`Extracted ${postsData.length} posts from feed`);
+      }
+      
       console.log("Posts fetched successfully:", postsData.length);
       setUserPosts(postsData);
     } catch (error) {
@@ -241,12 +252,31 @@ const ProfilePage = ({ user, onLogout }) => {
       console.error('Error status:', error.response?.status);
       console.error('Error message:', error.response?.data?.detail);
       
-      // Handle expired or invalid tokens
-      if (error.response?.status === 401) {
+      // If 500 error or other issues, try feed fallback as last resort
+      if (error.response?.status === 500 || error.response?.status === 404) {
+        console.warn("Primary endpoints failed, attempting feed fallback");
+        try {
+          const token = localStorage.getItem('token');
+          const headers = { Authorization: `Bearer ${token}` };
+          const feedResp = await axios.get(`${API}/posts/feed`, { headers });
+          const feedPosts = Array.isArray(feedResp.data.posts) ? feedResp.data.posts : [];
+          const filteredPosts = feedPosts.filter(
+            (p) => p.userId === accountId || p.username === username
+          );
+          console.log(`Feed fallback successful: extracted ${filteredPosts.length} posts`);
+          setUserPosts(filteredPosts);
+        } catch (feedError) {
+          console.error("Feed fallback also failed:", feedError);
+          setUserPosts([]);
+        }
+      } else if (error.response?.status === 401) {
+        // Handle expired or invalid tokens
         console.error("401 Unauthorized - logging out");
         onLogout();
+        setUserPosts([]);
+      } else {
+        setUserPosts([]);
       }
-      setUserPosts([]);
     } finally {
       setPostsLoading(false);
     }
