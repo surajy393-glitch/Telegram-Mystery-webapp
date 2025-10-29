@@ -155,7 +155,7 @@ const MyProfilePage = ({ user, onLogout }) => {
                   profile?.profileImage 
                     ? (profile.profileImage.startsWith('data:') || profile.profileImage.startsWith('http') 
                         ? profile.profileImage 
-                        : `${process.env.REACT_APP_BACKEND_URL}${profile.profileImage}`)
+                        : `${BACKEND_URL}${profile.profileImage}`)
                     : "https://via.placeholder.com/150"
                 }
                 alt={profile?.username}
