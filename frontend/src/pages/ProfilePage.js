@@ -885,28 +885,72 @@ const ProfilePage = ({ user, onLogout }) => {
 
       {/* Verification Details Popover */}
       {/* About this account Dialog */}
-      {console.log("Rendering check - showAccountInfo:", showAccountInfo)}
-      {showAccountInfo && console.log("✅ Modal should be rendering now")}
       {showAccountInfo && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-          {console.log("🎨 Inside modal div - rendering backdrop and content")}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm" 
             onClick={() => {
-              console.log("Backdrop clicked - closing modal");
               setShowAccountInfo(false);
+              setAccountInfo(null);
             }}
           />
-          <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 z-[10000] max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full z-[10000] max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-2">About this account</h2>
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold">About this account</h2>
+                <button 
+                  onClick={() => {
+                    setShowAccountInfo(false);
+                    setAccountInfo(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="width" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
               <p className="text-sm text-gray-500 mb-4">
                 To help keep our community authentic, we're showing information about accounts on LuvHive.
               </p>
               
-              {accountInfo ? (
+              {/* Loading State */}
+              {!accountInfo && (
+                <div className="py-12 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading account information...</p>
+                </div>
+              )}
+              
+              {/* Error State */}
+              {accountInfo?.error && (
+                <div className="py-8">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex">
+                      <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
+                      </svg>
+                      <div>
+                        <p className="font-semibold text-red-800">Failed to load</p>
+                        <p className="text-sm text-red-600 mt-1">{accountInfo.message}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setShowAccountInfo(false);
+                      setAccountInfo(null);
+                    }}
+                    className="w-full mt-4 bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+              
+              {/* Success State - Account Info */}
+              {accountInfo && !accountInfo.error && (
                 <div className="space-y-4 py-4">
-                  {console.log("Rendering account info:", accountInfo)}
                   {/* Date Joined */}
                   <div className="flex items-start gap-3">
                     <div className="p-2 bg-gray-100 rounded-lg">
