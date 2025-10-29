@@ -43,6 +43,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     age: "",
     gender: "",
     city: "",
+    country: "",
     interests: [],
     profilePhoto: null,
     personalityAnswers: {}
