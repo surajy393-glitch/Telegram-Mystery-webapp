@@ -803,6 +803,21 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Enhanced error handling in fetchVerificationDetails function with console logs and user-friendly error alerts. Dialog component is properly configured with Radix UI. Added debug logs to track API calls and responses. If user is not verified (404), shows alert message. For other errors, shows generic failure message."
+  
+  - task: "Fix About This Account Dialog - Replace with Radix Dialog Portal"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that 'About this account' dialog not appearing when clicking 3-dot menu option. Investigation shows click handler fires and sets showAccountInfo=true, fetchAccountInfo returns valid data, console logs 'Modal should be visible NOW', but nothing shows on screen. Root cause: CSS transforms on parent elements create new containing block for fixed-position children, causing modal to be positioned incorrectly (off-screen or hidden)."
+      - working: "NA"
+        agent: "main"
+        comment: "VERIFIED IMPLEMENTATION: Radix Dialog with portal already correctly implemented (lines 898-1042 ProfilePage.js). DialogContent component properly wraps in DialogPortal (dialog.jsx line 27), rendering to document.body to bypass CSS transform issues. Click handler (lines 409-440) correctly sets showAccountInfo(true) and setAccountInfo(null) before fetching. No old fixed overlay code exists. Implementation includes: loading spinner state, error state with user-friendly messages, success state with date joined/country/verification details, proper z-index (z-[100000]), and onOpenChange handler to reset state on close. Dialog structure: Dialog Root -> DialogPortal -> DialogOverlay + DialogContent. Ready for user testing to confirm dialog now appears correctly."
 
   - task: "Make Story Username Clickable in Story Viewer"
     implemented: true
