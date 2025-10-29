@@ -105,17 +105,10 @@ const ProfilePage = ({ user, onLogout }) => {
   }, [viewingUser]);
 
   const fetchAccountInfo = async (userId) => {
-    console.log("=== fetchAccountInfo CALLED ===");
-    console.log("userId parameter:", userId);
-    
-    // Open modal immediately with loading state
-    setShowAccountInfo(true);
-    setAccountInfo(null); // Reset to show loading
+    console.log("=== fetchAccountInfo CALLED with ID:", userId);
     
     try {
       const token = localStorage.getItem("token");
-      console.log("Token present:", !!token);
-      
       const url = `${API}/users/${userId}/account-info`;
       console.log("Fetching from URL:", url);
       
@@ -125,14 +118,12 @@ const ProfilePage = ({ user, onLogout }) => {
       
       console.log("✅ Account info received:", response.data);
       setAccountInfo(response.data);
-      console.log("Account info set, dialog should show content now");
       
     } catch (error) {
       console.error("❌ Error fetching account info:", error);
-      console.error("Error status:", error.response?.status);
       console.error("Error details:", error.response?.data);
       
-      // Show error in modal instead of closing
+      // Show error in modal
       setAccountInfo({
         error: true,
         message: error.response?.data?.detail || error.message || "Failed to load account information"
