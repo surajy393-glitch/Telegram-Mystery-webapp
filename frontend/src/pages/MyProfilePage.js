@@ -382,7 +382,7 @@ const MyProfilePage = ({ user, onLogout }) => {
                         <video src={item.mediaUrl || item.imageUrl} className="w-full h-full object-cover" />
                       ) : (
                         <img 
-                          src={item.imageUrl || item.mediaUrl || `${BACKEND_URL}${item.mediaUrl}`} 
+                          src={item.imageUrl || item.mediaUrl} 
                           alt={item.type} 
                           className="w-full h-full object-cover"
                           onError={(e) => e.target.src = "https://via.placeholder.com/400"}
