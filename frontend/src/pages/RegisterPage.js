@@ -408,18 +408,27 @@ const RegisterPage = ({ onLogin }) => {
 
       const token = response.data.access_token;
       
-      // Use the user returned from registration directly.
-      // register-enhanced already includes bio and profileImage.
-      const newUser = response.data.user;
-
-      // Show success popup
-      setShowSuccess(true);
-
-      // Auto redirect after 2 seconds and use the user for login
-      setTimeout(() => {
-        onLogin(token, newUser);
-        navigate("/home");
-      }, 2000);
+      // Fetch a complete user profile after registration to avoid missing fields.
+      // This prevents issues with missing ID or profileImage immediately after sign-up.
+      try {
+        const meRes = await axios.get(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const fullUser = meRes.data.user || meRes.data;
+        setShowSuccess(true);
+        setTimeout(() => {
+          onLogin(token, fullUser);
+          navigate("/home");
+        }, 2000);
+      } catch (err) {
+        // If the fetch fails, fall back to the user returned in the response.
+        const fallbackUser = response.data.user;
+        setShowSuccess(true);
+        setTimeout(() => {
+          onLogin(token, fallbackUser);
+          navigate("/home");
+        }, 2000);
+      }
       
     } catch (error) {
       toast({
