@@ -44,25 +44,31 @@ const MyProfilePage = ({ user, onLogout }) => {
   const fetchProfileData = async () => {
     try {
       const token = localStorage.getItem("token");
+      console.log("🔑 Fetching profile data with token:", token ? "Present" : "Missing");
       const headers = { Authorization: `Bearer ${token}` };
 
       const [profileRes, postsRes, savedRes, archivedRes] = await Promise.all([
-        axios.get(`${API}/auth/me`, { headers }).catch(() => ({ data: user })),
+        axios.get(`${API}/auth/me`, { headers }).catch((err) => {
+          console.error("❌ /auth/me failed:", err.response?.status, err.message);
+          return { data: user };
+        }),
         axios.get(`${API}/profile/posts`, { headers }).catch(() => ({ data: { posts: [] } })),
         axios.get(`${API}/profile/saved`, { headers }).catch(() => ({ data: { posts: [] } })),
         axios.get(`${API}/profile/archived`, { headers }).catch(() => ({ data: { archived: [] } }))
       ]);
 
       if (profileRes.data) {
+        console.log("✅ Profile data fetched, profileImage:", profileRes.data.profileImage);
         setProfile(profileRes.data);
       }
       setMyPosts(postsRes.data.posts || []);
       setSavedPosts(savedRes.data.posts || []);
       setArchivedItems(archivedRes.data.archived || []);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("❌ Error fetching profile:", error);
       // Use user prop as fallback
       if (user && !profile) {
+        console.log("⚠️ Using user prop as fallback");
         setProfile(user);
       }
     } finally {
