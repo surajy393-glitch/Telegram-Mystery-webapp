@@ -8,7 +8,7 @@ import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8001";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 const API = `${BACKEND_URL}/api`;
 
 const EditProfilePage = ({ user, onLogin, onLogout }) => {
