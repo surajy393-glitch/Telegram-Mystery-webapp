@@ -139,8 +139,12 @@ const MysteryMatchHome = () => {
     setError('');
     
     try {
+      // Send a number if numeric; otherwise send the string ID as-is
+      const numericId = parseInt(userId);
+      const payloadUserId = isNaN(numericId) ? userId : numericId;
+      
       const response = await axios.post(`${API}/mystery/find-match`, {
-        user_id: parseInt(userId),
+        user_id: payloadUserId,
         preferred_age_min: 18,
         preferred_age_max: 35,
         preferred_gender: preferredGender  // 'random', 'male', or 'female'
