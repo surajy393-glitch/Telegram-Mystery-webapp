@@ -72,7 +72,7 @@ const MysteryChatPage = () => {
 
   const fetchChat = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/mystery/chat/${matchId}?user_id=${userId}`);
+      const response = await axios.get(`${API}/mystery/chat/${matchId}?user_id=${userId}`);
       if (response.data.success) {
         setMessages(response.data.messages);
         setChatData(response.data);
@@ -91,7 +91,7 @@ const MysteryChatPage = () => {
     
     try {
       // Send via API to persist in database
-      const response = await axios.post(`${API_URL}/api/mystery/send-message`, {
+      const response = await axios.post(`${API}/mystery/send-message`, {
         match_id: parseInt(matchId),
         sender_id: parseInt(userId),
         message_text: messageText
