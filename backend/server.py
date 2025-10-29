@@ -4656,14 +4656,13 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Check if account is private
     is_private = user.get("isPrivate", False)
     
-    # Get user's posts count (only if can view)
-    can_view_posts = not is_private or is_following or userId == current_user.id
-    
-    if can_view_posts:
-        posts = await db.posts.find({"userId": userId, "isArchived": {"$ne": True}}).to_list(1000)
-        posts_count = len(posts)
-    else:
-        posts_count = 0  # Hide post count for private accounts
+    # Always show the post count. We restrict actual post content in the
+    # /users/{userId}/posts endpoint, but the number of posts should be
+    # visible even for private accounts (similar to Instagram and other social apps).
+    posts_count = await db.posts.count_documents({
+        "userId": userId,
+        "isArchived": {"$ne": True}
+    })
     
     followers_count = len(user.get("followers", []))
     following_count = len(user.get("following", []))
