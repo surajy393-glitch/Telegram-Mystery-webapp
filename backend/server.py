@@ -4790,6 +4790,7 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
             "userProfileImage": post.get("userProfileImage"),
             "mediaType": post.get("mediaType", "image"),  # Default to image if missing
             "mediaUrl": post.get("mediaUrl"),
+            "imageUrl": post.get("imageUrl"),  # Legacy field for backward compatibility
             "caption": post.get("caption", ""),
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
