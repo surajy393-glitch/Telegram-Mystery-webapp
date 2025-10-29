@@ -70,8 +70,8 @@ const ProfilePage = ({ user, onLogout }) => {
   const [vibeScore, setVibeScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [followingInProgress, setFollowingInProgress] = useState(new Set());
-  const [showVerificationPopover, setShowVerificationPopover] = useState(false);
-  const [verificationDetails, setVerificationDetails] = useState(null);
+  const [showAccountInfo, setShowAccountInfo] = useState(false);
+  const [accountInfo, setAccountInfo] = useState(null);
 
   // Check if we're viewing a specific user or discovery page
   const isViewingSpecificUser = !!userId;
@@ -87,23 +87,17 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   }, [userId]);
 
-  const fetchVerificationDetails = async (userId) => {
+  const fetchAccountInfo = async (userId) => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Fetching verification details for user:", userId);
-      const response = await axios.get(`${API}/users/${userId}/verification-details`, {
+      const response = await axios.get(`${API}/users/${userId}/account-info`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Verification details received:", response.data);
-      setVerificationDetails(response.data);
-      setShowVerificationPopover(true);
+      setAccountInfo(response.data);
+      setShowAccountInfo(true);
     } catch (error) {
-      console.error("Error fetching verification details:", error);
-      if (error.response?.status === 404) {
-        alert("This user is not verified or verification details are not available.");
-      } else {
-        alert("Failed to load verification details. Please try again.");
-      }
+      console.error("Error fetching account info:", error);
+      alert("Failed to load account information. Please try again.");
     }
   };
 
