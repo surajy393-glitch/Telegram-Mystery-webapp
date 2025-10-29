@@ -5533,6 +5533,8 @@ async def register_for_mystery(
             "bio": "",
             "profileImage": profile_photo_url,
             "mobileNumber": mobileNumber,
+            "emailVerified": emailVerified,  # Set from form data
+            "mobileVerified": mobileVerified,  # Set from form data
             "personalityAnswers": personality_data,
             "isPremium": False,
             "isVerified": False,
