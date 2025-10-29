@@ -97,7 +97,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
             comment.userAvatar
               ? (comment.userAvatar.startsWith('data:') || comment.userAvatar.startsWith('http')
                   ? comment.userAvatar
-                  : `${API_URL}${comment.userAvatar}`)
+                  : `${comment.userAvatar}`)
               : "https://via.placeholder.com/32"
           }
           alt={comment.username}
@@ -201,7 +201,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
                 user?.profileImage
                   ? (user.profileImage.startsWith('data:') || user.profileImage.startsWith('http')
                       ? user.profileImage
-                      : `${API_URL}${user.profileImage}`)
+                      : `${user.profileImage}`)
                   : "https://via.placeholder.com/32"
               }
               alt="Your profile"
