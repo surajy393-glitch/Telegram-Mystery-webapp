@@ -642,7 +642,10 @@ const FeedPage = ({ user, onLogout }) => {
                             
                             // Check if user profile is private
                             try {
-                              const response = await axios.get(`/api/users/${post.userId}`);
+                              const token = localStorage.getItem('token');
+                              const response = await axios.get(`${API}/users/${post.userId}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
                               if (response.data.isPrivate && response.data.id !== user.id) {
                                 alert('This account is private');
                               } else {
@@ -650,6 +653,7 @@ const FeedPage = ({ user, onLogout }) => {
                               }
                             } catch (error) {
                               console.error('Error checking profile:', error);
+                              // Still navigate even if check fails
                               navigate(`/profile/${post.userId}`);
                             }
                           }}
