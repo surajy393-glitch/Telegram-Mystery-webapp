@@ -179,7 +179,15 @@ const MyProfilePage = ({ user, onLogout }) => {
               <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
                 <p className="text-lg text-gray-600">@{profile?.username || 'username'}</p>
                 {profile?.isVerified && <VerifiedBadge size="md" />}
+                {profile?.isFounder && <span className="text-2xl" title="Official LuvHive Account">👑</span>}
               </div>
+              
+              {/* Official Account Badge */}
+              {profile?.isFounder && (
+                <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+                  🏢 Official LuvHive Account
+                </div>
+              )}
 
               {/* Stats */}
               <div className="flex justify-center md:justify-start gap-8 mb-4">
