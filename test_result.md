@@ -828,17 +828,26 @@ frontend:
   - task: "Fix Posts Not Loading - Filter Mismatch & 401 Errors"
     implemented: true
     working: "NA"
-    file: "backend/server.py, frontend/src/pages/FeedPage.js"
+    file: "backend/server.py, frontend/src/pages/FeedPage.js, frontend/src/pages/ProfilePage.js"
     stuck_count: 0
     priority: "critical"
     needs_retesting: true
     status_history:
       - working: false
         agent: "user"
-        comment: "Deep analysis revealed two critical issues: 1) FILTER MISMATCH: Profile endpoint counts posts with isArchived: {$ne: True} (includes posts without isArchived field), but get_user_posts filters with isArchived: False (only explicit False). Result: postsCount shows 4 but posts array empty because older posts lack isArchived field. 2) 401 ERRORS IN FEED: FeedPage.js onClick handler for post.username calls axios.get('/api/users/${post.userId}') WITHOUT Bearer token. API requires auth, returns 401, logs 'Error checking profile'. Though catch block navigates to profile, console shows noisy errors."
+        comment: "Initial issue: Profile shows postsCount = 4 but posts grid empty. Root cause: fetchUserPosts called with userId from URL params (could be username slug) instead of UUID. Backend expects UUID, returns empty array."
       - working: "NA"
         agent: "main"
-        comment: "✅ CRITICAL FIXES APPLIED: BACKEND (server.py line 4765): Changed posts filter from isArchived: False to isArchived: {$ne: True}. This matches profile count logic and includes posts without isArchived field (default for older posts). Comment added: 'Use $ne: True to include posts without isArchived field (default behavior)'. FRONTEND (FeedPage.js line 645): Updated username onClick handler to pass Bearer token: const token = localStorage.getItem('token'); axios.get(`${API}/users/${post.userId}`, {headers: {Authorization: `Bearer ${token}`}}). This eliminates 401 'Error checking profile' console noise. Both services restarted (backend pid 6038, frontend pid 6040). NOW: Posts query returns all non-archived posts (including those without explicit isArchived field), feed username clicks authenticated properly."
+        comment: "PHASE 1 FIX: Created getAccountId() helper, refactored useEffect to wait for viewingUser then call fetchUserPosts with derived UUID. Added postsLoading state, enhanced response handling, updated UI states."
+      - working: "NA"
+        agent: "main"
+        comment: "PHASE 2 FIX - COMPREHENSIVE FALLBACK: FRONTEND: fetchUserProfile with dual endpoint fallback (/users/{id}/profile then /users/{id}), fetchUserPosts with (accountId, username) params and fallback chain, 401 → onLogout() handling. BACKEND: Updated get_user_posts to accept both UUID and username via $or query, posts fetch by userId OR username."
+      - working: false
+        agent: "user"
+        comment: "Deep analysis revealed two critical remaining issues: 1) FILTER MISMATCH: Profile endpoint counts posts with isArchived: {$ne: True} (includes posts without isArchived field), but get_user_posts filters with isArchived: False (only explicit False). Result: postsCount shows 4 but posts array empty because older posts lack isArchived field. 2) 401 ERRORS IN FEED: FeedPage.js onClick handler for post.username calls axios.get('/api/users/${post.userId}') WITHOUT Bearer token. API requires auth, returns 401, logs 'Error checking profile'. Though catch block navigates to profile, console shows noisy errors."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ PHASE 3 FIX - CRITICAL FILTER & AUTH: BACKEND (server.py line 4765): Changed posts filter from isArchived: False to isArchived: {$ne: True}. This matches profile count logic and includes posts without isArchived field (default for older posts). Comment added: 'Use $ne: True to include posts without isArchived field (default behavior)'. FRONTEND (FeedPage.js line 645): Updated username onClick handler to pass Bearer token: const token = localStorage.getItem('token'); axios.get(`${API}/users/${post.userId}`, {headers: {Authorization: `Bearer ${token}`}}). This eliminates 401 'Error checking profile' console noise. Both services restarted (backend pid 6038, frontend pid 6040). COMPLETE SOLUTION: Posts filter matches count logic (includes default/null isArchived), feed username clicks authenticated, existing UUID/username fallbacks preserved. NOW: postsCount matches actual posts returned, no 401 errors in feed."
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js, backend/server.py"
