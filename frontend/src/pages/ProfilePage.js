@@ -549,7 +549,7 @@ const ProfilePage = ({ user, onLogout }) => {
           </div>
 
           {/* User Posts Grid */}
-          {viewingUser?.isPrivate && !viewingUser?.isFollowing ? (
+          {(viewingUser?.isPrivate && !viewingUser?.isFollowing && !isViewingOwnProfile) ? (
             <div className="glass-effect rounded-3xl overflow-hidden shadow-xl">
               <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-16 text-center">
                 <div className="bg-white rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center shadow-lg">
@@ -581,7 +581,17 @@ const ProfilePage = ({ user, onLogout }) => {
                 ))}
               </div>
             </div>
-          ) : null}
+          ) : viewingUser?.postsCount > 0 ? (
+            <div className="glass-effect rounded-3xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Posts Loading...</h3>
+              <p className="text-gray-600 text-center">This user has {viewingUser.postsCount} posts</p>
+            </div>
+          ) : (
+            <div className="glass-effect rounded-3xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">No Posts Yet</h3>
+              <p className="text-gray-600 text-center">This user hasn't posted anything yet</p>
+            </div>
+          )}
         </div>
 
         {/* Vibe Check Dialog */}
