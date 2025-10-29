@@ -584,15 +584,35 @@ const DatingRegisterPage = ({ onLogin }) => {
         fullUser = response.data.user;
       }
 
-      // Save token and full user to localStorage.
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(fullUser));
+      // Normalize the user object to ensure profileImage field exists
+      const normalizedUser = {
+        ...fullUser,
+        profileImage: fullUser.profileImage ?? 
+                      fullUser.profile_image ?? 
+                      fullUser.profilePhoto ?? 
+                      fullUser.profile_photo_url ?? 
+                      fullUser.photo_url ?? 
+                      fullUser.profile_photo ?? 
+                      null
+      };
 
-      console.log("🎉 Registration successful! User data:", fullUser);
-      console.log("🖼️ Profile Image:", fullUser.profileImage);
+      // If the backend did not return a profileImage but the user uploaded a
+      // photo, use the local base64 preview. This ensures the DP shows
+      // immediately after registration instead of only after editing the profile.
+      if (!normalizedUser.profileImage && photoPreview) {
+        normalizedUser.profileImage = photoPreview;
+      }
+
+      // Save token and normalized user to localStorage.
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+
+      console.log("🎉 Registration successful! User data:", normalizedUser);
+      console.log("🖼️ Profile Image:", normalizedUser.profileImage);
+      console.log("📸 Using base64 preview:", !fullUser.profileImage && !!photoPreview);
 
       // Update React state immediately so downstream components have access to the correct user.
-      onLogin(token, fullUser);
+      onLogin(token, normalizedUser);
 
       toast({
         title: "Registration Successful! 🎉",
