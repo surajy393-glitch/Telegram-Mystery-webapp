@@ -372,7 +372,18 @@ const ProfilePage = ({ user, onLogout }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white rounded-xl shadow-lg w-56" align="end">
-                <DropdownMenuItem onClick={() => fetchAccountInfo(viewingUser.id)} className="cursor-pointer hover:bg-pink-50 rounded-lg py-3">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (viewingUser?.id) {
+                      console.log("Calling fetchAccountInfo with:", viewingUser.id);
+                      fetchAccountInfo(viewingUser.id);
+                    } else {
+                      console.error("viewingUser or viewingUser.id is undefined");
+                      alert("Unable to load account info. Please try refreshing the page.");
+                    }
+                  }} 
+                  className="cursor-pointer hover:bg-pink-50 rounded-lg py-3"
+                >
                   <Info className="w-4 h-4 mr-3" />
                   About this account
                 </DropdownMenuItem>
