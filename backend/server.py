@@ -2087,7 +2087,8 @@ async def admin_verify_user(username: str):
         {"username": username},
         {"$set": {
             "isVerified": True,
-            "verifiedAt": datetime.now(timezone.utc).isoformat()
+            "verifiedAt": datetime.now(timezone.utc).isoformat(),
+            "verificationPathway": "Manually Verified"
         }}
     )
     
