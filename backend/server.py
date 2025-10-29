@@ -4659,6 +4659,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "gender": user.get("gender"),
         "isPremium": user.get("isPremium", False),
         "isVerified": user.get("isVerified", False),
+        "isFounder": user.get("isFounder", False),
         "verificationPathway": user.get("verificationPathway"),
         "isPrivate": is_private,
         "followersCount": followers_count,
