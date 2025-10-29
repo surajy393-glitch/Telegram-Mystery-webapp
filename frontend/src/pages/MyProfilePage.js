@@ -19,6 +19,8 @@ const MyProfilePage = ({ user, onLogout }) => {
   const [archivedItems, setArchivedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("posts");
+  const [showVerificationPopover, setShowVerificationPopover] = useState(false);
+  const [verificationDetails, setVerificationDetails] = useState(null);
   
   // Followers/Following dialog states
   const [showFollowersDialog, setShowFollowersDialog] = useState(false);
