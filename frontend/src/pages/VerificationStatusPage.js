@@ -230,7 +230,91 @@ const VerificationStatusPage = ({ user }) => {
                                 profileCompletenessCriteria.every(c => c.met) &&
                                 tenureBehaviourCriteria.every(c => c.met);
 
-  const anyPathwayMet = pathways.some(p => p.met);
+  // Calculate smart guidance - show user their easiest path
+  const getSmartGuidance = () => {
+    if (verificationData?.isVerified) return null;
+    
+    const basicMissing = [];
+    if (!verificationData?.criteria?.emailVerified) basicMissing.push('Verify your email');
+    if (!verificationData?.criteria?.phoneVerified) basicMissing.push('Verify your phone');
+    if (!verificationData?.criteria?.profileComplete) basicMissing.push('Complete your profile');
+    if (!verificationData?.criteria?.accountAge) {
+      const daysLeft = 45 - (verificationData?.currentValues?.accountAgeDays || 0);
+      basicMissing.push(`Wait ${daysLeft} more days (account age)`);
+    }
+    if (!verificationData?.criteria?.noViolations) basicMissing.push('Clear violations');
+    
+    if (basicMissing.length > 0) {
+      return {
+        type: 'basic',
+        message: `Complete basic requirements first: ${basicMissing.join(', ')}`,
+        color: 'blue'
+      };
+    }
+    
+    // Calculate distance to each pathway
+    const pathwayDistances = [];
+    
+    // High Engagement
+    const highEngagementGaps = [];
+    if ((verificationData?.currentValues?.postsCount || 0) < 20) 
+      highEngagementGaps.push(`${20 - (verificationData?.currentValues?.postsCount || 0)} more posts`);
+    if ((verificationData?.currentValues?.followersCount || 0) < 100) 
+      highEngagementGaps.push(`${100 - (verificationData?.currentValues?.followersCount || 0)} more followers`);
+    if ((verificationData?.currentValues?.totalLikes || 0) < 1000) 
+      highEngagementGaps.push(`${1000 - (verificationData?.currentValues?.totalLikes || 0)} more likes`);
+    if ((verificationData?.currentValues?.avgStoryViews || 0) < 70) 
+      highEngagementGaps.push(`${70 - (verificationData?.currentValues?.avgStoryViews || 0)} more avg story views`);
+    if ((verificationData?.currentValues?.profileViews || 0) < 1000) 
+      highEngagementGaps.push(`${1000 - (verificationData?.currentValues?.profileViews || 0)} more profile views`);
+    
+    if (highEngagementGaps.length > 0) {
+      pathwayDistances.push({
+        name: 'High Engagement',
+        gaps: highEngagementGaps,
+        distance: highEngagementGaps.length
+      });
+    }
+    
+    // Moderate Engagement
+    const moderateEngagementGaps = [];
+    if ((verificationData?.currentValues?.postsCount || 0) < 10) 
+      moderateEngagementGaps.push(`${10 - (verificationData?.currentValues?.postsCount || 0)} more posts`);
+    if ((verificationData?.currentValues?.followersCount || 0) < 50) 
+      moderateEngagementGaps.push(`${50 - (verificationData?.currentValues?.followersCount || 0)} more followers`);
+    if ((verificationData?.currentValues?.accountAgeDays || 0) < 90) 
+      moderateEngagementGaps.push(`wait ${90 - (verificationData?.currentValues?.accountAgeDays || 0)} more days`);
+    
+    const hasLikes = (verificationData?.currentValues?.totalLikes || 0) >= 500;
+    const hasStoryViews = (verificationData?.currentValues?.avgStoryViews || 0) >= 40;
+    if (!hasLikes && !hasStoryViews) {
+      const likesNeeded = 500 - (verificationData?.currentValues?.totalLikes || 0);
+      const viewsNeeded = 40 - (verificationData?.currentValues?.avgStoryViews || 0);
+      moderateEngagementGaps.push(`${Math.min(likesNeeded, viewsNeeded)} more ${likesNeeded < viewsNeeded ? 'likes' : 'story views'}`);
+    }
+    
+    if (moderateEngagementGaps.length > 0) {
+      pathwayDistances.push({
+        name: 'Moderate Engagement',
+        gaps: moderateEngagementGaps,
+        distance: moderateEngagementGaps.length
+      });
+    }
+    
+    // Find closest pathway
+    if (pathwayDistances.length > 0) {
+      const closest = pathwayDistances.sort((a, b) => a.distance - b.distance)[0];
+      return {
+        type: 'pathway',
+        message: `Closest to ${closest.name} pathway! You need: ${closest.gaps.slice(0, 2).join(', ')}${closest.gaps.length > 2 ? ` +${closest.gaps.length - 2} more` : ''}`,
+        color: 'green'
+      };
+    }
+    
+    return null;
+  };
+
+  const smartGuidance = getSmartGuidance();
 
   // Calculate overall progress
   const basicCount = [...identitySecurityCriteria, ...profileCompletenessCriteria, ...tenureBehaviourCriteria].filter(c => c.met).length;
