@@ -531,30 +531,6 @@ const ProfilePage = ({ user, onLogout }) => {
               )}
 
               <div className="flex justify-center gap-8 mt-6 mb-6">
-                {/* TEST BUTTON - Remove after debugging */}
-                <button 
-                  onClick={() => {
-                    console.log("TEST BUTTON CLICKED");
-                    console.log("viewingUser:", viewingUser);
-                    const accountId =
-                      viewingUser?.id ||
-                      viewingUser?._id ||
-                      viewingUser?.user_id ||
-                      viewingUser?.tg_user_id;
-                    console.log("Resolved accountId:", accountId);
-                    if (accountId) {
-                      fetchAccountInfo(accountId);
-                    } else {
-                      alert("No ID found in viewingUser object");
-                    }
-                  }}
-                  className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
-                >
-                  TEST About Account
-                </button>
-              </div>
-
-              <div className="flex justify-center gap-8 mb-6">
                 <div>
                   {/* Use postsCount from the backend or fall back to the loaded posts length */}
                   <p className="text-2xl font-bold text-pink-600">{viewingUser?.postsCount || userPosts?.length || 0}</p>
