@@ -458,7 +458,8 @@ const RegisterPage = ({ onLogin }) => {
                         null
         };
 
-        if (!normalizedUser.profileImage && formData.profileImage) {
+        // Always prefer local base64 preview
+        if (formData.profileImage) {
           normalizedUser.profileImage = formData.profileImage;
         }
         
