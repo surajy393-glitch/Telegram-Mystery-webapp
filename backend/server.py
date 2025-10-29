@@ -149,6 +149,7 @@ class User(BaseModel):
     mutedUsers: List[str] = []  # List of muted user IDs (silent - they won't know)
     hiddenStoryUsers: List[str] = []  # List of user IDs whose stories are hidden
     lastUsernameChange: Optional[datetime] = None  # Track username changes
+    country: Optional[str] = None  # User's country
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserRegister(BaseModel):
