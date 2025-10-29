@@ -825,10 +825,10 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Posts Not Loading Despite Posts Count Showing"
+  - task: "Fix Posts Not Loading Despite Posts Count Showing - Comprehensive Solution"
     implemented: true
     working: "NA"
-    file: "frontend/src/pages/ProfilePage.js"
+    file: "frontend/src/pages/ProfilePage.js, backend/server.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
@@ -839,6 +839,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "✅ COMPREHENSIVE FIX APPLIED: 1) Created getAccountId() helper function to derive correct ID from user object (checks id, _id, user_id, tg_user_id) - same logic as 'About this account' modal. 2) Refactored useEffect: removed fetchUserPosts(userId) call from initial load, added separate useEffect that waits for viewingUser to load, then calls fetchUserPosts with derived accountId. 3) Updated auto-refresh useEffect to use getAccountId(viewingUser) instead of viewingUser.id. 4) Enhanced fetchUserPosts response handling: checks response.data.posts (array), response.data (array), or returns empty array - handles multiple API response formats. 5) Added postsLoading state (separate from main loading) to differentiate between 'actively loading' vs 'load failed'. 6) Updated UI: shows spinner during postsLoading, shows 'Unable to Load Posts' message if postsCount > 0 but userPosts empty after loading completes (with console hint). Frontend restarted (pid 4397). Now posts will load with correct UUID instead of username slug."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ COMPREHENSIVE FALLBACK SOLUTION APPLIED - BOTH FRONTEND & BACKEND: FRONTEND (ProfilePage.js): 1) fetchUserProfile: Added try-catch fallback - first attempts /users/{id}/profile (UUID), if fails tries /users/{id} (accepts username). Handles 401 errors with onLogout(). 2) fetchUserPosts: Now accepts (accountId, username) parameters. First tries /users/{accountId}/posts, if returns 0 posts but postsCount > 0, falls back to /users/{username}/posts. Handles 401 with onLogout(). 3) useEffect calls: Updated to pass both accountId AND username to fetchUserPosts(accountId, viewingUser.username). Auto-refresh also updated with same pattern. BACKEND (server.py line 4748): 4) Updated get_user_posts endpoint to accept both UUID and username: Changed user lookup to db.users.find_one({'$or': [{'id': userId}, {'username': userId}]}). 5) Posts query updated to fetch by both userId OR username: {'$and': [{'isArchived': False}, {'$or': [{'userId': user['id']}, {'username': user['username']}]}]}. This handles legacy posts saved with username slug. Both services restarted (backend pid 5203, frontend pid 5205). Now posts will load regardless of whether URL param is UUID or username, with automatic fallback chain."
 
   - task: "Make Story Username Clickable in Story Viewer"
     implemented: true
