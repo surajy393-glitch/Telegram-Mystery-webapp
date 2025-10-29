@@ -4747,21 +4747,24 @@ async def get_user_account_info(
 
 @api_router.get("/users/{userId}/posts")
 async def get_user_posts(userId: str, current_user: User = Depends(get_current_user)):
-    """Get posts by a specific user"""
-    user = await db.users.find_one({"id": userId})
+    """Get posts by a specific user (accepts UUID or username)"""
+    # Find the user by id or by username
+    user = await db.users.find_one({"$or": [{"id": userId}, {"username": userId}]})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     # If the account is private and the requester isn't following and isn't the owner, hide posts
     is_private = user.get("isPrivate", False)
     is_following = current_user.id in user.get("followers", [])
-    if is_private and not is_following and current_user.id != userId:
+    if is_private and not is_following and current_user.id != user["id"]:
         return {"posts": []}
     
-    # Get user's non-archived posts
+    # Get user's non-archived posts by either userId or username
     posts = await db.posts.find({
-        "userId": userId,
-        "isArchived": False
+        "$and": [
+            {"isArchived": False},
+            {"$or": [{"userId": user["id"]}, {"username": user["username"]}]}
+        ]
     }).sort("createdAt", -1).to_list(50)
     
     posts_list = []
