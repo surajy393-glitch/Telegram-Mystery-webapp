@@ -2235,9 +2235,12 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     
     return {
         "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
+        "verificationPathway": getattr(current_user, 'verificationPathway', achieved_pathway),
+        "verifiedAt": getattr(current_user, 'verifiedAt', None),
         "criteria": criteria,
         "currentValues": current_values,
         "autoEligible": auto_eligible,
+        "achievedPathway": achieved_pathway,
         "pathways": {
             "highEngagement": high_engagement,
             "moderateEngagement": moderate_engagement,
