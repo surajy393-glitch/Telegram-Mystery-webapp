@@ -109,6 +109,11 @@ const ProfilePage = ({ user, onLogout }) => {
       url = post.imageUrl;
     }
     
+    // If still no URL but telegramFileId exists, use the proxy endpoint
+    if (!url && post.telegramFileId) {
+      url = `/api/media/${post.telegramFileId}`;
+    }
+    
     // Apply prefix fix if URL exists
     return url ? getMediaSrc(url) : null;
   };
