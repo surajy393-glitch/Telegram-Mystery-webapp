@@ -399,15 +399,6 @@ const FeedPage = ({ user, onLogout }) => {
               LuvHive
             </h1>
             <div className="flex items-center gap-2">
-              {/* Mystery Button */}
-              <button
-                onClick={() => navigate('/mystery')}
-                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-sm font-medium flex items-center gap-1.5 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-md"
-              >
-                <span className="text-base">🎭</span>
-                <span className="hidden sm:inline">Mystery</span>
-              </button>
-              
               <Link to="/notifications">
                 <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
                   <Bell className="w-5 h-5 text-gray-700" />
