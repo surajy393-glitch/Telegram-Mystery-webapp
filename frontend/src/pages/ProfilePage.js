@@ -1133,23 +1133,29 @@ const ProfilePage = ({ user, onLogout }) => {
                           handleFollowToggle(follower.id, follower.isFollowing, follower.hasRequested);
                         }}
                         size="sm"
-                        variant={follower.isFollowing ? "outline" : "default"}
+                        variant={follower.isFollowing || follower.hasRequested ? "outline" : "default"}
                         disabled={followingInProgress.has(follower.id)}
                         className={
                           follower.isFollowing 
-                            ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full min-w-[80px]" 
-                            : "bg-pink-500 hover:bg-pink-600 text-white rounded-full min-w-[80px]"
+                            ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full min-w-[90px]"
+                            : follower.hasRequested
+                            ? "border-gray-400 text-gray-700 hover:bg-gray-50 rounded-full min-w-[90px]"
+                            : "bg-pink-500 hover:bg-pink-600 text-white rounded-full min-w-[90px]"
                         }
                       >
                         {followingInProgress.has(follower.id) ? (
                           <div className="flex items-center gap-1">
                             <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-xs">{follower.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                            <span className="text-xs">
+                              {follower.hasRequested ? 'Canceling...' : (follower.isFollowing ? 'Unfollowing...' : 'Following...')}
+                            </span>
                           </div>
                         ) : (
-                          follower.isFollowing 
-                            ? "Following" 
-                            : (followersDialogType === 'followers' ? "Follow back" : "Follow")
+                          follower.hasRequested
+                            ? "Requested"
+                            : (follower.isFollowing 
+                              ? "Following" 
+                              : (followersDialogType === 'followers' ? "Follow back" : "Follow"))
                         )}
                       </Button>
                     )}
