@@ -5954,6 +5954,7 @@ class LuvHiveAPITester:
                 "username": f"cleanup_test_{datetime.now().strftime('%H%M%S')}",
                 "age": 27,
                 "gender": "male",
+                "country": "Germany",
                 "password": "cleanup123"
             }
             
