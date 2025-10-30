@@ -18,8 +18,6 @@ const SettingsPage = ({ user, onLogout }) => {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState({});
-  const [showBlockedUsers, setShowBlockedUsers] = useState(false);
-  const [blockedUsers, setBlockedUsers] = useState([]);
 
   useEffect(() => {
     fetchProfile();
