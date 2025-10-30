@@ -96,6 +96,7 @@ const NotificationsPage = ({ user, onLogout }) => {
         return <MessageCircle className="w-10 h-10 text-blue-500" />;
       case "follow":
       case "follow_request":
+      case "follow_request_accepted":
         return <UserPlus className="w-10 h-10 text-pink-500" />;
       default:
         return <Heart className="w-10 h-10 text-gray-500" />;
