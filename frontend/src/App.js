@@ -4,8 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage";
 import DatingRegisterPage from "@/pages/DatingRegisterPage";
 import LoginPage from "@/pages/LoginPage";
-import MysteryMatchHome from "@/pages/MysteryMatchHome";
-import MysteryChatPage from "@/pages/MysteryChatPage";
 import HomePage from "@/pages/HomePage";
 import ProfilePage from "@/pages/ProfilePage";
 import MyProfilePage from "@/pages/MyProfilePage";
