@@ -6173,6 +6173,372 @@ class LuvHiveAPITester:
         print("\n🎯 Follow Back Notification testing completed!")
         return self.results['failed'] == 0
 
+    # ========== FOLLOW BACK BUTTON LOGIC TESTS ==========
+    
+    def test_follow_back_button_logic_isFollowingMe_field(self):
+        """Test that profile endpoint returns isFollowingMe field correctly"""
+        if not self.test_user_id:
+            self.log_result("Profile isFollowingMe Field", False, "No test user ID available")
+            return
+        
+        try:
+            # Test getting profile of test user
+            response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/profile")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if isFollowingMe field is present
+                if 'isFollowingMe' not in data:
+                    self.log_result("Profile isFollowingMe Field", False, "isFollowingMe field missing from profile response")
+                    return
+                
+                # Check if isFollowing field is also present
+                if 'isFollowing' not in data:
+                    self.log_result("Profile isFollowingMe Field", False, "isFollowing field missing from profile response")
+                    return
+                
+                # Verify field types are boolean
+                if not isinstance(data['isFollowingMe'], bool):
+                    self.log_result("Profile isFollowingMe Field", False, f"isFollowingMe should be boolean, got {type(data['isFollowingMe'])}")
+                    return
+                
+                if not isinstance(data['isFollowing'], bool):
+                    self.log_result("Profile isFollowingMe Field", False, f"isFollowing should be boolean, got {type(data['isFollowing'])}")
+                    return
+                
+                self.log_result("Profile isFollowingMe Field", True, 
+                              f"Profile response includes both isFollowing: {data['isFollowing']} and isFollowingMe: {data['isFollowingMe']}")
+            else:
+                self.log_result("Profile isFollowingMe Field", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Profile isFollowingMe Field", False, "Exception occurred", str(e))
+    
+    def test_follow_back_scenario_they_follow_you(self):
+        """Test scenario: They follow you, you don't follow them (should show Follow back)"""
+        if not self.test_user_id:
+            self.log_result("Follow Back Scenario - They Follow You", False, "No test user ID available")
+            return
+        
+        try:
+            # First, make sure current user is NOT following test user
+            unfollow_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/unfollow")
+            
+            # Now we need to simulate test user following current user
+            # Since we can't directly control the test user, we'll create a new user and test the logic
+            
+            # Create a third user to test with
+            import time
+            unique_id = int(time.time()) % 10000
+            third_user_data = {
+                "fullName": f"Third User {unique_id}",
+                "username": f"thirduser{unique_id}",
+                "age": 30,
+                "gender": "male",
+                "country": "Australia",
+                "password": "test123"
+            }
+            
+            register_response = self.session.post(f"{API_BASE}/auth/register", json=third_user_data)
+            
+            if register_response.status_code == 200:
+                third_user_data_response = register_response.json()
+                third_user_id = third_user_data_response['user']['id']
+                
+                # Make third user follow current user
+                follow_response = self.session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
+                
+                if follow_response.status_code == 200:
+                    # Now check current user's profile from third user's perspective
+                    # But we need to login as third user first
+                    third_user_token = third_user_data_response['access_token']
+                    
+                    # Create new session for third user
+                    third_user_session = requests.Session()
+                    third_user_session.headers.update({'Authorization': f'Bearer {third_user_token}'})
+                    
+                    # Third user views current user's profile
+                    profile_response = third_user_session.get(f"{API_BASE}/users/{self.current_user_id}/profile")
+                    
+                    if profile_response.status_code == 200:
+                        profile_data = profile_response.json()
+                        
+                        # Expected: isFollowing = true (third user follows current user)
+                        # Expected: isFollowingMe = false (current user doesn't follow third user)
+                        expected_isFollowing = True
+                        expected_isFollowingMe = False
+                        
+                        actual_isFollowing = profile_data.get('isFollowing')
+                        actual_isFollowingMe = profile_data.get('isFollowingMe')
+                        
+                        if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
+                            self.log_result("Follow Back Scenario - They Follow You", True, 
+                                          f"Correct follow relationship: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                        else:
+                            self.log_result("Follow Back Scenario - They Follow You", False, 
+                                          f"Incorrect follow relationship: expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                    else:
+                        self.log_result("Follow Back Scenario - They Follow You", False, f"Profile request failed: {profile_response.status_code}")
+                else:
+                    self.log_result("Follow Back Scenario - They Follow You", False, "Could not make third user follow current user")
+            else:
+                self.log_result("Follow Back Scenario - They Follow You", False, "Could not create third user for testing")
+                
+        except Exception as e:
+            self.log_result("Follow Back Scenario - They Follow You", False, "Exception occurred", str(e))
+    
+    def test_follow_back_scenario_you_follow_them(self):
+        """Test scenario: You follow them (should show Following)"""
+        if not self.test_user_id:
+            self.log_result("Follow Back Scenario - You Follow Them", False, "No test user ID available")
+            return
+        
+        try:
+            # Make current user follow test user
+            follow_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/follow")
+            
+            if follow_response.status_code == 200:
+                # Now check test user's profile
+                profile_response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/profile")
+                
+                if profile_response.status_code == 200:
+                    profile_data = profile_response.json()
+                    
+                    # Expected: isFollowing = true (current user follows test user)
+                    # isFollowingMe can be true or false
+                    expected_isFollowing = True
+                    
+                    actual_isFollowing = profile_data.get('isFollowing')
+                    actual_isFollowingMe = profile_data.get('isFollowingMe')
+                    
+                    if actual_isFollowing == expected_isFollowing:
+                        self.log_result("Follow Back Scenario - You Follow Them", True, 
+                                      f"Correct follow relationship: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Following button should show)")
+                    else:
+                        self.log_result("Follow Back Scenario - You Follow Them", False, 
+                                      f"Incorrect follow relationship: expected isFollowing={expected_isFollowing}, got isFollowing={actual_isFollowing}")
+                else:
+                    self.log_result("Follow Back Scenario - You Follow Them", False, f"Profile request failed: {profile_response.status_code}")
+            else:
+                self.log_result("Follow Back Scenario - You Follow Them", False, "Could not follow test user")
+                
+        except Exception as e:
+            self.log_result("Follow Back Scenario - You Follow Them", False, "Exception occurred", str(e))
+    
+    def test_follow_back_scenario_no_relationship(self):
+        """Test scenario: No relationship (should show Follow)"""
+        if not self.test_user_id:
+            self.log_result("Follow Back Scenario - No Relationship", False, "No test user ID available")
+            return
+        
+        try:
+            # Make sure there's no relationship
+            unfollow_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/unfollow")
+            
+            # Check test user's profile
+            profile_response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/profile")
+            
+            if profile_response.status_code == 200:
+                profile_data = profile_response.json()
+                
+                # Expected: isFollowing = false, isFollowingMe = false
+                expected_isFollowing = False
+                expected_isFollowingMe = False
+                
+                actual_isFollowing = profile_data.get('isFollowing')
+                actual_isFollowingMe = profile_data.get('isFollowingMe')
+                
+                if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
+                    self.log_result("Follow Back Scenario - No Relationship", True, 
+                                  f"Correct no relationship: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Follow button should show)")
+                else:
+                    self.log_result("Follow Back Scenario - No Relationship", False, 
+                                  f"Incorrect relationship: expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+            else:
+                self.log_result("Follow Back Scenario - No Relationship", False, f"Profile request failed: {profile_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Follow Back Scenario - No Relationship", False, "Exception occurred", str(e))
+    
+    def test_follow_back_scenario_mutual_following(self):
+        """Test scenario: Mutual following (should show Following - takes priority)"""
+        if not self.test_user_id:
+            self.log_result("Follow Back Scenario - Mutual Following", False, "No test user ID available")
+            return
+        
+        try:
+            # Create a new user for mutual following test
+            import time
+            unique_id = int(time.time()) % 10000
+            mutual_user_data = {
+                "fullName": f"Mutual User {unique_id}",
+                "username": f"mutualuser{unique_id}",
+                "age": 27,
+                "gender": "female",
+                "country": "Canada",
+                "password": "test123"
+            }
+            
+            register_response = self.session.post(f"{API_BASE}/auth/register", json=mutual_user_data)
+            
+            if register_response.status_code == 200:
+                mutual_user_response = register_response.json()
+                mutual_user_id = mutual_user_response['user']['id']
+                mutual_user_token = mutual_user_response['access_token']
+                
+                # Current user follows mutual user
+                follow_response1 = self.session.post(f"{API_BASE}/users/{mutual_user_id}/follow")
+                
+                if follow_response1.status_code == 200:
+                    # Mutual user follows current user
+                    mutual_session = requests.Session()
+                    mutual_session.headers.update({'Authorization': f'Bearer {mutual_user_token}'})
+                    follow_response2 = mutual_session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
+                    
+                    if follow_response2.status_code == 200:
+                        # Now check mutual user's profile from current user's perspective
+                        profile_response = self.session.get(f"{API_BASE}/users/{mutual_user_id}/profile")
+                        
+                        if profile_response.status_code == 200:
+                            profile_data = profile_response.json()
+                            
+                            # Expected: isFollowing = true, isFollowingMe = true
+                            expected_isFollowing = True
+                            expected_isFollowingMe = True
+                            
+                            actual_isFollowing = profile_data.get('isFollowing')
+                            actual_isFollowingMe = profile_data.get('isFollowingMe')
+                            
+                            if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
+                                self.log_result("Follow Back Scenario - Mutual Following", True, 
+                                              f"Correct mutual relationship: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Following button should show - takes priority)")
+                            else:
+                                self.log_result("Follow Back Scenario - Mutual Following", False, 
+                                              f"Incorrect mutual relationship: expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                        else:
+                            self.log_result("Follow Back Scenario - Mutual Following", False, f"Profile request failed: {profile_response.status_code}")
+                    else:
+                        self.log_result("Follow Back Scenario - Mutual Following", False, "Mutual user could not follow current user")
+                else:
+                    self.log_result("Follow Back Scenario - Mutual Following", False, "Current user could not follow mutual user")
+            else:
+                self.log_result("Follow Back Scenario - Mutual Following", False, "Could not create mutual user for testing")
+                
+        except Exception as e:
+            self.log_result("Follow Back Scenario - Mutual Following", False, "Exception occurred", str(e))
+    
+    def test_follow_back_with_existing_users(self):
+        """Test follow back logic with existing users Luvsociety and Luststorm"""
+        try:
+            # Try to login as Luvsociety
+            luvsociety_session = requests.Session()
+            luvsociety_login = {
+                "username": "Luvsociety",
+                "password": "Luvsociety123"
+            }
+            
+            luvsociety_response = luvsociety_session.post(f"{API_BASE}/auth/login", json=luvsociety_login)
+            
+            if luvsociety_response.status_code == 200:
+                luvsociety_data = luvsociety_response.json()
+                luvsociety_id = luvsociety_data['user']['id']
+                luvsociety_token = luvsociety_data['access_token']
+                luvsociety_session.headers.update({'Authorization': f'Bearer {luvsociety_token}'})
+                
+                # Try to login as Luststorm
+                luststorm_session = requests.Session()
+                luststorm_login = {
+                    "username": "Luststorm",
+                    "password": "Luststorm123"
+                }
+                
+                luststorm_response = luststorm_session.post(f"{API_BASE}/auth/login", json=luststorm_login)
+                
+                if luststorm_response.status_code == 200:
+                    luststorm_data = luststorm_response.json()
+                    luststorm_id = luststorm_data['user']['id']
+                    luststorm_token = luststorm_data['access_token']
+                    luststorm_session.headers.update({'Authorization': f'Bearer {luststorm_token}'})
+                    
+                    # Test scenario: Luststorm follows Luvsociety
+                    follow_response = luststorm_session.post(f"{API_BASE}/users/{luvsociety_id}/follow")
+                    
+                    if follow_response.status_code == 200:
+                        # Luvsociety views Luststorm's profile (should see Follow back)
+                        profile_response = luvsociety_session.get(f"{API_BASE}/users/{luststorm_id}/profile")
+                        
+                        if profile_response.status_code == 200:
+                            profile_data = profile_response.json()
+                            
+                            # Expected: isFollowing = false (Luvsociety doesn't follow Luststorm)
+                            # Expected: isFollowingMe = true (Luststorm follows Luvsociety)
+                            expected_isFollowing = False
+                            expected_isFollowingMe = True
+                            
+                            actual_isFollowing = profile_data.get('isFollowing')
+                            actual_isFollowingMe = profile_data.get('isFollowingMe')
+                            
+                            if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
+                                self.log_result("Follow Back with Existing Users", True, 
+                                              f"✅ CORRECT: Luvsociety viewing Luststorm's profile shows isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Follow back button should appear)")
+                            else:
+                                self.log_result("Follow Back with Existing Users", False, 
+                                              f"❌ INCORRECT: Expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                        else:
+                            self.log_result("Follow Back with Existing Users", False, f"Profile request failed: {profile_response.status_code}")
+                    else:
+                        self.log_result("Follow Back with Existing Users", False, "Luststorm could not follow Luvsociety")
+                else:
+                    self.log_result("Follow Back with Existing Users", False, "Could not login as Luststorm")
+            else:
+                self.log_result("Follow Back with Existing Users", False, "Could not login as Luvsociety")
+                
+        except Exception as e:
+            self.log_result("Follow Back with Existing Users", False, "Exception occurred", str(e))
+
+    def run_follow_back_tests_only(self):
+        """Run only Follow Back Button Logic tests"""
+        print("🔄 Starting Follow Back Button Logic Tests")
+        print("=" * 60)
+        
+        # Register test user for authentication
+        if not self.register_test_user():
+            print("❌ Failed to register test user. Trying existing users...")
+            if not self.login_existing_user("Luvsociety", "Luvsociety123"):
+                print("❌ Could not authenticate. Aborting tests.")
+                return False
+        
+        if not self.register_second_user():
+            print("⚠️ Could not register second user. Some tests may be limited...")
+        
+        # Run Follow Back Button Logic tests
+        print("\n🔄 FOLLOW BACK BUTTON LOGIC TESTS")
+        print("-" * 50)
+        self.test_follow_back_button_logic_isFollowingMe_field()
+        self.test_follow_back_scenario_they_follow_you()
+        self.test_follow_back_scenario_you_follow_them()
+        self.test_follow_back_scenario_no_relationship()
+        self.test_follow_back_scenario_mutual_following()
+        self.test_follow_back_with_existing_users()
+        
+        # Print results
+        print("\n" + "=" * 60)
+        print("🏁 Follow Back Button Logic Test Results")
+        print("=" * 60)
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        print(f"Total Tests: {self.results['passed'] + self.results['failed']}")
+        
+        if self.results['errors']:
+            print("\nFAILED TESTS:")
+            for error in self.results['errors']:
+                print(f"- {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"  Error: {error['error']}")
+        
+        return self.results['failed'] == 0
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
