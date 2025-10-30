@@ -77,8 +77,8 @@ const ProfilePage = ({ user, onLogout }) => {
   const isViewingSpecificUser = !!userId;
   const isViewingOwnProfile = userId === user?.id;
 
-  // Get backend URL from environment
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.VITE_REACT_APP_BACKEND_URL || "";
+  // Get backend URL from environment (use empty string for same-domain deployment)
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
   // Helper function to fix incorrect API prefix in media URLs and add backend domain
   const getMediaSrc = (url) => {
