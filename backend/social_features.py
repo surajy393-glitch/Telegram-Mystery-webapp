@@ -89,8 +89,12 @@ async def create_post(
                 content_bytes = await image.read()
                 f.write(content_bytes)
             
-            # Static files are served at /uploads, not /api/uploads
-            image_url = f"/uploads/posts/{filename}"
+            # Construct the media URL using the API uploads route. Because
+            # api_router uses a prefix of /api, uploaded files are served
+            # from /api/uploads/... on the backend. Including the /api
+            # prefix here ensures the returned URLs will correctly resolve
+            # across all environments (preview and production).
+            image_url = f"/api/uploads/posts/{filename}"
         
         # Create post document
         post = {
