@@ -409,6 +409,36 @@ const ProfilePage = ({ user, onLogout }) => {
     }
   };
 
+  const handleShowFollowers = async (type) => {
+    // Check if account is private and user doesn't follow them
+    if (viewingUser?.isPrivate && !viewingUser?.isFollowing && !isViewingOwnProfile) {
+      alert("This account is private. Follow to see their followers and following.");
+      return;
+    }
+
+    setFollowersDialogType(type);
+    setShowFollowersDialog(true);
+    setFollowersLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const endpoint = type === 'followers' 
+        ? `${API}/users/${viewingUser?.id}/followers` 
+        : `${API}/users/${viewingUser?.id}/following`;
+      
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setFollowersList(response.data.users || response.data || []);
+    } catch (error) {
+      console.error(`Error fetching ${type}:`, error);
+      alert(`Failed to load ${type}`);
+    } finally {
+      setFollowersLoading(false);
+    }
+  };
+
   const handleFollowToggle = async (targetUserId, isFollowing, hasRequested) => {
     // Prevent multiple simultaneous follow actions on same user
     if (followingInProgress.has(targetUserId)) {
