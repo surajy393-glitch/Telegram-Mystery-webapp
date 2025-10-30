@@ -6699,10 +6699,10 @@ class LuvHiveAPITester:
                 "password": "privatefollowed123"
             }
             
-            # Register private user
-            response = self.session.post(f"{API_BASE}/auth/register", json=private_user_data)
+            # Register private user using enhanced registration (auto-verifies email)
+            response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=private_user_data)
             if response.status_code != 200:
-                self.log_result("Private Account - Allowed Access (Following)", False, "Could not create private user")
+                self.log_result("Private Account - Allowed Access (Following)", False, f"Could not create private user: {response.status_code}")
                 return
             
             private_user_id = response.json()['user']['id']
