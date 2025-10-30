@@ -4783,14 +4783,24 @@ async def get_user_posts(userId: str, current_user: User = Depends(get_current_u
             # Already a string or None
             created_at_str = created_at_val if created_at_val else ""
         
+        # Get media URL with fallback to Telegram proxy
+        media_url = post.get("mediaUrl")
+        image_url = post.get("imageUrl")
+        telegram_id = post.get("telegramFileId")
+        
+        # If neither mediaUrl nor imageUrl exists but we have a Telegram file ID, build a media proxy URL
+        if not media_url and not image_url and telegram_id:
+            media_url = f"/api/media/{telegram_id}"
+        
         posts_list.append({
             "id": post.get("id"),
             "userId": post.get("userId"),
             "username": post.get("username"),
             "userProfileImage": post.get("userProfileImage"),
             "mediaType": post.get("mediaType", "image"),  # Default to image if missing
-            "mediaUrl": post.get("mediaUrl"),
-            "imageUrl": post.get("imageUrl"),  # Legacy field for backward compatibility
+            "mediaUrl": media_url,
+            "imageUrl": image_url,  # Legacy field for backward compatibility
+            "telegramFileId": telegram_id,  # Include for frontend fallback
             "caption": post.get("caption", ""),
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
