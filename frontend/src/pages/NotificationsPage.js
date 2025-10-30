@@ -222,8 +222,8 @@ const NotificationsPage = ({ user, onLogout }) => {
                       </div>
                     )}
 
-                    {/* Follow Back Button for accepted requests */}
-                    {notif.type === 'follow_request_accepted' && (
+                    {/* Follow Back Button for when someone starts following you */}
+                    {notif.type === 'started_following' && (
                       <div className="flex gap-2 mt-2">
                         <Button
                           onClick={(e) => {
