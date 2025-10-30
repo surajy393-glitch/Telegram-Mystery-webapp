@@ -488,6 +488,7 @@ const ProfilePage = ({ user, onLogout }) => {
           : { isFollowing: true, hasRequested: false };
       }
       
+      // Update the viewingUser state for ProfilePage
       if (viewingUser && viewingUser.id === targetUserId) {
         setViewingUser(prev => ({
           ...prev,
@@ -496,6 +497,17 @@ const ProfilePage = ({ user, onLogout }) => {
             ? prev.followersCount + 1 
             : (!newState.isFollowing && isFollowing ? Math.max(0, prev.followersCount - 1) : prev.followersCount)
         }));
+      }
+
+      // Update the followers list if dialog is open
+      if (showFollowersDialog) {
+        setFollowersList(prev => 
+          prev.map(f => 
+            f.id === targetUserId 
+              ? { ...f, isFollowing: newState.isFollowing }
+              : f
+          )
+        );
       }
 
       // Refresh profile data to get updated state
