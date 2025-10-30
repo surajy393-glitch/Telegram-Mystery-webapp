@@ -280,20 +280,6 @@ const SocialSettingsPage = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* Mystery Match Settings Link */}
-        <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg shadow-sm p-6 text-white">
-          <h2 className="text-lg font-semibold mb-2">Mystery Match Settings</h2>
-          <p className="text-sm text-white/80 mb-4">
-            Configure your mystery match preferences separately
-          </p>
-          <button
-            onClick={() => navigate('/settings')}
-            className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100"
-          >
-            Go to Mystery Match Settings
-          </button>
-        </div>
-
         {/* Logout */}
         <button
           onClick={onLogout}
