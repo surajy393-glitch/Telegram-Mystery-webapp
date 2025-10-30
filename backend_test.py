@@ -61,6 +61,7 @@ class LuvHiveAPITester:
                 "username": f"testuser{unique_id}",
                 "age": 25,
                 "gender": "female",
+                "country": "United States",
                 "password": "test123"
             }
             
