@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Empty src Attribute - mediaUrl vs imageUrl Field Mismatch"
+  - task: "Fix Cross-Origin Image Loading - Backend Domain Prefix"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Posts fetch successfully, mediaUrl/imageUrl fallback works, but images still not loading. Console shows repeated 'Image load error'. Root cause: Frontend and backend on DIFFERENT DOMAINS. getMediaSrc strips /api prefix producing /uploads/posts/image.jpg (relative URL). Frontend tries to load from its own domain (e.g., frontend.com/uploads/posts/image.jpg) → 404. Backend serves files at backend.com/uploads/posts/image.jpg but frontend never requests from backend domain."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ CRITICAL CROSS-ORIGIN FIX: Updated getMediaSrc (ProfilePage.js lines 81-101) to prefix relative /uploads paths with backend domain. Added BACKEND_URL from env: const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.VITE_REACT_APP_BACKEND_URL || ''. Enhanced logic: 1) Strip /api prefix: /api/uploads/posts/abc.jpg → /uploads/posts/abc.jpg, 2) Check if still relative path starting with /uploads, 3) If yes, prepend backend domain: ${BACKEND_URL}/uploads/posts/abc.jpg, 4) For absolute URLs (Telegram, external), return as-is. frontend/.env already has REACT_APP_BACKEND_URL=https://profile-bugfix-1.preview.emergentagent.com. Frontend restarted (pid 549). NOW: Legacy posts load from https://backend-domain/uploads/posts/image.jpg, Telegram images work (absolute URLs), all posts display correctly across domains."
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js, backend/server.py"
