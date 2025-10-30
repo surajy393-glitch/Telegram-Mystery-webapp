@@ -31,6 +31,7 @@ const getRelativeTime = (dateString) => {
 const NotificationsPage = ({ user, onLogout }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchNotifications();
