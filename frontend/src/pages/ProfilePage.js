@@ -1102,23 +1102,55 @@ const ProfilePage = ({ user, onLogout }) => {
                 {followersList.map((follower) => (
                   <div
                     key={follower.id}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                    onClick={() => {
-                      setShowFollowersDialog(false);
-                      navigate(`/profile/${follower.id}`);
-                    }}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <img
                       src={follower.profileImage || "https://via.placeholder.com/40"}
                       alt={follower.username}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-pink-200"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-pink-200 cursor-pointer"
+                      onClick={() => {
+                        setShowFollowersDialog(false);
+                        navigate(`/profile/${follower.id}`);
+                      }}
                     />
-                    <div className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => {
+                        setShowFollowersDialog(false);
+                        navigate(`/profile/${follower.id}`);
+                      }}
+                    >
                       <p className="font-semibold text-gray-900 truncate">{follower.username}</p>
                       {follower.fullName && (
                         <p className="text-sm text-gray-500 truncate">{follower.fullName}</p>
                       )}
                     </div>
+                    {/* Don't show follow button for own profile */}
+                    {follower.id !== user?.id && (
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFollowToggle(follower.id, follower.isFollowing, follower.hasRequested);
+                        }}
+                        size="sm"
+                        variant={follower.isFollowing ? "outline" : "default"}
+                        disabled={followingInProgress.has(follower.id)}
+                        className={
+                          follower.isFollowing 
+                            ? "border-pink-500 text-pink-600 hover:bg-pink-50 rounded-full min-w-[80px]" 
+                            : "bg-pink-500 hover:bg-pink-600 text-white rounded-full min-w-[80px]"
+                        }
+                      >
+                        {followingInProgress.has(follower.id) ? (
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-xs">{follower.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
+                          </div>
+                        ) : (
+                          follower.isFollowing ? "Following" : "Follow"
+                        )}
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
