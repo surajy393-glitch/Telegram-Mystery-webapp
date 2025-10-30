@@ -5740,6 +5740,7 @@ class LuvHiveAPITester:
                 "username": f"test_requester_{datetime.now().strftime('%H%M%S')}",
                 "age": 26,
                 "gender": "male",
+                "country": "United Kingdom",
                 "password": "testpass123"
             }
             
