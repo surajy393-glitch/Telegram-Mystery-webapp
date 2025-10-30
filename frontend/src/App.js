@@ -116,22 +116,6 @@ function App() {
             } 
           />
           <Route 
-            path="/mystery" 
-            element={
-              <MysteryMatchHome user={user} onLogout={handleLogout} />
-            } 
-          />
-          <Route 
-            path="/mystery-chat/:matchId" 
-            element={
-              isAuthenticated ? (
-                <MysteryChatPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            } 
-          />
-          <Route 
             path="/home" 
             element={<Navigate to="/feed" replace />}
           />
