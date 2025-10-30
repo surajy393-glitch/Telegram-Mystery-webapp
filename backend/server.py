@@ -4657,11 +4657,17 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Fetch fresh current user data from database to get latest following/followers state
+    fresh_current_user = await db.users.find_one({"id": current_user.id})
+    if not fresh_current_user:
+        raise HTTPException(status_code=401, detail="Current user not found")
+    
     # Check if current user is following this user
     is_following = current_user.id in user.get("followers", [])
     
     # Check if this user is following the current user (for "Follow back" button)
-    is_following_me = user["id"] in current_user.following
+    # Use fresh data to ensure we have the latest following list
+    is_following_me = user["id"] in fresh_current_user.get("following", [])
     
     # Check if current user has requested to follow (for private accounts)
     has_requested = current_user.id in user.get("followRequests", [])
