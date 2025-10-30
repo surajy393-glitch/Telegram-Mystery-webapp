@@ -6,14 +6,26 @@ const BACKEND = (process.env.REACT_APP_BACKEND_URL || '').replace(/\/$/, '');
 /** Normalize a raw media URL returned from the backend. */
 export function getMediaSrc(url) {
   if (!url) return '';
-  // The backend serves static files at /uploads; strip an accidental /api prefix
-  let cleaned = url.startsWith('/api/uploads/') ? url.replace('/api', '') : url;
-
-  // Prefix relative /uploads paths with the configured backend domain (if provided)
-  if (cleaned.startsWith('/uploads')) return `${BACKEND}${cleaned}`;
-
-  // Absolute or data: URIs — return as-is
-  return cleaned;
+  
+  // Absolute URLs (http/https) and data URIs should be returned unchanged
+  if (/^(https?:)?\/\//.test(url) || url.startsWith('data:')) {
+    return url;
+  }
+  
+  let path = url;
+  // Add /api prefix if missing and the path references the uploads directory
+  if (path.startsWith('/uploads/')) {
+    path = `/api${path}`;
+  }
+  
+  // Ensure path starts with a single slash
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  
+  // Prefix the backend URL if provided; otherwise return the path relative
+  // to the current origin
+  return BACKEND ? `${BACKEND}${path}` : path;
 }
 
 /** Resolve the best media URL for a post and normalize it. */
