@@ -944,17 +944,6 @@ async def send_welcome_email(email: str, full_name: str, username: str):
                     
                     <div style="margin: 15px 0;">
                         <div style="display: inline-block; width: 40px; height: 40px; background: linear-gradient(135deg, #e91e63, #f06292); border-radius: 50%; text-align: center; line-height: 40px; margin-right: 15px; float: left;">
-                            <span style="color: white; font-size: 20px;">🔍</span>
-                        </div>
-                        <div style="padding-left: 60px;">
-                            <h4 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">Mystery Match</h4>
-                            <p style="color: #666; margin: 0; font-size: 14px;">Find your perfect match through exciting mystery conversations</p>
-                        </div>
-                        <div style="clear: both;"></div>
-                    </div>
-                    
-                    <div style="margin: 15px 0;">
-                        <div style="display: inline-block; width: 40px; height: 40px; background: linear-gradient(135deg, #e91e63, #f06292); border-radius: 50%; text-align: center; line-height: 40px; margin-right: 15px; float: left;">
                             <span style="color: white; font-size: 20px;">💬</span>
                         </div>
                         <div style="padding-left: 60px;">
