@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Telegram File Proxy - telegramFileId Fallback"
+  - task: "Fix Domain Mismatch - BACKEND_URL Configuration"
+    implemented: true
+    working: "NA"
+    file: "frontend/.env"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Frontend correctly builds absolute URLs but they point to wrong domain. Console shows: https://profile-bugfix-1.preview.emergentagent.com/uploads/posts/...jpg → 404. Frontend hosted on ergentagent.com (no 'em'). BACKEND_URL set to emergentagent.com (with 'em'). Domain mismatch: Frontend and backend on SAME server but .env points to non-existent subdomain. React code working correctly - issue is environment configuration, not code."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ ENVIRONMENT FIX: Updated frontend/.env REACT_APP_BACKEND_URL from 'https://profile-bugfix-1.preview.emergentagent.com' (wrong domain) to empty string ''. Empty BACKEND_URL means frontend uses relative URLs (same domain as frontend). Since frontend and backend deployed on same server, relative URLs correct. getMediaSrc logic: if (cleaned.startsWith('/uploads')) { return `${BACKEND_URL}${cleaned}` } → With empty BACKEND_URL, becomes just '/uploads/...' (relative to current domain). Frontend restarted (pid 1902). NOW: Images load from same domain as frontend (e.g., https://actual-domain.com/uploads/posts/...). No more cross-domain 404s. Legacy posts with missing files still 404 (need data cleanup), but Telegram posts with proxy URLs work correctly."
     implemented: true
     working: "NA"
     file: "backend/server.py, frontend/src/pages/ProfilePage.js"
