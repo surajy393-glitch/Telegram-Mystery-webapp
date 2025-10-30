@@ -6122,6 +6122,52 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Notification Structure Validation", False, "Exception occurred", str(e))
 
+    def run_follow_back_notification_tests(self):
+        """Run Follow Back Notification feature tests specifically"""
+        print("🔔 Starting Follow Back Notification Feature Tests...")
+        print(f"🔗 Testing against: {API_BASE}")
+        print("=" * 60)
+        
+        # Try to login with existing user first
+        if not self.login_existing_user("Luvsociety", "Luvsociety123"):
+            if not self.login_existing_user("hashtagtest", "hashtagtest123"):
+                # If login fails, register new user
+                if not self.register_test_user():
+                    print("❌ Could not authenticate. Stopping tests.")
+                    return
+        
+        # Register second user for interaction tests
+        self.register_second_user()
+        
+        print("\n🔔 Testing Follow Back Notification Feature...")
+        self.test_follow_request_accept_notification_creation()
+        self.test_follow_back_action()
+        self.test_multiple_follow_request_acceptances()
+        self.test_original_follow_request_notification_cleanup()
+        self.test_notification_structure_validation()
+        
+        # Print final results
+        print("\n" + "=" * 60)
+        print("📊 FOLLOW BACK NOTIFICATION TEST RESULTS")
+        print("=" * 60)
+        print(f"✅ PASSED: {self.results['passed']}")
+        print(f"❌ FAILED: {self.results['failed']}")
+        
+        if self.results['passed'] + self.results['failed'] > 0:
+            print(f"📈 SUCCESS RATE: {(self.results['passed'] / (self.results['passed'] + self.results['failed']) * 100):.1f}%")
+        
+        if self.results['errors']:
+            print(f"\n🚨 FAILED TESTS ({len(self.results['errors'])}):")
+            for i, error in enumerate(self.results['errors'], 1):
+                print(f"{i}. {error['test']}")
+                if error['message']:
+                    print(f"   Message: {error['message']}")
+                if error['error']:
+                    print(f"   Error: {error['error']}")
+        
+        print("\n🎯 Follow Back Notification testing completed!")
+        return self.results['failed'] == 0
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
