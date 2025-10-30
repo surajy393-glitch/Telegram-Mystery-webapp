@@ -4687,8 +4687,8 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     is_following = current_user.id in user.get("followers", [])
     
     # Check if this user is following the current user (for "Follow back" button)
-    # Use fresh data to ensure we have the latest following list
-    is_following_me = user["id"] in fresh_current_user.get("following", [])
+    # This should check if the current user's ID is in the viewed user's following list
+    is_following_me = current_user.id in user.get("following", [])
     
     logger.info(f"🔍 Profile: isFollowing = {is_following} (current user ID {current_user.id} in user followers)")
     logger.info(f"🔍 Profile: isFollowingMe = {is_following_me} (user ID {user['id']} in current user following)")
