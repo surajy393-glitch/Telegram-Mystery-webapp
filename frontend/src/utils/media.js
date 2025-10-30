@@ -1,7 +1,6 @@
 // Utility functions for constructing correct media URLs across the app
 
-// Trim trailing slash so we don't end up with double slashes when concatenating
-const BACKEND = (process.env.REACT_APP_BACKEND_URL || '').replace(/\/$/, '');
+const BACKEND_URL = (process.env.REACT_APP_BACKEND_URL || '').replace(/\/$/, '');
 
 /** Normalize a raw media URL returned from the backend. */
 export function getMediaSrc(url) {
