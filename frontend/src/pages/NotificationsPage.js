@@ -113,6 +113,7 @@ const NotificationsPage = ({ user, onLogout }) => {
       case "follow":
       case "follow_request":
       case "follow_request_accepted":
+      case "started_following":
         return <UserPlus className="w-10 h-10 text-pink-500" />;
       default:
         return <Heart className="w-10 h-10 text-gray-500" />;
@@ -126,10 +127,12 @@ const NotificationsPage = ({ user, onLogout }) => {
       case "comment":
         return "commented on your post";
       case "follow":
-      case "follow_request_accepted":
+      case "started_following":
         return "started following you";
       case "follow_request":
         return "requested to follow you";
+      case "follow_request_accepted":
+        return "accepted your follow request";
       default:
         return "interacted with you";
     }
