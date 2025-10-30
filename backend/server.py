@@ -4698,6 +4698,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         "followersCount": followers_count,
         "followingCount": following_count,
         "isFollowing": is_following,
+        "isFollowingMe": is_following_me,
         "hasRequested": has_requested,
         "postsCount": posts_count,
         "createdAt": user.get("createdAt") if isinstance(user.get("createdAt"), str) else user.get("createdAt").isoformat() if user.get("createdAt") else None
