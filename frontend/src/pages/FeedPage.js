@@ -637,25 +637,10 @@ const FeedPage = ({ user, onLogout }) => {
                       <div className="flex items-center gap-1">
                         <h3 
                           className="font-semibold cursor-pointer hover:text-pink-600 transition-colors"
-                          onClick={async () => {
+                          onClick={() => {
                             if (post.isAnonymous) return;
-                            
-                            // Check if user profile is private
-                            try {
-                              const token = localStorage.getItem('token');
-                              const response = await axios.get(`${API}/users/${post.userId}`, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
-                              if (response.data.isPrivate && response.data.id !== user.id) {
-                                alert('This account is private');
-                              } else {
-                                navigate(`/profile/${post.userId}`);
-                              }
-                            } catch (error) {
-                              console.error('Error checking profile:', error);
-                              // Still navigate even if check fails
-                              navigate(`/profile/${post.userId}`);
-                            }
+                            // Always navigate to the user's profile; the profile page itself will handle privacy.
+                            navigate(`/profile/${post.userId}`);
                           }}
                         >
                         <span>{post.isAnonymous ? 'Anonymous' : post.username}</span>
