@@ -4674,6 +4674,15 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     if not fresh_current_user:
         raise HTTPException(status_code=401, detail="Current user not found")
     
+    # Debug logging - show what we fetched
+    logger.info(f"🔍 Profile: {current_user.username} viewing {user.get('username')}")
+    logger.info(f"🔍 Profile: Fetched user document keys: {list(user.keys())}")
+    logger.info(f"🔍 Profile: Fetched current user document keys: {list(fresh_current_user.keys())}")
+    logger.info(f"🔍 Profile: User followers field: {user.get('followers', 'MISSING')}")
+    logger.info(f"🔍 Profile: User following field: {user.get('following', 'MISSING')}")
+    logger.info(f"🔍 Profile: Current user followers field: {fresh_current_user.get('followers', 'MISSING')}")
+    logger.info(f"🔍 Profile: Current user following field: {fresh_current_user.get('following', 'MISSING')}")
+    
     # Check if current user is following this user
     is_following = current_user.id in user.get("followers", [])
     
@@ -4681,10 +4690,6 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Use fresh data to ensure we have the latest following list
     is_following_me = user["id"] in fresh_current_user.get("following", [])
     
-    # Debug logging
-    logger.info(f"🔍 Profile: {current_user.username} viewing {user.get('username')}")
-    logger.info(f"🔍 Profile: User followers: {user.get('followers', [])}")
-    logger.info(f"🔍 Profile: Current user following: {fresh_current_user.get('following', [])}")
     logger.info(f"🔍 Profile: isFollowing = {is_following} (current user ID {current_user.id} in user followers)")
     logger.info(f"🔍 Profile: isFollowingMe = {is_following_me} (user ID {user['id']} in current user following)")
     
