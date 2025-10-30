@@ -4660,6 +4660,9 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Check if current user is following this user
     is_following = current_user.id in user.get("followers", [])
     
+    # Check if this user is following the current user (for "Follow back" button)
+    is_following_me = user["id"] in current_user.following
+    
     # Check if current user has requested to follow (for private accounts)
     has_requested = current_user.id in user.get("followRequests", [])
     
