@@ -1147,7 +1147,9 @@ const ProfilePage = ({ user, onLogout }) => {
                             <span className="text-xs">{follower.isFollowing ? 'Unfollowing...' : 'Following...'}</span>
                           </div>
                         ) : (
-                          follower.isFollowing ? "Following" : "Follow"
+                          follower.isFollowing 
+                            ? "Following" 
+                            : (followersDialogType === 'followers' ? "Follow back" : "Follow")
                         )}
                       </Button>
                     )}
