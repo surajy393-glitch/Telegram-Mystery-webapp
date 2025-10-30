@@ -693,6 +693,21 @@ frontend:
         agent: "testing"
         comment: "✅ FOLLOW BUTTON FUNCTIONALITY TESTING COMPLETE: Successfully tested follow/unfollow functionality in search results with comprehensive UI testing. FOLLOW BUTTON STATE MANAGEMENT VERIFIED: 1) ✅ Search page follow buttons working perfectly - tested with 'Luvsociety' search, button changed from 'Following' to 'Follow' when clicked, demonstrating proper state management and immediate UI updates, 2) ✅ Follow button state updates immediately without page refresh, showing real-time synchronization with backend, 3) ✅ Backend API calls successful for follow/unfollow actions with proper authentication. SEARCH RESULTS FOLLOW BUTTONS: 1) ✅ Follow buttons appear correctly in user search results with proper styling (pink background for 'Follow', outline for 'Following'), 2) ✅ Button text changes appropriately based on follow status, 3) ✅ Multiple follow buttons in search results work independently. Follow functionality is fully working and ready for production use."
 
+  - task: "Follow Back Notification After Follow Request Acceptance"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/NotificationsPage.js, backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that after accepting a follow request, the person who initiated the follow request does not receive a notification saying 'started following you' with a 'Follow back' button. Backend creates notification with type='follow_request_accepted' but frontend doesn't handle this notification type properly."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ FOLLOW BACK NOTIFICATION IMPLEMENTED: BACKEND (server.py lines 4207-4217): Backend already creates notification with type='follow_request_accepted' when follow request is accepted, sent to the requester. FRONTEND (NotificationsPage.js): 1) Updated getNotificationIcon() to handle 'follow_request_accepted' type (line 115), 2) Updated getNotificationText() to display 'started following you' for 'follow_request_accepted' type (line 129), 3) Created handleFollowBack() function (lines 91-105) that calls /api/users/{fromUserId}/follow endpoint and removes notification after successful follow, 4) Added conditional render for 'Follow back' button (lines 222-235) with blue styling (bg-blue-500) matching user's screenshot. Button appears when notification type is 'follow_request_accepted'. NOW: When User B accepts User A's follow request, User A receives notification '[Username] started following you' with blue 'Follow back' button. Clicking button follows User B directly without navigating to profile, then removes notification from list. Frontend hot reload active, no restart needed."
+
   - task: "Add 3-dot menu to other users' profiles"
     implemented: false
     working: false
