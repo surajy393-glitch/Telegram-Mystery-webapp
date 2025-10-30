@@ -69,42 +69,47 @@ async def create_post(
 ):
     """Create a new post"""
     try:
-        # Get user
         user = await db.users.find_one({"id": userId})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        # Handle image upload if provided
+
+        media_url = None
         image_url = None
+        media_type = "image"
+
         if image:
-            # Save image
             upload_dir = "/app/uploads/posts"
             os.makedirs(upload_dir, exist_ok=True)
-            
-            file_ext = image.filename.split('.')[-1]
+
+            # Extract extension (default to .jpg if none)
+            import os as _os
+            original_name = image.filename or ""
+            _, ext = _os.path.splitext(original_name)
+            file_ext = ext.lstrip(".").lower() or "jpg"
             filename = f"{uuid4()}.{file_ext}"
-            file_path = os.path.join(upload_dir, filename)
-            
+            file_path = _os.path.join(upload_dir, filename)
+
             with open(file_path, "wb") as f:
                 content_bytes = await image.read()
                 f.write(content_bytes)
-            
-            # Construct the media URL using the API uploads route. Because
-            # api_router uses a prefix of /api, uploaded files are served
-            # from /api/uploads/... on the backend. Including the /api
-            # prefix here ensures the returned URLs will correctly resolve
-            # across all environments (preview and production).
-            image_url = f"/api/uploads/posts/{filename}"
-        
-        # Create post document
+
+            # Return /api/uploads path for frontend
+            media_url = f"/api/uploads/posts/{filename}"
+            image_url = media_url
+
+            if file_ext in ["mp4", "mov", "avi", "mkv", "webm"]:
+                media_type = "video"
+
         post = {
             "id": str(uuid4()),
             "userId": userId if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
-            "userProfileImage": user.get("profileImage") if not isAnonymous else None,  # Add user profile image
-            "content": content if content else "",  # Allow empty content if image is present
+            "userProfileImage": user.get("profileImage") if not isAnonymous else None,
+            "content": content if content else "",
             "postType": postType,
+            "mediaUrl": media_url,
+            "mediaType": media_type,
             "imageUrl": image_url,
             "isAnonymous": isAnonymous,
             "likes": [],
@@ -116,9 +121,9 @@ async def create_post(
             "age": user.get("age", 0),
             "gender": user.get("gender", "Unknown")
         }
-        
+
         await db.posts.insert_one(post)
-        
+
         return {
             "success": True,
             "message": "Post created successfully",
@@ -127,7 +132,6 @@ async def create_post(
                 "createdAt": post["createdAt"].isoformat()
             }
         }
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
