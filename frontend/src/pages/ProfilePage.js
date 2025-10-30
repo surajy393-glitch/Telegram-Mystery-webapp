@@ -77,11 +77,24 @@ const ProfilePage = ({ user, onLogout }) => {
   const isViewingSpecificUser = !!userId;
   const isViewingOwnProfile = userId === user?.id;
 
-  // Helper function to fix incorrect API prefix in media URLs
+  // Get backend URL from environment
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.VITE_REACT_APP_BACKEND_URL || "";
+
+  // Helper function to fix incorrect API prefix in media URLs and add backend domain
   const getMediaSrc = (url) => {
     if (!url) return "";
-    // Remove /api prefix if present - static files are served at /uploads, not /api/uploads
-    return url.startsWith("/api/uploads/") ? url.replace("/api", "") : url;
+    
+    // Strip /api from /api/uploads, as the backend mounts /uploads directly
+    let cleaned = url.startsWith("/api/uploads/") ? url.replace("/api", "") : url;
+    
+    // If it's still a relative /uploads path, prefix with the backend domain
+    if (cleaned.startsWith("/uploads")) {
+      // Ensure no double slashes when concatenating
+      return `${BACKEND_URL.replace(/\/$/, "")}${cleaned}`;
+    }
+    
+    // For absolute URLs (e.g. Telegram file links), just return as-is
+    return cleaned;
   };
 
   // Helper to select the appropriate media URL (returns null if none available)
