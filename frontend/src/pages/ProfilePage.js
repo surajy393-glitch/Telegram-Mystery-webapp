@@ -73,6 +73,10 @@ const ProfilePage = ({ user, onLogout }) => {
   const [followingInProgress, setFollowingInProgress] = useState(new Set());
   const [showAccountInfo, setShowAccountInfo] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
+  const [showFollowersDialog, setShowFollowersDialog] = useState(false);
+  const [followersDialogType, setFollowersDialogType] = useState(null); // 'followers' or 'following'
+  const [followersList, setFollowersList] = useState([]);
+  const [followersLoading, setFollowersLoading] = useState(false);
 
   // Check if we're viewing a specific user or discovery page
   const isViewingSpecificUser = !!userId;
