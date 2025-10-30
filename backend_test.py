@@ -5712,6 +5712,416 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Telegram Channel Verification", False, "Exception occurred", str(e))
 
+    # ========== FOLLOW BACK NOTIFICATION TESTS ==========
+    
+    def test_follow_request_accept_notification_creation(self):
+        """Test that accepting a follow request creates follow_request_accepted notification"""
+        if not self.test_user_id:
+            self.log_result("Follow Request Accept Notification", False, "No test user ID available")
+            return
+        
+        try:
+            # Step 1: Make current user private to enable follow requests
+            private_update = {"isPrivate": True}
+            settings_response = self.session.put(f"{API_BASE}/auth/settings", json=private_update)
+            
+            if settings_response.status_code != 200:
+                self.log_result("Follow Request Accept Notification", False, "Could not make user private")
+                return
+            
+            # Step 2: Create second session for test user to send follow request
+            test_session = requests.Session()
+            
+            # Login as test user (we need to create credentials for test user)
+            test_login_data = {
+                "fullName": "Test Requester",
+                "username": f"test_requester_{datetime.now().strftime('%H%M%S')}",
+                "age": 26,
+                "gender": "male",
+                "password": "testpass123"
+            }
+            
+            # Register test requester
+            register_response = test_session.post(f"{API_BASE}/auth/register", json=test_login_data)
+            if register_response.status_code != 200:
+                self.log_result("Follow Request Accept Notification", False, "Could not register test requester")
+                return
+            
+            requester_data = register_response.json()
+            requester_id = requester_data['user']['id']
+            requester_username = requester_data['user']['username']
+            test_session.headers.update({'Authorization': f'Bearer {requester_data["access_token"]}'})
+            
+            # Step 3: Test requester sends follow request to current user
+            follow_response = test_session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
+            
+            if follow_response.status_code != 200:
+                self.log_result("Follow Request Accept Notification", False, 
+                              f"Could not send follow request: {follow_response.status_code}")
+                return
+            
+            follow_data = follow_response.json()
+            if not follow_data.get('requested', False):
+                self.log_result("Follow Request Accept Notification", False, "Follow request was not created")
+                return
+            
+            # Step 4: Current user accepts the follow request
+            accept_response = self.session.post(f"{API_BASE}/users/{requester_id}/accept-follow-request")
+            
+            if accept_response.status_code != 200:
+                self.log_result("Follow Request Accept Notification", False, 
+                              f"Could not accept follow request: {accept_response.status_code}")
+                return
+            
+            # Step 5: Check that requester received follow_request_accepted notification
+            notifications_response = test_session.get(f"{API_BASE}/notifications")
+            
+            if notifications_response.status_code != 200:
+                self.log_result("Follow Request Accept Notification", False, 
+                              f"Could not get notifications: {notifications_response.status_code}")
+                return
+            
+            notifications_data = notifications_response.json()
+            notifications = notifications_data.get('notifications', [])
+            
+            # Find follow_request_accepted notification
+            accepted_notification = None
+            for notif in notifications:
+                if (notif['type'] == 'follow_request_accepted' and 
+                    notif['fromUserId'] == self.current_user_id):
+                    accepted_notification = notif
+                    break
+            
+            if accepted_notification:
+                # Verify notification structure
+                required_fields = ['id', 'fromUserId', 'fromUsername', 'fromUserImage', 'type', 'isRead', 'createdAt']
+                missing_fields = [field for field in required_fields if field not in accepted_notification]
+                
+                if missing_fields:
+                    self.log_result("Follow Request Accept Notification", False, 
+                                  f"Missing notification fields: {missing_fields}")
+                else:
+                    # Verify notification content
+                    if (accepted_notification['type'] == 'follow_request_accepted' and
+                        accepted_notification['fromUserId'] == self.current_user_id and
+                        accepted_notification['isRead'] == False):
+                        
+                        self.log_result("Follow Request Accept Notification", True, 
+                                      f"✅ Notification created correctly: {requester_username} received notification from current user")
+                    else:
+                        self.log_result("Follow Request Accept Notification", False, 
+                                      f"Notification content incorrect: {accepted_notification}")
+            else:
+                self.log_result("Follow Request Accept Notification", False, 
+                              "No follow_request_accepted notification found")
+                
+        except Exception as e:
+            self.log_result("Follow Request Accept Notification", False, "Exception occurred", str(e))
+    
+    def test_follow_back_action(self):
+        """Test that follow back action works correctly after receiving notification"""
+        if not self.test_user_id:
+            self.log_result("Follow Back Action", False, "No test user ID available")
+            return
+        
+        try:
+            # Step 1: Follow the test user (follow back)
+            follow_back_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/follow")
+            
+            if follow_back_response.status_code == 200:
+                follow_data = follow_back_response.json()
+                
+                # Step 2: Verify current user is now following test user
+                me_response = self.session.get(f"{API_BASE}/auth/me")
+                if me_response.status_code == 200:
+                    me_data = me_response.json()
+                    following_list = me_data.get('following', [])
+                    
+                    if self.test_user_id in following_list:
+                        # Step 3: Verify test user has current user in followers
+                        test_profile_response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/profile")
+                        if test_profile_response.status_code == 200:
+                            test_profile = test_profile_response.json()
+                            
+                            self.log_result("Follow Back Action", True, 
+                                          f"✅ Follow back successful: Following {test_profile['username']}")
+                        else:
+                            self.log_result("Follow Back Action", False, "Could not verify test user profile")
+                    else:
+                        self.log_result("Follow Back Action", False, "Test user not in following list")
+                else:
+                    self.log_result("Follow Back Action", False, "Could not verify current user data")
+            else:
+                self.log_result("Follow Back Action", False, 
+                              f"Follow back failed: {follow_back_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Follow Back Action", False, "Exception occurred", str(e))
+    
+    def test_multiple_follow_request_acceptances(self):
+        """Test multiple users accepting follow requests creates separate notifications"""
+        try:
+            # Create multiple test users and have them send follow requests
+            test_users = []
+            
+            for i in range(3):
+                # Create test user
+                user_data = {
+                    "fullName": f"Multi Test User {i+1}",
+                    "username": f"multitest_{i+1}_{datetime.now().strftime('%H%M%S')}",
+                    "age": 25 + i,
+                    "gender": "female" if i % 2 == 0 else "male",
+                    "password": "multitest123"
+                }
+                
+                user_session = requests.Session()
+                register_response = user_session.post(f"{API_BASE}/auth/register", json=user_data)
+                
+                if register_response.status_code == 200:
+                    reg_data = register_response.json()
+                    user_session.headers.update({'Authorization': f'Bearer {reg_data["access_token"]}'})
+                    
+                    test_users.append({
+                        'session': user_session,
+                        'id': reg_data['user']['id'],
+                        'username': reg_data['user']['username']
+                    })
+            
+            if len(test_users) < 3:
+                self.log_result("Multiple Follow Request Acceptances", False, 
+                              f"Could only create {len(test_users)}/3 test users")
+                return
+            
+            # Make current user private
+            private_update = {"isPrivate": True}
+            self.session.put(f"{API_BASE}/auth/settings", json=private_update)
+            
+            # Have all test users send follow requests
+            for user in test_users:
+                follow_response = user['session'].post(f"{API_BASE}/users/{self.current_user_id}/follow")
+                if follow_response.status_code != 200:
+                    self.log_result("Multiple Follow Request Acceptances", False, 
+                                  f"Could not send follow request from {user['username']}")
+                    return
+            
+            # Accept all follow requests
+            accepted_count = 0
+            for user in test_users:
+                accept_response = self.session.post(f"{API_BASE}/users/{user['id']}/accept-follow-request")
+                if accept_response.status_code == 200:
+                    accepted_count += 1
+            
+            if accepted_count != 3:
+                self.log_result("Multiple Follow Request Acceptances", False, 
+                              f"Could only accept {accepted_count}/3 follow requests")
+                return
+            
+            # Verify each user received their notification
+            notifications_received = 0
+            for user in test_users:
+                notifications_response = user['session'].get(f"{API_BASE}/notifications")
+                if notifications_response.status_code == 200:
+                    notifications_data = notifications_response.json()
+                    notifications = notifications_data.get('notifications', [])
+                    
+                    # Check for follow_request_accepted notification from current user
+                    for notif in notifications:
+                        if (notif['type'] == 'follow_request_accepted' and 
+                            notif['fromUserId'] == self.current_user_id):
+                            notifications_received += 1
+                            break
+            
+            if notifications_received == 3:
+                self.log_result("Multiple Follow Request Acceptances", True, 
+                              f"✅ All 3 users received follow_request_accepted notifications")
+            else:
+                self.log_result("Multiple Follow Request Acceptances", False, 
+                              f"Only {notifications_received}/3 users received notifications")
+                
+        except Exception as e:
+            self.log_result("Multiple Follow Request Acceptances", False, "Exception occurred", str(e))
+    
+    def test_original_follow_request_notification_cleanup(self):
+        """Test that original follow_request notification is deleted when request is accepted"""
+        try:
+            # Create test requester
+            requester_data = {
+                "fullName": "Cleanup Test User",
+                "username": f"cleanup_test_{datetime.now().strftime('%H%M%S')}",
+                "age": 27,
+                "gender": "male",
+                "password": "cleanup123"
+            }
+            
+            requester_session = requests.Session()
+            register_response = requester_session.post(f"{API_BASE}/auth/register", json=requester_data)
+            
+            if register_response.status_code != 200:
+                self.log_result("Follow Request Notification Cleanup", False, "Could not register test requester")
+                return
+            
+            reg_data = register_response.json()
+            requester_id = reg_data['user']['id']
+            requester_session.headers.update({'Authorization': f'Bearer {reg_data["access_token"]}'})
+            
+            # Make current user private
+            private_update = {"isPrivate": True}
+            self.session.put(f"{API_BASE}/auth/settings", json=private_update)
+            
+            # Send follow request
+            follow_response = requester_session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
+            if follow_response.status_code != 200:
+                self.log_result("Follow Request Notification Cleanup", False, "Could not send follow request")
+                return
+            
+            # Check current user has follow_request notification
+            notifications_response = self.session.get(f"{API_BASE}/notifications")
+            if notifications_response.status_code != 200:
+                self.log_result("Follow Request Notification Cleanup", False, "Could not get notifications")
+                return
+            
+            notifications_data = notifications_response.json()
+            notifications = notifications_data.get('notifications', [])
+            
+            # Find follow_request notification
+            follow_request_found = False
+            for notif in notifications:
+                if (notif['type'] == 'follow_request' and 
+                    notif['fromUserId'] == requester_id):
+                    follow_request_found = True
+                    break
+            
+            if not follow_request_found:
+                self.log_result("Follow Request Notification Cleanup", False, 
+                              "Original follow_request notification not found")
+                return
+            
+            # Accept the follow request
+            accept_response = self.session.post(f"{API_BASE}/users/{requester_id}/accept-follow-request")
+            if accept_response.status_code != 200:
+                self.log_result("Follow Request Notification Cleanup", False, "Could not accept follow request")
+                return
+            
+            # Check that follow_request notification is deleted
+            notifications_response2 = self.session.get(f"{API_BASE}/notifications")
+            if notifications_response2.status_code != 200:
+                self.log_result("Follow Request Notification Cleanup", False, "Could not get notifications after accept")
+                return
+            
+            notifications_data2 = notifications_response2.json()
+            notifications2 = notifications_data2.get('notifications', [])
+            
+            # Verify follow_request notification is gone
+            follow_request_still_exists = False
+            follow_request_accepted_exists = False
+            
+            for notif in notifications2:
+                if (notif['type'] == 'follow_request' and 
+                    notif['fromUserId'] == requester_id):
+                    follow_request_still_exists = True
+                
+            # Check requester received follow_request_accepted notification
+            requester_notifications_response = requester_session.get(f"{API_BASE}/notifications")
+            if requester_notifications_response.status_code == 200:
+                requester_notifications_data = requester_notifications_response.json()
+                requester_notifications = requester_notifications_data.get('notifications', [])
+                
+                for notif in requester_notifications:
+                    if (notif['type'] == 'follow_request_accepted' and 
+                        notif['fromUserId'] == self.current_user_id):
+                        follow_request_accepted_exists = True
+                        break
+            
+            if not follow_request_still_exists and follow_request_accepted_exists:
+                self.log_result("Follow Request Notification Cleanup", True, 
+                              "✅ Original follow_request deleted, new follow_request_accepted created")
+            else:
+                self.log_result("Follow Request Notification Cleanup", False, 
+                              f"Cleanup failed: follow_request exists={follow_request_still_exists}, "
+                              f"follow_request_accepted exists={follow_request_accepted_exists}")
+                
+        except Exception as e:
+            self.log_result("Follow Request Notification Cleanup", False, "Exception occurred", str(e))
+    
+    def test_notification_structure_validation(self):
+        """Test that follow_request_accepted notifications have correct structure"""
+        try:
+            # Get current notifications to find a follow_request_accepted notification
+            notifications_response = self.session.get(f"{API_BASE}/notifications")
+            
+            if notifications_response.status_code != 200:
+                self.log_result("Notification Structure Validation", False, "Could not get notifications")
+                return
+            
+            notifications_data = notifications_response.json()
+            notifications = notifications_data.get('notifications', [])
+            
+            # Find a follow_request_accepted notification
+            accepted_notification = None
+            for notif in notifications:
+                if notif['type'] == 'follow_request_accepted':
+                    accepted_notification = notif
+                    break
+            
+            if not accepted_notification:
+                # Create one for testing
+                self.test_follow_request_accept_notification_creation()
+                
+                # Try again
+                notifications_response = self.session.get(f"{API_BASE}/notifications")
+                if notifications_response.status_code == 200:
+                    notifications_data = notifications_response.json()
+                    notifications = notifications_data.get('notifications', [])
+                    
+                    for notif in notifications:
+                        if notif['type'] == 'follow_request_accepted':
+                            accepted_notification = notif
+                            break
+            
+            if accepted_notification:
+                # Validate structure
+                required_fields = ['id', 'fromUserId', 'fromUsername', 'fromUserImage', 'type', 'isRead', 'createdAt']
+                missing_fields = [field for field in required_fields if field not in accepted_notification]
+                
+                if missing_fields:
+                    self.log_result("Notification Structure Validation", False, 
+                                  f"Missing required fields: {missing_fields}")
+                else:
+                    # Validate field types and values
+                    validation_errors = []
+                    
+                    if accepted_notification['type'] != 'follow_request_accepted':
+                        validation_errors.append(f"Wrong type: {accepted_notification['type']}")
+                    
+                    if not isinstance(accepted_notification['isRead'], bool):
+                        validation_errors.append(f"isRead not boolean: {type(accepted_notification['isRead'])}")
+                    
+                    if not accepted_notification['fromUserId']:
+                        validation_errors.append("fromUserId is empty")
+                    
+                    if not accepted_notification['fromUsername']:
+                        validation_errors.append("fromUsername is empty")
+                    
+                    # Validate createdAt is a valid timestamp
+                    try:
+                        from dateutil import parser
+                        parser.parse(accepted_notification['createdAt'])
+                    except:
+                        validation_errors.append("Invalid createdAt timestamp")
+                    
+                    if validation_errors:
+                        self.log_result("Notification Structure Validation", False, 
+                                      f"Validation errors: {validation_errors}")
+                    else:
+                        self.log_result("Notification Structure Validation", True, 
+                                      "✅ Notification structure is valid with all required fields")
+            else:
+                self.log_result("Notification Structure Validation", False, 
+                              "No follow_request_accepted notification available for testing")
+                
+        except Exception as e:
+            self.log_result("Notification Structure Validation", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
