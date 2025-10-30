@@ -6545,6 +6545,304 @@ class LuvHiveAPITester:
         
         return self.results['failed'] == 0
 
+    # ========== FOLLOWERS/FOLLOWING LIST TESTS ==========
+    
+    def test_public_account_view_followers(self):
+        """Test viewing followers of a public account"""
+        if not self.test_user_id:
+            self.log_result("Public Account - View Followers", False, "No test user ID available")
+            return
+        
+        try:
+            # Ensure test user is public (not private)
+            settings_update = {"isPrivate": False}
+            self.session.put(f"{API_BASE}/auth/settings", json=settings_update)
+            
+            # Get followers list
+            response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/followers")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'followers' in data and isinstance(data['followers'], list):
+                    # Check response format if followers exist
+                    if data['followers']:
+                        follower = data['followers'][0]
+                        required_fields = ['id', 'username', 'fullName', 'profileImage', 'isFollowing']
+                        missing_fields = [field for field in required_fields if field not in follower]
+                        
+                        if missing_fields:
+                            self.log_result("Public Account - View Followers", False, f"Missing fields: {missing_fields}")
+                        else:
+                            self.log_result("Public Account - View Followers", True, 
+                                          f"Successfully retrieved {len(data['followers'])} followers with correct format")
+                    else:
+                        self.log_result("Public Account - View Followers", True, 
+                                      "Successfully retrieved empty followers list (no followers yet)")
+                else:
+                    self.log_result("Public Account - View Followers", False, "Response missing 'followers' array")
+            else:
+                self.log_result("Public Account - View Followers", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Public Account - View Followers", False, "Exception occurred", str(e))
+    
+    def test_public_account_view_following(self):
+        """Test viewing following list of a public account"""
+        if not self.test_user_id:
+            self.log_result("Public Account - View Following", False, "No test user ID available")
+            return
+        
+        try:
+            # Get following list
+            response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/following")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'following' in data and isinstance(data['following'], list):
+                    # Check response format if following exist
+                    if data['following']:
+                        following_user = data['following'][0]
+                        required_fields = ['id', 'username', 'fullName', 'profileImage', 'isFollowing']
+                        missing_fields = [field for field in required_fields if field not in following_user]
+                        
+                        if missing_fields:
+                            self.log_result("Public Account - View Following", False, f"Missing fields: {missing_fields}")
+                        else:
+                            self.log_result("Public Account - View Following", True, 
+                                          f"Successfully retrieved {len(data['following'])} following with correct format")
+                    else:
+                        self.log_result("Public Account - View Following", True, 
+                                      "Successfully retrieved empty following list (not following anyone yet)")
+                else:
+                    self.log_result("Public Account - View Following", False, "Response missing 'following' array")
+            else:
+                self.log_result("Public Account - View Following", False, f"Status: {response.status_code}", response.text)
+                
+        except Exception as e:
+            self.log_result("Public Account - View Following", False, "Exception occurred", str(e))
+    
+    def test_private_account_blocked_access(self):
+        """Test that private account blocks access to followers/following for non-followers"""
+        try:
+            # Create a third user to test private account access
+            import time
+            unique_id = int(time.time()) % 10000
+            private_user_data = {
+                "fullName": f"Private User {unique_id}",
+                "username": f"privateuser{unique_id}",
+                "age": 30,
+                "gender": "male",
+                "country": "United Kingdom",
+                "password": "private123"
+            }
+            
+            # Register private user
+            response = self.session.post(f"{API_BASE}/auth/register", json=private_user_data)
+            if response.status_code != 200:
+                self.log_result("Private Account - Blocked Access", False, "Could not create private user")
+                return
+            
+            private_user_id = response.json()['user']['id']
+            
+            # Make the user private
+            # First login as the private user to set privacy
+            login_response = self.session.post(f"{API_BASE}/auth/login", json={
+                "username": private_user_data['username'],
+                "password": private_user_data['password']
+            })
+            
+            if login_response.status_code == 200:
+                private_token = login_response.json()['access_token']
+                private_session = requests.Session()
+                private_session.headers.update({'Authorization': f'Bearer {private_token}'})
+                
+                # Set account to private
+                private_session.put(f"{API_BASE}/auth/settings", json={"isPrivate": True})
+                
+                # Now test access from current user (who doesn't follow the private user)
+                followers_response = self.session.get(f"{API_BASE}/users/{private_user_id}/followers")
+                following_response = self.session.get(f"{API_BASE}/users/{private_user_id}/following")
+                
+                if (followers_response.status_code == 403 and following_response.status_code == 403):
+                    # Check error message
+                    followers_data = followers_response.json()
+                    following_data = following_response.json()
+                    
+                    if ("private" in followers_data.get('detail', '').lower() and 
+                        "private" in following_data.get('detail', '').lower()):
+                        self.log_result("Private Account - Blocked Access", True, 
+                                      "Correctly blocked access to private account with 403 status and 'private' message")
+                    else:
+                        self.log_result("Private Account - Blocked Access", False, 
+                                      f"Wrong error message. Followers: {followers_data}, Following: {following_data}")
+                else:
+                    self.log_result("Private Account - Blocked Access", False, 
+                                  f"Expected 403 for both endpoints, got followers: {followers_response.status_code}, following: {following_response.status_code}")
+            else:
+                self.log_result("Private Account - Blocked Access", False, "Could not login as private user")
+                
+        except Exception as e:
+            self.log_result("Private Account - Blocked Access", False, "Exception occurred", str(e))
+    
+    def test_private_account_allowed_access_following(self):
+        """Test that private account allows access when you follow them"""
+        try:
+            # Create a private user and follow them
+            import time
+            unique_id = int(time.time()) % 10000
+            private_user_data = {
+                "fullName": f"Private Followed User {unique_id}",
+                "username": f"privatefollowed{unique_id}",
+                "age": 28,
+                "gender": "female",
+                "country": "Australia",
+                "password": "privatefollowed123"
+            }
+            
+            # Register private user
+            response = self.session.post(f"{API_BASE}/auth/register", json=private_user_data)
+            if response.status_code != 200:
+                self.log_result("Private Account - Allowed Access (Following)", False, "Could not create private user")
+                return
+            
+            private_user_id = response.json()['user']['id']
+            
+            # Login as private user and set to private
+            login_response = self.session.post(f"{API_BASE}/auth/login", json={
+                "username": private_user_data['username'],
+                "password": private_user_data['password']
+            })
+            
+            if login_response.status_code == 200:
+                private_token = login_response.json()['access_token']
+                private_session = requests.Session()
+                private_session.headers.update({'Authorization': f'Bearer {private_token}'})
+                
+                # Set account to private
+                private_session.put(f"{API_BASE}/auth/settings", json={"isPrivate": True})
+                
+                # Follow the private user from current user
+                follow_response = self.session.post(f"{API_BASE}/users/{private_user_id}/follow")
+                
+                # Accept the follow request from private user side
+                if follow_response.status_code == 200:
+                    accept_response = private_session.post(f"{API_BASE}/users/{self.current_user_id}/accept-follow-request")
+                    
+                    if accept_response.status_code == 200:
+                        # Now test access (should be allowed)
+                        followers_response = self.session.get(f"{API_BASE}/users/{private_user_id}/followers")
+                        following_response = self.session.get(f"{API_BASE}/users/{private_user_id}/following")
+                        
+                        if (followers_response.status_code == 200 and following_response.status_code == 200):
+                            followers_data = followers_response.json()
+                            following_data = following_response.json()
+                            
+                            if ('followers' in followers_data and 'following' in following_data):
+                                self.log_result("Private Account - Allowed Access (Following)", True, 
+                                              "Successfully accessed private account after following")
+                            else:
+                                self.log_result("Private Account - Allowed Access (Following)", False, 
+                                              "Missing followers/following arrays in response")
+                        else:
+                            self.log_result("Private Account - Allowed Access (Following)", False, 
+                                          f"Expected 200 for both, got followers: {followers_response.status_code}, following: {following_response.status_code}")
+                    else:
+                        self.log_result("Private Account - Allowed Access (Following)", False, "Could not accept follow request")
+                else:
+                    self.log_result("Private Account - Allowed Access (Following)", False, "Could not send follow request")
+            else:
+                self.log_result("Private Account - Allowed Access (Following)", False, "Could not login as private user")
+                
+        except Exception as e:
+            self.log_result("Private Account - Allowed Access (Following)", False, "Exception occurred", str(e))
+    
+    def test_own_profile_always_allowed(self):
+        """Test that you can always view your own followers/following regardless of privacy"""
+        try:
+            # Set own account to private
+            settings_response = self.session.put(f"{API_BASE}/auth/settings", json={"isPrivate": True})
+            
+            if settings_response.status_code == 200:
+                # Test accessing own followers/following
+                followers_response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/followers")
+                following_response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/following")
+                
+                if (followers_response.status_code == 200 and following_response.status_code == 200):
+                    followers_data = followers_response.json()
+                    following_data = following_response.json()
+                    
+                    if ('followers' in followers_data and 'following' in following_data):
+                        self.log_result("Own Profile - Always Allowed", True, 
+                                      "Successfully accessed own followers/following even with private account")
+                    else:
+                        self.log_result("Own Profile - Always Allowed", False, 
+                                      "Missing followers/following arrays in response")
+                else:
+                    self.log_result("Own Profile - Always Allowed", False, 
+                                  f"Expected 200 for both, got followers: {followers_response.status_code}, following: {following_response.status_code}")
+            else:
+                self.log_result("Own Profile - Always Allowed", False, "Could not set account to private")
+                
+        except Exception as e:
+            self.log_result("Own Profile - Always Allowed", False, "Exception occurred", str(e))
+    
+    def test_followers_following_response_format(self):
+        """Test that followers/following endpoints return correct response format"""
+        try:
+            # Test followers response format
+            followers_response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/followers")
+            following_response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/following")
+            
+            if followers_response.status_code == 200 and following_response.status_code == 200:
+                followers_data = followers_response.json()
+                following_data = following_response.json()
+                
+                # Check followers format
+                if 'followers' not in followers_data:
+                    self.log_result("Response Format Validation", False, "Missing 'followers' key in followers response")
+                    return
+                
+                if not isinstance(followers_data['followers'], list):
+                    self.log_result("Response Format Validation", False, "Followers should be an array")
+                    return
+                
+                # Check following format
+                if 'following' not in following_data:
+                    self.log_result("Response Format Validation", False, "Missing 'following' key in following response")
+                    return
+                
+                if not isinstance(following_data['following'], list):
+                    self.log_result("Response Format Validation", False, "Following should be an array")
+                    return
+                
+                # If there are followers/following, check their structure
+                format_valid = True
+                required_fields = ['id', 'username', 'fullName', 'profileImage', 'isFollowing']
+                
+                if followers_data['followers']:
+                    follower = followers_data['followers'][0]
+                    missing_fields = [field for field in required_fields if field not in follower]
+                    if missing_fields:
+                        self.log_result("Response Format Validation", False, f"Follower missing fields: {missing_fields}")
+                        format_valid = False
+                
+                if following_data['following'] and format_valid:
+                    following_user = following_data['following'][0]
+                    missing_fields = [field for field in required_fields if field not in following_user]
+                    if missing_fields:
+                        self.log_result("Response Format Validation", False, f"Following user missing fields: {missing_fields}")
+                        format_valid = False
+                
+                if format_valid:
+                    self.log_result("Response Format Validation", True, 
+                                  f"Correct response format: followers={{followers: [...]}}, following={{following: [...]}}")
+            else:
+                self.log_result("Response Format Validation", False, 
+                              f"Expected 200 for both, got followers: {followers_response.status_code}, following: {following_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Response Format Validation", False, "Exception occurred", str(e))
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
