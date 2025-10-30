@@ -470,8 +470,11 @@ async def create_story(
                 content_bytes = await image.read()
                 f.write(content_bytes)
             
-            # Static files are served at /uploads, not /api/uploads
-            image_url = f"/uploads/stories/{filename}"
+            # Construct the image URL using the API uploads route. Because
+            # api_router uses a prefix of /api, stories are served from
+            # /api/uploads/.... Including /api here ensures the URL
+            # resolves correctly in both preview and production environments.
+            image_url = f"/api/uploads/stories/{filename}"
         
         # Create story
         story = {
