@@ -637,7 +637,7 @@ const HomePage = ({ user, onLogout }) => {
           </div>
         </div>
         
-        {/* Compact Stories and Mystery Section */}
+        {/* Compact Stories Section */}
         <div className="container mx-auto px-4 pb-3 flex items-center gap-3">
           <div className="flex items-center gap-2">
             {/* User Profile Circle */}
@@ -678,14 +678,6 @@ const HomePage = ({ user, onLogout }) => {
               </svg>
               Stories
             </button>
-            
-            {/* Mystery Button */}
-            <Link to="/mystery">
-              <button className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-sm font-medium flex items-center gap-2 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-md">
-                <span className="text-base">🎭</span>
-                Mystery
-              </button>
-            </Link>
           </div>
         </div>
       </header>
