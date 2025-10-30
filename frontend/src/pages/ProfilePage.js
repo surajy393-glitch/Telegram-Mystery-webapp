@@ -1065,6 +1065,52 @@ const ProfilePage = ({ user, onLogout }) => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Followers/Following Dialog */}
+        <Dialog open={showFollowersDialog} onOpenChange={setShowFollowersDialog}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                {followersDialogType === 'followers' ? 'Followers' : 'Following'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {followersLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : followersList.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No {followersDialogType === 'followers' ? 'followers' : 'following'} yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {followersList.map((follower) => (
+                  <div
+                    key={follower.id}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                    onClick={() => {
+                      setShowFollowersDialog(false);
+                      navigate(`/profile/${follower.id}`);
+                    }}
+                  >
+                    <img
+                      src={follower.profileImage || "https://via.placeholder.com/40"}
+                      alt={follower.username}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-pink-200"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{follower.username}</p>
+                      {follower.fullName && (
+                        <p className="text-sm text-gray-500 truncate">{follower.fullName}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
