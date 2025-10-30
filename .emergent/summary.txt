@@ -1,98 +1,107 @@
 <analysis>
-The AI engineer's work in this trajectory was a multi-faceted debugging and refactoring effort focused on stabilizing the core functionality of a social dating app, particularly around user registration, profile management, and feature access. The initial problem involved incorrect frontend URL construction leading to broken API calls and image loading. This evolved into complex issues like incomplete user objects being stored in , invalid token errors post-registration, non-functional About this account dialogs, and a profile picture that disappeared upon navigation. The engineer systematically applied fixes for relative paths,  state updates,  image fallbacks, backend JWT  claim correction, and ultimately, replacing a custom modal with a portal-based Radix Dialog to overcome rendering issues. The process involved constant user feedback, video analysis, and persistent debugging to identify subtle root causes across the full stack.
+The AI engineer's work involved extensive debugging and refactoring for a social dating app, addressing critical issues from UI rendering to data handling. Initial problems included a non-functional About this account dialog, resolved by replacing a custom modal with a Radix Dialog component and correctly placing it. Subsequent efforts focused on persistent post-loading failures due to ID mismatches, strict backend filters, 500 errors from  field types, and broken images caused by URL prefix discrepancies. The engineer implemented robust media URL resolution, prioritized Telegram proxy handling, unified media helpers, and corrected environment variable usage. Privacy logic for private profiles was also tightened. The latest task involves fixing missing follow-back notifications after request acceptance.
 </analysis>
 
 <product_requirements>
-The application's core goal is to be an MVP dating app with features like LuvHive Verified badges (two-step verification, various pathways), a Founder Badge, dynamic profile picture updates, an auto-refreshing feed, and infinite scroll for posts.
-The main problems addressed were:
-1.  **Profile pictures not displaying after registration:** Due to  URL prefixes or partial user objects in . This often required re-uploading in Edit Profile for it to appear.
-2.  **Edit Profile not working:** Linked to  corruption or incorrect state updates.
-3.  **About this account dialog not appearing/working:** Intended to display join date, country, verification pathway from a 3-dot menu on . This dialog consistently faced rendering and data fetching issues.
-4.  **Registration and profile editing needed a 'country' field.**
-5.  **Invalid token errors after registration:** Preventing features like Mystery Match, Search, and Profile from working until a logout/login cycle.
-6.  ** status not being correctly reflected** in the LuvHive Verified section after initial registration.
-The overall objective was to ensure a robust user experience across the application, especially for new users, by fixing critical UI and API-related inconsistencies.
+The application is an MVP dating app with core features like LuvHive Verified badges, Founder Badge, dynamic profile picture updates, auto-refreshing feeds, and infinite scroll for posts. The AI engineer was tasked with resolving several critical issues to enhance user experience:
+
+1.  **About this account Dialog:** This dialog, accessible from a user's profile, was not appearing or functioning correctly due to CSS/rendering conflicts. It needed to display join date, country, and verification pathway.
+2.  **Profile Picture Display:** Profile pictures were not reliably displaying after registration, often requiring re-upload.
+3.  **Edit Profile Functionality:** This feature was intermittently failing, linked to  issues or incorrect state updates.
+4.  **User  field:** Needed to be integrated into registration and profile editing flows.
+5.  **Invalid token Errors:** Users experienced authentication issues post-registration, blocking access to features like Mystery Match and Search until re-login.
+6.  ** Status:** The verification status was not correctly reflected post-registration.
+7.  **Posts Loading and Display:** Public profiles were not showing posts, or images appeared broken, due to:
+    *   Incorrect user ID (username vs. UUID) used in API calls for posts.
+    *   Backend post filtering ( instead of ).
+    *   500 Internal Server Errors from backend due to  type handling and missing  fields.
+    *   Frontend/backend URL prefix mismatch ( vs. ) for static files.
+    *   Improper handling of Telegram-hosted media using  without proxy.
+    *   Error checking profile (401) on  due to missing authentication tokens in API calls.
+8.  **Private Profile Post Visibility:** Posts on private profiles were visible to followers, requiring stricter privacy rules.
+9.  **Follow Notification and Follow back Button:** After accepting a follow request, the user who initiated the follow does not receive a notification with a Follow back button.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Development:** React (frontend), FastAPI (backend), MongoDB (database).
--   **API Communication:** RESTful endpoints, relative paths (), JWT tokens with  claims.
--   **State Management:** React , ,  for user sessions,  for global state updates.
--   **Image Handling:** Direct relative paths (), base64 data URI fallback for immediate display.
--   **UI/UX:** Component-based UI (Radix Dialog), CSS transforms, z-index, portal rendering.
--   **Debugging:** Console logging,  for on-screen mobile debugging.
+-   **API Communication:** RESTful endpoints ( prefix), JWT authentication (with  claim), .
+-   **State Management:** React , ,  for user sessions.
+-   **UI/UX:** Radix Dialog (portal rendering), CSS transforms, z-index, responsive grids.
+-   **Media Handling:** Static file serving (), Telegram integration (proxy via ), URL normalization, base64 data URIs.
+-   **Debugging:** Console logging,  (on-screen mobile console).
+-   **Environment Variables:** , .
 </key_technical_concepts>
 
 <code_architecture>
 
 
 -   :
-    -   **Importance:** Centralizes backend API endpoints and data models.
+    -   **Importance:** Centralizes backend API endpoints.
     -   **Changes:**
-        -    field added to  model, , .
-        -    and  accept .
-        -    returns .
-        -    returns  regardless of privacy;  implements privacy checks.
-        -    function modified to generate JWTs with a  claim () for proper authentication across endpoints.
-        -    and  fields now correctly persisted to MongoDB during registration.
+        -    field added to  model;  and  accept .
+        -    generates JWTs with  claim.
+        -    and  fields persisted.
+        -    handler: modified to accept  as UUID or username, filter posts with , safely normalize  field (handling  objects or strings), and conditionally return  if / are missing.
 -   :
-    -   **Importance:** Frontend's entry point.
-    -   **Changes:** Injected  library for on-screen mobile console debugging.
--   :
-    -   **Importance:** Manages global user state and authentication, defines main routes.
-    -   **Changes:**  passed to .  and  enhanced with  for debugging and synchronous state updates.
--   :
-    -   **Importance:** Primary registration flow.
+    -   **Importance:** Handles post and story creation logic.
     -   **Changes:**
-        -    used for API calls.
-        -   Post-registration, fetches full user data via  before calling  and navigating to .
-        -   **Always prefers local  (base64) for ** if available, overriding server response to ensure immediate DP display.
+        -    and : now construct  and  with the  prefix for static files and include robust file extension handling.
 -   :
-    -   **Importance:** Alternative registration flow.
-    -   **Changes:** Applied same logic as  (fetch  for full user,  fallback). Navigates to .
+    -   **Importance:** Frontend entry point.
+    -   **Changes:** Injected  for mobile console debugging.
 -   :
-    -   **Importance:** User profile editing.
-    -   **Changes:** . Calls  post-update.  includes merging logic to preserve local base64  if server returns null.
+    -   **Importance:** Manages global user state and authentication.
+    -   **Changes:**  passed to ; enhanced  and  with logging.
 -   :
-    -   **Importance:** Displays current user's profile.
-    -   **Changes:** .  includes merging logic to preserve local base64  if server returns null/empty, ensuring persistence across page loads. Enhanced with detailed logging and 401 error handling.
+    -   **Importance:** Radix UI Dialog component definition.
+    -   **Changes:**  and  now use explicit high  values (, ) to ensure visibility.
 -   :
-    -   **Importance:** Displays other users' profiles, hosts About this account dialog.
+    -   **Importance:** Handles comment interactions.
+    -   **Changes:**  now directly navigates to the user's profile without an alert.
+-    (NEW FILE):
+    -   **Importance:** Centralized utility for media URL normalization.
+    -   **Contents:**
+        -   : Normalizes URLs by ensuring the  prefix for  paths and prepending  if configured. Handles absolute URLs and data URIs.
+        -   : Resolves the best URL for a post by prioritizing  (proxying through ), then falling back to , then .
+-   :
+    -   **Importance:** Displays user profiles (including current user and others).
     -   **Changes:**
-        -   .
-        -   About this account   handler now:
-            1.  Derives  from uid=0(root) gid=0(root) groups=0(root), , , or .
-            2.  **Immediately sets  and  to open a loading modal before fetching data.**
-        -    updated to display errors within the modal (not alerts).
-        -   The previous custom  overlay modal was **replaced entirely with the  component**, which uses a portal to render at the document root, resolving  and CSS transform issues.
-        -   's  resets  state on close.
+        -    used for all API calls.
+        -   About this account dialog: Replaced custom modal with , state management refined, moved to the correct  JSX branch.
+        -   : Updated to handle username slugs as  and include 401 error handling with .
+        -   : Updated to accept  (UUID) and  for robust fetching, included a  state, and uses the  helper.
+        -   Media display: Imports  from  (local  and  helpers were removed). The posts grid uses  for image/video sources.
+        -   Privacy logic: Updated the condition to hide Recent Posts for any viewer if  is true and  is false, ensuring private accounts' posts are truly hidden.
+        -   Fixed  due to incorrect  access by switching to .
+-   , , , :
+    -   **Importance:** Core frontend pages displaying posts.
+    -   **Changes:** All now import and utilize the  utility from  for consistent and robust media URL resolution and display.
 -   :
-    -   **Importance:** Core Mystery Match feature.
-    -   **Changes:** .  derivation (top of file, , , , ) updated to include  fallback.  function now reads  from  and handles  as numeric or string.
+    -   **Importance:** Displays the main feed of posts.
+    -   **Changes:** Pass authentication token when fetching user profiles, use  for post media, and updated username  handler to directly navigate.
 -   :
-    -   **Importance:** User and post search.
-    -   **Changes:** . Removed  prefixes. Added token validation to prevent Invalid token errors.
--   , , , , , and various components (, , etc.):
-    -   **Importance:** Other critical frontend elements.
-    -   **Changes:** All were updated to use  and ensure image URLs use direct relative paths without  or  prefixes.  dynamically constructs WebSocket URLs from .
+    -   **Importance:** Environment variables for frontend.
+    -   **Changes:**  was changed to an empty string to use relative URLs, addressing cross-domain issues for local deployments, then adjusted to .
 </code_architecture>
 
 <pending_tasks>
--   The About this account dialog functionality needs final verification from the user to confirm it consistently opens, displays content, and handles all states correctly without any visual or functional glitches after replacing the custom modal with Radix Dialog.
--   User to verify if the Eruda mobile console (injected into ) works as expected for debugging on Android Chrome.
+-   Implement the logic for displaying a Luvsociety started following you notification with a Follow back button after a follow request is accepted.
+-   Investigate the existing notification and follow system to correctly add this new notification feature.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary request, the AI engineer was in the process of resolving the persistent issue where the About this account dialog in  was not appearing correctly. This was identified as a critical  and CSS  conflict, where a custom  modal was being incorrectly positioned due to a transformed parent element, effectively rendering it off-screen or behind other UI elements.
+Immediately before this summary request, the AI engineer was working on resolving a wide array of issues related to media loading, URL resolution, and profile display. Key efforts included:
 
-To definitively fix this, the AI engineer has implemented the following:
-1.  **Replaced Custom Modal with Radix Dialog:** The entire custom fixed overlay modal for About this account (previously defined within lines 896-1056 of ) has been completely removed and replaced with the imported  component. This leverages React Portals to render the dialog directly to the , bypassing any  or  issues from parent elements.
-2.  **Dialog Content and State Management:** The new  includes all the previously refined logic for conditional rendering of loading spinners, error messages, and success content. Its  has a very high  () to ensure visibility. The  prop of the  is set to reset the  state to  when the modal closes, preventing stale data.
-3.  ** Handler:** The  handler for the About this account  continues to correctly derive the user ID from multiple fields (uid=0(root) gid=0(root) groups=0(root), , , ) and immediately sets  and  *before* initiating the  call. This ensures a loading spinner is visible from the moment the user clicks.
+1.  **Unified Media Handling:** A new utility file () was created with  and  to standardize how media URLs are processed.  now prioritizes proxying Telegram-hosted media () and falls back to  or , while  ensures correct  prefixes and  prepending. This involved updating , , , , and  to use these new helpers, removing redundant local helper functions.
+2.  **Backend Media URL Correction:**  was updated so  and  store media URLs with the correct  prefix. The   function was also refined to handle  field type variations, ensure correct  filtering, and dynamically provide Telegram proxy URLs.
+3.  **Environment Configuration Fix:** The  in  was adjusted to resolve cross-domain image loading issues.
+4.  **Privacy Enhancement:** The  logic was updated to rigorously hide posts on private profiles from all non-owners.
+5.  **UX Improvements:** Removed unnecessary alerts in  and , allowing direct navigation to profiles.
+6.  **Fixing TypeError:** Resolved a  in  related to incorrect  access by switching to .
 
-The last action taken was restarting the frontend service after these changes. The AI engineer is now waiting for user feedback to confirm the complete resolution of the About this account dialog issue.
+The last user feedback (Chat Message 478) has highlighted a new issue: **after a user accepts a follow request, the initiator of the request does not receive a notification like Luvsociety started following you with an accompanying Follow back button.** The AI engineer has acknowledged this and is about to investigate the relevant backend and frontend code for the notification and follow system.
 </current_work>
 
 <optional_next_step>
-Verify the functionality of the About this account dialog on the  after the Radix Dialog implementation.
+Investigate the current notification and follow system in backend and frontend to implement the Follow back notification.
 </optional_next_step>
