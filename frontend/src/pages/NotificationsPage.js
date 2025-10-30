@@ -218,6 +218,21 @@ const NotificationsPage = ({ user, onLogout }) => {
                         </Button>
                       </div>
                     )}
+
+                    {/* Follow Back Button for accepted requests */}
+                    {notif.type === 'follow_request_accepted' && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFollowBack(notif.fromUserId);
+                          }}
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1.5 px-6 rounded-lg font-medium"
+                        >
+                          Follow back
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   {notif.postId && (
                     <div className="w-12 h-12 flex-shrink-0">
