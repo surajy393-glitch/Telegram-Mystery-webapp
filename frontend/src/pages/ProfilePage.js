@@ -104,24 +104,6 @@ const ProfilePage = ({ user, onLogout }) => {
     return trimmedBackend ? `${trimmedBackend}${path}` : path;
   };
 
-  // Helper to select the appropriate media URL (returns null if none available)
-  const getPostMediaUrl = (post) => {
-    if (!post) return null;
-    
-    // Always serve Telegram-hosted media via proxy
-    if (post.telegramFileId) {
-      return getMediaSrc(`/api/media/${post.telegramFileId}`);
-    }
-    
-    // Otherwise fall back to mediaUrl or imageUrl
-    let url = post.mediaUrl && post.mediaUrl.trim().length > 0
-      ? post.mediaUrl
-      : (post.imageUrl && post.imageUrl.trim().length > 0 ? post.imageUrl : null);
-    
-    return url ? getMediaSrc(url) : null;
-  };
-  };
-
   // Helper function to derive the actual account ID from user object
   const getAccountId = (userObj) => {
     return userObj?.id || userObj?._id || userObj?.user_id || userObj?.tg_user_id;
