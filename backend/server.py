@@ -1986,10 +1986,12 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "isPrivate": current_user.isPrivate,
         "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
         "telegramLinked": current_user.telegramId is not None,
-        "blockedUsers": current_user.blockedUsers,
-        "mutedUsers": current_user.mutedUsers,  # Added for 3-dot menu functionality
+        "blockedUsers": user_data.get("blockedUsers", []) if user_data else current_user.blockedUsers,
+        "mutedUsers": user_data.get("mutedUsers", []) if user_data else current_user.mutedUsers,  # Added for 3-dot menu functionality
         
-        # Followers/Following counts - ADDED
+        # Followers/Following data - use fresh data from database
+        "followers": user_data.get("followers", []) if user_data else [],
+        "following": user_data.get("following", []) if user_data else [],
         "followersCount": len(user_data.get("followers", [])) if user_data else 0,
         "followingCount": len(user_data.get("following", [])) if user_data else 0,
         
