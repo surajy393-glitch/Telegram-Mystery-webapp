@@ -504,7 +504,7 @@ const ProfilePage = ({ user, onLogout }) => {
         setFollowersList(prev => 
           prev.map(f => 
             f.id === targetUserId 
-              ? { ...f, isFollowing: newState.isFollowing }
+              ? { ...f, isFollowing: newState.isFollowing, hasRequested: newState.hasRequested }
               : f
           )
         );
