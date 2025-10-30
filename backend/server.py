@@ -1022,7 +1022,7 @@ async def send_welcome_email(email: str, full_name: str, username: str):
         • Complete your profile to get better matches
         • Be genuine and respectful in all interactions
         • Upload a profile photo to increase your visibility
-        • Explore Mystery Match to find exciting connections
+        • Share your moments with stories and posts
         
         Get started now at: https://luvhive.net
         
