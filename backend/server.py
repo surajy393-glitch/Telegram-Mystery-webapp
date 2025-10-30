@@ -4136,17 +4136,27 @@ async def follow_user(userId: str, current_user: User = Depends(get_current_user
         return {"message": "Follow request sent", "requested": True}
     else:
         # Public account - follow immediately
+        logger.info(f"🔄 Follow: User {current_user.username} ({current_user.id}) following {target_user.get('username')} ({userId})")
+        
         # Add to following list
-        await db.users.update_one(
+        following_result = await db.users.update_one(
             {"id": current_user.id},
             {"$addToSet": {"following": userId}}
         )
+        logger.info(f"📝 Follow: Added to following list - matched: {following_result.matched_count}, modified: {following_result.modified_count}")
         
         # Add to followers list
-        await db.users.update_one(
+        followers_result = await db.users.update_one(
             {"id": userId},
             {"$addToSet": {"followers": current_user.id}}
         )
+        logger.info(f"📝 Follow: Added to followers list - matched: {followers_result.matched_count}, modified: {followers_result.modified_count}")
+        
+        # Verify the updates worked
+        updated_current_user = await db.users.find_one({"id": current_user.id})
+        updated_target_user = await db.users.find_one({"id": userId})
+        logger.info(f"✅ Follow: Current user following list: {updated_current_user.get('following', [])}")
+        logger.info(f"✅ Follow: Target user followers list: {updated_target_user.get('followers', [])}")
         
         # Create notification
         notification = Notification(
