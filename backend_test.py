@@ -6420,50 +6420,65 @@ class LuvHiveAPITester:
             self.log_result("Follow Back Scenario - Mutual Following", False, "Exception occurred", str(e))
     
     def test_follow_back_with_existing_users(self):
-        """Test follow back logic with existing users Luvsociety and Luststorm"""
+        """Test follow back logic with newly created users (simulating Luvsociety and Luststorm scenario)"""
         try:
-            # Try to login as Luvsociety
-            luvsociety_session = requests.Session()
-            luvsociety_login = {
-                "username": "Luvsociety",
-                "password": "Luvsociety123"
+            # Create two new users to simulate the scenario
+            import time
+            unique_id = int(time.time()) % 10000
+            
+            # Create User A (simulating Luvsociety)
+            userA_data = {
+                "fullName": f"User A {unique_id}",
+                "username": f"usera{unique_id}",
+                "age": 25,
+                "gender": "female",
+                "country": "United States",
+                "password": "test123"
             }
             
-            luvsociety_response = luvsociety_session.post(f"{API_BASE}/auth/login", json=luvsociety_login)
+            userA_response = self.session.post(f"{API_BASE}/auth/register", json=userA_data)
             
-            if luvsociety_response.status_code == 200:
-                luvsociety_data = luvsociety_response.json()
-                luvsociety_id = luvsociety_data['user']['id']
-                luvsociety_token = luvsociety_data['access_token']
-                luvsociety_session.headers.update({'Authorization': f'Bearer {luvsociety_token}'})
+            if userA_response.status_code == 200:
+                userA_data_response = userA_response.json()
+                userA_id = userA_data_response['user']['id']
+                userA_token = userA_data_response['access_token']
                 
-                # Try to login as Luststorm
-                luststorm_session = requests.Session()
-                luststorm_login = {
-                    "username": "Luststorm",
-                    "password": "Luststorm123"
+                # Create User B (simulating Luststorm)
+                userB_data = {
+                    "fullName": f"User B {unique_id}",
+                    "username": f"userb{unique_id}",
+                    "age": 28,
+                    "gender": "male",
+                    "country": "Canada",
+                    "password": "test123"
                 }
                 
-                luststorm_response = luststorm_session.post(f"{API_BASE}/auth/login", json=luststorm_login)
+                userB_response = self.session.post(f"{API_BASE}/auth/register", json=userB_data)
                 
-                if luststorm_response.status_code == 200:
-                    luststorm_data = luststorm_response.json()
-                    luststorm_id = luststorm_data['user']['id']
-                    luststorm_token = luststorm_data['access_token']
-                    luststorm_session.headers.update({'Authorization': f'Bearer {luststorm_token}'})
+                if userB_response.status_code == 200:
+                    userB_data_response = userB_response.json()
+                    userB_id = userB_data_response['user']['id']
+                    userB_token = userB_data_response['access_token']
                     
-                    # Test scenario: Luststorm follows Luvsociety
-                    follow_response = luststorm_session.post(f"{API_BASE}/users/{luvsociety_id}/follow")
+                    # Create sessions for both users
+                    userA_session = requests.Session()
+                    userA_session.headers.update({'Authorization': f'Bearer {userA_token}'})
+                    
+                    userB_session = requests.Session()
+                    userB_session.headers.update({'Authorization': f'Bearer {userB_token}'})
+                    
+                    # Test scenario: User B follows User A
+                    follow_response = userB_session.post(f"{API_BASE}/users/{userA_id}/follow")
                     
                     if follow_response.status_code == 200:
-                        # Luvsociety views Luststorm's profile (should see Follow back)
-                        profile_response = luvsociety_session.get(f"{API_BASE}/users/{luststorm_id}/profile")
+                        # User A views User B's profile (should see Follow back)
+                        profile_response = userA_session.get(f"{API_BASE}/users/{userB_id}/profile")
                         
                         if profile_response.status_code == 200:
                             profile_data = profile_response.json()
                             
-                            # Expected: isFollowing = false (Luvsociety doesn't follow Luststorm)
-                            # Expected: isFollowingMe = true (Luststorm follows Luvsociety)
+                            # Expected: isFollowing = false (User A doesn't follow User B)
+                            # Expected: isFollowingMe = true (User B follows User A)
                             expected_isFollowing = False
                             expected_isFollowingMe = True
                             
@@ -6472,18 +6487,18 @@ class LuvHiveAPITester:
                             
                             if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
                                 self.log_result("Follow Back with Existing Users", True, 
-                                              f"✅ CORRECT: Luvsociety viewing Luststorm's profile shows isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Follow back button should appear)")
+                                              f"✅ CORRECT: User A viewing User B's profile shows isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Follow back button should appear)")
                             else:
                                 self.log_result("Follow Back with Existing Users", False, 
                                               f"❌ INCORRECT: Expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
                         else:
                             self.log_result("Follow Back with Existing Users", False, f"Profile request failed: {profile_response.status_code}")
                     else:
-                        self.log_result("Follow Back with Existing Users", False, "Luststorm could not follow Luvsociety")
+                        self.log_result("Follow Back with Existing Users", False, f"User B could not follow User A: {follow_response.status_code}")
                 else:
-                    self.log_result("Follow Back with Existing Users", False, "Could not login as Luststorm")
+                    self.log_result("Follow Back with Existing Users", False, f"Could not create User B: {userB_response.status_code}")
             else:
-                self.log_result("Follow Back with Existing Users", False, "Could not login as Luvsociety")
+                self.log_result("Follow Back with Existing Users", False, f"Could not create User A: {userA_response.status_code}")
                 
         except Exception as e:
             self.log_result("Follow Back with Existing Users", False, "Exception occurred", str(e))
