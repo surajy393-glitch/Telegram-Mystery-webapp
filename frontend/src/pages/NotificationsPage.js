@@ -110,6 +110,7 @@ const NotificationsPage = ({ user, onLogout }) => {
       case "comment":
         return "commented on your post";
       case "follow":
+      case "follow_request_accepted":
         return "started following you";
       case "follow_request":
         return "requested to follow you";
