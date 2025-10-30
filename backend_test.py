@@ -6730,6 +6730,17 @@ class LuvHiveAPITester:
         self.test_non_blocking_telegram_behavior()
         self.test_telegram_channel_configuration()
         
+        # Followers/Following List Tests (NEW)
+        print("👥 Testing Followers/Following List Feature...")
+        print("-" * 50)
+        print("🚨 CRITICAL TEST: Privacy Rules for Followers/Following Lists")
+        self.test_public_account_view_followers()
+        self.test_public_account_view_following()
+        self.test_private_account_blocked_access()
+        self.test_private_account_allowed_access_following()
+        self.test_own_profile_always_allowed()
+        self.test_followers_following_response_format()
+        
         # Summary
         print("=" * 60)
         print("TEST SUMMARY")
