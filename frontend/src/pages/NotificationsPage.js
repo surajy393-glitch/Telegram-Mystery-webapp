@@ -96,7 +96,7 @@ const NotificationsPage = ({ user, onLogout }) => {
       });
       
       // Remove notification from list after following back
-      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request_accepted' && n.fromUserId === fromUserId)));
+      setNotifications(prev => prev.filter(n => !(n.type === 'started_following' && n.fromUserId === fromUserId)));
       
     } catch (error) {
       console.error("Error following back:", error);
