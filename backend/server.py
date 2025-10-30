@@ -5981,10 +5981,6 @@ async def serve_upload(file_type: str, filename: str):
 # Include the router in the main app
 app.include_router(api_router)
 
-# Import and include mystery match router
-from mystery_match import mystery_router
-app.include_router(mystery_router)
-
 # Import and include social features router
 from social_features import social_router
 app.include_router(social_router)
