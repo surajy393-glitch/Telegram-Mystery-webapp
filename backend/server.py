@@ -4681,6 +4681,13 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
     # Use fresh data to ensure we have the latest following list
     is_following_me = user["id"] in fresh_current_user.get("following", [])
     
+    # Debug logging
+    logger.info(f"🔍 Profile: {current_user.username} viewing {user.get('username')}")
+    logger.info(f"🔍 Profile: User followers: {user.get('followers', [])}")
+    logger.info(f"🔍 Profile: Current user following: {fresh_current_user.get('following', [])}")
+    logger.info(f"🔍 Profile: isFollowing = {is_following} (current user ID {current_user.id} in user followers)")
+    logger.info(f"🔍 Profile: isFollowingMe = {is_following_me} (user ID {user['id']} in current user following)")
+    
     # Check if current user has requested to follow (for private accounts)
     has_requested = current_user.id in user.get("followRequests", [])
     
