@@ -5874,6 +5874,7 @@ class LuvHiveAPITester:
                     "username": f"multitest_{i+1}_{datetime.now().strftime('%H%M%S')}",
                     "age": 25 + i,
                     "gender": "female" if i % 2 == 0 else "male",
+                    "country": "Australia",
                     "password": "multitest123"
                 }
                 
