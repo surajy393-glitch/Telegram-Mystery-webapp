@@ -979,7 +979,7 @@ async def send_welcome_email(email: str, full_name: str, username: str):
                         <li style="margin: 5px 0;">Complete your profile to get better matches</li>
                         <li style="margin: 5px 0;">Be genuine and respectful in all interactions</li>
                         <li style="margin: 5px 0;">Upload a profile photo to increase your visibility</li>
-                        <li style="margin: 5px 0;">Explore Mystery Match to find exciting connections</li>
+                        <li style="margin: 5px 0;">Share your moments with stories and posts</li>
                     </ul>
                 </div>
                 
