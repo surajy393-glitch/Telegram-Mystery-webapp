@@ -191,7 +191,15 @@ const NotificationsPage = ({ user, onLogout }) => {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-800">
-                      <span className="font-semibold">{notif.fromUsername}</span>{" "}
+                      <span 
+                        className="font-semibold cursor-pointer hover:underline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/profile/${notif.fromUserId}`);
+                        }}
+                      >
+                        {notif.fromUsername}
+                      </span>{" "}
                       <span className="text-gray-600">{getNotificationText(notif)}</span>
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
