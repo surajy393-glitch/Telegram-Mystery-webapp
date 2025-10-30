@@ -4280,12 +4280,16 @@ async def get_followers_list(userId: str, current_user: User = Depends(get_curre
     for fid in follower_ids:
         follower = await db.users.find_one({"id": fid})
         if follower:
+            # Check if current user has requested to follow this follower
+            has_requested = current_user.id in follower.get("followRequests", [])
+            
             followers.append({
                 "id": follower["id"],
                 "username": follower["username"],
                 "fullName": follower["fullName"],
                 "profileImage": follower.get("profileImage"),
-                "isFollowing": fid in current_user.following
+                "isFollowing": fid in current_user.following,
+                "hasRequested": has_requested
             })
     
     return {"followers": followers}
