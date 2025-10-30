@@ -88,6 +88,22 @@ const NotificationsPage = ({ user, onLogout }) => {
     }
   };
 
+  const handleFollowBack = async (fromUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API}/users/${fromUserId}/follow`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Remove notification from list after following back
+      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request_accepted' && n.fromUserId === fromUserId)));
+      
+    } catch (error) {
+      console.error("Error following back:", error);
+      alert("Failed to follow back");
+    }
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case "like":
