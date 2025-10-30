@@ -695,11 +695,11 @@ frontend:
 
   - task: "Follow Back Notification After Follow Request Acceptance"
     implemented: true
-    working: true
+    working: "NA"
     file: "frontend/src/pages/NotificationsPage.js, backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "user"
@@ -710,6 +710,12 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ COMPREHENSIVE FOLLOW BACK NOTIFICATION TESTING COMPLETE: 4/5 core tests passed (80% success rate). DETAILED RESULTS: 1) ✅ Follow Request Accept Notification Creation - Successfully verified that when User B accepts User A's follow request, User A receives notification with type='follow_request_accepted', correct fromUserId, fromUsername, and isRead=false, 2) ✅ Multiple Follow Request Acceptances - Tested 3 users accepting follow requests simultaneously, all received separate follow_request_accepted notifications correctly, 3) ✅ Original Follow Request Notification Cleanup - Verified original 'follow_request' notification is deleted when request is accepted and new 'follow_request_accepted' notification is created for requester, 4) ✅ Notification Structure Validation - All required fields present (id, fromUserId, fromUsername, fromUserImage, type, isRead, createdAt) with correct data types and values. Minor Issue: Follow back action test needs refinement for private user scenarios. BACKEND IMPLEMENTATION VERIFIED: POST /api/users/{userId}/accept-follow-request correctly creates follow_request_accepted notifications (lines 4207-4217), notification cleanup working (lines 4200-4205), GET /api/notifications returns proper notification structure. Follow back notification system is production-ready and working correctly."
+      - working: false
+        agent: "user"
+        comment: "CRITICAL LOGIC ERROR IDENTIFIED: User (Luvsociety) sends follow request to Luststorm. When Luststorm accepts, Luvsociety receives 'started following you' with Follow back button - THIS IS WRONG! Luvsociety already follows Luststorm (they sent the request), so Follow back button makes no sense. CORRECT LOGIC: 1) Requester (Luvsociety) should get: 'Luststorm accepted your follow request' (NO follow back button), 2) Accepter (Luststorm) should get: 'Luvsociety started following you' + Follow back button. Also reported: Username in notifications not clickable, should open user's profile."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ CRITICAL FIX APPLIED - TWO NOTIFICATION SYSTEM: BACKEND (server.py lines 4207-4227): Completely rewrote accept_follow_request endpoint to create TWO separate notifications: 1) notification_for_requester (type='follow_request_accepted'): sent to person who sent request (Luvsociety), message 'accepted your follow request', NO follow back button, 2) notification_for_accepter (type='started_following'): sent to person who accepted (Luststorm), message 'started following you', WITH Follow back button. FRONTEND (NotificationsPage.js): 1) Added 'started_following' type to getNotificationIcon() and getNotificationText() (lines 108-137), 2) Changed 'follow_request_accepted' text to 'accepted your follow request' (line 136), 3) Moved Follow back button to only show for 'started_following' type (line 227), removed from 'follow_request_accepted', 4) Made username CLICKABLE: imported useNavigate, added onClick handler with cursor-pointer and hover:underline styling (lines 193-201), navigates to /profile/{fromUserId}. Backend restarted (pid varies). NOW: Correct flow - Requester gets 'accepted your request' notification, Accepter gets 'started following you' + Follow back button. Username clicks open profiles."
 
   - task: "Add 3-dot menu to other users' profiles"
     implemented: false
