@@ -6222,12 +6222,6 @@ class LuvHiveAPITester:
             return
         
         try:
-            # First, make sure current user is NOT following test user
-            unfollow_response = self.session.post(f"{API_BASE}/users/{self.test_user_id}/unfollow")
-            
-            # Now we need to simulate test user following current user
-            # Since we can't directly control the test user, we'll create a new user and test the logic
-            
             # Create a third user to test with
             import time
             unique_id = int(time.time()) % 10000
@@ -6245,45 +6239,42 @@ class LuvHiveAPITester:
             if register_response.status_code == 200:
                 third_user_data_response = register_response.json()
                 third_user_id = third_user_data_response['user']['id']
+                third_user_token = third_user_data_response['access_token']
+                
+                # Create new session for third user
+                third_user_session = requests.Session()
+                third_user_session.headers.update({'Authorization': f'Bearer {third_user_token}'})
                 
                 # Make third user follow current user
-                follow_response = self.session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
+                follow_response = third_user_session.post(f"{API_BASE}/users/{self.current_user_id}/follow")
                 
                 if follow_response.status_code == 200:
-                    # Now check current user's profile from third user's perspective
-                    # But we need to login as third user first
-                    third_user_token = third_user_data_response['access_token']
-                    
-                    # Create new session for third user
-                    third_user_session = requests.Session()
-                    third_user_session.headers.update({'Authorization': f'Bearer {third_user_token}'})
-                    
-                    # Third user views current user's profile
-                    profile_response = third_user_session.get(f"{API_BASE}/users/{self.current_user_id}/profile")
+                    # Current user views third user's profile (should see Follow back)
+                    profile_response = self.session.get(f"{API_BASE}/users/{third_user_id}/profile")
                     
                     if profile_response.status_code == 200:
                         profile_data = profile_response.json()
                         
-                        # Expected: isFollowing = true (third user follows current user)
-                        # Expected: isFollowingMe = false (current user doesn't follow third user)
-                        expected_isFollowing = True
-                        expected_isFollowingMe = False
+                        # Expected: isFollowing = false (current user doesn't follow third user)
+                        # Expected: isFollowingMe = true (third user follows current user)
+                        expected_isFollowing = False
+                        expected_isFollowingMe = True
                         
                         actual_isFollowing = profile_data.get('isFollowing')
                         actual_isFollowingMe = profile_data.get('isFollowingMe')
                         
                         if actual_isFollowing == expected_isFollowing and actual_isFollowingMe == expected_isFollowingMe:
                             self.log_result("Follow Back Scenario - They Follow You", True, 
-                                          f"Correct follow relationship: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                                          f"✅ CORRECT: isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe} (Follow back button should appear)")
                         else:
                             self.log_result("Follow Back Scenario - They Follow You", False, 
-                                          f"Incorrect follow relationship: expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
+                                          f"❌ INCORRECT: expected isFollowing={expected_isFollowing}, isFollowingMe={expected_isFollowingMe}, got isFollowing={actual_isFollowing}, isFollowingMe={actual_isFollowingMe}")
                     else:
                         self.log_result("Follow Back Scenario - They Follow You", False, f"Profile request failed: {profile_response.status_code}")
                 else:
-                    self.log_result("Follow Back Scenario - They Follow You", False, "Could not make third user follow current user")
+                    self.log_result("Follow Back Scenario - They Follow You", False, f"Could not make third user follow current user: {follow_response.status_code}")
             else:
-                self.log_result("Follow Back Scenario - They Follow You", False, "Could not create third user for testing")
+                self.log_result("Follow Back Scenario - They Follow You", False, f"Could not create third user for testing: {register_response.status_code}")
                 
         except Exception as e:
             self.log_result("Follow Back Scenario - They Follow You", False, "Exception occurred", str(e))
