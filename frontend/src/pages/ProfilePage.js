@@ -81,21 +81,27 @@ const ProfilePage = ({ user, onLogout }) => {
   // Get backend URL from environment (use empty string for same-domain deployment)
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-  // Helper function to fix incorrect API prefix in media URLs and add backend domain
+  // Helper function to normalize media URLs (adds /api prefix if needed)
   const getMediaSrc = (url) => {
     if (!url) return "";
     
-    // Strip /api from /api/uploads, as the backend mounts /uploads directly
-    let cleaned = url.startsWith("/api/uploads/") ? url.replace("/api", "") : url;
-    
-    // If it's still a relative /uploads path, prefix with the backend domain
-    if (cleaned.startsWith("/uploads")) {
-      // Ensure no double slashes when concatenating
-      return `${BACKEND_URL.replace(/\/$/, "")}${cleaned}`;
+    // Absolute URLs and data URIs should be returned unchanged
+    if (/^(https?:)?\/\//.test(url) || url.startsWith('data:')) {
+      return url;
     }
     
-    // For absolute URLs (e.g. Telegram file links), just return as-is
-    return cleaned;
+    let path = url;
+    // Add /api if the path references the uploads directory
+    if (path.startsWith('/uploads/')) {
+      path = `/api${path}`;
+    }
+    
+    if (!path.startsWith('/')) {
+      path = `/${path}`;
+    }
+    
+    const trimmedBackend = BACKEND_URL.replace(/\/$/, '');
+    return trimmedBackend ? `${trimmedBackend}${path}` : path;
   };
 
   // Helper to select the appropriate media URL (returns null if none available)
