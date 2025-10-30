@@ -691,7 +691,7 @@ const ProfilePage = ({ user, onLogout }) => {
                       </span>
                     </div>
                   ) : (
-                    viewingUser?.hasRequested ? "Requested" : (viewingUser?.isFollowing ? "Following" : "Follow")
+                    viewingUser?.hasRequested ? "Requested" : (viewingUser?.isFollowing ? "Following" : (viewingUser?.isFollowingMe ? "Follow back" : "Follow"))
                   )}
                 </Button>
                 
