@@ -270,6 +270,21 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE FEED ISVERIFIED TESTING COMPLETE: All test scenarios passed (100% success rate). DETAILED RESULTS: 1) ✅ Posts Feed isVerified - All 40 posts in feed include isVerified field, 13 verified posts correctly showing isVerified=true for Luvsociety and Luststorm users, 2) ✅ Stories Feed isVerified - All 3 story groups include isVerified field, 2 verified groups correctly showing isVerified=true for verified users, 3) ✅ Verified Users Display - Both manually verified users (Luvsociety, Luststorm) correctly show isVerified=true in both posts and stories feeds, unverified users show isVerified=false. Fixed KeyError issues in stories endpoint during testing. Feed endpoints are production-ready with proper verification badge support."
 
+  - task: "Followers/Following List Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented GET /api/users/{userId}/followers and GET /api/users/{userId}/following endpoints (lines 4262-4322). Privacy rules implemented: public accounts allow anyone to view, private accounts only allow followers or account owner to view. Returns proper 403 status with 'This account is private' message for unauthorized access."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE FOLLOWERS/FOLLOWING LIST TESTING COMPLETE: All 6 test scenarios passed (100% success rate). DETAILED RESULTS: 1) ✅ Public Account Followers - Successfully retrieved followers list with correct response format {followers: [...]} including required fields (id, username, fullName, profileImage, isFollowing), 2) ✅ Public Account Following - Successfully retrieved following list with correct response format {following: [...]} and proper field structure, 3) ✅ Private Account Blocked Access - Correctly returns 403 status with 'This account is private' message when non-followers attempt to access private account lists, 4) ✅ Private Account Allowed Access - Successfully allows access to followers/following lists when user follows the private account, 5) ✅ Own Profile Always Allowed - Users can always view their own followers/following regardless of privacy settings, 6) ✅ Response Format Validation - Both endpoints return correct data structure with proper arrays and required user fields. Privacy rules working correctly: public accounts accessible to all, private accounts restricted to followers and owner only."
+
 metadata:
   created_by: "main_agent"
   version: "4.0"
