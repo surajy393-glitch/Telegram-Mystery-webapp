@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Cross-Origin Image Loading - Backend Domain Prefix"
+  - task: "Fix Telegram File Proxy - telegramFileId Fallback"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/src/pages/ProfilePage.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Posts fetch successfully, cross-origin URLs built correctly (https://backend.com/uploads/posts/abc.jpg), but still 404 errors. Root cause: Old posts have imageUrl pointing to /uploads/posts/{uuid}.jpg but files no longer exist on server (deleted/missing). New posts uploaded to Telegram have telegramFileId but no mediaUrl set. Result: Old posts → 404 (files gone), New posts → No URL (only telegramFileId). Backend get_user_posts returns raw mediaUrl/imageUrl without checking telegramFileId. Frontend getPostMediaUrl doesn't check telegramFileId. /api/media/{file_id} proxy endpoint exists in server.py but unused."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ TELEGRAM PROXY FIX - BACKEND & FRONTEND: BACKEND (server.py lines 4786-4805): Added smart media URL fallback logic before building posts_list. Extract media_url, image_url, telegram_id from post. If both media_url and image_url are empty BUT telegram_id exists, construct proxy URL: media_url = f'/api/media/{telegram_id}'. Also return telegramFileId field in response for frontend fallback. Now every post has at least one valid URL (mediaUrl, imageUrl, or Telegram proxy). FRONTEND (ProfilePage.js lines 101-118): getPostMediaUrl already enhanced with telegramFileId fallback (lines 113-115): if (!url && post.telegramFileId) { url = `/api/media/${post.telegramFileId}` }. Triple fallback chain: 1) mediaUrl, 2) imageUrl, 3) telegramFileId proxy. getMediaSrc then handles cross-origin prefixing. Both services restarted (backend pid 1270, frontend pid 1272). NOW: Old posts with missing files still 404 (need data cleanup), but NEW Telegram posts display via /api/media/{file_id} proxy which redirects to Telegram. Posts with telegramFileId finally visible!"
     implemented: true
     working: "NA"
     file: "frontend/src/pages/ProfilePage.js"
