@@ -22,9 +22,11 @@ export function getMediaSrc(url) {
     path = `/${path}`;
   }
   
-  // Prefix the backend URL if provided; otherwise return the path relative
-  // to the current origin
-  return BACKEND ? `${BACKEND}${path}` : path;
+  // Prepend backend URL if provided (e.g. production domain)
+  if (BACKEND_URL) {
+    return `${BACKEND_URL}${path}`;
+  }
+  return path;
 }
 
 /**
