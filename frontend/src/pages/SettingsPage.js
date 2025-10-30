@@ -187,7 +187,7 @@ const SettingsPage = ({ user, onLogout }) => {
             <ActionButton
               icon={<Download className="w-5 h-5" />}
               label="Download Data"
-              description="Export your Mystery Match data"
+              description="Export your account data"
               onClick={handleDownloadData}
               bgColor="bg-blue-50 hover:bg-blue-100"
               textColor="text-blue-600"
@@ -196,8 +196,8 @@ const SettingsPage = ({ user, onLogout }) => {
             <ActionButton
               icon={<HelpCircle className="w-5 h-5" />}
               label="Help & Support"
-              description="Get help with Mystery Match"
-              onClick={() => window.open('mailto:support@mysterymatch.com', '_blank')}
+              description="Get help with LuvHive"
+              onClick={() => window.open('mailto:support@luvhive.com', '_blank')}
               bgColor="bg-green-50 hover:bg-green-100"
               textColor="text-green-600"
             />
