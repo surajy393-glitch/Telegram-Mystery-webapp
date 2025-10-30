@@ -825,7 +825,20 @@ frontend:
         agent: "main"
         comment: "✅ ROOT CAUSE IDENTIFIED - STRUCTURAL BUG FIXED: User correctly identified that Dialog was in WRONG return branch! ProfilePage has two branches: (1) isViewingSpecificUser branch (lines 381-720) for individual user profiles where 3-dot menu exists, (2) Discovery page branch (line 723+). The 'About this account' Dialog was incorrectly placed in discovery branch (line 1043), NOT in user-profile branch where the menu item triggers it. State changes but Dialog JSX never rendered! FIX APPLIED: Moved complete Dialog implementation (lines 719-867) to correct location in isViewingSpecificUser branch, right after Vibe Check Dialog and before closing </div>. Removed duplicate Dialog from discovery branch. Now when user clicks 'About this account' in 3-dot menu, Dialog renders in same branch. Frontend restarted (pid 3177). This is THE definitive fix - click handler + Dialog now in same conditional branch."
   
-  - task: "Fix Domain Mismatch - BACKEND_URL Configuration"
+  - task: "Fix TypeError - import.meta.env Undefined in CRA"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProfilePage.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Video shows error when opening another user's profile. Error overlay appears: 'TypeError: Cannot read properties of undefined (reading VITE_REACT_APP_BACKEND_URL)'. Console shows error in ProfilePage component. Stack trace points to line where import.meta.env.VITE_REACT_APP_BACKEND_URL is accessed. App uses Create React App (CRA), not Vite, so import.meta is undefined."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ CRITICAL FIX: Updated ProfilePage.js line 81. BEFORE: const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.VITE_REACT_APP_BACKEND_URL || ''; (Trying to access import.meta which is undefined in CRA). AFTER: const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || ''; (Only use process.env for CRA). Added comment: 'use empty string for same-domain deployment'. import.meta.env is Vite-specific syntax, not supported in Create React App. CRA uses process.env exclusively. Removed Vite-specific code to prevent undefined access error. Frontend restarted (pid 2281). NOW: ProfilePage loads without TypeError, other users' profiles open correctly, BACKEND_URL resolves properly."
     implemented: true
     working: "NA"
     file: "frontend/.env"
