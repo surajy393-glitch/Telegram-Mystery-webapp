@@ -106,23 +106,20 @@ const ProfilePage = ({ user, onLogout }) => {
 
   // Helper to select the appropriate media URL (returns null if none available)
   const getPostMediaUrl = (post) => {
-    // Try mediaUrl first (new format)
+    if (!post) return null;
+    
+    // Always serve Telegram-hosted media via proxy
+    if (post.telegramFileId) {
+      return getMediaSrc(`/api/media/${post.telegramFileId}`);
+    }
+    
+    // Otherwise fall back to mediaUrl or imageUrl
     let url = post.mediaUrl && post.mediaUrl.trim().length > 0
       ? post.mediaUrl
-      : null;
+      : (post.imageUrl && post.imageUrl.trim().length > 0 ? post.imageUrl : null);
     
-    // Fallback to imageUrl (legacy format)
-    if (!url && post.imageUrl && post.imageUrl.trim().length > 0) {
-      url = post.imageUrl;
-    }
-    
-    // If still no URL but telegramFileId exists, use the proxy endpoint
-    if (!url && post.telegramFileId) {
-      url = `/api/media/${post.telegramFileId}`;
-    }
-    
-    // Apply prefix fix if URL exists
     return url ? getMediaSrc(url) : null;
+  };
   };
 
   // Helper function to derive the actual account ID from user object
