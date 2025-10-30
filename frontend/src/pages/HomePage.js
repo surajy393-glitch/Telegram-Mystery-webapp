@@ -836,11 +836,19 @@ const HomePage = ({ user, onLogout }) => {
 
                 {/* Post Media */}
                 <div className="bg-gray-100">
-                  {post.mediaType === "video" ? (
-                    <video src={post.mediaUrl} controls className="w-full max-h-96 object-contain" />
-                  ) : (
-                    <img src={post.mediaUrl} alt="Post" className="w-full max-h-96 object-contain" />
-                  )}
+                  {(() => {
+                    // Resolve the correct media URL using our helper. This will proxy
+                    // Telegram file IDs through `/api/media/<id>` and normalise
+                    // relative `/uploads` paths. If no media exists, return null.
+                    const mediaUrl = getPostMediaUrl(post);
+                    if (!mediaUrl) return null;
+                    const isVideo = post.mediaType === 'video';
+                    return isVideo ? (
+                      <video src={mediaUrl} controls className="w-full max-h-96 object-contain" />
+                    ) : (
+                      <img src={mediaUrl} alt="Post" className="w-full max-h-96 object-contain" />
+                    );
+                  })()}
                 </div>
 
                 {/* Post Actions */}
