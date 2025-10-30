@@ -15,25 +15,7 @@ const API = "/api";
 const SettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [settings, setSettings] = useState({
-    // Mystery Match Privacy
-    allowMatching: true,
-    showInMatchPool: true,
-    allowGenderRevealRequests: true,
-    allowAgeRevealRequests: true,
-    allowPhotoRevealRequests: true,
-    
-    // Notifications
-    newMatchNotifications: true,
-    newMessageNotifications: true,
-    revealRequestNotifications: true,
-    matchExpiryNotifications: true,
-    emailNotifications: true,
-    
-    // Matching Preferences
-    autoAcceptMatches: false,
-    receivePremiumMatches: true
-  });
+  const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState({});
   const [showBlockedUsers, setShowBlockedUsers] = useState(false);
