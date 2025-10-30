@@ -4219,14 +4219,19 @@ async def accept_follow_request(userId: str, current_user: User = Depends(get_cu
         await db.notifications.insert_one(notification_for_requester.dict())
     
     # Create notification for ACCEPTER: "User started following you" with Follow back option
-    notification_for_accepter = Notification(
-        userId=current_user.id,  # Notification goes to accepter (person who accepted)
-        fromUserId=userId,  # From the requester who is now following
-        fromUsername=requester.get("username", "Unknown") if requester else "Unknown",
-        fromUserImage=requester.get("profileImage") if requester else None,
-        type="started_following"
-    )
-    await db.notifications.insert_one(notification_for_accepter.dict())
+    # ONLY if accepter is NOT already following the requester
+    # (If they already follow each other, no need for "follow back" notification)
+    accepter_already_follows_requester = userId in current_user.following
+    
+    if not accepter_already_follows_requester:
+        notification_for_accepter = Notification(
+            userId=current_user.id,  # Notification goes to accepter (person who accepted)
+            fromUserId=userId,  # From the requester who is now following
+            fromUsername=requester.get("username", "Unknown") if requester else "Unknown",
+            fromUserImage=requester.get("profileImage") if requester else None,
+            type="started_following"
+        )
+        await db.notifications.insert_one(notification_for_accepter.dict())
     
     return {"message": "Follow request accepted"}
 
