@@ -76,16 +76,8 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
   };
 
   const handleUsernameClick = async (userId, username) => {
-    try {
-      const response = await axios.get(`${API}/users/${userId}`);
-      if (response.data.isPrivate && response.data.id !== user.id) {
-        alert('This account is private');
-      } else {
-        window.location.href = `/profile/${userId}`;
-      }
-    } catch (error) {
-      window.location.href = `/profile/${userId}`;
-    }
+    // Direct navigation; Profile page handles privacy
+    window.location.href = `/profile/${userId}`;
   };
 
   const renderComment = (comment, isReply = false) => (
