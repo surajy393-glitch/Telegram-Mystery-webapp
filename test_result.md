@@ -299,6 +299,7 @@ test_plan:
     - "Admin Manual Verification Endpoint"
     - "Verification Status Endpoint"
     - "Include isVerified in Feed and Story Endpoints"
+    - "Followers/Following List Endpoints"
     - "VerifiedBadge Component"
     - "Display Verified Badge on MyProfilePage"
     - "Display Verified Badge on ProfilePage"
@@ -313,6 +314,7 @@ test_plan:
   frontend_testing_needed: true
   three_dot_menu_backend_complete: true
   luvhive_verified_backend_complete: true
+  followers_following_backend_complete: true
 
 agent_communication:
   - agent: "main"
