@@ -430,7 +430,9 @@ const ProfilePage = ({ user, onLogout }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setFollowersList(response.data.users || response.data || []);
+      // Backend returns {followers: [...]} or {following: [...]}
+      const listData = type === 'followers' ? response.data.followers : response.data.following;
+      setFollowersList(listData || []);
     } catch (error) {
       console.error(`Error fetching ${type}:`, error);
       alert(`Failed to load ${type}`);
