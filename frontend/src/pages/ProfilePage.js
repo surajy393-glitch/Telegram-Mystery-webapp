@@ -688,11 +688,21 @@ const ProfilePage = ({ user, onLogout }) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-pink-600">{viewingUser?.followersCount || 0}</p>
-                  <p className="text-sm text-gray-600">Followers</p>
+                  <p 
+                    className="text-sm text-gray-600 cursor-pointer hover:text-pink-600 transition-colors"
+                    onClick={() => handleShowFollowers('followers')}
+                  >
+                    Followers
+                  </p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-pink-600">{viewingUser?.followingCount || 0}</p>
-                  <p className="text-sm text-gray-600">Following</p>
+                  <p 
+                    className="text-sm text-gray-600 cursor-pointer hover:text-pink-600 transition-colors"
+                    onClick={() => handleShowFollowers('following')}
+                  >
+                    Following
+                  </p>
                 </div>
               </div>
 
