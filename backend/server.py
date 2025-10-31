@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 async def init_db():
     """Initialize PostgreSQL database connection"""
     try:
-        await db.init_db()
+        await db_postgres.init_db()
         logger.info("PostgreSQL database initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize PostgreSQL database: {e}")
@@ -48,7 +48,7 @@ async def init_db():
 async def create_tables():
     """Create PostgreSQL tables and indexes"""
     try:
-        await db.create_tables()
+        await db_postgres.create_tables()
         logger.info("PostgreSQL tables and indexes created successfully")
     except Exception as e:
         logger.error(f"Error creating PostgreSQL tables: {e}")
