@@ -169,8 +169,13 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       formDataToSend.append("username", formData.username);
       formDataToSend.append("bio", formData.bio);
       formDataToSend.append("country", formData.country);
-      if (formData.profileImage && formData.profileImage !== profile.profileImage) {
-        formDataToSend.append("profileImage", formData.profileImage);
+      if (formData.city) {
+        formDataToSend.append("city", formData.city);
+      }
+      
+      // Send actual file if user uploaded a new photo
+      if (profileImageFile) {
+        formDataToSend.append("profileImage", profileImageFile);
       }
 
       const response = await axios.put(`${API}/auth/profile`, formDataToSend, {
