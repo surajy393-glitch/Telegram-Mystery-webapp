@@ -19,7 +19,7 @@ import PostDetailPage from "@/pages/PostDetailPage";
 import ChatPage from "@/pages/ChatPage";
 import TelegramAuthHandler from "@/components/TelegramAuthHandler";
 import { Toaster } from "@/components/ui/toaster";
-import { getToken, getUser, setToken, setUser, clearAuth, getTelegramUserId } from "@/utils/telegramStorage";
+import { getToken, getUser, setToken, setUser as setStorageUser, clearAuth, getTelegramUserId } from "@/utils/telegramStorage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
