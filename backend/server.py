@@ -2442,7 +2442,7 @@ async def update_profile(
     bio: str = Form(None),
     country: str = Form(None),
     city: str = Form(None),
-    profileImage: str = Form(None), 
+    profileImage: Optional[UploadFile] = File(None),  # Changed to file upload
     current_user: User = Depends(get_current_user)
 ):
     update_data = {}
@@ -2487,8 +2487,24 @@ async def update_profile(
         update_data["country"] = country.strip()
     if city is not None:
         update_data["city"] = city.strip()
-    if profileImage is not None:
-        update_data["profileImage"] = profileImage
+    
+    # Handle profile photo upload
+    if profileImage and profileImage.filename:
+        # Save the uploaded file
+        file_extension = profileImage.filename.split('.')[-1]
+        unique_filename = f"{uuid4()}.{file_extension}"
+        file_path = f"/app/uploads/profiles/{unique_filename}"
+        
+        # Ensure uploads directory exists
+        os.makedirs("/app/uploads/profiles", exist_ok=True)
+        
+        # Save file
+        with open(file_path, "wb") as f:
+            content = await profileImage.read()
+            f.write(content)
+        
+        # Store the URL path that can be served by FastAPI
+        update_data["profileImage"] = f"/uploads/profiles/{unique_filename}"
         
         # Note: Posts and stories tables don't have userProfileImage column in PostgreSQL
         # Profile image is fetched via JOIN with users table when displaying posts/stories
