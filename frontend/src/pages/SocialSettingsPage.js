@@ -122,15 +122,14 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       return;
     }
 
-    // Try using just the slug directly (Telegram might construct the URL internally)
-    const invoiceObject = { slug: invoiceSlug };
-    console.log("Invoice object (slug only):", invoiceObject);
+    console.log("Attempting payment with slug:", invoiceSlug);
 
     // If inside Telegram and we have a valid invoice slug
-    if (canOpenInvoice && invoiceObject) {
+    if (canOpenInvoice) {
       try {
-        console.log("Calling openInvoice with slug:", invoiceObject);
-        tg.openInvoice(invoiceObject, (status) => {
+        // Try with just the slug first (recommended format)
+        console.log("Calling openInvoice with slug:", invoiceSlug);
+        tg.openInvoice(invoiceSlug, (status) => {
           console.log("Payment status:", status);
           // status can be 'paid', 'cancelled', or 'failed'
           if (status === "paid") {
@@ -148,8 +147,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
         alert(`Error opening payment: ${err.message}`);
       }
     } else {
-      console.log("Falling back to bot link");
-      console.log("Reason - canOpenInvoice:", canOpenInvoice, "invoiceObject:", invoiceObject);
+      console.log("Falling back to bot link - openInvoice not available");
     }
 
     // Fallback: open bot purchase link in new tab
