@@ -1258,13 +1258,15 @@ async def register_enhanced(
     password: str = Form(...),
     email: Optional[str] = Form(None),
     mobileNumber: Optional[str] = Form(None),
-    profilePhoto: Optional[UploadFile] = File(None),  # File upload, not string
+    # Accept both "profilePhoto" and "profileImage" from the frontend.
+    profilePhoto: Optional[UploadFile] = File(None),
+    profileImage: Optional[UploadFile] = File(None),
     bio: Optional[str] = Form(None),
     city: Optional[str] = Form(None),
-    interests: Optional[str] = Form(None),  # JSON string
+    interests: Optional[str] = Form(None),
     emailVerified: Optional[bool] = Form(None),
     mobileVerified: Optional[bool] = Form(None),
-    personalityAnswers: Optional[str] = Form(None),  # JSON string
+    personalityAnswers: Optional[str] = Form(None),
 ):
     """
     Enhanced registration with multipart form data support (for profile photo upload)
