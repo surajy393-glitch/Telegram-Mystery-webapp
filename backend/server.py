@@ -2177,8 +2177,8 @@ async def check_verification_status(current_user: User = Depends(get_current_use
         total_story_views = sum(story.get("views", 0) for story in stories)
         avg_story_views = total_story_views / len(stories) if len(stories) > 0 else 0
     
-    # Check violations
-    violations_count = await db.violations.count_documents({"userId": current_user.id})
+    # Check violations (webapp_violations table doesn't exist, use violations_count from user)
+    violations_count = user_data.get("violationsCount", 0)
     
     # Check profile completeness
     has_bio = bool(user_data.get("bio"))
