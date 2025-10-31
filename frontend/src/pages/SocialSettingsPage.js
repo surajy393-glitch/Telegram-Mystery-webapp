@@ -16,8 +16,15 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   // Fetch from env; fallback to empty string if not set
   const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || "Loveekisssbot";
-  const PREMIUM_INVOICE_SLUG = process.env.REACT_APP_PREMIUM_INVOICE_SLUG || "";
-  const PREMIUM_INVOICE_URL = process.env.REACT_APP_PREMIUM_INVOICE_URL || "";
+  
+  // Multi-tier premium invoice slugs
+  const PREMIUM_INVOICE_SLUGS = {
+    '1week': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_1WEEK || "",
+    '1month': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_1MONTH || "",
+    '6months': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_6MONTHS || "",
+    '12months': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_12MONTHS || ""
+  };
+  
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [settings, setSettings] = useState({
     privateProfile: false,
