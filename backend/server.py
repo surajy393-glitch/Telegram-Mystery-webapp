@@ -1430,7 +1430,8 @@ async def register_enhanced(
                 "website": ""
             },
             "interests": [],
-            "location": "",
+            # Store location as a dict so has_location check passes
+            "location": {"city": clean_city, "country": country.strip()},
             "lastUsernameChange": None
         }
         
