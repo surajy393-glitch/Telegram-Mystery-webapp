@@ -106,21 +106,25 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   const handleBuyPremiumTier = (tier) => {
     const tg = window.Telegram?.WebApp;
     const canOpenInvoice = tg && typeof tg.openInvoice === "function";
-    const invoiceUrl = PREMIUM_INVOICE_URLS[tier];
+    const invoiceSlug = PREMIUM_INVOICE_SLUGS[tier];
 
     // Debug logging
     console.log("=== Premium Purchase Debug ===");
     console.log("Tier:", tier);
     console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
     console.log("openInvoice available:", canOpenInvoice);
-    console.log("Invoice URL:", invoiceUrl);
+    console.log("Invoice Slug:", invoiceSlug);
 
-    // Validate URL
-    if (!invoiceUrl) {
-      console.error("Invalid invoice URL for tier:", tier);
+    // Validate slug
+    if (!invoiceSlug) {
+      console.error("Invalid invoice slug for tier:", tier);
       alert("Payment configuration error. Please contact support.");
       return;
     }
+
+    // Construct full URL from slug in JavaScript (avoids .env $ issues)
+    const invoiceUrl = `https://t.me/$${invoiceSlug}`;
+    console.log("Constructed Invoice URL:", invoiceUrl);
 
     // Use full URL for openInvoice
     const invoiceObject = { url: invoiceUrl };
