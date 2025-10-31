@@ -17,12 +17,12 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   // Fetch from env; fallback to empty string if not set
   const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || "Loveekisssbot";
   
-  // Multi-tier premium invoice URLS (full URLs work better than slugs)
-  const PREMIUM_INVOICE_URLS = {
-    '1week': process.env.REACT_APP_PREMIUM_INVOICE_URL_1WEEK || "",
-    '1month': process.env.REACT_APP_PREMIUM_INVOICE_URL_1MONTH || "",
-    '6months': process.env.REACT_APP_PREMIUM_INVOICE_URL_6MONTHS || "",
-    '12months': process.env.REACT_APP_PREMIUM_INVOICE_URL_12MONTHS || ""
+  // Multi-tier premium invoice slugs (store slugs only, construct URLs in JS)
+  const PREMIUM_INVOICE_SLUGS = {
+    '1week': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_1WEEK || "",
+    '1month': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_1MONTH || "",
+    '6months': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_6MONTHS || "",
+    '12months': process.env.REACT_APP_PREMIUM_INVOICE_SLUG_12MONTHS || ""
   };
   
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
