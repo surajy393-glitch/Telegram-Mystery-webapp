@@ -140,12 +140,22 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
     payload = payment.invoice_payload
     
     try:
-        # Extract duration from payload (format: premium_7d_<uid> or premium_30d_<uid>)
+        # Extract duration from payload (format: premium_7d_<uid> or premium_30d_<uid> or luvhive_premium_1month)
         parts = payload.split('_')
-        duration_str = parts[1]  # "7d" or "30d"
-        duration_days = int(duration_str.replace('d', ''))
         
-        # Activate premium in database
+        # Handle different payload formats
+        if 'month' in payload.lower():
+            duration_days = 30
+        elif 'week' in payload.lower() or '7d' in payload:
+            duration_days = 7
+        elif len(parts) > 1 and 'd' in parts[1]:
+            duration_str = parts[1]
+            duration_days = int(duration_str.replace('d', ''))
+        else:
+            # Default to 30 days for webapp purchases
+            duration_days = 30
+        
+        # Activate premium in PostgreSQL database (bot database)
         import datetime
         with reg._conn() as con, con.cursor() as cur:
             cur.execute("""
@@ -156,7 +166,30 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
             """, (duration_days, uid))
             con.commit()
         
-        # Also store payment record
+        # Also update MongoDB (webapp database) - CRITICAL FOR WEBAPP
+        try:
+            from motor.motor_asyncio import AsyncIOMotorClient
+            mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+            client = AsyncIOMotorClient(mongo_url)
+            db = client.luvhive
+            
+            # Update by telegramId
+            result = await db.users.update_one(
+                {"telegramId": str(uid)},
+                {"$set": {"isPremium": True}}
+            )
+            
+            if result.modified_count > 0:
+                logger.info(f"✅ MongoDB updated: isPremium=True for telegramId={uid}")
+            else:
+                logger.warning(f"⚠️ MongoDB user not found for telegramId={uid}")
+            
+            client.close()
+        except Exception as mongo_err:
+            logger.error(f"MongoDB update failed: {mongo_err}")
+            # Continue anyway - at least bot premium is activated
+        
+        # Store payment record
         with reg._conn() as con, con.cursor() as cur:
             cur.execute("""
                 INSERT INTO payments 
@@ -178,15 +211,17 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
             f"🎉 **Payment Successful!**\n\n"
             f"👑 You are now a Premium user for {duration_days} days!\n\n"
             f"**Premium Benefits Activated:**\n"
-            f"✅ Choose gender matching\n"
-            f"✅ Unlimited matches\n"
-            f"✅ Instant reveals\n"
-            f"✅ Advanced filters\n\n"
-            f"🎭 Try it now: /webapp or /mystery",
+            f"✅ Unlimited chats (webapp)\n"
+            f"✅ Photos, videos & voice notes\n"
+            f"✅ Choose gender matching (bot)\n"
+            f"✅ Age & city filters (bot)\n"
+            f"✅ Read receipts & typing indicators\n\n"
+            f"🌐 Use premium on webapp: /webapp\n"
+            f"🎭 Or try bot chat: /mystery",
             parse_mode='Markdown'
         )
         
-        logger.info(f"Premium activated for user {uid} - {duration_days} days")
+        logger.info(f"Premium activated for user {uid} - {duration_days} days (PostgreSQL + MongoDB)")
         
     except Exception as e:
         logger.error(f"Error processing payment for user {uid}: {e}")
