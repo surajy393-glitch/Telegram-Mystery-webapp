@@ -75,21 +75,19 @@ class Collection:
         """Insert single document"""
         pool = await get_pool()
         
-        # Valid PostgreSQL columns for webapp_users table
+        # Valid PostgreSQL columns for webapp_users table (actual columns from DB)
         valid_columns = {
-            'id', 'username', 'full_name', 'email', 'mobile_number', 'password',
-            'age', 'gender', 'bio', 'profile_photo_url',
-            'telegram_id', 'telegram_username', 'telegram_first_name', 
-            'telegram_last_name', 'telegram_photo_url', 'auth_method',
-            'is_premium', 'is_private', 'is_verified', 'verified_at',
-            'verification_pathway', 'is_founder', 'email_verified', 
-            'mobile_verified', 'violations_count',
-            'appear_in_search', 'allow_direct_messages', 'show_online_status',
-            'allow_tagging', 'allow_story_replies', 'show_vibe_score',
-            'push_notifications', 'email_notifications',
-            'country', 'city', 'interests', 'personality_answers',
-            'last_username_change', 'is_online', 'last_seen',
-            'created_at', 'updated_at'
+            'id', 'full_name', 'username', 'email', 'mobile_number', 'password',
+            'age', 'gender', 'city', 'interests', 'email_verified', 'mobile_verified',
+            'profile_photo_url', 'profile_photo_file_id', 'bio',
+            'is_private', 'is_verified', 'verify_status', 'verify_method',
+            'verified_name', 'verify_code', 'verify_code_expires_at',
+            'verify_code_photo_url', 'verify_photo_file',
+            'followers_count', 'following_count',
+            'created_at', 'updated_at', 'username_changed_at',
+            'telegram_id', 'is_premium', 'is_founder', 'violations_count',
+            'auth_method', 'verification_pathway', 'verified_at',
+            'country', 'is_online', 'last_seen'
         }
         
         # Field mappings from MongoDB/App names to PostgreSQL column names
