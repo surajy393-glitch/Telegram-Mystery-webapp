@@ -78,7 +78,7 @@ class Collection:
             print(f"Values: {values}")
             raise
     
-    async def find(self, filter_dict: Dict[str, Any] = None):
+    def find(self, filter_dict: Dict[str, Any] = None):
         """Find multiple documents - returns a cursor-like object"""
         if filter_dict is None:
             filter_dict = {}
