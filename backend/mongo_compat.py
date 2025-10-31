@@ -77,9 +77,9 @@ class Collection:
         
         # Convert camelCase keys to snake_case
         db_document = {}
+        has_custom_id = 'id' in document
+        
         for key, value in document.items():
-            if key == 'id':  # Skip id, let database generate it
-                continue
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
             # Convert lists/dicts to JSON
