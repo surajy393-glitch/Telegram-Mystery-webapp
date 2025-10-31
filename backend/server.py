@@ -2157,8 +2157,8 @@ async def check_verification_status(current_user: User = Depends(get_current_use
         created_at = datetime.fromisoformat(created_at)
     account_age_days = (datetime.now(timezone.utc) - created_at).days
     
-    # Count posts
-    posts_count = await db.posts.count_documents({"userId": current_user.id, "isArchived": {"$ne": True}})
+    # Count posts (isArchived field doesn't exist in PostgreSQL schema)
+    posts_count = await db.posts.count_documents({"userId": current_user.id})
     
     # Count followers
     followers_count = len(user_data.get("followers", []))
