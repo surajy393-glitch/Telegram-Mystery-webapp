@@ -1203,22 +1203,41 @@ async def register(user_data: UserRegister):
     }
 
 @api_router.post("/auth/register-enhanced")
-async def register_enhanced(user_data: EnhancedUserRegister):
+async def register_enhanced(
+    fullName: str = Form(...),
+    username: str = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    country: str = Form(...),
+    password: str = Form(...),
+    email: Optional[str] = Form(None),
+    mobileNumber: Optional[str] = Form(None),
+    profilePhoto: Optional[str] = Form(None),
+    bio: Optional[str] = Form(None),
+    city: Optional[str] = Form(None),
+    interests: Optional[str] = Form(None),  # JSON string
+    emailVerified: Optional[bool] = Form(None),
+    mobileVerified: Optional[bool] = Form(None),
+    personalityAnswers: Optional[str] = Form(None),  # JSON string
+):
     """
-    Enhanced registration with mobile number support
+    Enhanced registration with multipart form data support (for profile photo upload)
     """
+    import json
+    
     try:
+        # Parse JSON strings
+        clean_interests = json.loads(interests) if interests else []
+        personality_answers = json.loads(personalityAnswers) if personalityAnswers else None
+        
         # Validate and clean input
-        clean_username = user_data.username.strip()
-        clean_fullname = user_data.fullName.strip()
-        clean_email = user_data.email.strip().lower() if user_data.email else None
-        clean_mobile = user_data.mobileNumber.strip() if user_data.mobileNumber else None
-        clean_bio = user_data.bio.strip() if user_data.bio else ""
-        # Handle both profileImage and profilePhoto field names
-        clean_profile_image = user_data.profileImage or user_data.profilePhoto if (user_data.profileImage or user_data.profilePhoto) else None
-        clean_city = user_data.city.strip() if user_data.city else None
-        clean_interests = user_data.interests if user_data.interests else []
-        personality_answers = user_data.personalityAnswers if user_data.personalityAnswers else None
+        clean_username = username.strip()
+        clean_fullname = fullName.strip()
+        clean_email = email.strip().lower() if email else None
+        clean_mobile = mobileNumber.strip() if mobileNumber else None
+        clean_bio = bio.strip() if bio else ""
+        clean_profile_image = profilePhoto if profilePhoto else None
+        clean_city = city.strip() if city else None
         
         if not clean_username:
             raise HTTPException(status_code=400, detail="Username cannot be empty")
