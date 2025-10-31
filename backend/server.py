@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
@@ -23,8 +22,10 @@ import base64
 import hmac
 import hashlib
 from urllib.parse import parse_qsl
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import asyncpg
+
+# Import PostgreSQL helper
+import db_postgres as db
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
