@@ -43,29 +43,14 @@ async def init_db():
         logger.error(f"Failed to initialize PostgreSQL database: {e}")
         raise
 
-# Create database indexes for better performance
-async def create_indexes():
-    """Create database indexes for better performance"""
+# Create database tables and indexes for PostgreSQL
+async def create_tables():
+    """Create PostgreSQL tables and indexes"""
     try:
-        # Index for user search
-        await db.users.create_index([
-            ("username", "text"),
-            ("fullName", "text"),
-            ("bio", "text")
-        ], name="user_search_index")
-        
-        # Index for user lookup
-        await db.users.create_index("username")
-        await db.users.create_index("id")
-        
-        # Index for posts
-        await db.posts.create_index([("userId", 1), ("createdAt", -1)])
-        await db.posts.create_index([("caption", "text")], name="post_search_index")
-        await db.posts.create_index("createdAt")
-        
-        logger.info("Database indexes created successfully")
+        await db.create_tables()
+        logger.info("PostgreSQL tables and indexes created successfully")
     except Exception as e:
-        logger.error(f"Error creating indexes: {e}")
+        logger.error(f"Error creating PostgreSQL tables: {e}")
 
 # Create the main app without a prefix
 app = FastAPI()
