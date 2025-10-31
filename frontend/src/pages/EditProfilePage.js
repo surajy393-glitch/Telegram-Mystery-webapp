@@ -103,8 +103,9 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
         username: mergedData.username || "",
         bio: mergedData.bio || "",
         country: mergedData.country || "",
-        profileImage: mergedData.profileImage || ""
+        city: mergedData.city || ""
       });
+      setProfileImagePreview(mergedData.profileImage || "");
     } catch (error) {
       console.error("❌ EditProfile: Error fetching profile:", error);
       console.error("   Error status:", error.response?.status);
