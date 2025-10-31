@@ -2183,7 +2183,12 @@ async def check_verification_status(current_user: User = Depends(get_current_use
     # Check profile completeness
     has_bio = bool(user_data.get("bio"))
     has_profile_pic = bool(user_data.get("profileImage"))
-    has_location = bool(user_data.get("location", {}).get("city"))
+    # Accept either a location dict, a city field or a country field
+    has_location = bool(
+        (isinstance(user_data.get("location"), dict) and user_data["location"].get("city"))
+        or user_data.get("city")
+        or user_data.get("country")
+    )
     
     # Check personality questions
     has_personality = bool(user_data.get("personalityAnswers"))
