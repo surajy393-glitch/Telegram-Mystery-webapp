@@ -15,7 +15,7 @@ const API = "/api";
 const SocialSettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || 'LuvHiveBot';
-  const PREMIUM_INVOICE_SLUG = process.env.REACT_APP_PREMIUM_INVOICE_SLUG || 'luvhive_premium_month';
+  const PREMIUM_INVOICE_SLUG = process.env.REACT_APP_PREMIUM_INVOICE_SLUG || ""; // leave empty if you haven't created one
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [settings, setSettings] = useState({
     privateProfile: false,
