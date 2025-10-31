@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
+import { getToken } from "@/utils/telegramStorage";
   ArrowLeft, 
   Search, 
   TrendingUp, 
@@ -78,7 +79,7 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       console.log('Fetching trending content with token:', token ? 'present' : 'missing');
       
       const response = await axios.get(`${API}/search/trending`, {
@@ -100,7 +101,7 @@ const SearchPage = ({ user, onLogout }) => {
 
   const fetchExplorePosts = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       console.log('🔍 Fetching explore posts');
       
       const response = await axios.get(`${API}/search/explore`, {
@@ -132,7 +133,7 @@ const SearchPage = ({ user, onLogout }) => {
     setShowSuggestions(false);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       
       if (!token) {
         console.error('❌ No token found in localStorage');
@@ -161,7 +162,7 @@ const SearchPage = ({ user, onLogout }) => {
     } catch (error) {
       console.error("❌ Error searching:", error);
       console.error("❌ Error response:", error.response?.data);
-      console.error("❌ Token present:", !!localStorage.getItem("token"));
+      console.error("❌ Token present:", !!getToken());
       alert(`Search failed: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
@@ -176,7 +177,7 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/search/suggestions?q=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -222,7 +223,7 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         console.error("No authentication token found");
         alert("Please log in to follow users");

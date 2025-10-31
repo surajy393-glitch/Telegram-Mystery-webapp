@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle, Zap } from 'lucide-react';
 import {
+import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -44,7 +45,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
 
   const fetchUserSettings = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -73,7 +74,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     setSettings({ ...settings, [key]: newValue });
     
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       
       // Map frontend setting key to backend setting key
       const settingMap = {

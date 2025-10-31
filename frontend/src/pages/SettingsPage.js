@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield, ShieldCheck, Eye, EyeOff, Search, MessageCircle, Wifi, Tag, MessageSquare, Zap, Bell, BellOff, Mail, MailX, Download, HelpCircle, LogOut, X, UserMinus } from "lucide-react";
 import {
+import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -25,7 +26,7 @@ const SettingsPage = ({ user, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -60,7 +61,7 @@ const SettingsPage = ({ user, onLogout }) => {
     
     setUpdating(prev => ({ ...prev, [settingKey]: true }));
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const newValue = !settings[settingKey];
       
       await axios.put(`${API}/auth/settings`, {
@@ -80,7 +81,7 @@ const SettingsPage = ({ user, onLogout }) => {
 
   const handleDownloadData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/auth/download-data`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'

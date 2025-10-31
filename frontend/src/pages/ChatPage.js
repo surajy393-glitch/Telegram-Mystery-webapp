@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Crown } from "lucide-react";
 import axios from "axios";
 import {
+import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -41,7 +42,7 @@ const ChatPage = ({ user }) => {
 
   const fetchChatUser = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/users/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -54,7 +55,7 @@ const ChatPage = ({ user }) => {
 
   const fetchMessages = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/chat/messages/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -77,7 +78,7 @@ const ChatPage = ({ user }) => {
     if (!newMessage.trim()) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/chat/send`, 
         `receiverId=${userId}&message=${encodeURIComponent(newMessage)}`,
         {

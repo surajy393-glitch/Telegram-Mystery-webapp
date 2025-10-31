@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Grid, Bookmark, Crown, Settings, Shield } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import axios from "axios";
+import { getToken } from "@/utils/telegramStorage";
 
 // Use a fallback so API calls don't break when the env var is missing
 const API = "/api";
@@ -43,7 +44,7 @@ const MyProfilePage = ({ user, onLogout }) => {
 
   const fetchProfileData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       console.log("🔑 Fetching profile data with token:", token ? "Present" : "Missing");
       const headers = { Authorization: `Bearer ${token}` };
 
@@ -118,7 +119,7 @@ const MyProfilePage = ({ user, onLogout }) => {
     setLoadingFollowers(true);
     
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/users/${profile.id}/followers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -138,7 +139,7 @@ const MyProfilePage = ({ user, onLogout }) => {
     setLoadingFollowing(true);
     
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/users/${profile.id}/following`, {
         headers: { Authorization: `Bearer ${token}` }
       });

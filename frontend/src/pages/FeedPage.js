@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus, Bell, Search, User, MoreVertical, Bookmark, UserIcon as UserIconLucide, AlertCircle, Trash2, Download } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
@@ -83,7 +84,7 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchNotificationCount = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`/api/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -278,7 +279,7 @@ const FeedPage = ({ user, onLogout }) => {
     if (mentions.length > 0) {
       try {
         // Send notifications to mentioned users
-        const token = localStorage.getItem("token");
+        const token = getToken();
         await axios.post(`/api/notifications/mentions`, {
           mentionedUsernames: mentions,
           type: 'story_mention',
@@ -679,7 +680,7 @@ const FeedPage = ({ user, onLogout }) => {
                               <button onClick={async () => { 
                                 try {
                                   await axios.post(`/api/users/${post.userId}/follow`, {}, {
-                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                    headers: { Authorization: `Bearer ${getToken()}` }
                                   });
                                   alert('Following user');
                                   setOpenPostMenu(null);
@@ -693,7 +694,7 @@ const FeedPage = ({ user, onLogout }) => {
                               <button onClick={async () => { 
                                 try {
                                   await axios.post(`/api/users/${post.userId}/unfollow`, {}, {
-                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                    headers: { Authorization: `Bearer ${getToken()}` }
                                   });
                                   alert('Unfollowed user');
                                   setOpenPostMenu(null);
@@ -707,7 +708,7 @@ const FeedPage = ({ user, onLogout }) => {
                               <button onClick={async () => { 
                                 try {
                                   await axios.post(`/api/users/${post.userId}/mute`, {}, {
-                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                    headers: { Authorization: `Bearer ${getToken()}` }
                                   });
                                   alert('User muted. You won\'t see their posts anymore.');
                                   setOpenPostMenu(null);
@@ -722,7 +723,7 @@ const FeedPage = ({ user, onLogout }) => {
                                 if (window.confirm('Block this user?')) {
                                   try {
                                     await axios.post(`/api/users/${post.userId}/block`, {}, {
-                                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                      headers: { Authorization: `Bearer ${getToken()}` }
                                     });
                                     alert('User blocked');
                                     setOpenPostMenu(null);
@@ -740,7 +741,7 @@ const FeedPage = ({ user, onLogout }) => {
                                   try {
                                     await axios.post(`/api/posts/${post.id}/report`, 
                                       { reason }, 
-                                      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }}
+                                      { headers: { Authorization: `Bearer ${getToken()}` }}
                                     );
                                     alert('Report submitted');
                                     setOpenPostMenu(null);
@@ -918,7 +919,7 @@ const FeedPage = ({ user, onLogout }) => {
                   if (lastWord.startsWith('@') && lastWord.length > 1) {
                     const searchTerm = lastWord.substring(1);
                     try {
-                      const token = localStorage.getItem("token");
+                      const token = getToken();
                       const response = await axios.get(`/api/search?query=${searchTerm}`, {
                         headers: { Authorization: `Bearer ${token}` }
                       });
@@ -1058,7 +1059,7 @@ const FeedPage = ({ user, onLogout }) => {
                           onClick={async () => {
                             if (window.confirm('Delete this story?')) {
                               try {
-                                const token = localStorage.getItem("token");
+                                const token = getToken();
                                 const storyId = viewingStories.stories[currentStoryIndex]?.id;
                                 await axios.delete(`/api/stories/${storyId}`, {
                                   headers: { Authorization: `Bearer ${token}` }
@@ -1082,7 +1083,7 @@ const FeedPage = ({ user, onLogout }) => {
                         <button 
                           onClick={async () => {
                             try {
-                              const token = localStorage.getItem("token");
+                              const token = getToken();
                               const storyId = viewingStories.stories[currentStoryIndex]?.id;
                               await axios.post(`/api/stories/${storyId}/archive`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
@@ -1170,7 +1171,7 @@ const FeedPage = ({ user, onLogout }) => {
                         <button 
                           onClick={async () => {
                             try {
-                              const token = localStorage.getItem("token");
+                              const token = getToken();
                               await axios.post(`/api/users/${viewingStories.userId}/mute`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                               });
@@ -1258,7 +1259,7 @@ const FeedPage = ({ user, onLogout }) => {
                   <button
                     onClick={async () => {
                       try {
-                        const token = localStorage.getItem("token");
+                        const token = getToken();
                         const storyId = viewingStories.stories[currentStoryIndex]?.id;
                         const isLiked = storyLikes[storyId];
                         
@@ -1353,7 +1354,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "I just don't like it" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1374,7 +1375,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Harassment or bullying" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1395,7 +1396,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Self-harm or dangerous content" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1416,7 +1417,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Hate speech or violence" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1437,7 +1438,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Illegal activities" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1458,7 +1459,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Adult content" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1479,7 +1480,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Spam or scam" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1500,7 +1501,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Misinformation" }, 
                       { headers: { Authorization: `Bearer ${token}` }}
@@ -1521,7 +1522,7 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
                     await axios.post(`/api/stories/${reportingStory?.id}/report`, 
                       { reason: "Copyright violation" }, 
                       { headers: { Authorization: `Bearer ${token}` }}

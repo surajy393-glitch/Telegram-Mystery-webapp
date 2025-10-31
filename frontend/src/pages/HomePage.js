@@ -7,6 +7,7 @@ import HashtagText from "@/components/HashtagText";
 import axios from "axios";
 import { getPostMediaUrl } from '@/utils/media';
 import {
+import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -123,7 +124,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const fetchNotificationCount = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -135,7 +136,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const fetchFeed = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const headers = { Authorization: `Bearer ${token}` };
 
       const [storiesRes, postsRes] = await Promise.all([
@@ -174,7 +175,7 @@ const HomePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/create`, newPost, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -194,7 +195,7 @@ const HomePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/stories/create`, newStory, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -209,7 +210,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleLike = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.post(`${API}/posts/${postId}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -240,7 +241,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleSavePost = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${postId}/save`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -332,7 +333,7 @@ const HomePage = ({ user, onLogout }) => {
     if (!storyToDelete) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.delete(`${API}/stories/${storyToDelete}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -413,7 +414,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleUnfollowFromPost = async (postUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${postUserId}/unfollow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -427,7 +428,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleFollowFromPost = async (postUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${postUserId}/follow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -441,7 +442,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleMuteUser = async (postUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${postUserId}/mute`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -456,7 +457,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleBlockUser = async (postUserId) => {
     if (window.confirm("Are you sure you want to block this user? They won't be able to see your posts or follow you.")) {
       try {
-        const token = localStorage.getItem("token");
+        const token = getToken();
         await axios.post(`${API}/users/${postUserId}/block`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -473,7 +474,7 @@ const HomePage = ({ user, onLogout }) => {
     if (!reportingPost) return;
     
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${reportingPost.id}/report`, 
         { reason }, 
         {
@@ -494,7 +495,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleArchivePost = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${postId}/archive`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -507,7 +508,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleHideLikes = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${postId}/hide-likes`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -519,7 +520,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleToggleComments = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${postId}/toggle-comments`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -533,7 +534,7 @@ const HomePage = ({ user, onLogout }) => {
     if (!editingPost) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const formData = new FormData();
       formData.append("caption", editCaption);
       
@@ -555,7 +556,7 @@ const HomePage = ({ user, onLogout }) => {
     if (!deletingPost) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.delete(`${API}/posts/${deletingPost}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -571,7 +572,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const handlePinPost = async (postId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/posts/${postId}/pin`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });

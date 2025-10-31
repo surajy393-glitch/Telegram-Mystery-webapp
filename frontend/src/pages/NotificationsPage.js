@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
 import axios from "axios";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
@@ -39,7 +40,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -58,7 +59,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleAcceptFollowRequest = async (fromUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${fromUserId}/accept-follow-request`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -75,7 +76,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleRejectFollowRequest = async (fromUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${fromUserId}/reject-follow-request`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -91,7 +92,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleFollowBack = async (fromUserId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${fromUserId}/follow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });

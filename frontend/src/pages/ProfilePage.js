@@ -6,6 +6,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import axios from "axios";
 import { getPostMediaUrl as normalizePostMediaUrl } from "@/utils/media";
 import {
+import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -160,7 +161,7 @@ const ProfilePage = ({ user, onLogout }) => {
     console.log("=== fetchAccountInfo CALLED with ID:", userId);
     
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const url = `${API}/users/${userId}/account-info`;
       console.log("Fetching from URL:", url);
       
@@ -185,7 +186,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -199,7 +200,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/users/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -211,7 +212,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchUserProfile = async (targetUserId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const headers = { Authorization: `Bearer ${token}` };
       let response;
       try {
@@ -239,7 +240,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchUserPosts = async (accountId, username) => {
     setPostsLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const headers = { Authorization: `Bearer ${token}` };
       
       // 1. Try to load posts via the normal endpoint (now accepts UUID or username)
@@ -287,7 +288,7 @@ const ProfilePage = ({ user, onLogout }) => {
       if (error.response?.status === 500 || error.response?.status === 404) {
         console.warn("Primary endpoints failed, attempting feed fallback");
         try {
-          const token = localStorage.getItem('token');
+          const token = getToken();
           const headers = { Authorization: `Bearer ${token}` };
           const feedResp = await axios.get(`${API}/posts/feed`, { headers });
           const feedPosts = Array.isArray(feedResp.data.posts) ? feedResp.data.posts : [];
@@ -318,7 +319,7 @@ const ProfilePage = ({ user, onLogout }) => {
     
     setShowVibeCompatibility(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       console.log(`Fetching vibe compatibility for user: ${viewingUser.id}`);
       
       const response = await axios.get(`${API}/auth/calculate-compatibility/${viewingUser.id}`, {
@@ -338,7 +339,7 @@ const ProfilePage = ({ user, onLogout }) => {
     if (!viewingUser) return;
     
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${viewingUser.id}/block`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -357,7 +358,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const handleHideStory = async () => {
     if (!viewingUser) return;
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await axios.post(`${API}/users/${viewingUser.id}/hide-story`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -421,7 +422,7 @@ const ProfilePage = ({ user, onLogout }) => {
     setFollowersLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const endpoint = type === 'followers' 
         ? `${API}/users/${viewingUser?.id}/followers` 
         : `${API}/users/${viewingUser?.id}/following`;
@@ -448,7 +449,7 @@ const ProfilePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         console.error("No authentication token found");
         return;

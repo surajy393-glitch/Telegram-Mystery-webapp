@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
@@ -44,7 +45,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         console.error("❌ No token found, redirecting to login");
         navigate("/login");
@@ -119,7 +120,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
 
   const checkUsernameChange = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/auth/can-change-username`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -156,7 +157,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const formDataToSend = new FormData();
       
       formDataToSend.append("fullName", formData.fullName);
@@ -180,7 +181,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       
       // Update app state by calling onLogin with existing token and updated user
       if (onLogin) {
-        const currentToken = localStorage.getItem("token");
+        const currentToken = getToken();
         onLogin(currentToken, updatedUser);
       }
 
