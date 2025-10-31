@@ -1310,6 +1310,11 @@ async def register_enhanced(user_data: EnhancedUserRegister):
             "isOnline": True,
             "lastSeen": datetime.now(timezone.utc).isoformat(),
             
+            # Additional fields from frontend
+            "city": clean_city,
+            "interests": clean_interests,
+            "personalityAnswers": personality_answers,
+            
             # Privacy Controls
             "publicProfile": True,
             "appearInSearch": True,
