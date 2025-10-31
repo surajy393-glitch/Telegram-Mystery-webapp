@@ -54,7 +54,6 @@ function App() {
     setToken(token);
     setUser(userData);
     setIsAuthenticated(true);
-    setUser(userData);
     console.log("✅ User state updated, profileImage:", userData?.profileImage);
   };
 
