@@ -95,7 +95,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   };
 
   const handleBuyPremiumStars = () => {
-    // Check Telegram WebApp context and openInvoice availability
+    // Only attempt openInvoice if we have a slug and the WebApp API is present
     if (
       window.Telegram &&
       window.Telegram.WebApp &&
@@ -103,25 +103,24 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       PREMIUM_INVOICE_SLUG
     ) {
       try {
-        // Attempt to open the invoice by slug
-        window.Telegram.WebApp.openInvoice(PREMIUM_INVOICE_SLUG, (status) => {
-          // status: 'paid' | 'cancelled' | 'failed'
+        // Correct usage: pass an object with the slug property
+        window.Telegram.WebApp.openInvoice({ slug: PREMIUM_INVOICE_SLUG }, (status) => {
+          // status can be 'paid', 'cancelled', or 'failed'
           if (status === 'paid') {
             console.log('✅ Premium payment successful!');
-            // Optionally refresh user data to update premium status
+            // Optionally refetch /auth/me here to update premium status
             window.location.reload();
           } else {
-            console.log(`❌ Payment status: ${status}`);
+            console.log(`Payment status: ${status}`);
           }
         });
         return;
       } catch (err) {
-        // fall through to fallback
         console.warn("openInvoice failed, redirecting to bot:", err);
       }
     }
-    // Fallback: open your bot for purchase
-    window.location.href = `https://t.me/${BOT_USERNAME}?start=premium_web`;
+    // Fallback: open the bot in a new tab for payment
+    window.open(`https://t.me/${BOT_USERNAME}?start=premium_web`, "_blank");
   };
 
   if (loading) {
