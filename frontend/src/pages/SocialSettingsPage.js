@@ -94,6 +94,29 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     }
   };
 
+  const handleBuyPremiumStars = () => {
+    // If the app runs inside Telegram Web/Mini App, use openInvoice
+    if (
+      window.Telegram &&
+      window.Telegram.WebApp &&
+      typeof window.Telegram.WebApp.openInvoice === "function"
+    ) {
+      window.Telegram.WebApp.openInvoice(PREMIUM_INVOICE_SLUG, (status) => {
+        // Optional: refresh premium status on success
+        if (status === 'paid') {
+          console.log('✅ Premium payment successful!');
+          // Optionally refresh user data to update premium status
+          window.location.reload();
+        } else if (status === 'cancelled') {
+          console.log('❌ Premium payment cancelled');
+        }
+      });
+    } else {
+      // Fallback: open your bot to handle payment
+      window.location.href = `https://t.me/${BOT_USERNAME}?start=premium_web`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
