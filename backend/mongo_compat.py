@@ -223,12 +223,52 @@ class Collection:
             raise
     
     def _snake_to_camel(self, data: Dict) -> Dict:
-        """Convert snake_case keys to camelCase"""
+        """Convert snake_case keys to camelCase with special mappings"""
+        # Special field mappings for compatibility
+        field_mappings = {
+            'password': 'password_hash',  # PostgreSQL uses 'password', MongoDB used 'password_hash'
+            'full_name': 'fullName',
+            'profile_photo_url': 'profileImage',
+            'telegram_id': 'telegramId',
+            'telegram_username': 'telegramUsername',
+            'telegram_first_name': 'telegramFirstName',
+            'telegram_last_name': 'telegramLastName',
+            'telegram_photo_url': 'telegramPhotoUrl',
+            'auth_method': 'authMethod',
+            'is_premium': 'isPremium',
+            'is_private': 'isPrivate',
+            'is_verified': 'isVerified',
+            'verified_at': 'verifiedAt',
+            'verification_pathway': 'verificationPathway',
+            'is_founder': 'isFounder',
+            'email_verified': 'emailVerified',
+            'mobile_verified': 'phoneVerified',
+            'violations_count': 'violationsCount',
+            'mobile_number': 'mobileNumber',
+            'appear_in_search': 'appearInSearch',
+            'allow_direct_messages': 'allowDirectMessages',
+            'show_online_status': 'showOnlineStatus',
+            'allow_tagging': 'allowTagging',
+            'allow_story_replies': 'allowStoryReplies',
+            'show_vibe_score': 'showVibeScore',
+            'push_notifications': 'pushNotifications',
+            'email_notifications': 'emailNotifications',
+            'last_username_change': 'lastUsernameChange',
+            'is_online': 'isOnline',
+            'last_seen': 'lastSeen',
+            'created_at': 'createdAt',
+            'updated_at': 'updatedAt'
+        }
+        
         result = {}
         for key, value in data.items():
-            # Convert snake_case to camelCase
-            parts = key.split('_')
-            camel_key = parts[0] + ''.join(word.capitalize() for word in parts[1:])
+            # Use special mapping if available
+            if key in field_mappings:
+                camel_key = field_mappings[key]
+            else:
+                # Convert snake_case to camelCase
+                parts = key.split('_')
+                camel_key = parts[0] + ''.join(word.capitalize() for word in parts[1:])
             result[camel_key] = value
         return result
 
