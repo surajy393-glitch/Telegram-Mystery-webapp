@@ -236,8 +236,7 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
             f"✅ Choose gender matching (bot)\n"
             f"✅ Age & city filters (bot)\n"
             f"✅ Read receipts & typing indicators\n\n"
-            f"🌐 Use premium on webapp: /webapp\n"
-            f"🤖 Or try bot features: /start",
+            f"🌐 Use premium features: /webapp",
             parse_mode='Markdown'
         )
         
