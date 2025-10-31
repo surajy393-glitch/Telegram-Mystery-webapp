@@ -130,6 +130,45 @@ const SocialSettingsPage = ({ user, onLogout }) => {
           </svg>
         </button>
 
+        {/* Premium Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <Zap className="text-pink-600" size={24} />
+            <h2 className="text-lg font-semibold">Premium Membership</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-3">
+            Unlock everything LuvHive has to offer with Premium:
+          </p>
+          <ul className="list-disc list-inside text-sm text-gray-700 mb-4 space-y-1">
+            <li>Start <strong>unlimited conversations</strong> and send as many messages as you like</li>
+            <li>Share <strong>photos, videos and voice notes</strong> in chat</li>
+            <li>See <strong>read receipts</strong> and <strong>typing indicators</strong></li>
+            <li><strong>Priority placement</strong> in message requests</li>
+            <li>Use <strong>gender, age &amp; city filters</strong> in anonymous chat (Telegram bot)</li>
+          </ul>
+          <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
+            {/* Deep link for Telegram app */}
+            <a
+              href={`tg://resolve?domain=${BOT_USERNAME}&start=premium_web`}
+              className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white py-2 px-4 rounded-md text-center"
+            >
+              Buy Premium with Stars
+            </a>
+            {/* Fallback for browsers where tg:// isn't supported */}
+            <a
+              href={`https://t.me/${BOT_USERNAME}?start=premium_web`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 border border-pink-500 text-pink-600 py-2 px-4 rounded-md text-center"
+            >
+              Open in Telegram
+            </a>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            Prices start from <strong>250 Stars ($3.99)</strong> for 1 month. Payments are processed via Telegram Stars, and your Premium status is synced across both the bot and webapp.
+          </p>
+        </div>
+
         {/* Privacy Settings */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center space-x-3 mb-4">
