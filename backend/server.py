@@ -1118,11 +1118,54 @@ async def get_current_user(authorization: str = Header(None)):
     except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-    user = await db_postgres.get_user_by_id(user_id)
-    if user is None:
+    user_data = await db_postgres.get_user_by_id(user_id)
+    if user_data is None:
         raise HTTPException(status_code=401, detail="User not found")
     
-    return User(**user)
+    # Convert PostgreSQL snake_case to camelCase and integer ID to string
+    user_dict = {
+        "id": str(user_data["id"]),  # Convert int to string
+        "fullName": user_data["full_name"],
+        "username": user_data["username"],
+        "age": user_data["age"],
+        "gender": user_data["gender"],
+        "password_hash": user_data.get("password"),
+        "email": user_data.get("email"),
+        "mobileNumber": user_data.get("mobile_number"),
+        "bio": user_data.get("bio", ""),
+        "profileImage": user_data.get("profile_photo_url"),
+        "telegramId": user_data.get("telegram_id"),
+        "authMethod": user_data.get("auth_method", "password"),
+        "isPremium": user_data.get("is_premium", False),
+        "isPrivate": user_data.get("is_private", False),
+        "isVerified": user_data.get("is_verified", False),
+        "verifiedAt": user_data.get("verified_at"),
+        "verificationPathway": user_data.get("verification_pathway"),
+        "isFounder": user_data.get("is_founder", False),
+        "emailVerified": user_data.get("email_verified", False),
+        "phoneVerified": user_data.get("mobile_verified", False),
+        "violationsCount": user_data.get("violations_count", 0),
+        "publicProfile": True,  # Not in PostgreSQL, default
+        "appearInSearch": True,  # Not in PostgreSQL, default
+        "allowDirectMessages": True,  # Not in PostgreSQL, default
+        "showOnlineStatus": user_data.get("is_online", True),
+        "allowTagging": True,  # Not in PostgreSQL, default
+        "allowStoryReplies": True,  # Not in PostgreSQL, default
+        "showVibeScore": True,  # Not in PostgreSQL, default
+        "pushNotifications": True,  # Not in PostgreSQL, default
+        "emailNotifications": True,  # Not in PostgreSQL, default
+        "followers": [],  # TODO: fetch from relationship table
+        "following": [],  # TODO: fetch from relationship table
+        "savedPosts": [],  # TODO: fetch from relationship table
+        "blockedUsers": [],  # TODO: fetch from relationship table
+        "mutedUsers": [],  # TODO: fetch from relationship table
+        "hiddenStoryUsers": [],  # TODO: fetch from relationship table
+        "lastUsernameChange": user_data.get("username_changed_at"),
+        "country": user_data.get("country"),
+        "createdAt": user_data.get("created_at", datetime.utcnow()),
+    }
+    
+    return User(**user_dict)
 
 # Authentication Routes
 @api_router.post("/auth/register")
