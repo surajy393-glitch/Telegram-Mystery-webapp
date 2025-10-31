@@ -124,18 +124,16 @@ const SocialSettingsPage = ({ user, onLogout }) => {
 
     // Build proper invoice URL: https://t.me/invoice/<slug>
     const invoiceUrl = `https://t.me/invoice/${invoiceSlug}`;
-    console.log("Constructed Invoice URL:", invoiceUrl);
+    console.log("Invoice URL:", invoiceUrl);
 
-    // If inside Telegram and we have a valid invoice URL
+    // If inside Telegram and we have a valid invoice
     if (canOpenInvoice && invoiceUrl) {
       try {
-        // Pass as object with 'url' property
-        console.log("Calling openInvoice with URL object:", { url: invoiceUrl });
-        tg.openInvoice({ url: invoiceUrl }, (status) => {
+        // Pass URL string directly with 'url' mode (not as object!)
+        console.log("Calling openInvoice with URL string and 'url' mode");
+        tg.openInvoice(invoiceUrl, 'url', (status) => {
           console.log("Payment status:", status);
-          // status can be 'paid', 'cancelled', or 'failed'
           if (status === "paid") {
-            // Refresh to re-fetch isPremium from /auth/me
             window.location.reload();
           } else if (status === "cancelled") {
             alert("Payment was cancelled. You can try again.");
