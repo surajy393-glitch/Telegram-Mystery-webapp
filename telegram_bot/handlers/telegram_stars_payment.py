@@ -148,10 +148,15 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
         logger.info(f"Payment received - Payload: {payload}, Total Amount: {payment.total_amount} Stars")
         
         # Handle different payload formats
-        if 'month' in payload.lower():
-            duration_days = 30
-        elif 'week' in payload.lower() or '7d' in payload:
+        # New payloads: luvhive_premium_1week, luvhive_premium_1month, luvhive_premium_6months, luvhive_premium_12months
+        if 'week' in payload.lower() or '7d' in payload:
             duration_days = 7
+        elif '12months' in payload.lower() or '12month' in payload.lower() or 'year' in payload.lower():
+            duration_days = 365
+        elif '6months' in payload.lower() or '6month' in payload.lower():
+            duration_days = 180
+        elif 'month' in payload.lower():
+            duration_days = 30
         elif len(parts) > 1 and 'd' in parts[1]:
             duration_str = parts[1]
             duration_days = int(duration_str.replace('d', ''))
