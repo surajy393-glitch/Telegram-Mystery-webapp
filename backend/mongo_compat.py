@@ -148,11 +148,10 @@ class Collection:
             if db_key not in valid_columns:
                 continue
             
-            # Convert lists/dicts to JSON
+            # Convert lists/dicts to JSON (but keep datetime objects as-is for PostgreSQL)
             if isinstance(value, (list, dict)):
                 value = json.dumps(value)
-            elif isinstance(value, datetime):
-                value = value.isoformat()
+            # Don't convert datetime - PostgreSQL handles it directly
             
             db_document[db_key] = value
         
