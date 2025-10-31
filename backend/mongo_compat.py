@@ -522,6 +522,12 @@ class Database:
         self.notifications = Collection("webapp_notifications")
         self.verification_codes = Collection("webapp_verification_codes")
         # Add more collections as needed
+    
+    async def create_user(self, user_data: Dict[str, Any]):
+        """Insert a new user via the users collection."""
+        result = await self.users.insert_one(user_data)
+        # insert_one returns {'inserted_id': <int>}
+        return result["inserted_id"]
 
 
 # Create single database instance
