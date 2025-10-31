@@ -140,6 +140,10 @@ class Collection:
                 # Convert camelCase to snake_case
                 db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
+            # Skip id - PostgreSQL auto-generates it
+            if db_key == 'id':
+                continue
+            
             # Skip fields that don't exist in PostgreSQL
             if db_key not in valid_columns:
                 continue
