@@ -103,24 +103,26 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     }
   };
 
-  const handleBuyPremiumStars = () => {
+  const handleBuyPremiumTier = (tier) => {
     const tg = window.Telegram?.WebApp;
     const canOpenInvoice = tg && typeof tg.openInvoice === "function";
+    const invoiceSlug = PREMIUM_INVOICE_SLUGS[tier];
 
     // Debug logging
     console.log("=== Premium Purchase Debug ===");
+    console.log("Tier:", tier);
     console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
     console.log("openInvoice available:", canOpenInvoice);
-    console.log("PREMIUM_INVOICE_SLUG:", PREMIUM_INVOICE_SLUG);
-    console.log("PREMIUM_INVOICE_URL:", PREMIUM_INVOICE_URL);
+    console.log("Invoice Slug:", invoiceSlug);
 
-    // Choose slug or URL if available (URL takes priority)
-    const invoiceObject = PREMIUM_INVOICE_URL
-      ? { url: PREMIUM_INVOICE_URL }
-      : PREMIUM_INVOICE_SLUG
-      ? { slug: PREMIUM_INVOICE_SLUG }
-      : null;
+    // Validate slug
+    if (!invoiceSlug) {
+      console.error("Invalid invoice slug for tier:", tier);
+      alert("Payment configuration error. Please contact support.");
+      return;
+    }
 
+    const invoiceObject = { slug: invoiceSlug };
     console.log("Invoice object:", invoiceObject);
 
     // If inside Telegram and we have a valid invoice identifier
