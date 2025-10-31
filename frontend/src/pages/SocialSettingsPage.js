@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle } from 'lucide-react';
+import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle, Zap } from 'lucide-react';
 import axios from 'axios';
 
 const API = "/api";
 
 const SocialSettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || 'LuvHiveBot';
   const [settings, setSettings] = useState({
     privateProfile: false,
     allowAnonymousMessages: true,
