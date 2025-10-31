@@ -1371,7 +1371,7 @@ async def register_enhanced(
         hashed_password = get_password_hash(password)
         
         # Create complete user (don't set id - PostgreSQL will auto-generate it)
-        user_dict = {
+        user_dict: Dict[str, Any] = {
             "fullName": clean_fullname,
             "username": clean_username,
             "email": clean_email or None,
@@ -1381,7 +1381,9 @@ async def register_enhanced(
             "country": country.strip(),
             "password_hash": hashed_password,
             "bio": clean_bio,
-            "profileImage": clean_profile_image,
+            # Only include profileImage if a file was actually uploaded; otherwise omit the field
+            # so the default NULL is inserted into profile_photo_url.
+            **({"profileImage": clean_profile_image} if clean_profile_image else {}),
             "authMethod": "password",
             "emailVerified": True,  # All new registrations are auto-verified for better UX
             "phoneVerified": bool(clean_mobile),  # True if registered with mobile number
