@@ -26,6 +26,15 @@ async def get_pool() -> asyncpg.Pool:
         )
     return _pool
 
+async def init_db():
+    """Initialize database connection"""
+    await get_pool()
+
+async def create_tables():
+    """Create tables if they don't exist (schema already applied)"""
+    # Tables already created via schema.sql, this is a no-op
+    pass
+
 async def close_pool():
     """Close database connection pool"""
     global _pool
