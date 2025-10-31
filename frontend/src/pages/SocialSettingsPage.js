@@ -95,7 +95,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   };
 
   const handleBuyPremiumStars = () => {
-    // Only attempt openInvoice if we have a slug and the WebApp API is present
+    // Only attempt openInvoice if Telegram context and a valid slug exist
     if (
       window.Telegram &&
       window.Telegram.WebApp &&
@@ -103,23 +103,33 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       PREMIUM_INVOICE_SLUG
     ) {
       try {
-        // Correct usage: pass an object with the slug property
-        window.Telegram.WebApp.openInvoice({ slug: PREMIUM_INVOICE_SLUG }, (status) => {
-          // status can be 'paid', 'cancelled', or 'failed'
-          if (status === 'paid') {
-            console.log('✅ Premium payment successful!');
-            // Optionally refetch /auth/me here to update premium status
-            window.location.reload();
-          } else {
-            console.log(`Payment status: ${status}`);
+        window.Telegram.WebApp.openInvoice(
+          { slug: PREMIUM_INVOICE_SLUG },
+          (status) => {
+            // status can be: 'paid', 'cancelled', 'failed'
+            if (status === "paid") {
+              // Optionally refresh your auth token/profile here
+              window.location.reload();
+            } else if (status === "cancelled" || status === "failed") {
+              alert("Payment was cancelled or failed. Please try again.");
+            }
           }
-        });
+        );
         return;
       } catch (err) {
-        console.warn("openInvoice failed, redirecting to bot:", err);
+        console.warn("openInvoice threw an error:", err);
       }
     }
-    // Fallback: open the bot in a new tab for payment
+
+    // No slug or openInvoice failed – show a message instead of forcing a redirect
+    if (!PREMIUM_INVOICE_SLUG) {
+      alert(
+        "Premium purchase is currently unavailable because no invoice is configured. Please contact support."
+      );
+      return;
+    }
+
+    // As a last resort, open the bot purchase link in a new tab
     window.open(`https://t.me/${BOT_USERNAME}?start=premium_web`, "_blank");
   };
 
