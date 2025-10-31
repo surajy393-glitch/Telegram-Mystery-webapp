@@ -239,10 +239,8 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
             <div className="relative inline-block">
               <img
                 src={
-                  formData.profileImage 
-                    ? (formData.profileImage.startsWith('data:') || formData.profileImage.startsWith('http') 
-                        ? formData.profileImage 
-                        : formData.profileImage)
+                  profileImagePreview 
+                    ? profileImagePreview
                     : "https://via.placeholder.com/120"
                 }
                 alt="Profile"
