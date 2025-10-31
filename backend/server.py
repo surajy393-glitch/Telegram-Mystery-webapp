@@ -2558,7 +2558,7 @@ async def update_profile(
         )
     
     # Fetch and return updated user data
-    updated_user = await db.users.find_one({"id": current_user.id})
+    updated_user = await db.users.find_one({"id": int(current_user.id)})
     if updated_user:
         # Remove password hash before returning
         updated_user.pop("password_hash", None)
@@ -3923,7 +3923,7 @@ async def get_media_proxy(file_id: str):
 @api_router.get("/posts/feed")
 async def get_posts_feed(current_user: User = Depends(get_current_user)):
     # Get current user's full data to access blockedUsers and mutedUsers
-    user = await db.users.find_one({"id": current_user.id})
+    user = await db.users.find_one({"id": int(current_user.id)})
     blocked_users = user.get("blockedUsers", [])
     muted_users = user.get("mutedUsers", [])
     saved_posts = user.get("savedPosts", [])
@@ -3988,7 +3988,7 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Get current user's saved posts
-    user = await db.users.find_one({"id": current_user.id})
+    user = await db.users.find_one({"id": int(current_user.id)})
     saved_posts = user.get("savedPosts", [])
     
     return {
@@ -4606,7 +4606,7 @@ async def save_post(post_id: str, current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Check if already saved
-    user = await db.users.find_one({"id": current_user.id})
+    user = await db.users.find_one({"id": int(current_user.id)})
     saved_posts = user.get("savedPosts", [])
     
     if post_id in saved_posts:
@@ -4879,7 +4879,7 @@ async def get_user_profile(userId: str, current_user: User = Depends(get_current
         raise HTTPException(status_code=404, detail="User not found")
     
     # Fetch fresh current user data from database to get latest following/followers state
-    fresh_current_user = await db.users.find_one({"id": current_user.id})
+    fresh_current_user = await db.users.find_one({"id": int(current_user.id)})
     if not fresh_current_user:
         raise HTTPException(status_code=401, detail="Current user not found")
     
@@ -5698,7 +5698,7 @@ async def calculate_compatibility(
     """
     try:
         # Get current user's full data from database
-        user1_data = await db.users.find_one({"id": current_user.id})
+        user1_data = await db.users.find_one({"id": int(current_user.id)})
         if not user1_data:
             raise HTTPException(status_code=404, detail="Current user not found")
         
