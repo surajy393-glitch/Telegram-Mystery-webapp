@@ -196,7 +196,13 @@ class EnhancedUserRegister(BaseModel):
     email: Optional[str] = None  # Optional email
     mobileNumber: Optional[str] = None  # Optional mobile number
     profileImage: Optional[str] = None  # Optional profile image
+    profilePhoto: Optional[str] = None  # Alternative name for profile image (frontend compatibility)
     bio: Optional[str] = None  # Optional bio
+    city: Optional[str] = None  # Optional city
+    interests: Optional[list] = None  # User interests
+    emailVerified: Optional[bool] = None  # Email verification status
+    mobileVerified: Optional[bool] = None  # Mobile verification status
+    personalityAnswers: Optional[dict] = None  # Personality quiz answers
 
 class EmailOTPRequest(BaseModel):
     email: str
