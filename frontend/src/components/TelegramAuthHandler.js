@@ -43,13 +43,13 @@ const TelegramAuthHandler = ({ onAuthSuccess }) => {
         if (response.data.success) {
           console.log('✅ Telegram authentication successful');
           
-          // Store token
-          localStorage.setItem('token', response.data.access_token);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+          // Store token using Telegram-user-specific storage
+          setToken(response.data.access_token);
+          setUser(response.data.user);
           
           // Call success callback
           if (onAuthSuccess) {
-            onAuthSuccess(response.data.user);
+            onAuthSuccess(response.data.access_token, response.data.user);
           }
           
           // Navigate to home
