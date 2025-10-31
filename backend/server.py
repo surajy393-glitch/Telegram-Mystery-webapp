@@ -2095,6 +2095,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "bio": current_user.bio,
         "profileImage": current_user.profileImage,
         "country": current_user.country if hasattr(current_user, 'country') else None,
+        "city": current_user.city if hasattr(current_user, 'city') else None,
         "isPremium": current_user.isPremium,
         "isPrivate": current_user.isPrivate,
         "isVerified": current_user.isVerified if hasattr(current_user, 'isVerified') else False,
