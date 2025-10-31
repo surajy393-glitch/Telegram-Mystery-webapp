@@ -1330,7 +1330,7 @@ async def register_enhanced(
             "phoneVerified": bool(clean_mobile),  # True if registered with mobile number
             "violationsCount": 0,  # No violations on new account
             "emailVerificationToken": None,  # No token needed for new registrations
-            "createdAt": datetime.now(timezone.utc),
+            "createdAt": datetime.utcnow(),
             "followers": [],
             "following": [],
             "posts": [],
@@ -1342,7 +1342,7 @@ async def register_enhanced(
             "isPrivate": False,
             "isVerified": False,
             "isOnline": True,
-            "lastSeen": datetime.now(timezone.utc),
+            "lastSeen": datetime.utcnow(),
             
             # Additional fields from frontend
             "city": clean_city,
