@@ -2799,8 +2799,8 @@ async def update_user_settings(
 @api_router.get("/auth/download-data")
 async def download_user_data(current_user: User = Depends(get_current_user)):
     """Download user's data in JSON format"""
-    # Get user data
-    user_data = await db.users.find_one({"id": current_user.id})
+    # Get user data - convert string ID to integer for PostgreSQL
+    user_data = await db.users.find_one({"id": int(current_user.id)})
     
     # Get user's posts
     posts = await db.posts.find({"userId": current_user.id}).to_list(1000)
