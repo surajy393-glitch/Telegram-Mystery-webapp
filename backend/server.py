@@ -1170,6 +1170,8 @@ async def register(user_data: UserRegister):
         password_hash=hashed_password,
         email=clean_email,
         authMethod=user_data.authMethod,
+        emailVerified=True,  # Email is verified during registration
+        violationsCount=0,  # No violations on new account
     )
     
     user_dict = user.dict()
