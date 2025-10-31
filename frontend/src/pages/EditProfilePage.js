@@ -145,12 +145,13 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Store the actual file object
+      setProfileImageFile(file);
+      
+      // Create preview URL for display
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({
-          ...formData,
-          profileImage: reader.result
-        });
+        setProfileImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
