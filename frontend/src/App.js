@@ -27,42 +27,21 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get Telegram user ID to create isolated storage
-    const getTelegramUserId = () => {
-      try {
-        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-          return window.Telegram.WebApp.initDataUnsafe.user.id;
-        }
-      } catch (e) {
-        console.log("Not in Telegram WebApp context");
-      }
-      return 'default';
-    };
-
     const telegramUserId = getTelegramUserId();
-    const storagePrefix = `tg_${telegramUserId}_`;
-    
     console.log("🔍 App.js: Checking authentication for Telegram User ID:", telegramUserId);
     
     // Check if user is authenticated - use Telegram-user-specific keys
-    const token = localStorage.getItem(`${storagePrefix}token`);
-    const userDataString = localStorage.getItem(`${storagePrefix}user`);
+    const token = getToken();
+    const userData = getUser();
     
     console.log("   Token present:", !!token);
-    console.log("   User data present:", !!userDataString);
+    console.log("   User data present:", !!userData);
     
-    if (token && userDataString) {
-      try {
-        const userData = JSON.parse(userDataString);
-        console.log("✅ User loaded from localStorage:", userData.username);
-        console.log("   Profile Image:", userData.profileImage);
-        setIsAuthenticated(true);
-        setUser(userData);
-      } catch (error) {
-        console.error("❌ Failed to parse user data:", error);
-        localStorage.removeItem(`${storagePrefix}token`);
-        localStorage.removeItem(`${storagePrefix}user`);
-      }
+    if (token && userData) {
+      console.log("✅ User loaded from localStorage:", userData.username);
+      console.log("   Profile Image:", userData.profileImage);
+      setIsAuthenticated(true);
+      setUser(userData);
     }
     setLoading(false);
   }, []);
