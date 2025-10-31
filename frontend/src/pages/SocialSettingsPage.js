@@ -122,18 +122,14 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       return;
     }
 
-    // Construct full URL from slug in JavaScript (avoids .env $ issues)
-    const invoiceUrl = `https://t.me/$${invoiceSlug}`;
-    console.log("Constructed Invoice URL:", invoiceUrl);
+    // Try using just the slug directly (Telegram might construct the URL internally)
+    const invoiceObject = { slug: invoiceSlug };
+    console.log("Invoice object (slug only):", invoiceObject);
 
-    // Use full URL for openInvoice
-    const invoiceObject = { url: invoiceUrl };
-    console.log("Invoice object:", invoiceObject);
-
-    // If inside Telegram and we have a valid invoice URL
+    // If inside Telegram and we have a valid invoice slug
     if (canOpenInvoice && invoiceObject) {
       try {
-        console.log("Calling openInvoice with:", invoiceObject);
+        console.log("Calling openInvoice with slug:", invoiceObject);
         tg.openInvoice(invoiceObject, (status) => {
           console.log("Payment status:", status);
           // status can be 'paid', 'cancelled', or 'failed'
