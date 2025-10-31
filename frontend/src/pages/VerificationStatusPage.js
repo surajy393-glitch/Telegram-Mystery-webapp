@@ -156,18 +156,21 @@ const VerificationStatusPage = ({ user }) => {
     );
   }
 
-  // Group criteria by category - FIXED LOGIC
-  // Email OR Phone (depends on registration method) - count as 1 criterion
-  const hasEmailOrPhone = (verificationData?.criteria?.emailVerified || verificationData?.criteria?.phoneVerified) || false;
-  
+  // Group criteria by category
   const identitySecurityCriteria = [
     {
-      key: 'emailOrPhone',
-      label: verificationData?.currentValues?.emailVerified ? 'Email Verified' : 'Phone Verified',
-      requirement: 'Email or Phone verification',
-      met: hasEmailOrPhone,
-      progress: verificationData?.currentValues?.emailVerified ? 'Email Verified' : 
-               verificationData?.currentValues?.phoneVerified ? 'Phone Verified' : 'Not verified'
+      key: 'emailVerified',
+      label: 'Email Verified',
+      requirement: 'Verify your email address',
+      met: verificationData?.criteria?.emailVerified || false,
+      progress: verificationData?.currentValues?.emailVerified ? 'Verified' : 'Not verified'
+    },
+    {
+      key: 'phoneVerified',
+      label: 'Phone Verified',
+      requirement: 'Verify your phone number',
+      met: verificationData?.criteria?.phoneVerified || false,
+      progress: verificationData?.currentValues?.phoneVerified ? 'Verified' : 'Not verified'
     }
   ];
 
@@ -175,35 +178,35 @@ const VerificationStatusPage = ({ user }) => {
     {
       key: 'profileComplete',
       label: 'Complete Profile',
-      requirement: 'All profile fields filled',
+      requirement: 'Fill all profile fields',
       met: verificationData?.criteria?.profileComplete || false,
       progress: verificationData?.currentValues?.profileComplete ? 'Complete' : 'Incomplete'
     },
     {
       key: 'personalityQuestions',
       label: 'Personality Quiz',
-      requirement: 'Completed during registration',
-      met: true,  // Always true (mandatory during registration)
+      requirement: 'Complete personality questions',
+      met: true,
       progress: 'Completed'
     }
   ];
 
   const tenureBehaviourCriteria = [
     {
+      key: 'accountAge',
+      label: 'Account Age',
+      requirement: '45+ days old',
+      met: verificationData?.criteria?.accountAge || false,
+      progress: `${verificationData?.currentValues?.accountAgeDays || 0} days`,
+      hasHelp: true,
+      helpKey: 'accountAge'
+    },
+    {
       key: 'noViolations',
       label: 'No Violations',
       requirement: 'Zero community violations',
       met: verificationData?.criteria?.noViolations || false,
       progress: `${verificationData?.currentValues?.violationsCount || 0} violations`
-    },
-    {
-      key: 'accountAge',
-      label: '45 Days Account Age',
-      requirement: '45+ days old',
-      met: verificationData?.criteria?.accountAge || false,
-      progress: `${verificationData?.currentValues?.accountAgeDays || 0}/45 days`,
-      hasHelp: true,
-      helpKey: 'accountAge'
     }
   ];
 
