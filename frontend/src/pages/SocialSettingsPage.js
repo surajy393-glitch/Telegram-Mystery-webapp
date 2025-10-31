@@ -379,53 +379,95 @@ const SocialSettingsPage = ({ user, onLogout }) => {
 
       {/* Premium Dialog */}
       <Dialog open={premiumDialogOpen} onOpenChange={setPremiumDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="mb-2">Premium Membership</DialogTitle>
-            <DialogDescription>
-              Compare what you get with Free vs Premium, then upgrade if you'd like.
+            <DialogTitle className="text-center text-xl font-bold">👑 Premium Membership</DialogTitle>
+            <DialogDescription className="text-center">
+              Choose your premium duration
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
-            <div>
-              <h3 className="font-semibold">Free</h3>
-              <ul className="list-disc ml-5 text-sm text-gray-700 space-y-1">
-                <li>View profiles, posts & stories</li>
-                <li>Follow, like & comment</li>
-                <li>Reply to messages unlimited</li>
-                <li>Start 2 chats per day (20 messages total), text‑only</li>
+          <div className="mt-4 space-y-3">
+            {/* Premium Benefits */}
+            <div className="bg-pink-50 p-3 rounded-lg mb-4">
+              <h3 className="font-semibold text-pink-900 mb-2">Premium Features:</h3>
+              <ul className="text-sm text-pink-800 space-y-1">
+                <li>✨ Start unlimited conversations</li>
+                <li>📸 Send photos, videos & voice notes</li>
+                <li>✓ Read receipts & typing indicators</li>
+                <li>⭐ Priority placement in message requests</li>
+                <li>🎯 Gender, age & city filters (bot)</li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-semibold">Premium</h3>
-              <ul className="list-disc ml-5 text-sm text-gray-700 space-y-1">
-                <li>Start unlimited conversations</li>
-                <li>Send photos, videos & voice notes</li>
-                <li>Read receipts & typing indicators</li>
-                <li>Priority placement in message requests</li>
-                <li>Use gender, age & city filters in anonymous chat (Telegram bot)</li>
-              </ul>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
-              {/* Replace anchor with button and call our handler */}
-              <button
-                onClick={handleBuyPremiumStars}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white py-2 px-4 rounded-md text-center"
-              >
-                Buy Premium with Stars
-              </button>
-              {/* Keep the fallback anchor for manual Telegram opening */}
+
+            {/* 1 Week Tier */}
+            <button
+              onClick={() => handleBuyPremiumTier('1week')}
+              className="w-full p-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <div className="flex justify-between items-center">
+                <div className="text-left">
+                  <div className="font-bold text-lg">1 Week</div>
+                  <div className="text-sm opacity-90">100 Stars / $1.99</div>
+                </div>
+                <div className="text-2xl">⚡</div>
+              </div>
+            </button>
+
+            {/* 1 Month Tier */}
+            <button
+              onClick={() => handleBuyPremiumTier('1month')}
+              className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <div className="flex justify-between items-center">
+                <div className="text-left">
+                  <div className="font-bold text-lg">1 Month</div>
+                  <div className="text-sm opacity-90">250 Stars / $3.99</div>
+                </div>
+                <div className="text-2xl">🔥</div>
+              </div>
+            </button>
+
+            {/* 6 Months Tier */}
+            <button
+              onClick={() => handleBuyPremiumTier('6months')}
+              className="w-full p-4 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <div className="flex justify-between items-center">
+                <div className="text-left">
+                  <div className="font-bold text-lg">6 Months</div>
+                  <div className="text-sm opacity-90">600 Stars / $9.99</div>
+                </div>
+                <div className="text-2xl">💎</div>
+              </div>
+            </button>
+
+            {/* 12 Months Tier */}
+            <button
+              onClick={() => handleBuyPremiumTier('12months')}
+              className="w-full p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <div className="flex justify-between items-center">
+                <div className="text-left">
+                  <div className="font-bold text-lg">12 Months</div>
+                  <div className="text-sm opacity-90">1000 Stars / $19.99</div>
+                </div>
+                <div className="text-2xl">👑</div>
+              </div>
+            </button>
+
+            {/* Fallback Link */}
+            <div className="pt-2 text-center">
               <a
                 href={`https://t.me/${BOT_USERNAME}?start=premium_web`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 border border-pink-500 text-pink-600 py-2 px-4 rounded-md text-center"
+                className="text-sm text-gray-500 hover:text-gray-700 underline"
               >
-                Open in Telegram
+                Or open in Telegram
               </a>
             </div>
-            <p className="text-xs text-gray-400">
-              Prices start from <strong>250 Stars ($3.99)</strong> for 1 month.
+
+            <p className="text-xs text-gray-400 text-center pt-2">
               Payments are processed via Telegram Stars. Premium status syncs across both bot and webapp.
             </p>
           </div>
