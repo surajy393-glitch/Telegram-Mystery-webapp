@@ -2447,12 +2447,15 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
 
 @api_router.put("/auth/profile")
 async def update_profile(
-    fullName: str = Form(None), 
-    username: str = Form(None), 
+    fullName: str = Form(None),
+    username: str = Form(None),
     bio: str = Form(None),
     country: str = Form(None),
     city: str = Form(None),
-    profileImage: Optional[UploadFile] = File(None),  # Changed to file upload
+    # Accept existing image URL as plain form text
+    profileImage: str = Form(None),
+    # Accept a new upload separately
+    profilePhoto: Optional[UploadFile] = File(None),
     current_user: User = Depends(get_current_user)
 ):
     update_data = {}
