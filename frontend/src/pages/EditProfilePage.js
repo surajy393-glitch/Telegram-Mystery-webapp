@@ -357,6 +357,23 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
               />
             </div>
 
+            {/* City */}
+            <div>
+              <Label htmlFor="city" className="text-gray-700 font-medium">
+                City
+              </Label>
+              <Input
+                id="city"
+                name="city"
+                data-testid="city-input"
+                type="text"
+                placeholder="Enter your city"
+                value={formData.city}
+                onChange={handleChange}
+                className="mt-2 border-gray-300 focus:border-pink-500 rounded-xl"
+              />
+            </div>
+
             {/* Submit Button */}
             <Button
               type="submit"
