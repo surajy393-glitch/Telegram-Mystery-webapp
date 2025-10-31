@@ -1212,7 +1212,7 @@ async def register_enhanced(
     password: str = Form(...),
     email: Optional[str] = Form(None),
     mobileNumber: Optional[str] = Form(None),
-    profilePhoto: Optional[str] = Form(None),
+    profilePhoto: Optional[UploadFile] = File(None),  # File upload, not string
     bio: Optional[str] = Form(None),
     city: Optional[str] = Form(None),
     interests: Optional[str] = Form(None),  # JSON string
@@ -1230,13 +1230,30 @@ async def register_enhanced(
         clean_interests = json.loads(interests) if interests else []
         personality_answers = json.loads(personalityAnswers) if personalityAnswers else None
         
+        # Handle profile photo upload
+        clean_profile_image = None
+        if profilePhoto and profilePhoto.filename:
+            # Save the uploaded file
+            file_extension = profilePhoto.filename.split('.')[-1]
+            unique_filename = f"{uuid4()}.{file_extension}"
+            file_path = f"/app/backend/uploads/{unique_filename}"
+            
+            # Ensure uploads directory exists
+            os.makedirs("/app/backend/uploads", exist_ok=True)
+            
+            # Save file
+            with open(file_path, "wb") as f:
+                content = await profilePhoto.read()
+                f.write(content)
+            
+            clean_profile_image = f"/uploads/{unique_filename}"
+        
         # Validate and clean input
         clean_username = username.strip()
         clean_fullname = fullName.strip()
         clean_email = email.strip().lower() if email else None
         clean_mobile = mobileNumber.strip() if mobileNumber else None
         clean_bio = bio.strip() if bio else ""
-        clean_profile_image = profilePhoto if profilePhoto else None
         clean_city = city.strip() if city else None
         
         if not clean_username:
