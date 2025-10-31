@@ -370,7 +370,8 @@ class Collection:
             'personalityAnswers': 'personality_answers',
             'verifiedAt': 'verified_at',
             'verificationPathway': 'verification_pathway',
-            'isFounder': 'is_founder'
+            'isFounder': 'is_founder',
+            'city': 'city'  # Added city field mapping
         }
 
         for key, value in updates.items():
