@@ -151,7 +151,12 @@ class Collection:
             # Convert lists/dicts to JSON
             if isinstance(value, (list, dict)):
                 value = json.dumps(value)
-            # PostgreSQL can handle ISO datetime strings directly, no need to convert
+            # Convert ISO datetime strings to datetime objects for PostgreSQL
+            elif isinstance(value, str) and db_key in ['created_at', 'updated_at', 'last_seen', 'username_changed_at', 'verified_at']:
+                # Parse ISO format datetime strings
+                import re
+                if re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', value):
+                    value = datetime.fromisoformat(value)
             
             db_document[db_key] = value
         
