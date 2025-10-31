@@ -7,7 +7,6 @@ import HashtagText from "@/components/HashtagText";
 import axios from "axios";
 import { getPostMediaUrl } from '@/utils/media';
 import {
-import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -20,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 

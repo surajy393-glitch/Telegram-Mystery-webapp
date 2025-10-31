@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle, Zap } from 'lucide-react';
 import {
-import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -10,6 +9,7 @@ import { getToken } from "@/utils/telegramStorage";
   DialogDescription,
 } from "@/components/ui/dialog";
 import axios from 'axios';
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 

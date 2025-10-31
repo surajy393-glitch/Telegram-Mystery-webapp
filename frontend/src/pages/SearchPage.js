@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-import { getToken } from "@/utils/telegramStorage";
   ArrowLeft, 
   Search, 
   TrendingUp, 
@@ -28,6 +27,7 @@ import {
 import HashtagText from "@/components/HashtagText";
 import SearchSkeleton from "@/components/LoadingSkeleton";
 import { searchCache, trendingCache } from "@/utils/cache";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 

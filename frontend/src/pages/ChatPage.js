@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Crown } from "lucide-react";
 import axios from "axios";
 import {
-import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
