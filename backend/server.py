@@ -24,8 +24,9 @@ import hashlib
 from urllib.parse import parse_qsl
 import asyncpg
 
-# Import PostgreSQL helper
-import db_postgres as db
+# Import PostgreSQL helper and MongoDB compatibility layer
+import db_postgres
+from mongo_compat import db  # MongoDB-like interface for PostgreSQL
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
