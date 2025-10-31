@@ -2200,7 +2200,8 @@ async def link_telegram_account(
 @api_router.get("/auth/verification-status")
 async def check_verification_status(current_user: User = Depends(get_current_user)):
     """Check current user's verification status and progress"""
-    user_data = await db.users.find_one({"id": current_user.id})
+    # Convert string ID to integer for PostgreSQL query
+    user_data = await db.users.find_one({"id": int(current_user.id)})
     
     # Calculate account age in days
     created_at = user_data.get("createdAt")
