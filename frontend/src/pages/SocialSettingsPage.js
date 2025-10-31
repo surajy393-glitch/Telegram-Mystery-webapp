@@ -14,8 +14,9 @@ const API = "/api";
 
 const SocialSettingsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || 'LuvHiveBot';
-  const PREMIUM_INVOICE_SLUG = process.env.REACT_APP_PREMIUM_INVOICE_SLUG || ""; // leave empty if you haven't created one
+  // Fetch from env; fallback to empty string if not set
+  const BOT_USERNAME = process.env.REACT_APP_TELEGRAM_BOT_USERNAME || "Loveekisssbot";
+  const PREMIUM_INVOICE_SLUG = process.env.REACT_APP_PREMIUM_INVOICE_SLUG || "";
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [settings, setSettings] = useState({
     privateProfile: false,
