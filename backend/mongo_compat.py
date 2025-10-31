@@ -297,6 +297,136 @@ class Collection:
             print(f"Error in delete_one: {e}")
             raise
     
+    async def update_many(self, filter_dict: Dict[str, Any], update_dict: Dict[str, Any]):
+        """
+        Update multiple rows matching filter_dict.
+        Currently supports only '$set' updates. Unsupported operators are ignored.
+        """
+        pool = await get_pool()
+
+        # Determine the fields to update
+        if '$set' in update_dict:
+            updates = update_dict['$set']
+        else:
+            updates = update_dict
+
+        # Build SET clause
+        set_parts = []
+        values = []
+        param_num = 1
+
+        # Use same field_mappings as update_one
+        field_mappings = {
+            'password_hash': 'password',
+            'profileImage': 'profile_photo_url',
+            'profile_image': 'profile_photo_url',
+            'phoneVerified': 'mobile_verified',
+            'phone_verified': 'mobile_verified',
+            'fullName': 'full_name',
+            'mobileNumber': 'mobile_number',
+            'authMethod': 'auth_method',
+            'emailVerified': 'email_verified',
+            'violationsCount': 'violations_count',
+            'isPrivate': 'is_private',
+            'isVerified': 'is_verified',
+            'isPremium': 'is_premium',
+            'isOnline': 'is_online',
+            'lastSeen': 'last_seen',
+            'createdAt': 'created_at',
+            'updatedAt': 'updated_at',
+            'telegramId': 'telegram_id',
+            'telegramUsername': 'telegram_username',
+            'telegramFirstName': 'telegram_first_name',
+            'telegramLastName': 'telegram_last_name',
+            'telegramPhotoUrl': 'telegram_photo_url',
+            'appearInSearch': 'appear_in_search',
+            'allowDirectMessages': 'allow_direct_messages',
+            'showOnlineStatus': 'show_online_status',
+            'allowTagging': 'allow_tagging',
+            'allowStoryReplies': 'allow_story_replies',
+            'showVibeScore': 'show_vibe_score',
+            'pushNotifications': 'push_notifications',
+            'emailNotifications': 'email_notifications',
+            'lastUsernameChange': 'last_username_change',
+            'personalityAnswers': 'personality_answers',
+            'verifiedAt': 'verified_at',
+            'verificationPathway': 'verification_pathway',
+            'isFounder': 'is_founder'
+        }
+
+        for key, value in updates.items():
+            if key in field_mappings:
+                db_key = field_mappings[key]
+            else:
+                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+            # Convert lists/dicts to JSON
+            if isinstance(value, (list, dict)):
+                value = json.dumps(value)
+            set_parts.append(f"{db_key} = ${param_num}")
+            values.append(value)
+            param_num += 1
+
+        if not set_parts:
+            return {'modified_count': 0}
+
+        # Build WHERE clause
+        where_parts = []
+        for key, value in filter_dict.items():
+            db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+            # Special handling for ID - convert string to int
+            if db_key == 'id' and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass
+            where_parts.append(f"{db_key} = ${param_num}")
+            values.append(value)
+            param_num += 1
+
+        set_clause = ", ".join(set_parts)
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        query = f"UPDATE {self.table_name} SET {set_clause} WHERE {where_clause}"
+
+        try:
+            await pool.execute(query, *values)
+            return {'modified_count': 'unknown'}
+        except Exception as e:
+            print(f"Error in update_many: {e}")
+            print(f"Query: {query}")
+            print(f"Values: {values}")
+            raise
+
+    async def delete_many(self, filter_dict: Dict[str, Any]):
+        """
+        Delete multiple rows matching filter_dict.
+        """
+        pool = await get_pool()
+
+        where_parts = []
+        values = []
+        param_num = 1
+        for key, value in filter_dict.items():
+            db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+            # Special handling for ID - convert string to int
+            if db_key == 'id' and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass
+            where_parts.append(f"{db_key} = ${param_num}")
+            values.append(value)
+            param_num += 1
+
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        query = f"DELETE FROM {self.table_name} WHERE {where_clause}"
+
+        try:
+            await pool.execute(query, *values)
+            return {'deleted_count': 'unknown'}
+        except Exception as e:
+            print(f"Error in delete_many: {e}")
+            raise
+    
     async def count_documents(self, filter_dict: Dict[str, Any] = None):
         """Count documents matching filter"""
         if filter_dict is None:
