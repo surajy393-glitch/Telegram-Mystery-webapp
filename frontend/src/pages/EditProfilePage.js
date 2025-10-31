@@ -175,7 +175,10 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       
       // Send actual file if user uploaded a new photo
       if (profileImageFile) {
-        formDataToSend.append("profileImage", profileImageFile);
+        formDataToSend.append("profilePhoto", profileImageFile);
+      } else if (profileImagePreview && !profileImageFile) {
+        // If no new file but we have an existing URL, send it as profileImage string
+        formDataToSend.append("profileImage", profileImagePreview);
       }
 
       const response = await axios.put(`${API}/auth/profile`, formDataToSend, {
