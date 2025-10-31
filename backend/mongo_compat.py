@@ -224,7 +224,11 @@ class Collection:
             'pushNotifications': 'push_notifications',
             'emailNotifications': 'email_notifications',
             'lastUsernameChange': 'last_username_change',
-            'personalityAnswers': 'personality_answers'
+            'personalityAnswers': 'personality_answers',
+            'verifiedAt': 'verified_at',
+            'verificationPathway': 'verification_pathway',
+            'isFounder': 'is_founder',
+            'city': 'city'  # Added city field mapping
         }
         
         # Extract $set operator if present
