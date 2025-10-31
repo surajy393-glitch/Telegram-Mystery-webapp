@@ -679,6 +679,7 @@ class Database:
         self.stories = Collection("webapp_stories")
         self.notifications = Collection("webapp_notifications")
         self.verification_codes = Collection("webapp_verification_codes")
+        self.violations = Collection("webapp_violations")  # Add violations collection
         # Add more collections as needed
     
     async def create_user(self, user_data: Dict[str, Any]):
