@@ -68,16 +68,49 @@ function App() {
 
   const handleLogin = (token, userData) => {
     console.log("🔐 handleLogin called with user:", userData);
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+    
+    // Get Telegram user ID for isolated storage
+    const getTelegramUserId = () => {
+      try {
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+          return window.Telegram.WebApp.initDataUnsafe.user.id;
+        }
+      } catch (e) {
+        console.log("Not in Telegram WebApp context");
+      }
+      return 'default';
+    };
+
+    const telegramUserId = getTelegramUserId();
+    const storagePrefix = `tg_${telegramUserId}_`;
+    
+    console.log("   Storing with Telegram User ID:", telegramUserId);
+    localStorage.setItem(`${storagePrefix}token`, token);
+    localStorage.setItem(`${storagePrefix}user`, JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
     console.log("✅ User state updated, profileImage:", userData?.profileImage);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    // Get Telegram user ID for isolated storage
+    const getTelegramUserId = () => {
+      try {
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+          return window.Telegram.WebApp.initDataUnsafe.user.id;
+        }
+      } catch (e) {
+        console.log("Not in Telegram WebApp context");
+      }
+      return 'default';
+    };
+
+    const telegramUserId = getTelegramUserId();
+    const storagePrefix = `tg_${telegramUserId}_`;
+    
+    console.log("🚪 Logging out Telegram User ID:", telegramUserId);
+    localStorage.removeItem(`${storagePrefix}token`);
+    localStorage.removeItem(`${storagePrefix}user`);
     setIsAuthenticated(false);
     setUser(null);
   };
