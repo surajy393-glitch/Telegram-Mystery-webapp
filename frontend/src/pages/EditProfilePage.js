@@ -17,12 +17,14 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
   const [profile, setProfile] = useState(null);
   const [canChangeUsername, setCanChangeUsername] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState(0);
+  const [profileImageFile, setProfileImageFile] = useState(null); // Store actual file
+  const [profileImagePreview, setProfileImagePreview] = useState(""); // Store preview URL
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
     bio: "",
     country: "",
-    profileImage: ""
+    city: ""
   });
 
   useEffect(() => {
