@@ -30,7 +30,7 @@ const VerificationStatusPage = ({ user }) => {
 
   const fetchVerificationStatus = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await axios.get(`${API}/verification/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
