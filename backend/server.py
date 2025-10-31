@@ -1226,9 +1226,22 @@ async def register_enhanced(
     import json
     
     try:
-        # Parse JSON strings
-        clean_interests = json.loads(interests) if interests else []
-        personality_answers = json.loads(personalityAnswers) if personalityAnswers else None
+        # Safe JSON parsing with proper null/empty checks
+        clean_interests = []
+        if interests and interests.strip() and interests.strip() not in ["null", "undefined", ""]:
+            try:
+                clean_interests = json.loads(interests)
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Failed to parse interests: {e}")
+                clean_interests = []
+
+        personality_answers = None
+        if personalityAnswers and personalityAnswers.strip() and personalityAnswers.strip() not in ["null", "undefined", ""]:
+            try:
+                personality_answers = json.loads(personalityAnswers)
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Failed to parse personalityAnswers: {e}")
+                personality_answers = None
         
         # Handle profile photo upload
         clean_profile_image = None
