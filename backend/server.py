@@ -2522,8 +2522,9 @@ async def update_profile(
     if profilePhoto and profilePhoto.filename:
         file_extension = profilePhoto.filename.split('.')[-1]
         unique_filename = f"{uuid4()}.{file_extension}"
-        file_path = f"/app/uploads/profiles/{unique_filename}"
-        os.makedirs("/app/uploads/profiles", exist_ok=True)
+        # Save to the PROFILES_DIR defined at module level
+        file_path = str(PROFILES_DIR / unique_filename)
+        PROFILES_DIR.mkdir(parents=True, exist_ok=True)
         with open(file_path, "wb") as f:
             content = await profilePhoto.read()
             f.write(content)
