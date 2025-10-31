@@ -52,8 +52,9 @@ function App() {
     console.log("   Storing for Telegram User ID:", telegramUserId);
     
     setToken(token);
-    setUser(userData);
+    setStorageUser(userData);
     setIsAuthenticated(true);
+    setUser(userData);
     console.log("✅ User state updated, profileImage:", userData?.profileImage);
   };
 
