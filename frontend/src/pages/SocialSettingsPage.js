@@ -314,6 +314,61 @@ const SocialSettingsPage = ({ user, onLogout }) => {
           Logout
         </button>
       </div>
+
+      {/* Premium Dialog */}
+      <Dialog open={premiumDialogOpen} onOpenChange={setPremiumDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="mb-2">Premium Membership</DialogTitle>
+            <DialogDescription>
+              Compare what you get with Free vs Premium, then upgrade if you'd like.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <div>
+              <h3 className="font-semibold">Free</h3>
+              <ul className="list-disc ml-5 text-sm text-gray-700 space-y-1">
+                <li>View profiles, posts & stories</li>
+                <li>Follow, like & comment</li>
+                <li>Reply to messages unlimited</li>
+                <li>Start 2 chats per day (20 messages total), text‑only</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold">Premium</h3>
+              <ul className="list-disc ml-5 text-sm text-gray-700 space-y-1">
+                <li>Start unlimited conversations</li>
+                <li>Send photos, videos & voice notes</li>
+                <li>Read receipts & typing indicators</li>
+                <li>Priority placement in message requests</li>
+                <li>Use gender, age & city filters in anonymous chat (Telegram bot)</li>
+              </ul>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
+              {/* Telegram app deep link */}
+              <a
+                href={`tg://resolve?domain=${BOT_USERNAME}&start=premium_web`}
+                className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white py-2 px-4 rounded-md text-center"
+              >
+                Buy Premium with Stars
+              </a>
+              {/* Fallback link */}
+              <a
+                href={`https://t.me/${BOT_USERNAME}?start=premium_web`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 border border-pink-500 text-pink-600 py-2 px-4 rounded-md text-center"
+              >
+                Open in Telegram
+              </a>
+            </div>
+            <p className="text-xs text-gray-400">
+              Prices start from <strong>250 Stars ($3.99)</strong> for 1 month.
+              Payments are processed via Telegram Stars. Premium status syncs across both bot and webapp.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
