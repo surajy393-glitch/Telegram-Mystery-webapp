@@ -2120,7 +2120,9 @@ async def reset_password(request: ResetPasswordRequest):
 @api_router.get("/auth/me")
 async def get_me(current_user: User = Depends(get_current_user)):
     # Get fresh data from database for accurate counts
-    user_data = await db.users.find_one({"id": current_user.id})
+    # Convert string ID back to integer for PostgreSQL query
+    user_id_int = int(current_user.id)
+    user_data = await db.users.find_one({"id": user_id_int})
     
     return {
         "id": current_user.id,
