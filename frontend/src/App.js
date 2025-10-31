@@ -42,9 +42,44 @@ function App() {
       console.log("   Profile Image:", userData.profileImage);
       setIsAuthenticated(true);
       setUser(userData);
+      
+      // Auto-link Telegram ID if user is in Telegram and telegramId is not set
+      if (telegramUserId !== 'default' && !userData.telegramId) {
+        console.log("🔗 Auto-linking Telegram ID:", telegramUserId);
+        linkTelegramAccount(token, telegramUserId, userData);
+      }
     }
     setLoading(false);
   }, []);
+
+  // Function to auto-link Telegram account
+  const linkTelegramAccount = async (token, telegramId, currentUser) => {
+    try {
+      const response = await fetch("/api/auth/link-telegram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ telegramId: parseInt(telegramId) })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Telegram account linked successfully");
+        
+        // Update user data in storage and state
+        const updatedUser = { ...currentUser, telegramId: parseInt(telegramId) };
+        setStorageUser(updatedUser);
+        setUser(updatedUser);
+      } else {
+        console.log("⚠️ Failed to link Telegram account:", await response.text());
+      }
+    } catch (error) {
+      console.error("❌ Error linking Telegram account:", error);
+    }
+  };
+
 
   const handleLogin = (token, userData) => {
     const telegramUserId = getTelegramUserId();
