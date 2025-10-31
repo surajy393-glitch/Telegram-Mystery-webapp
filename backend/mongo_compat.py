@@ -442,6 +442,13 @@ class Collection:
         for key, value in filter_dict.items():
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
+            # Special handling for ID fields - convert string to int for PostgreSQL
+            if db_key in ['id', 'user_id'] and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass
+            
             # Handle special operators
             if isinstance(value, dict):
                 for op, op_value in value.items():
