@@ -56,12 +56,26 @@ async def create_tables():
 # Create the main app without a prefix
 app = FastAPI()
 
-# Mount uploads directory for serving static files
-import os
-os.makedirs("/app/uploads/posts", exist_ok=True)
-os.makedirs("/app/uploads/profiles", exist_ok=True)
-os.makedirs("/app/uploads/stories", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
+# -------------------------------------------------------------------
+# Setup for serving uploaded files
+#
+# Use a directory relative to the project root instead of /app/uploads.
+# In containerized environments, /app may exist, but in preview or local
+# runs it often does not.  This ensures images are always written to
+# a place that FastAPI can serve.
+#
+UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
+POSTS_DIR = UPLOADS_DIR / "posts"
+PROFILES_DIR = UPLOADS_DIR / "profiles"
+STORIES_DIR = UPLOADS_DIR / "stories"
+
+# Ensure the directories exist
+POSTS_DIR.mkdir(parents=True, exist_ok=True)
+PROFILES_DIR.mkdir(parents=True, exist_ok=True)
+STORIES_DIR.mkdir(parents=True, exist_ok=True)
+
+# Mount the uploads directory so /uploads/* URLs serve static files
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Initialize database on startup
 @app.on_event("startup")
