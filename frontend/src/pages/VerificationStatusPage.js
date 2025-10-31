@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, XCircle, Shield, Info, HelpCircle } from "lucide-react";
 import axios from "axios";
+import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
