@@ -2442,15 +2442,16 @@ async def update_profile(
         update_data["username"] = username
         update_data["lastUsernameChange"] = datetime.now(timezone.utc)
         
-        # Update username in all posts and stories
-        await db.posts.update_many(
-            {"userId": current_user.id},
-            {"$set": {"username": username}}
-        )
-        await db.stories.update_many(
-            {"userId": current_user.id},
-            {"$set": {"username": username}}
-        )
+        # Note: Posts and stories tables don't have username column in PostgreSQL
+        # Username is fetched via JOIN with users table when displaying posts/stories
+        # await db.posts.update_many(
+        #     {"userId": current_user.id},
+        #     {"$set": {"username": username}}
+        # )
+        # await db.stories.update_many(
+        #     {"userId": current_user.id},
+        #     {"$set": {"username": username}}
+        # )
     
     # Handle other fields
     if fullName is not None:
