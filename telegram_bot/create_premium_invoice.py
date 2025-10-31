@@ -98,18 +98,29 @@ async def create_all_premium_invoices():
     
     # Print summary
     print("\n" + "=" * 70)
-    print("📋 INVOICE SLUGS SUMMARY")
+    print("📋 INVOICE CONFIGURATION SUMMARY")
     print("=" * 70)
     print("\nAdd these to your frontend/.env file:\n")
     
+    print("# OPTION 1: Full URLs (Use if slugs don't work)")
     if '1 week' in invoice_slugs:
-        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_1WEEK={invoice_slugs['1 week']}")
+        print(f"REACT_APP_PREMIUM_INVOICE_URL_1WEEK={invoice_slugs['1 week']['full_url']}")
     if '1 month' in invoice_slugs:
-        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_1MONTH={invoice_slugs['1 month']}")
+        print(f"REACT_APP_PREMIUM_INVOICE_URL_1MONTH={invoice_slugs['1 month']['full_url']}")
     if '6 months' in invoice_slugs:
-        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_6MONTHS={invoice_slugs['6 months']}")
+        print(f"REACT_APP_PREMIUM_INVOICE_URL_6MONTHS={invoice_slugs['6 months']['full_url']}")
     if '12 months' in invoice_slugs:
-        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_12MONTHS={invoice_slugs['12 months']}")
+        print(f"REACT_APP_PREMIUM_INVOICE_URL_12MONTHS={invoice_slugs['12 months']['full_url']}")
+    
+    print("\n# OPTION 2: Slugs only (shorter)")
+    if '1 week' in invoice_slugs:
+        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_1WEEK={invoice_slugs['1 week']['slug']}")
+    if '1 month' in invoice_slugs:
+        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_1MONTH={invoice_slugs['1 month']['slug']}")
+    if '6 months' in invoice_slugs:
+        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_6MONTHS={invoice_slugs['6 months']['slug']}")
+    if '12 months' in invoice_slugs:
+        print(f"REACT_APP_PREMIUM_INVOICE_SLUG_12MONTHS={invoice_slugs['12 months']['slug']}")
     
     print("\n" + "=" * 70)
     
