@@ -2540,7 +2540,7 @@ async def update_profile(
         with open(file_path, "wb") as f:
             content = await profilePhoto.read()
             f.write(content)
-        update_data["profileImage"] = f"/uploads/profiles/{unique_filename}"
+        update_data["profileImage"] = f"/api/media/profiles/{unique_filename}"
     elif profileImage:
         # If the client sends back an existing URL (string), preserve it
         update_data["profileImage"] = profileImage
