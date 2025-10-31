@@ -1999,6 +1999,39 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "emailNotifications": current_user.emailNotifications
     }
 
+@api_router.post("/auth/link-telegram")
+async def link_telegram_account(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Link Telegram ID to existing email-registered account
+    Auto-called when user opens webapp in Telegram
+    """
+    telegram_id = request.get("telegramId")
+    
+    if not telegram_id:
+        raise HTTPException(status_code=400, detail="Telegram ID required")
+    
+    # Check if this Telegram ID is already linked to another account
+    existing = await db.users.find_one({"telegramId": telegram_id})
+    if existing and existing.get("id") != current_user.id:
+        raise HTTPException(status_code=400, detail="Telegram account already linked to another user")
+    
+    # Update current user's telegramId
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"telegramId": telegram_id}}
+    )
+    
+    logger.info(f"✅ Linked Telegram ID {telegram_id} to user {current_user.username}")
+    
+    return {
+        "success": True,
+        "message": "Telegram account linked successfully",
+        "telegramId": telegram_id
+    }
+
 @api_router.get("/auth/verification-status")
 async def check_verification_status(current_user: User = Depends(get_current_user)):
     """Check current user's verification status and progress"""
