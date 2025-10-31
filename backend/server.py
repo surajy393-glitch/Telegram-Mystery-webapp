@@ -2494,8 +2494,8 @@ async def update_profile(
     
     # Handle username change with 15-day restriction
     if username is not None and username != current_user.username:
-        # Check if username is already taken
-        existing_user = await db.users.find_one({"username": username, "id": {"$ne": current_user.id}})
+        # Check if username is already taken - convert ID to int for PostgreSQL
+        existing_user = await db.users.find_one({"username": username, "id": {"$ne": int(current_user.id)}})
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already taken")
         
