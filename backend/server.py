@@ -2463,15 +2463,16 @@ async def update_profile(
     if profileImage is not None:
         update_data["profileImage"] = profileImage
         
-        # Update profile image in posts and stories
-        await db.posts.update_many(
-            {"userId": current_user.id},
-            {"$set": {"userProfileImage": profileImage}}
-        )
-        await db.stories.update_many(
-            {"userId": current_user.id},
-            {"$set": {"userProfileImage": profileImage}}
-        )
+        # Note: Posts and stories tables don't have userProfileImage column in PostgreSQL
+        # Profile image is fetched via JOIN with users table when displaying posts/stories
+        # await db.posts.update_many(
+        #     {"userId": current_user.id},
+        #     {"$set": {"userProfileImage": profileImage}}
+        # )
+        # await db.stories.update_many(
+        #     {"userId": current_user.id},
+        #     {"$set": {"userProfileImage": profileImage}}
+        # )
     
     if update_data:
         await db.users.update_one(
