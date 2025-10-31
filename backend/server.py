@@ -1290,7 +1290,7 @@ async def register_enhanced(
                 personality_answers = None
         
         # Handle profile photo upload - save to /app/uploads/profiles so FastAPI can serve it
-        clean_profile_image = None
+        clean_profile_image = ""  # Use empty string instead of None for completeness check
         if profilePhoto and profilePhoto.filename:
             # Save the uploaded file
             file_extension = profilePhoto.filename.split('.')[-1]
