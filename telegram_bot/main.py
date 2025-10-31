@@ -4,6 +4,11 @@ import logging
 import asyncio
 import datetime
 import pytz
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters, ApplicationHandlerStop
 from telegram.error import TelegramError, TimedOut, RetryAfter, NetworkError, Forbidden
