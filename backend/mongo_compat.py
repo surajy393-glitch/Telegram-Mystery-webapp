@@ -153,17 +153,6 @@ class Collection:
                 value = value.isoformat()
             
             db_document[db_key] = value
-            else:
-                # Convert camelCase to snake_case
-                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
-            
-            # Convert lists/dicts to JSON
-            if isinstance(value, (list, dict)):
-                value = json.dumps(value)
-            elif isinstance(value, datetime):
-                value = value.isoformat()
-            
-            db_document[db_key] = value
         
         # Build INSERT query
         columns = list(db_document.keys())
