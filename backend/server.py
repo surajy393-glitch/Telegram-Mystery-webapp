@@ -30,17 +30,18 @@ import db_postgres as db
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-db_name = os.environ.get('DB_NAME', 'luvhive_database')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
-
-# Log database connection info
+# PostgreSQL connection setup
 logger = logging.getLogger(__name__)
-logger.info(f"Connected to MongoDB at {mongo_url}")
-logger.info(f"Using database: {db_name}")
-logger.info(f"Database object: {db}")
+
+# Initialize database connection on startup
+async def init_db():
+    """Initialize PostgreSQL database connection"""
+    try:
+        await db.init_db()
+        logger.info("PostgreSQL database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize PostgreSQL database: {e}")
+        raise
 
 # Create database indexes for better performance
 async def create_indexes():
