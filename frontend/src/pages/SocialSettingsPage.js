@@ -97,41 +97,37 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   };
 
   const handleBuyPremiumStars = () => {
-    // Only attempt openInvoice if Telegram context and a valid slug exist
-    if (
-      window.Telegram &&
-      window.Telegram.WebApp &&
-      typeof window.Telegram.WebApp.openInvoice === "function" &&
-      PREMIUM_INVOICE_SLUG
-    ) {
+    const tg = window.Telegram?.WebApp;
+    const canOpenInvoice = tg && typeof tg.openInvoice === "function";
+
+    // Choose slug or URL if available (URL takes priority)
+    const invoiceObject = PREMIUM_INVOICE_URL
+      ? { url: PREMIUM_INVOICE_URL }
+      : PREMIUM_INVOICE_SLUG
+      ? { slug: PREMIUM_INVOICE_SLUG }
+      : null;
+
+    // If inside Telegram and we have a valid invoice identifier
+    if (canOpenInvoice && invoiceObject) {
       try {
-        window.Telegram.WebApp.openInvoice(
-          { slug: PREMIUM_INVOICE_SLUG },
-          (status) => {
-            // status can be: 'paid', 'cancelled', 'failed'
-            if (status === "paid") {
-              // Optionally refresh your auth token/profile here
-              window.location.reload();
-            } else if (status === "cancelled" || status === "failed") {
-              alert("Payment was cancelled or failed. Please try again.");
-            }
+        tg.openInvoice(invoiceObject, (status) => {
+          // status can be 'paid', 'cancelled', or 'failed'
+          if (status === "paid") {
+            // Refresh to re-fetch isPremium from /auth/me
+            window.location.reload();
+          } else if (status === "cancelled") {
+            alert("Payment was cancelled. You can try again.");
+          } else if (status === "failed") {
+            alert("Payment failed. Please try again later.");
           }
-        );
+        });
         return;
       } catch (err) {
-        console.warn("openInvoice threw an error:", err);
+        console.error("openInvoice error:", err);
       }
     }
 
-    // No slug or openInvoice failed – show a message instead of forcing a redirect
-    if (!PREMIUM_INVOICE_SLUG) {
-      alert(
-        "Premium purchase is currently unavailable because no invoice is configured. Please contact support."
-      );
-      return;
-    }
-
-    // As a last resort, open the bot purchase link in a new tab
+    // Fallback: open bot purchase link in new tab
     window.open(`https://t.me/${BOT_USERNAME}?start=premium_web`, "_blank");
   };
 
