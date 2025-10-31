@@ -193,16 +193,16 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
         with reg._conn() as con, con.cursor() as cur:
             cur.execute("""
                 INSERT INTO payments 
-                (user_id, amount_stars, currency, status, telegram_payment_id, duration_days, expires_at)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW() + INTERVAL '%s days')
+                (user_id, amount, currency, status, charge_id, product_type, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
             """, (
                 uid,
                 payment.total_amount,  # Amount in Stars
                 payment.currency,
                 'completed',
                 payment.telegram_payment_charge_id,
-                duration_days,
-                duration_days
+                'premium_subscription',
+                f'{{"duration_days": {duration_days}, "expires_at": "NOW() + INTERVAL \'{duration_days} days\'"}}'
             ))
             con.commit()
         
