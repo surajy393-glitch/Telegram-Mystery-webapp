@@ -2474,7 +2474,9 @@ async def update_profile(
     if bio is not None:
         update_data["bio"] = bio
     if country is not None:
-        update_data["country"] = country
+        update_data["country"] = country.strip()
+    if city is not None:
+        update_data["city"] = city.strip()
     if profileImage is not None:
         update_data["profileImage"] = profileImage
         
