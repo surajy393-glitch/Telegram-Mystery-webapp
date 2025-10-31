@@ -75,6 +75,23 @@ class Collection:
         """Insert single document"""
         pool = await get_pool()
         
+        # Valid PostgreSQL columns for webapp_users table
+        valid_columns = {
+            'id', 'username', 'full_name', 'email', 'mobile_number', 'password',
+            'age', 'gender', 'bio', 'profile_photo_url',
+            'telegram_id', 'telegram_username', 'telegram_first_name', 
+            'telegram_last_name', 'telegram_photo_url', 'auth_method',
+            'is_premium', 'is_private', 'is_verified', 'verified_at',
+            'verification_pathway', 'is_founder', 'email_verified', 
+            'mobile_verified', 'violations_count',
+            'appear_in_search', 'allow_direct_messages', 'show_online_status',
+            'allow_tagging', 'allow_story_replies', 'show_vibe_score',
+            'push_notifications', 'email_notifications',
+            'country', 'city', 'interests', 'personality_answers',
+            'last_username_change', 'is_online', 'last_seen',
+            'created_at', 'updated_at'
+        }
+        
         # Field mappings from MongoDB/App names to PostgreSQL column names
         field_mappings = {
             'password_hash': 'password',
@@ -108,7 +125,10 @@ class Collection:
             'pushNotifications': 'push_notifications',
             'emailNotifications': 'email_notifications',
             'lastUsernameChange': 'last_username_change',
-            'personalityAnswers': 'personality_answers'
+            'personalityAnswers': 'personality_answers',
+            'verifiedAt': 'verified_at',
+            'verificationPathway': 'verification_pathway',
+            'isFounder': 'is_founder'
         }
         
         # Convert camelCase keys to snake_case
@@ -118,6 +138,21 @@ class Collection:
             # First check if there's a specific mapping
             if key in field_mappings:
                 db_key = field_mappings[key]
+            else:
+                # Convert camelCase to snake_case
+                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+            
+            # Skip fields that don't exist in PostgreSQL
+            if db_key not in valid_columns:
+                continue
+            
+            # Convert lists/dicts to JSON
+            if isinstance(value, (list, dict)):
+                value = json.dumps(value)
+            elif isinstance(value, datetime):
+                value = value.isoformat()
+            
+            db_document[db_key] = value
             else:
                 # Convert camelCase to snake_case
                 db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
