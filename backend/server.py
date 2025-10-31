@@ -1138,16 +1138,13 @@ async def register(user_data: UserRegister):
             raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
     
     # Check if username exists (case-insensitive and trimmed)
-    escaped_username = clean_username.replace('.', r'\.')
-    existing_user = await db.users.find_one({
-        "username": {"$regex": f"^{escaped_username}$", "$options": "i"}
-    })
+    existing_user = await db.get_user_by_username(clean_username)
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
     # Check if email already exists
     if clean_email:
-        existing_email = await db.users.find_one({"email": clean_email})
+        existing_email = await db.get_user_by_email(clean_email)
         if existing_email:
             raise HTTPException(status_code=400, detail="Email already registered")
 
