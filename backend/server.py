@@ -1459,13 +1459,23 @@ async def register_enhanced(
             except Exception as e:
                 logger.error(f"Failed to send welcome email: {e}")
         
-        # ALL successful registrations should auto-login immediately
-        # Email verification is optional and can be done later for additional security
+        # ALL successful registrations should auto-login immediately.
+        # Return the profileImage (if provided) so the client can display the picture right away.
         return {
             "message": "Registration successful! Welcome to LuvHive!",
             "access_token": access_token,
             "token_type": "bearer",
-            "user": {k: v for k, v in user_dict.items() if k not in ["password_hash", "_id", "emailVerificationToken"]},
+            "user": {
+                "id": str(actual_user_id),
+                "fullName": clean_fullname,
+                "username": clean_username,
+                "age": age,
+                "gender": gender,
+                "email": clean_email,
+                "authMethod": "password",
+                "isPremium": False,
+                "profileImage": clean_profile_image or None,
+            },
             "auto_login": True
         }
         
