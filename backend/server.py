@@ -1166,7 +1166,7 @@ async def register(user_data: UserRegister):
     )
     
     user_dict = user.dict()
-    await db.users.insert_one(user_dict)
+    await db.create_user(user_dict)
     
     access_token = create_access_token(data={"sub": user.id})
     
