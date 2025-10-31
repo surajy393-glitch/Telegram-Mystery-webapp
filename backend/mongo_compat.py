@@ -82,6 +82,10 @@ class Collection:
         for key, value in document.items():
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
+            # Special case: password_hash -> password (PostgreSQL uses 'password')
+            if db_key == 'password_hash':
+                db_key = 'password'
+            
             # Convert lists/dicts to JSON
             if isinstance(value, (list, dict)):
                 value = json.dumps(value)
