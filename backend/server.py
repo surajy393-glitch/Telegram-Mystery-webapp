@@ -90,6 +90,18 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Media serving endpoint
+@api_router.get("/media/profiles/{filename}", response_class=FileResponse)
+async def get_profile_image(filename: str):
+    """
+    Serve a saved profile image. Returns 404 if the file does not exist.
+    This endpoint ensures images are always served by the app, regardless of deployment context.
+    """
+    file_path = PROFILES_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(file_path)
+
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 
