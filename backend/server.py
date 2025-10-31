@@ -1291,23 +1291,17 @@ async def register_enhanced(
                 logger.warning(f"Failed to parse personalityAnswers: {e}")
                 personality_answers = None
         
-        # Handle profile photo upload - save to /app/uploads/profiles so FastAPI can serve it
-        clean_profile_image = ""  # Use empty string instead of None for completeness check
-        if profilePhoto and profilePhoto.filename:
-            # Save the uploaded file
-            file_extension = profilePhoto.filename.split('.')[-1]
+        # Choose whichever upload field the client sent
+        uploaded_file = profilePhoto or profileImage
+        clean_profile_image: Optional[str] = None
+        if uploaded_file and uploaded_file.filename:
+            file_extension = uploaded_file.filename.split('.')[-1]
             unique_filename = f"{uuid4()}.{file_extension}"
             file_path = f"/app/uploads/profiles/{unique_filename}"
-            
-            # Ensure uploads directory exists
             os.makedirs("/app/uploads/profiles", exist_ok=True)
-            
-            # Save file
             with open(file_path, "wb") as f:
-                content = await profilePhoto.read()
+                content = await uploaded_file.read()
                 f.write(content)
-            
-            # When returning to the frontend, prefix with /uploads/profiles/
             clean_profile_image = f"/uploads/profiles/{unique_filename}"
         
         # Validate and clean input
