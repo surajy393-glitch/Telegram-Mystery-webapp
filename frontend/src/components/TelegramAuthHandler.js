@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { isTelegramWebApp, getTelegramInitData, expandTelegramWebApp } from '../utils/telegramWebApp';
-import { setToken, setUser } from '@/utils/telegramStorage';
+import { setToken, setUser as setStorageUser } from '@/utils/telegramStorage';
 
 const API = "/api";
 
