@@ -38,8 +38,9 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
         username: user.username || "",
         bio: user.bio || "",
         country: user.country || "",
-        profileImage: user.profileImage || ""
+        city: user.city || ""
       });
+      setProfileImagePreview(user.profileImage || "");
     }
     fetchProfile();
     checkUsernameChange();
