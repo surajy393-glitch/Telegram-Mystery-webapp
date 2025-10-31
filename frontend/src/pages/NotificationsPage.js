@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
 import axios from "axios";
-import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
+import { getToken } from "@/utils/telegramStorage";
 
 const getRelativeTime = (dateString) => {
   const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';

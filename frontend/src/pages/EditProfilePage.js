@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
+import { getToken } from "@/utils/telegramStorage";
 
 const EditProfilePage = ({ user, onLogin, onLogout }) => {
   const navigate = useNavigate();

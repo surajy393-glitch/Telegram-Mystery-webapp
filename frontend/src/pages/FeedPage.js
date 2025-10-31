@@ -3,9 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus, Bell, Search, User, MoreVertical, Bookmark, UserIcon as UserIconLucide, AlertCircle, Trash2, Download } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
+import { getToken } from "@/utils/telegramStorage";
 
 const FeedPage = ({ user, onLogout }) => {
   const navigate = useNavigate();

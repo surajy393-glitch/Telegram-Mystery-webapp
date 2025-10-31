@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, X, Eye, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import { getToken } from "@/utils/telegramStorage";
 
 const API = '/api';
+import { getToken } from "@/utils/telegramStorage";
 
 const StoriesPage = ({ user }) => {
   const navigate = useNavigate();
