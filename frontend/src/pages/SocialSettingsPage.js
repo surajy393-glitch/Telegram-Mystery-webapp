@@ -369,14 +369,14 @@ const SocialSettingsPage = ({ user, onLogout }) => {
               </ul>
             </div>
             <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
-              {/* Telegram app deep link */}
-              <a
-                href={`tg://resolve?domain=${BOT_USERNAME}&start=premium_web`}
+              {/* Replace anchor with button and call our handler */}
+              <button
+                onClick={handleBuyPremiumStars}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white py-2 px-4 rounded-md text-center"
               >
                 Buy Premium with Stars
-              </a>
-              {/* Fallback link */}
+              </button>
+              {/* Keep the fallback anchor for manual Telegram opening */}
               <a
                 href={`https://t.me/${BOT_USERNAME}?start=premium_web`}
                 target="_blank"
