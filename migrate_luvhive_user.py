@@ -44,7 +44,7 @@ async def migrate_luvhive_user():
             print(f"\n⚠️  User '{user_data['username']}' already exists (ID: {existing_user['id']})")
             print("   Updating existing user...")
             
-            # Update existing user
+            # Update existing user (only update non-password fields to avoid constraint issues)
             await conn.execute("""
                 UPDATE webapp_users SET
                     email = $1,
@@ -59,13 +59,12 @@ async def migrate_luvhive_user():
                     country = $10,
                     telegram_id = $11,
                     auth_method = $12,
-                    password = $13,
-                    email_verified = $14,
-                    mobile_verified = $15,
-                    violations_count = $16,
-                    mobile_number = $17,
+                    email_verified = $13,
+                    mobile_verified = $14,
+                    violations_count = $15,
+                    mobile_number = $16,
                     updated_at = NOW()
-                WHERE username = $18
+                WHERE username = $17
             """,
                 user_data.get('email'),
                 user_data.get('fullName'),
@@ -79,7 +78,6 @@ async def migrate_luvhive_user():
                 user_data.get('country'),
                 user_data.get('telegramId'),
                 user_data.get('authMethod', 'password'),
-                user_data.get('password_hash'),
                 user_data.get('emailVerified', True),
                 user_data.get('phoneVerified', False),
                 user_data.get('violationsCount', 0),
