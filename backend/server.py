@@ -2101,7 +2101,8 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "age": current_user.age,
         "gender": current_user.gender,
         "bio": current_user.bio,
-        "profileImage": current_user.profileImage,
+        # Prefer the fresh value from the database; fall back to current_user.profileImage.
+        "profileImage": user_data.get("profileImage") if user_data else current_user.profileImage,
         "country": current_user.country if hasattr(current_user, 'country') else None,
         "city": current_user.city if hasattr(current_user, 'city') else None,
         "isPremium": current_user.isPremium,
