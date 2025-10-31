@@ -79,11 +79,16 @@ async def create_all_premium_invoices():
                 prices=[LabeledPrice(label=f"Premium - {tier['name']}", amount=tier['stars'])]
             )
             
-            # Extract slug (part after $)
+            # Extract slug and store full URL
             if '$' in invoice_link:
                 slug = invoice_link.split('$')[1]
-                invoice_slugs[tier['duration']] = slug
-                print(f"   ✅ Success! Slug: {slug}")
+                invoice_slugs[tier['duration']] = {
+                    'full_url': invoice_link,
+                    'slug': slug
+                }
+                print(f"   ✅ Success!")
+                print(f"      Full URL: {invoice_link}")
+                print(f"      Slug: {slug}")
             else:
                 print(f"   ⚠️  Warning: Could not extract slug from invoice link")
                 print(f"   Full link: {invoice_link}")
