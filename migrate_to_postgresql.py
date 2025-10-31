@@ -37,14 +37,12 @@ def migrate_luvhive_user():
     pg_cur.execute("""
         INSERT INTO webapp_users (
             id, full_name, username, email, mobile_number, password,
-            age, gender, city, interests, bio, profile_image,
-            country, is_premium, is_verified, is_founder,
-            email_verified, phone_verified, telegram_id,
-            violations_count, auth_method, created_at
+            age, gender, city, interests, bio, profile_photo_url,
+            is_private, is_verified, email_verified, mobile_verified,
+            telegram_id, created_at
         ) VALUES (
             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s
         )
     """, (
         1,  # Auto-increment ID
@@ -59,15 +57,11 @@ def migrate_luvhive_user():
         json.dumps(luvhive.get('interests', [])),
         luvhive.get('bio', ''),
         luvhive.get('profileImage'),
-        luvhive.get('country', 'India'),
-        luvhive.get('isPremium', False),
+        luvhive.get('isPrivate', False),
         luvhive.get('isVerified', False),
-        luvhive.get('isFounder', False),
         luvhive.get('emailVerified', True),
         luvhive.get('phoneVerified', False),
         luvhive.get('telegramId'),
-        luvhive.get('violationsCount', 0),
-        luvhive.get('authMethod', 'password'),
         luvhive.get('createdAt', datetime.now())
     ))
     
