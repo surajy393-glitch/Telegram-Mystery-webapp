@@ -141,7 +141,11 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
     
     try:
         # Extract duration from payload (format: premium_7d_<uid> or premium_30d_<uid> or luvhive_premium_1month)
+        # OR from the invoice title if payload doesn't contain duration info
         parts = payload.split('_')
+        
+        # Log for debugging
+        logger.info(f"Payment received - Payload: {payload}, Total Amount: {payment.total_amount} Stars")
         
         # Handle different payload formats
         if 'month' in payload.lower():
@@ -152,8 +156,24 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
             duration_str = parts[1]
             duration_days = int(duration_str.replace('d', ''))
         else:
-            # Default to 30 days for webapp purchases
-            duration_days = 30
+            # Fallback: Try to determine from Stars amount
+            # 100 Stars = 1 week, 250 Stars = 1 month, 600 Stars = 6 months, 1000 Stars = 12 months
+            if payment.total_amount == 100:
+                duration_days = 7
+                logger.info("Detected 1 week from Stars amount (100)")
+            elif payment.total_amount == 250:
+                duration_days = 30
+                logger.info("Detected 1 month from Stars amount (250)")
+            elif payment.total_amount == 600:
+                duration_days = 180
+                logger.info("Detected 6 months from Stars amount (600)")
+            elif payment.total_amount == 1000:
+                duration_days = 365
+                logger.info("Detected 12 months from Stars amount (1000)")
+            else:
+                # Default to 30 days
+                duration_days = 30
+                logger.warning(f"Could not detect duration from payload or amount, defaulting to 30 days")
         
         # Activate premium in PostgreSQL database (bot database)
         import datetime
