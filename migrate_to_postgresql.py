@@ -125,8 +125,8 @@ def update_bot_user():
     
     # Update or insert in bot's users table
     pg_cur.execute("""
-        INSERT INTO users (tg_user_id, username, is_premium, premium_until)
-        VALUES (1437934486, 'Luvhive', true, NOW() + INTERVAL '365 days')
+        INSERT INTO users (tg_user_id, is_premium, premium_until)
+        VALUES (1437934486, true, NOW() + INTERVAL '365 days')
         ON CONFLICT (tg_user_id) DO UPDATE 
         SET is_premium = true, premium_until = NOW() + INTERVAL '365 days'
     """)
