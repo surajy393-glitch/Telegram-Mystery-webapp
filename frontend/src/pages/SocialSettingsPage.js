@@ -95,26 +95,33 @@ const SocialSettingsPage = ({ user, onLogout }) => {
   };
 
   const handleBuyPremiumStars = () => {
-    // If the app runs inside Telegram Web/Mini App, use openInvoice
+    // Check Telegram WebApp context and openInvoice availability
     if (
       window.Telegram &&
       window.Telegram.WebApp &&
-      typeof window.Telegram.WebApp.openInvoice === "function"
+      typeof window.Telegram.WebApp.openInvoice === "function" &&
+      PREMIUM_INVOICE_SLUG
     ) {
-      window.Telegram.WebApp.openInvoice(PREMIUM_INVOICE_SLUG, (status) => {
-        // Optional: refresh premium status on success
-        if (status === 'paid') {
-          console.log('✅ Premium payment successful!');
-          // Optionally refresh user data to update premium status
-          window.location.reload();
-        } else if (status === 'cancelled') {
-          console.log('❌ Premium payment cancelled');
-        }
-      });
-    } else {
-      // Fallback: open your bot to handle payment
-      window.location.href = `https://t.me/${BOT_USERNAME}?start=premium_web`;
+      try {
+        // Attempt to open the invoice by slug
+        window.Telegram.WebApp.openInvoice(PREMIUM_INVOICE_SLUG, (status) => {
+          // status: 'paid' | 'cancelled' | 'failed'
+          if (status === 'paid') {
+            console.log('✅ Premium payment successful!');
+            // Optionally refresh user data to update premium status
+            window.location.reload();
+          } else {
+            console.log(`❌ Payment status: ${status}`);
+          }
+        });
+        return;
+      } catch (err) {
+        // fall through to fallback
+        console.warn("openInvoice failed, redirecting to bot:", err);
+      }
     }
+    // Fallback: open your bot for purchase
+    window.location.href = `https://t.me/${BOT_USERNAME}?start=premium_web`;
   };
 
   if (loading) {
