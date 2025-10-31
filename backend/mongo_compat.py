@@ -154,6 +154,42 @@ class Collection:
         """Update single document"""
         pool = await get_pool()
         
+        # Field mappings from MongoDB/App names to PostgreSQL column names
+        field_mappings = {
+            'password_hash': 'password',
+            'profileImage': 'profile_photo_url',
+            'profile_image': 'profile_photo_url',
+            'phoneVerified': 'mobile_verified',
+            'phone_verified': 'mobile_verified',
+            'fullName': 'full_name',
+            'mobileNumber': 'mobile_number',
+            'authMethod': 'auth_method',
+            'emailVerified': 'email_verified',
+            'violationsCount': 'violations_count',
+            'isPrivate': 'is_private',
+            'isVerified': 'is_verified',
+            'isPremium': 'is_premium',
+            'isOnline': 'is_online',
+            'lastSeen': 'last_seen',
+            'createdAt': 'created_at',
+            'updatedAt': 'updated_at',
+            'telegramId': 'telegram_id',
+            'telegramUsername': 'telegram_username',
+            'telegramFirstName': 'telegram_first_name',
+            'telegramLastName': 'telegram_last_name',
+            'telegramPhotoUrl': 'telegram_photo_url',
+            'appearInSearch': 'appear_in_search',
+            'allowDirectMessages': 'allow_direct_messages',
+            'showOnlineStatus': 'show_online_status',
+            'allowTagging': 'allow_tagging',
+            'allowStoryReplies': 'allow_story_replies',
+            'showVibeScore': 'show_vibe_score',
+            'pushNotifications': 'push_notifications',
+            'emailNotifications': 'email_notifications',
+            'lastUsernameChange': 'last_username_change',
+            'personalityAnswers': 'personality_answers'
+        }
+        
         # Extract $set operator if present
         if '$set' in update_dict:
             update_fields = update_dict['$set']
@@ -166,11 +202,12 @@ class Collection:
         param_num = 1
         
         for key, value in update_fields.items():
-            db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
-            
-            # Special case: password_hash -> password (PostgreSQL uses 'password')
-            if db_key == 'password_hash':
-                db_key = 'password'
+            # First check if there's a specific mapping
+            if key in field_mappings:
+                db_key = field_mappings[key]
+            else:
+                # Convert camelCase to snake_case
+                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
             # Convert lists/dicts to JSON
             if isinstance(value, (list, dict)):
