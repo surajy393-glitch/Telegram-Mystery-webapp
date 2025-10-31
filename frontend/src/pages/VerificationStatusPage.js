@@ -88,7 +88,7 @@ const VerificationStatusPage = ({ user }) => {
     setVerifying(true);
     setMessage('');
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       
       if (verificationType === 'email') {
         const response = await axios.post(`${API}/auth/send-email-verification`, 
