@@ -260,6 +260,14 @@ class Collection:
         where_parts = []
         for key, value in filter_dict.items():
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+            
+            # Special handling for ID fields - convert string to int for PostgreSQL
+            if db_key in ['id', 'user_id'] and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass
+                    
             where_parts.append(f"{db_key} = ${param_num}")
             values.append(value)
             param_num += 1
