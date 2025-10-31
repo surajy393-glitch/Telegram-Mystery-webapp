@@ -231,10 +231,18 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
             ))
             con.commit()
         
-        # Send confirmation
+        # Send confirmation with appropriate duration message
+        duration_text = (
+            "1 week" if duration_days == 7 else
+            "1 month" if duration_days == 30 else
+            "6 months" if duration_days == 180 else
+            "12 months" if duration_days == 365 else
+            f"{duration_days} days"
+        )
+        
         await update.message.reply_text(
             f"🎉 **Payment Successful!**\n\n"
-            f"👑 You are now a Premium user for {duration_days} days!\n\n"
+            f"👑 You are now a Premium user for {duration_text}!\n\n"
             f"**Premium Benefits Activated:**\n"
             f"✅ Unlimited chats (webapp)\n"
             f"✅ Photos, videos & voice notes\n"
