@@ -2431,6 +2431,7 @@ async def update_profile(
     username: str = Form(None), 
     bio: str = Form(None),
     country: str = Form(None),
+    city: str = Form(None),
     profileImage: str = Form(None), 
     current_user: User = Depends(get_current_user)
 ):
