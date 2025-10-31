@@ -62,12 +62,12 @@ os.makedirs("/app/uploads/profiles", exist_ok=True)
 os.makedirs("/app/uploads/stories", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
 
-# Initialize indexes on startup
+# Initialize database on startup
 @app.on_event("startup")
 async def startup_event():
     """Run startup tasks"""
-    import asyncio
-    asyncio.create_task(create_indexes())
+    await init_db()
+    await create_tables()
 
 # Add compression middleware for better performance
 app.add_middleware(GZipMiddleware, minimum_size=1000)
