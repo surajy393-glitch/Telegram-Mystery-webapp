@@ -2501,34 +2501,22 @@ async def update_profile(
     if city is not None:
         update_data["city"] = city.strip()
     
-    # Handle profile photo upload
-    if profileImage and profileImage.filename:
-        # Save the uploaded file
-        file_extension = profileImage.filename.split('.')[-1]
+    # Handle profile photo upload.  Use profilePhoto if a new file is provided.
+    if profilePhoto and profilePhoto.filename:
+        file_extension = profilePhoto.filename.split('.')[-1]
         unique_filename = f"{uuid4()}.{file_extension}"
         file_path = f"/app/uploads/profiles/{unique_filename}"
-        
-        # Ensure uploads directory exists
         os.makedirs("/app/uploads/profiles", exist_ok=True)
-        
-        # Save file
         with open(file_path, "wb") as f:
-            content = await profileImage.read()
+            content = await profilePhoto.read()
             f.write(content)
-        
-        # Store the URL path that can be served by FastAPI
         update_data["profileImage"] = f"/uploads/profiles/{unique_filename}"
-        
-        # Note: Posts and stories tables don't have userProfileImage column in PostgreSQL
-        # Profile image is fetched via JOIN with users table when displaying posts/stories
-        # await db.posts.update_many(
-        #     {"userId": current_user.id},
-        #     {"$set": {"userProfileImage": profileImage}}
-        # )
-        # await db.stories.update_many(
-        #     {"userId": current_user.id},
-        #     {"$set": {"userProfileImage": profileImage}}
-        # )
+    elif profileImage:
+        # If the client sends back an existing URL (string), preserve it
+        update_data["profileImage"] = profileImage
+    
+    # Note: Posts and stories tables don't have userProfileImage column in PostgreSQL
+    # Profile image is fetched via JOIN with users table when displaying posts/stories
     
     if update_data:
         await db.users.update_one(
