@@ -28,6 +28,13 @@ class Collection:
             # Convert camelCase to snake_case
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
             
+            # Special handling for ID - convert string to int for PostgreSQL
+            if db_key == 'id' and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass  # Keep as string if conversion fails
+            
             # Handle special operators
             if isinstance(value, dict):
                 for op, op_value in value.items():
