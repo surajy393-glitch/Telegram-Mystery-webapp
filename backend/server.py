@@ -1217,23 +1217,34 @@ async def register(user_data: UserRegister):
     )
     
     user_dict = user.dict()
-    await db.create_user(user_dict)
+    # Remove id so PostgreSQL can auto-generate it
+    user_dict.pop("id", None)
+    result = await db.users.insert_one(user_dict)
+    actual_user_id = result["inserted_id"]
     
-    access_token = create_access_token(data={"sub": user.id})
+    # Create access token with the actual integer ID
+    access_token = create_access_token(data={"sub": str(actual_user_id)})
+    
+    # Send welcome email if email is provided
+    if clean_email:
+        try:
+            await send_welcome_email(clean_email, clean_fullname, clean_username)
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {e}")
     
     return {
         "message": "Registration successful",
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id": user.id,
-            "fullName": user.fullName,
-            "username": user.username,
-            "age": user.age,
-            "gender": user.gender,
-            "email": user.email,
-            "authMethod": user.authMethod,
-            "isPremium": user.isPremium
+            "id": str(actual_user_id),
+            "fullName": clean_fullname,
+            "username": clean_username,
+            "age": user_data.age,
+            "gender": user_data.gender,
+            "email": clean_email,
+            "authMethod": user_data.authMethod,
+            "isPremium": False
         }
     }
 
