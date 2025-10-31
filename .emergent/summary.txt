@@ -1,107 +1,130 @@
 <analysis>
-The AI engineer's work involved extensive debugging and refactoring for a social dating app, addressing critical issues from UI rendering to data handling. Initial problems included a non-functional About this account dialog, resolved by replacing a custom modal with a Radix Dialog component and correctly placing it. Subsequent efforts focused on persistent post-loading failures due to ID mismatches, strict backend filters, 500 errors from  field types, and broken images caused by URL prefix discrepancies. The engineer implemented robust media URL resolution, prioritized Telegram proxy handling, unified media helpers, and corrected environment variable usage. Privacy logic for private profiles was also tightened. The latest task involves fixing missing follow-back notifications after request acceptance.
+The AI engineer's trajectory involved a comprehensive set of fixes and feature additions for a social dating application, spanning both frontend (React) and backend (FastAPI, MongoDB) components. Initially, the focus was on critical bug fixes related to post loading, media display, privacy, and user profile interactions. This included standardizing media URL resolution, rectifying backend data handling for posts, and enhancing profile display logic to correctly show follow status and About dialogs.
+
+Subsequently, the work shifted to refining the social interaction flow, specifically implementing a nuanced Follow back notification system and making follower/following lists clickable with dynamic follow buttons. A major strategic decision, advised by the AI engineer and confirmed by the user, was to remove the Mystery Match feature from the web app, positioning the Telegram bot as the primary platform for anonymous matching. The final, ongoing phase concentrated on integrating Telegram Stars for premium membership purchases, which involved complex debugging of invoice slugs, API calls, and ensuring cross-database (PostgreSQL for bot, MongoDB for webapp) synchronization of premium status, culminating in the identification of an invalid invoice slug as the immediate blocking issue.
 </analysis>
 
 <product_requirements>
-The application is an MVP dating app with core features like LuvHive Verified badges, Founder Badge, dynamic profile picture updates, auto-refreshing feeds, and infinite scroll for posts. The AI engineer was tasked with resolving several critical issues to enhance user experience:
+The application is an MVP dating app with LuvHive Verified badges, Founder Badge, dynamic profile picture updates, auto-refreshing feeds, and infinite scroll. The AI engineer was tasked with resolving several critical issues and implementing new social features:
 
-1.  **About this account Dialog:** This dialog, accessible from a user's profile, was not appearing or functioning correctly due to CSS/rendering conflicts. It needed to display join date, country, and verification pathway.
-2.  **Profile Picture Display:** Profile pictures were not reliably displaying after registration, often requiring re-upload.
-3.  **Edit Profile Functionality:** This feature was intermittently failing, linked to  issues or incorrect state updates.
-4.  **User  field:** Needed to be integrated into registration and profile editing flows.
-5.  **Invalid token Errors:** Users experienced authentication issues post-registration, blocking access to features like Mystery Match and Search until re-login.
-6.  ** Status:** The verification status was not correctly reflected post-registration.
-7.  **Posts Loading and Display:** Public profiles were not showing posts, or images appeared broken, due to:
-    *   Incorrect user ID (username vs. UUID) used in API calls for posts.
-    *   Backend post filtering ( instead of ).
-    *   500 Internal Server Errors from backend due to  type handling and missing  fields.
-    *   Frontend/backend URL prefix mismatch ( vs. ) for static files.
-    *   Improper handling of Telegram-hosted media using  without proxy.
-    *   Error checking profile (401) on  due to missing authentication tokens in API calls.
-8.  **Private Profile Post Visibility:** Posts on private profiles were visible to followers, requiring stricter privacy rules.
-9.  **Follow Notification and Follow back Button:** After accepting a follow request, the user who initiated the follow does not receive a notification with a Follow back button.
+1.  **About this account Dialog:** Ensure this dialog correctly displays join date, country, and verification pathway.
+2.  **Profile Picture Display:** Fix unreliable display of profile pictures post-registration.
+3.  **Edit Profile Functionality:** Resolve intermittent failures in profile editing.
+4.  **User  field:** Integrate into registration and profile editing.
+5.  **Invalid token Errors:** Fix authentication issues blocking access to features.
+6.  ** Status:** Ensure correct reflection post-registration.
+7.  **Posts Loading and Display:** Resolve issues with posts not showing or images being broken, due to incorrect user IDs, backend filtering,  type errors, URL prefix mismatches, and improper Telegram media handling. Also, fix 401 errors on .
+8.  **Private Profile Post Visibility:** Enforce stricter privacy rules to hide posts from non-owners.
+9.  **Follow Notification and Follow back Button:** Implement a notification for the requester when a follow request is accepted, showing accepted your follow request (no Follow back button), and for the accepter, started following you with a Follow back button (if not already following).
+10. **Clickable Usernames in Notifications:** Make usernames in notifications clickable to navigate to their profile.
+11. **Follow back Button on ProfilePage:** If a user views a profile of someone who follows them (but they don't follow back), the button should display Follow back.
+12. **Clickable Followers/Following Counts:** Make follower/following counts clickable to open a dialog showing the list of users, with privacy checks (public profiles show list, private do not).
+13. **Follow Buttons in Followers/Following Dialog:** Within the dialog, each user in the list should have a dynamic button showing Follow, Follow back, Following, or Requested based on the current user's relationship with them.
+14. **Requested Status for Pending Follows:** Show Requested button if a follow request is pending.
+15. **Conditional Notification Creation:** The started following you notification with a Follow back button should only be created if the accepter does not already follow the requester.
+16. **Remove Mystery Match Feature:** Remove all webapp UI and backend endpoints related to Mystery Match, ensuring no impact on other features or existing user data.
+17. **Add Premium Membership CTA:** Integrate a Premium Membership section in  that allows users to purchase premium via Telegram Stars (preferably inline in Telegram Mini App, with fallback to bot).
+18. **Telegram Bot Integration:** Properly start and configure the Telegram bot, including handling payment errors, correctly parsing payment durations, and removing old commands.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development:** React (frontend), FastAPI (backend), MongoDB (database).
--   **API Communication:** RESTful endpoints ( prefix), JWT authentication (with  claim), .
--   **State Management:** React , ,  for user sessions.
--   **UI/UX:** Radix Dialog (portal rendering), CSS transforms, z-index, responsive grids.
--   **Media Handling:** Static file serving (), Telegram integration (proxy via ), URL normalization, base64 data URIs.
--   **Debugging:** Console logging,  (on-screen mobile console).
--   **Environment Variables:** , .
+- **Full-stack Architecture:** React (frontend), FastAPI (backend), MongoDB (webapp database), PostgreSQL (Telegram bot database).
+- **API Communication:** RESTful endpoints, JWT authentication, .
+- **UI/UX:** Radix Dialog for modals, Tailwind CSS,  for routing.
+- **State Management:** React , , .
+- **Media Handling:** URL normalization, Telegram proxy, file uploads.
+- **Telegram Bot Integration:** Telegram WebApp API (), Telegram Stars payments, environment variables (, ).
+- **Database Synchronization:** Updating both MongoDB and PostgreSQL for premium status.
 </key_technical_concepts>
 
 <code_architecture>
 
 
 -   :
-    -   **Importance:** Centralizes backend API endpoints.
+    -   **Importance:** Core backend API.
     -   **Changes:**
-        -    field added to  model;  and  accept .
-        -    generates JWTs with  claim.
-        -    and  fields persisted.
-        -    handler: modified to accept  as UUID or username, filter posts with , safely normalize  field (handling  objects or strings), and conditionally return  if / are missing.
+        -   : Modified to create two distinct notifications ( for requester,  for accepter) and conditionally create the  notification only if the accepter doesn't already follow the requester.
+        -   : Added  field (boolean indicating if the viewed user follows the current user).
+        -    and : Added  field to each user object (boolean indicating if current user has a pending follow request to that user).
+        -   Removed  inclusion and all Mystery Match related endpoints and welcome email content.
 -   :
-    -   **Importance:** Handles post and story creation logic.
+    -   **Importance:** Handles post and story creation.
+    -   **Changes:** No changes in this specific trajectory segment, but previously updated for media URL prefixing.
+-   :
+    -   **Importance:** Entry point for the Telegram bot.
+    -   **Changes:** Environment variables (, ) are now loaded, and the bot is successfully started.
+-   :
+    -   **Importance:** Handles Telegram Stars payment processing and premium activation.
     -   **Changes:**
-        -    and : now construct  and  with the  prefix for static files and include robust file extension handling.
--   :
-    -   **Importance:** Frontend entry point.
-    -   **Changes:** Injected  for mobile console debugging.
--   :
-    -   **Importance:** Manages global user state and authentication.
-    -   **Changes:**  passed to ; enhanced  and  with logging.
--   :
-    -   **Importance:** Radix UI Dialog component definition.
-    -   **Changes:**  and  now use explicit high  values (, ) to ensure visibility.
--   :
-    -   **Importance:** Handles comment interactions.
-    -   **Changes:**  now directly navigates to the user's profile without an alert.
+        -   : Modified to update  status in both PostgreSQL (bot's database) and MongoDB (webapp's database).
+        -   Corrected column name from  to  when inserting into the PostgreSQL  table.
+        -   Improved payload parsing logic to correctly extract payment duration (e.g., 1 week) from the  and send the appropriate confirmation message.
+        -   Removed references to  command, replacing them with .
 -    (NEW FILE):
-    -   **Importance:** Centralized utility for media URL normalization.
-    -   **Contents:**
-        -   : Normalizes URLs by ensuring the  prefix for  paths and prepending  if configured. Handles absolute URLs and data URIs.
-        -   : Resolves the best URL for a post by prioritizing  (proxying through ), then falling back to , then .
+    -   **Importance:** Script to generate Telegram Stars invoice slug.
+    -   **Contents:** Python script to call  and print the resulting invoice URL and slug.
 -   :
-    -   **Importance:** Displays user profiles (including current user and others).
+    -   **Importance:** Manages global user state, authentication, and routing.
+    -   **Changes:** Removed routes for  and .
+-   :
+    -   **Importance:** Radix UI Dialog component.
+    -   **Changes:** No changes in this trajectory segment, but previously updated for z-index.
+-   :
+    -   **Importance:** Main feed display.
+    -   **Changes:** Removed the Mystery Match button.
+-   :
+    -   **Importance:** Displays user notifications.
     -   **Changes:**
-        -    used for all API calls.
-        -   About this account dialog: Replaced custom modal with , state management refined, moved to the correct  JSX branch.
-        -   : Updated to handle username slugs as  and include 401 error handling with .
-        -   : Updated to accept  (UUID) and  for robust fetching, included a  state, and uses the  helper.
-        -   Media display: Imports  from  (local  and  helpers were removed). The posts grid uses  for image/video sources.
-        -   Privacy logic: Updated the condition to hide Recent Posts for any viewer if  is true and  is false, ensuring private accounts' posts are truly hidden.
-        -   Fixed  due to incorrect  access by switching to .
--   , , , :
-    -   **Importance:** Core frontend pages displaying posts.
-    -   **Changes:** All now import and utilize the  utility from  for consistent and robust media URL resolution and display.
+        -   Implemented  function for the Follow back button.
+        -   Conditional rendering for notification messages and Follow back button based on notification type ( vs. ).
+        -   Integrated  and made usernames clickable to navigate to user profiles.
 -   :
-    -   **Importance:** Displays the main feed of posts.
-    -   **Changes:** Pass authentication token when fetching user profiles, use  for post media, and updated username  handler to directly navigate.
+    -   **Importance:** Displays user profiles.
+    -   **Changes:**
+        -   Updated  to utilize the new  backend field for button logic (Follow back vs. Follow).
+        -   Added state for , , ,  lists and their loading states.
+        -   Implemented  and  functions to fetch and display lists in a .
+        -   Made followers/following counts clickable.
+        -   Integrated dynamic Follow, Follow back, Following, Requested buttons within the Followers/Following dialog, using  and  fields.
+        -   Updated  to properly update  state.
 -   :
-    -   **Importance:** Environment variables for frontend.
-    -   **Changes:**  was changed to an empty string to use relative URLs, addressing cross-domain issues for local deployments, then adjusted to .
+    -   **Importance:** Manages user settings.
+    -   **Changes:**
+        -   Removed all Mystery Match related settings, UI elements, and associated state/functions (e.g., , , , blocked users dialog).
+        -   Replaced the always-visible Premium Membership card with a button that opens a  modal.
+        -   The modal clearly compares Free vs. Premium features and provides purchase links.
+        -   Implemented  function for Telegram Stars payment:
+            -   Uses  for inline Stars payment in Telegram Mini App.
+            -   Includes robust error handling () and validation for .
+            -   Falls back to opening the bot deep link () in a new tab if  is unavailable or fails.
+            -   Reloads the page on successful payment to update premium status.
+-   :
+    -   **Importance:** Centralized media URL normalization.
+    -   **Changes:** No changes in this specific trajectory segment, but previously created and updated for consistent media resolution.
+-   :
+    -   **Importance:** Frontend environment variables.
+    -   **Changes:** Updated  to  and  with the generated invoice slug.  was added as an empty placeholder.
+-   :
+    -   **Importance:** Telegram bot environment variables.
+    -   **Changes:** Added ,  (PostgreSQL), and  for MongoDB access.
 </code_architecture>
 
 <pending_tasks>
--   Implement the logic for displaying a Luvsociety started following you notification with a Follow back button after a follow request is accepted.
--   Investigate the existing notification and follow system to correctly add this new notification feature.
+- Fix the Invoice url is invalid error by recreating the Telegram Stars invoice (potentially using a full URL instead of a slug).
+- Validate the new invoice URL/slug in the frontend's  and .
+- Test the full Telegram Stars payment flow within the Telegram Mini App.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on resolving a wide array of issues related to media loading, URL resolution, and profile display. Key efforts included:
+Immediately before this summary request, the AI engineer was actively debugging a critical issue with Telegram Stars premium payment integration. The Buy Premium with Stars button in the webapp's  was consistently redirecting users to the Telegram bot instead of opening the inline Stars payment interface, even when accessed from within the Telegram Mini App.
 
-1.  **Unified Media Handling:** A new utility file () was created with  and  to standardize how media URLs are processed.  now prioritizes proxying Telegram-hosted media () and falls back to  or , while  ensures correct  prefixes and  prepending. This involved updating , , , , and  to use these new helpers, removing redundant local helper functions.
-2.  **Backend Media URL Correction:**  was updated so  and  store media URLs with the correct  prefix. The   function was also refined to handle  field type variations, ensure correct  filtering, and dynamically provide Telegram proxy URLs.
-3.  **Environment Configuration Fix:** The  in  was adjusted to resolve cross-domain image loading issues.
-4.  **Privacy Enhancement:** The  logic was updated to rigorously hide posts on private profiles from all non-owners.
-5.  **UX Improvements:** Removed unnecessary alerts in  and , allowing direct navigation to profiles.
-6.  **Fixing TypeError:** Resolved a  in  related to incorrect  access by switching to .
+Initial investigations confirmed that  was correctly set in  and the  function in  was designed to use . To diagnose the redirection, extensive console logging was added to .
 
-The last user feedback (Chat Message 478) has highlighted a new issue: **after a user accepts a follow request, the initiator of the request does not receive a notification like Luvsociety started following you with an accompanying Follow back button.** The AI engineer has acknowledged this and is about to investigate the relevant backend and frontend code for the notification and follow system.
+The latest user feedback provided a screenshot of the console output, which clearly showed the error: **Invoice url is invalid**. This indicates that the  value, which was previously generated by the  script in the bot and used in the frontend's , is not recognized as a valid invoice slug by Telegram's  API.
+
+The current state is that the root cause for the payment redirection is identified as an invalid invoice slug. The webapp's code for handling the  call and its fallbacks is robust, but the input (the slug) itself is incorrect.
 </current_work>
 
 <optional_next_step>
-Investigate the current notification and follow system in backend and frontend to implement the Follow back notification.
+Recreate the Telegram Stars invoice in the bot and update the webapp with the new, valid invoice URL.
 </optional_next_step>
