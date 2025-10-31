@@ -100,6 +100,13 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     const tg = window.Telegram?.WebApp;
     const canOpenInvoice = tg && typeof tg.openInvoice === "function";
 
+    // Debug logging
+    console.log("=== Premium Purchase Debug ===");
+    console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
+    console.log("openInvoice available:", canOpenInvoice);
+    console.log("PREMIUM_INVOICE_SLUG:", PREMIUM_INVOICE_SLUG);
+    console.log("PREMIUM_INVOICE_URL:", PREMIUM_INVOICE_URL);
+
     // Choose slug or URL if available (URL takes priority)
     const invoiceObject = PREMIUM_INVOICE_URL
       ? { url: PREMIUM_INVOICE_URL }
@@ -107,10 +114,14 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       ? { slug: PREMIUM_INVOICE_SLUG }
       : null;
 
+    console.log("Invoice object:", invoiceObject);
+
     // If inside Telegram and we have a valid invoice identifier
     if (canOpenInvoice && invoiceObject) {
       try {
+        console.log("Calling openInvoice with:", invoiceObject);
         tg.openInvoice(invoiceObject, (status) => {
+          console.log("Payment status:", status);
           // status can be 'paid', 'cancelled', or 'failed'
           if (status === "paid") {
             // Refresh to re-fetch isPremium from /auth/me
@@ -124,7 +135,11 @@ const SocialSettingsPage = ({ user, onLogout }) => {
         return;
       } catch (err) {
         console.error("openInvoice error:", err);
+        alert(`Error opening payment: ${err.message}`);
       }
+    } else {
+      console.log("Falling back to bot link");
+      console.log("Reason - canOpenInvoice:", canOpenInvoice, "invoiceObject:", invoiceObject);
     }
 
     // Fallback: open bot purchase link in new tab
