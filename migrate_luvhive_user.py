@@ -115,7 +115,7 @@ async def migrate_luvhive_user():
                 user_data.get('country'),
                 user_data.get('telegramId'),
                 user_data.get('authMethod', 'password'),
-                user_data.get('password_hash'),
+                user_data.get('password_hash') or 'NO_PASSWORD_EMAIL_AUTH',  # Placeholder for email auth
                 user_data.get('emailVerified', True),
                 user_data.get('phoneVerified', False),
                 user_data.get('violationsCount', 0),
