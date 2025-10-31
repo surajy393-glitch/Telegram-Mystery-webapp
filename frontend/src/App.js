@@ -43,6 +43,9 @@ function App() {
       setIsAuthenticated(true);
       setUser(userData);
       
+      // Auto-refresh user data from server to get latest isPremium status
+      refreshUserData(token, userData);
+      
       // Auto-link Telegram ID if user is in Telegram and telegramId is not set
       if (telegramUserId !== 'default' && !userData.telegramId) {
         console.log("🔗 Auto-linking Telegram ID:", telegramUserId);
@@ -51,6 +54,30 @@ function App() {
     }
     setLoading(false);
   }, []);
+
+  // Function to refresh user data from server
+  const refreshUserData = async (token, currentUser) => {
+    try {
+      const response = await fetch("/api/auth/me", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("🔄 Refreshed user data from server:", data.username, "isPremium:", data.isPremium);
+        
+        // Update user data in storage and state with fresh data
+        setStorageUser(data);
+        setUser(data);
+      }
+    } catch (error) {
+      console.error("⚠️ Failed to refresh user data:", error);
+    }
+  };
+
 
   // Function to auto-link Telegram account
   const linkTelegramAccount = async (token, telegramId, currentUser) => {
