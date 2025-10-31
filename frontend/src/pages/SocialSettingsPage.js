@@ -122,14 +122,16 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       return;
     }
 
-    console.log("Attempting payment with slug:", invoiceSlug);
+    // Build proper invoice URL: https://t.me/invoice/<slug>
+    const invoiceUrl = `https://t.me/invoice/${invoiceSlug}`;
+    console.log("Constructed Invoice URL:", invoiceUrl);
 
-    // If inside Telegram and we have a valid invoice slug
-    if (canOpenInvoice) {
+    // If inside Telegram and we have a valid invoice URL
+    if (canOpenInvoice && invoiceUrl) {
       try {
-        // Try with just the slug first (recommended format)
-        console.log("Calling openInvoice with slug:", invoiceSlug);
-        tg.openInvoice(invoiceSlug, (status) => {
+        // Pass as object with 'url' property
+        console.log("Calling openInvoice with URL object:", { url: invoiceUrl });
+        tg.openInvoice({ url: invoiceUrl }, (status) => {
           console.log("Payment status:", status);
           // status can be 'paid', 'cancelled', or 'failed'
           if (status === "paid") {
