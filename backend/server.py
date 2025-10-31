@@ -1363,9 +1363,8 @@ async def register_enhanced(
         # Hash password
         hashed_password = get_password_hash(password)
         
-        # Create complete user
+        # Create complete user (don't set id - PostgreSQL will auto-generate it)
         user_dict = {
-            "id": str(uuid4()),
             "fullName": clean_fullname,
             "username": clean_username,
             "email": clean_email or None,
