@@ -1383,13 +1383,14 @@ async def register_enhanced(
             "lastUsernameChange": None
         }
         
-        await db.users.insert_one(user_dict)
+        result = await db.users.insert_one(user_dict)
         
-        # Generate access token
-        access_token = create_access_token(data={"sub": user_dict["id"]})
+        # Get the actual PostgreSQL integer ID that was generated
+        actual_user_id = result['inserted_id']
+        user_dict["id"] = actual_user_id
         
-        # Generate access token for successful registration
-        access_token = create_access_token(data={"sub": user_dict["id"]})
+        # Generate access token with the correct integer ID
+        access_token = create_access_token(data={"sub": str(actual_user_id)})
         
         # ALL successful registrations should auto-login immediately
         # Email verification is optional and can be done later for additional security
