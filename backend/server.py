@@ -1311,11 +1311,14 @@ async def register_enhanced(
         if uploaded_file and uploaded_file.filename:
             file_extension = uploaded_file.filename.split('.')[-1]
             unique_filename = f"{uuid4()}.{file_extension}"
-            file_path = f"/app/uploads/profiles/{unique_filename}"
-            os.makedirs("/app/uploads/profiles", exist_ok=True)
+            # Save the file into the local uploads directory
+            file_path = str(PROFILES_DIR / unique_filename)
+            # Ensure uploads directory exists (already created in global setup)
+            PROFILES_DIR.mkdir(parents=True, exist_ok=True)
             with open(file_path, "wb") as f:
                 content = await uploaded_file.read()
                 f.write(content)
+            # When returning to the frontend, prefix with /uploads/profiles/
             clean_profile_image = f"/uploads/profiles/{unique_filename}"
         
         # Validate and clean input
