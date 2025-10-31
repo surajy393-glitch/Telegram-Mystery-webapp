@@ -1330,8 +1330,8 @@ async def register_enhanced(
             with open(file_path, "wb") as f:
                 content = await uploaded_file.read()
                 f.write(content)
-            # When returning to the frontend, prefix with /uploads/profiles/
-            clean_profile_image = f"/uploads/profiles/{unique_filename}"
+            # When returning to the frontend, prefix with /api/media/profiles/
+            clean_profile_image = f"/api/media/profiles/{unique_filename}"
         
         # Validate and clean input
         clean_username = username.strip()
