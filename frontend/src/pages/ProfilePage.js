@@ -6,7 +6,6 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import axios from "axios";
 import { getPostMediaUrl as normalizePostMediaUrl } from "@/utils/media";
 import {
-import { getToken } from "@/utils/telegramStorage";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -19,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getToken } from "@/utils/telegramStorage";
 
 // Use a fallback so API calls don't break when the env var is missing
 const API = "/api";
