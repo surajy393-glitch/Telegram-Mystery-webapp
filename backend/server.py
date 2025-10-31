@@ -126,6 +126,7 @@ class User(BaseModel):
     isFounder: bool = False  # Official LuvHive/Founder account
     emailVerified: bool = False  # Email verification status
     phoneVerified: bool = False  # Phone verification status
+    violationsCount: int = 0  # Number of violations/reports
     
     # Privacy Controls
     publicProfile: bool = True
