@@ -45,7 +45,7 @@ const TelegramAuthHandler = ({ onAuthSuccess }) => {
           
           // Store token using Telegram-user-specific storage
           setToken(response.data.access_token);
-          setUser(response.data.user);
+          setStorageUser(response.data.user);
           
           // Call success callback
           if (onAuthSuccess) {
