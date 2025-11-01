@@ -186,6 +186,18 @@ backend:
         agent: "testing"
         comment: "❌ FINAL VERIFICATION: Profile viewing works correctly (GET /api/users/{userId}/profile returns 200 with user data) BUT profile editing is broken - PUT /api/auth/update-profile returns 404 'Not Found'. Users can view profiles but cannot update them, making profile management non-functional."
 
+  - task: "Profile Posts Endpoint (Critical MongoDB Compatibility Issue)"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE DISCOVERED: GET /api/users/{userId}/posts endpoint exists but returns 500 'Internal Server Error' due to PostgreSQL syntax error in MongoDB compatibility layer. Error: 'syntax error at or near $' indicates the complex MongoDB query with $and and $or operators is not properly translated to PostgreSQL. This explains why user profiles show '0 Posts' even though posts exist in database. Posts ARE created and stored correctly (verified in database: user has 1 post), and posts DO appear in general feed, but the user-specific posts endpoint fails. ROOT CAUSE: MongoDB compatibility layer cannot handle complex queries like: {'$and': [{'isArchived': {'$ne': True}}, {'$or': [{'userId': user['id']}, {'username': user['username']}]}]}. This is a critical backend issue preventing profile pages from displaying user posts."
+
   - task: "Health Endpoint Fix (Critical PostgreSQL Schema Fix)"
     implemented: true
     working: true
