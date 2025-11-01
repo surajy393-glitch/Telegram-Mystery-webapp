@@ -165,6 +165,7 @@ class User(BaseModel):
     hiddenStoryUsers: List[str] = []  # List of user IDs whose stories are hidden
     lastUsernameChange: Optional[datetime] = None  # Track username changes
     country: Optional[str] = None  # User's country
+    city: Optional[str] = None  # User's city
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserRegister(BaseModel):
