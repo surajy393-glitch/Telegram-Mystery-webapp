@@ -3746,10 +3746,24 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     now = datetime.now(timezone.utc)
     stories = await db.stories.find({"expiresAt": {"$gt": now}}).sort("createdAt", -1).to_list(1000)
     
-    # Group stories by user
+    # Group stories by user and separate current user's stories
     stories_by_user = {}
+    my_stories = []
+    
     for story in stories:
         user_id = story["userId"]
+        
+        # Separate current user's stories
+        if user_id == current_user.id:
+            my_stories.append({
+                "id": story["id"],
+                "mediaType": story.get("mediaType", "image"),
+                "mediaUrl": story.get("mediaUrl") or story.get("media_url") or "",
+                "caption": story.get("caption", ""),
+                "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
+            })
+            continue
+        
         if user_id not in stories_by_user:
             # Get user's current profile picture, verification, and founder status
             story_author = await db.users.find_one({"id": user_id})
@@ -3773,7 +3787,22 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
             "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
         })
     
-    return {"stories": list(stories_by_user.values())}
+    # Prepare myStory object if user has stories
+    my_story_obj = None
+    if my_stories:
+        my_story_obj = {
+            "userId": current_user.id,
+            "username": current_user.username,
+            "userProfileImage": current_user.profileImage,
+            "isVerified": current_user.isVerified,
+            "isFounder": current_user.isFounder,
+            "stories": my_stories
+        }
+    
+    return {
+        "myStory": my_story_obj,
+        "stories": list(stories_by_user.values())
+    }
 
 # Posts Routes
 @api_router.post("/posts")
