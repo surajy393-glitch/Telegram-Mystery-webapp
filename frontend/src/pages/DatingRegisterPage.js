@@ -604,8 +604,8 @@ const DatingRegisterPage = ({ onLogin }) => {
         normalizedUser.profileImage = photoPreview;
       }
 
-      // Save token and normalized user to localStorage.
-      localStorage.setItem("token", token);
+      // Save token and normalized user using proper storage helpers
+      saveToken(token); // Use authClient's setToken to avoid quote issues
       localStorage.setItem("user", JSON.stringify(normalizedUser));
 
       console.log("🎉 Registration successful! User data:", normalizedUser);
