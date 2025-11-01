@@ -133,21 +133,11 @@ const SearchPage = ({ user, onLogout }) => {
     setShowSuggestions(false);
 
     try {
-      const token = getToken();
+      console.log('🔍 Searching:', { query, type });
       
-      if (!token) {
-        console.error('❌ No token found in localStorage');
-        alert('Please log in again to search');
-        return;
-      }
-      
-      console.log('🔍 Searching:', { query, type, hasToken: !!token });
-      
-      const response = await axios.post(`${API}/search`, {
+      const response = await httpClient.post('/api/search', {
         query: query.trim(),
         type: type === "all" ? "all" : type
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       console.log('✅ Search API Response:', response.data);
@@ -162,12 +152,15 @@ const SearchPage = ({ user, onLogout }) => {
     } catch (error) {
       console.error("❌ Error searching:", error);
       console.error("❌ Error response:", error.response?.data);
-      console.error("❌ Token present:", !!getToken());
       alert(`Search failed: ${error.response?.data?.detail || error.message}`);
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - logging out");
+        onLogout();
+      }
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeTab]);
+  }, [searchQuery, activeTab, httpClient, onLogout]);
 
   // Debounced search suggestions to reduce API calls
   const fetchSuggestions = useCallback(async (query) => {
