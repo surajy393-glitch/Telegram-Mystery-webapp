@@ -44,11 +44,11 @@ class FeedStoriesRetrievalTester:
             'failed': 0,
             'errors': [],
             'phase_results': {
-                'Phase 1 - Authentication': {'passed': 0, 'failed': 0},
-                'Phase 2 - Posts': {'passed': 0, 'failed': 0},
-                'Phase 3 - Stories': {'passed': 0, 'failed': 0},
-                'Phase 4 - Profile': {'passed': 0, 'failed': 0},
-                'Phase 5 - Social': {'passed': 0, 'failed': 0}
+                'Phase 1 - Database Check': {'passed': 0, 'failed': 0},
+                'Phase 2 - Authentication': {'passed': 0, 'failed': 0},
+                'Phase 3 - Feed Endpoints': {'passed': 0, 'failed': 0},
+                'Phase 4 - Stories Endpoints': {'passed': 0, 'failed': 0},
+                'Phase 5 - Response Format': {'passed': 0, 'failed': 0}
             }
         }
     
