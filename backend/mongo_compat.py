@@ -588,10 +588,12 @@ class Cursor:
             db_field = ''.join(['_' + c.lower() if c.isupper() else c for c in self._sort_field]).lstrip('_')
             query += f" ORDER BY {db_field} {self._sort_order}"
         
-        # Add limit
+        # Add limit and offset
         limit = self._limit_value or length
         if limit:
             query += f" LIMIT {limit}"
+        if self._skip_value:
+            query += f" OFFSET {self._skip_value}"
         
         try:
             rows = await pool.fetch(query, *values)
