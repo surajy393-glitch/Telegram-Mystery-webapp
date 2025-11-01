@@ -123,7 +123,6 @@ const PostDetailPage = ({ user }) => {
 
   const handleLikeComment = async (commentId) => {
     try {
-      
       // Optimistic update
       setComments(prev => prev.map(comment => {
         if (comment.id === commentId) {
@@ -140,13 +139,30 @@ const PostDetailPage = ({ user }) => {
         return comment;
       }));
 
-      // Make API call - for now we'll update the post's comments array
-      const response = await httpClient.post(
-        `${API}/posts/${postId}/comment/${commentId}/like`,
-        {}
+      // Use correct endpoint for comment like
+      const formData = new FormData();
+      formData.append('userId', user.id);
+      await httpClient.post(
+        `${API}/comments/${commentId}/like`,  // Changed endpoint to match backend
+        formData
       );
     } catch (error) {
       console.error("Error liking comment:", error);
+      // Rollback on error
+      setComments(prev => prev.map(comment => {
+        if (comment.id === commentId) {
+          const likes = comment.likes || [];
+          const userLiked = !likes.includes(user.id);
+          return {
+            ...comment,
+            likes: userLiked 
+              ? [...likes, user.id]
+              : likes.filter(id => id !== user.id),
+            likesCount: userLiked ? (comment.likesCount || 0) + 1 : (comment.likesCount || 0) - 1
+          };
+        }
+        return comment;
+      }));
     }
   };
 
@@ -155,7 +171,8 @@ const PostDetailPage = ({ user }) => {
 
     try {
       const formData = new FormData();
-      formData.append('text', replyText);
+      formData.append('content', replyText);  // Changed from 'text' to 'content'
+      formData.append('userId', user.id);  // Add userId
       formData.append('parentCommentId', commentId);
       
       const response = await httpClient.post(
@@ -164,7 +181,9 @@ const PostDetailPage = ({ user }) => {
       );
 
       // Add reply to comments list
-      setComments(prev => [...prev, response.data.comment]);
+      if (response.data.comment) {
+        setComments(prev => [...prev, response.data.comment]);
+      }
       
       setReplyText("");
       setReplyingTo(null);
