@@ -4971,10 +4971,11 @@ async def edit_post_caption(post_id: str, caption: str = Form(...), current_user
 
 @api_router.post("/posts/{post_id}/pin")
 async def pin_post(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    lookup_id = coerce_id(post_id)
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post["userId"] != current_user.id:
+    if str(post["userId"]) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     is_pinned = post.get("isPinned", False)
@@ -4987,7 +4988,7 @@ async def pin_post(post_id: str, current_user: User = Depends(get_current_user))
         )
     
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"isPinned": not is_pinned}}
     )
     return {"message": "Post pinned" if not is_pinned else "Post unpinned", "isPinned": not is_pinned}
