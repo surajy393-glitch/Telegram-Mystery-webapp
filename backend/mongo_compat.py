@@ -16,7 +16,7 @@ class Collection:
         self.table_name = table_name
     
     async def find_one(self, filter_dict: Dict[str, Any], projection: Dict[str, Any] = None) -> Optional[Dict]:
-        """Find single document matching filter"""
+        """Find single document matching filter (projection parameter ignored for now)"""
         pool = await get_pool()
         
         # Build WHERE clause
