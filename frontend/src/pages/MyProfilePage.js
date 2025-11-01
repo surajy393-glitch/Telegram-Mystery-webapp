@@ -44,6 +44,7 @@ const MyProfilePage = ({ user, onLogout }) => {
 
   const fetchProfileData = async () => {
     try {
+      const token = getToken();
       console.log("🔑 Fetching profile data with token:", token ? "Present" : "Missing");
       
       const [profileRes, postsRes, savedRes, archivedRes] = await Promise.all([
