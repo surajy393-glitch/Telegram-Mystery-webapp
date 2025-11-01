@@ -6843,6 +6843,247 @@ class LuvHiveAPITester:
         except Exception as e:
             self.log_result("Response Format Validation", False, "Exception occurred", str(e))
 
+    # ========== AUTHENTICATION FLOW DEBUGGING TESTS ==========
+    
+    def test_complete_login_flow(self):
+        """Test complete login flow and immediate /api/auth/me call"""
+        print("\n🔍 DEBUGGING AUTOMATIC LOGOUT ISSUE")
+        print("=" * 60)
+        
+        test_users = [
+            ("Luvsociety", "password123"),
+            ("Luststorm", "password123"), 
+            ("Luvhive", "password123")
+        ]
+        
+        for username, password in test_users:
+            try:
+                print(f"\n🧪 Testing login flow for: {username}")
+                
+                # Step 1: Login and capture token
+                login_data = {
+                    "username": username,
+                    "password": password
+                }
+                
+                login_response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+                print(f"   📝 Login Status: {login_response.status_code}")
+                
+                if login_response.status_code == 200:
+                    login_result = login_response.json()
+                    token = login_result.get('access_token')
+                    
+                    print(f"   🔑 Token received: {len(token)} chars")
+                    print(f"   🔍 Token format: {token[:20]}...{token[-20:] if len(token) > 40 else token}")
+                    
+                    # Step 2: Analyze JWT token structure
+                    self.analyze_jwt_token(token)
+                    
+                    # Step 3: IMMEDIATELY call /api/auth/me with the token
+                    print(f"   ⚡ Immediately calling /api/auth/me...")
+                    
+                    # Create fresh session with the token
+                    test_session = requests.Session()
+                    test_session.headers.update({'Authorization': f'Bearer {token}'})
+                    
+                    me_response = test_session.get(f"{API_BASE}/auth/me")
+                    print(f"   📊 /api/auth/me Status: {me_response.status_code}")
+                    
+                    if me_response.status_code == 200:
+                        me_data = me_response.json()
+                        print(f"   ✅ SUCCESS: /api/auth/me returned user data for {me_data.get('username')}")
+                        self.log_result(f"Complete Login Flow - {username}", True, 
+                                      f"Login + /api/auth/me successful")
+                    elif me_response.status_code == 401:
+                        print(f"   ❌ CRITICAL: /api/auth/me returned 401 immediately after login!")
+                        print(f"   📄 Error response: {me_response.text}")
+                        self.log_result(f"Complete Login Flow - {username}", False, 
+                                      "401 error on /api/auth/me immediately after login", me_response.text)
+                    else:
+                        print(f"   ⚠️  Unexpected status: {me_response.status_code}")
+                        self.log_result(f"Complete Login Flow - {username}", False, 
+                                      f"Unexpected status {me_response.status_code}", me_response.text)
+                        
+                    # Step 4: Test timing - wait 5 seconds and try again
+                    print(f"   ⏱️  Waiting 5 seconds and testing again...")
+                    import time
+                    time.sleep(5)
+                    
+                    me_response_delayed = test_session.get(f"{API_BASE}/auth/me")
+                    print(f"   📊 /api/auth/me Status (after 5s): {me_response_delayed.status_code}")
+                    
+                    if me_response_delayed.status_code != me_response.status_code:
+                        print(f"   🚨 TIMING ISSUE: Status changed from {me_response.status_code} to {me_response_delayed.status_code}")
+                    
+                else:
+                    print(f"   ❌ Login failed: {login_response.text}")
+                    self.log_result(f"Complete Login Flow - {username}", False, 
+                                  f"Login failed with status {login_response.status_code}", login_response.text)
+                    
+            except Exception as e:
+                print(f"   💥 Exception during login flow: {e}")
+                self.log_result(f"Complete Login Flow - {username}", False, "Exception occurred", str(e))
+    
+    def analyze_jwt_token(self, token):
+        """Analyze JWT token structure and decode payload"""
+        try:
+            import base64
+            import json
+            
+            # Split JWT token
+            parts = token.split('.')
+            print(f"   🔍 JWT Parts: {len(parts)} (should be 3)")
+            
+            if len(parts) == 3:
+                # Decode header
+                header_padding = '=' * (4 - len(parts[0]) % 4)
+                header_decoded = base64.urlsafe_b64decode(parts[0] + header_padding)
+                header_json = json.loads(header_decoded)
+                print(f"   📋 JWT Header: {header_json}")
+                
+                # Decode payload
+                payload_padding = '=' * (4 - len(parts[1]) % 4)
+                payload_decoded = base64.urlsafe_b64decode(parts[1] + payload_padding)
+                payload_json = json.loads(payload_decoded)
+                print(f"   📦 JWT Payload: {payload_json}")
+                
+                # Check 'sub' field type
+                sub_field = payload_json.get('sub')
+                print(f"   🔑 'sub' field: {sub_field} (type: {type(sub_field)})")
+                
+                if isinstance(sub_field, str):
+                    print(f"   ✅ 'sub' field is string (correct)")
+                else:
+                    print(f"   ❌ 'sub' field is {type(sub_field)} (should be string)")
+                
+                # Check expiry
+                exp_field = payload_json.get('exp')
+                if exp_field:
+                    from datetime import datetime
+                    exp_time = datetime.fromtimestamp(exp_field)
+                    current_time = datetime.now()
+                    print(f"   ⏰ Token expires: {exp_time}")
+                    print(f"   ⏰ Current time: {current_time}")
+                    print(f"   ⏰ Time until expiry: {exp_time - current_time}")
+                    
+                    if exp_time < current_time:
+                        print(f"   ❌ TOKEN EXPIRED!")
+                    else:
+                        print(f"   ✅ Token is valid (not expired)")
+                        
+            else:
+                print(f"   ❌ Invalid JWT format: expected 3 parts, got {len(parts)}")
+                
+        except Exception as e:
+            print(f"   💥 Error analyzing JWT: {e}")
+    
+    def test_token_validation_with_multiple_users(self):
+        """Test token validation with multiple users"""
+        print(f"\n🔄 Testing token validation with multiple users...")
+        
+        test_users = [
+            ("Luvsociety", "password123"),
+            ("Luststorm", "password123"),
+            ("Luvhive", "password123")
+        ]
+        
+        successful_logins = 0
+        
+        for username, password in test_users:
+            try:
+                login_data = {"username": username, "password": password}
+                response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    token = data.get('access_token')
+                    
+                    # Test immediate /api/auth/me call
+                    test_session = requests.Session()
+                    test_session.headers.update({'Authorization': f'Bearer {token}'})
+                    me_response = test_session.get(f"{API_BASE}/auth/me")
+                    
+                    if me_response.status_code == 200:
+                        successful_logins += 1
+                        print(f"   ✅ {username}: Login + /api/auth/me successful")
+                    else:
+                        print(f"   ❌ {username}: /api/auth/me failed with {me_response.status_code}")
+                else:
+                    print(f"   ❌ {username}: Login failed with {response.status_code}")
+                    
+            except Exception as e:
+                print(f"   💥 {username}: Exception - {e}")
+        
+        success_rate = (successful_logins / len(test_users)) * 100
+        self.log_result("Token Validation Multiple Users", successful_logins == len(test_users),
+                      f"{successful_logins}/{len(test_users)} users successful ({success_rate:.1f}%)")
+    
+    def test_malformed_token_handling(self):
+        """Test how backend handles malformed tokens"""
+        print(f"\n🧪 Testing malformed token handling...")
+        
+        malformed_tokens = [
+            "invalid-token",
+            "Bearer invalid-token", 
+            '"valid.jwt.token"',  # Token with quotes
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid.signature",  # Invalid signature
+            ""  # Empty token
+        ]
+        
+        for i, token in enumerate(malformed_tokens):
+            try:
+                test_session = requests.Session()
+                if token:
+                    test_session.headers.update({'Authorization': f'Bearer {token}'})
+                
+                response = test_session.get(f"{API_BASE}/auth/me")
+                print(f"   🧪 Test {i+1}: Token '{token[:20]}...' -> Status {response.status_code}")
+                
+                if response.status_code == 401:
+                    print(f"      ✅ Correctly rejected malformed token")
+                else:
+                    print(f"      ⚠️  Unexpected status for malformed token")
+                    
+            except Exception as e:
+                print(f"   💥 Exception with malformed token: {e}")
+        
+        self.log_result("Malformed Token Handling", True, "Tested various malformed token scenarios")
+    
+    def check_backend_logs_for_jwt_errors(self):
+        """Check backend logs for JWT validation errors"""
+        print(f"\n📋 Checking backend logs for JWT errors...")
+        
+        try:
+            # Check supervisor backend logs
+            import subprocess
+            result = subprocess.run(['tail', '-n', '50', '/var/log/supervisor/backend.err.log'], 
+                                  capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                logs = result.stdout
+                jwt_errors = []
+                
+                for line in logs.split('\n'):
+                    if any(keyword in line.lower() for keyword in ['jwt', 'token', 'invalid', 'expired', 'signature']):
+                        jwt_errors.append(line.strip())
+                
+                if jwt_errors:
+                    print(f"   🔍 Found {len(jwt_errors)} JWT-related log entries:")
+                    for error in jwt_errors[-5:]:  # Show last 5
+                        print(f"      📄 {error}")
+                else:
+                    print(f"   ✅ No JWT errors found in recent logs")
+                    
+                self.log_result("Backend JWT Logs Check", True, 
+                              f"Found {len(jwt_errors)} JWT-related log entries")
+            else:
+                print(f"   ⚠️  Could not read backend logs")
+                self.log_result("Backend JWT Logs Check", False, "Could not read backend logs")
+                
+        except Exception as e:
+            print(f"   💥 Error checking logs: {e}")
+            self.log_result("Backend JWT Logs Check", False, f"Exception: {e}")
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
