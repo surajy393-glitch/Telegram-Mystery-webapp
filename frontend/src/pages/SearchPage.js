@@ -77,12 +77,9 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
-      console.log('Fetching trending content with token:', token ? 'present' : 'missing');
+      console.log('Fetching trending content');
       
-      const response = await axios.get(`${API}/search/trending`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get('/api/search/trending');
       
       console.log('Trending response:', response.data);
       
@@ -94,8 +91,12 @@ const SearchPage = ({ user, onLogout }) => {
       console.error("Error details:", error.response?.data);
       // Set empty data to avoid showing loading state forever
       setTrendingContent({trending_hashtags: [], trending_users: []});
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - logging out");
+        onLogout();
+      }
     }
-  }, []);
+  }, [httpClient, onLogout]);
 
   const fetchExplorePosts = useCallback(async () => {
     try {
