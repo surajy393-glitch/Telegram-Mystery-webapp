@@ -350,6 +350,13 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+def coerce_post_id(post_id: str):
+    """Try to convert post_id to int for PostgreSQL lookups; fallback to raw string."""
+    try:
+        return int(post_id)
+    except (ValueError, TypeError):
+        return post_id
+
 def verify_telegram_hash(auth_data: dict, bot_token: str) -> bool:
     """
     Verify Telegram Login Widget hash for security
