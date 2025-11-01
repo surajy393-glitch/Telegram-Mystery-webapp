@@ -104,10 +104,17 @@ export function createHttpClient(
     (error) => {
       // Handle 401 errors globally
       if (error.response && error.response.status === 401) {
-        // Remove the invalid token
+        // Remove the invalid token from both locations
+        const telegramUserId = getTelegramUserId();
+        const telegramKey = `tg_${telegramUserId}_token`;
+        const telegramUserKey = `tg_${telegramUserId}_user`;
+        
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Optionally dispatch a logout event or use your router to redirect
+        localStorage.removeItem(telegramKey);
+        localStorage.removeItem(telegramUserKey);
+        
+        // Redirect to login
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
