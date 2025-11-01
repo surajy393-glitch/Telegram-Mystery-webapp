@@ -188,8 +188,8 @@ backend:
 
   - task: "Profile Posts Endpoint (Critical MongoDB Compatibility Issue)"
     implemented: true
-    working: false
-    file: "backend/server.py"
+    working: true
+    file: "backend/mongo_compat.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
@@ -197,6 +197,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE DISCOVERED: GET /api/users/{userId}/posts endpoint exists but returns 500 'Internal Server Error' due to PostgreSQL syntax error in MongoDB compatibility layer. Error: 'syntax error at or near $' indicates the complex MongoDB query with $and and $or operators is not properly translated to PostgreSQL. This explains why user profiles show '0 Posts' even though posts exist in database. Posts ARE created and stored correctly (verified in database: user has 1 post), and posts DO appear in general feed, but the user-specific posts endpoint fails. ROOT CAUSE: MongoDB compatibility layer cannot handle complex queries like: {'$and': [{'isArchived': {'$ne': True}}, {'$or': [{'userId': user['id']}, {'username': user['username']}]}]}. This is a critical backend issue preventing profile pages from displaying user posts."
+      - working: true
+        agent: "testing"
+        comment: "✅ CRITICAL ISSUE RESOLVED: Fixed MongoDB compatibility layer to handle complex $and/$or queries. Updated find_one method in mongo_compat.py to use the same advanced query building logic as the Cursor class, which already supported nested $and/$or operators. The issue was that find_one method only handled simple queries while the Cursor._build_where_clause method had full support for complex MongoDB operators. COMPREHENSIVE TESTING RESULTS: 1) ✅ Profile Posts Endpoint Working - GET /api/users/{userId}/posts now returns 200 status and correctly retrieves user's posts (tested with 3 posts), 2) ✅ All Review Request Endpoints Working - Tested all 5 endpoints mentioned in review request: posts/feed, social/feed, users/{userId}/posts, social/stories, stories/feed - all returning 200 status, 3) ✅ End-to-End Flow Complete - Users can create posts/stories, content appears in database, content appears in all feeds including profile page, 4) ✅ No 500 Errors - All endpoints working without PostgreSQL syntax errors. The MongoDB compatibility layer now properly translates complex nested queries to PostgreSQL syntax. Profile pages can now display user posts correctly."
 
   - task: "Health Endpoint Fix (Critical PostgreSQL Schema Fix)"
     implemented: true
