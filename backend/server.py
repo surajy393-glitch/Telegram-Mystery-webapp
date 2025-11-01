@@ -4905,8 +4905,10 @@ async def archive_story(story_id: str, current_user: User = Depends(get_current_
     story = await db.stories.find_one({"id": story_id})
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
-    # Compare IDs as strings to avoid int/str mismatch
-    if str(story["userId"]) != str(current_user.id):
+    # Check if current user owns the story using both userId and username.
+    owner_id_matches = str(story.get("userId")) == str(current_user.id)
+    owner_username_matches = str(story.get("username")).lower() == str(current_user.username).lower()
+    if not (owner_id_matches or owner_username_matches):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     is_archived = story.get("isArchived", False)
