@@ -3945,10 +3945,7 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
     posts_list = []
     for post in posts:
         # Get post author's current profile picture, verification status, and founder status
-        post_author = await db.users.find_one(
-            {"id": post["userId"]}, 
-            {"isVerified": 1, "isFounder": 1, "profileImage": 1}
-        )
+        post_author = await db.users.find_one({"id": post["userId"]})
         is_verified = post_author.get("isVerified", False) if post_author else False
         is_founder = post_author.get("isFounder", False) if post_author else False
         current_profile_image = post_author.get("profileImage") if post_author else post.get("userProfileImage")
