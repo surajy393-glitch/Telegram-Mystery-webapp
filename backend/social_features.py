@@ -216,6 +216,7 @@ async def get_feed(
                 "isVerified": is_verified,
                 "isFounder": is_founder,
                 "content": post.get("content"),
+                "caption": post.get("caption") or post.get("content"),  # Add caption field for Instagram-style display
                 "postType": post.get("postType"),
                 "imageUrl": post.get("imageUrl"),
                 "isAnonymous": post.get("isAnonymous", False),
