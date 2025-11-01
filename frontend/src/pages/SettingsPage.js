@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createHttpClient } from "@/utils/authClient";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield, ShieldCheck, Eye, EyeOff, Search, MessageCircle, Wifi, Tag, MessageSquare, Zap, Bell, BellOff, Mail, MailX, Download, HelpCircle, LogOut, X, UserMinus } from "lucide-react";

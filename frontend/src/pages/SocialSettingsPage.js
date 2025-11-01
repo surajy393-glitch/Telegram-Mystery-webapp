@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createHttpClient } from "@/utils/authClient";
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Bell, Lock, Eye, Heart, MessageCircle, Zap } from 'lucide-react';
 import {
