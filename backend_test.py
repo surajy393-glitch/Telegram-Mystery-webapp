@@ -147,7 +147,7 @@ class FeedStoriesRetrievalTester:
                 self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
                 self.log_result("Fresh User Registration", True, 
                               f"Registered: {user_data['username']}, ID: {self.current_user_id}", 
-                              phase="Phase 1 - Authentication")
+                              phase="Phase 2 - Authentication")
                 return True
             else:
                 self.log_result("Fresh User Registration", False, 
