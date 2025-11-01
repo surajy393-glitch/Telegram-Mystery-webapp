@@ -13,7 +13,7 @@ sys.path.append('/app/backend')
 from dotenv import load_dotenv
 load_dotenv('/app/frontend/.env')
 
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-token-fix-7.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mongodb-to-psql.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_user_posts_endpoint():

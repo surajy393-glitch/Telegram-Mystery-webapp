@@ -1,50 +1,48 @@
 <analysis>
-The previous AI engineer’s primary objective was to resolve persistent  and subsequent automatic logout issues that plagued the LuvHive application after a database migration. The debugging process was highly iterative, driven by user feedback (including videos) and extensive use of  and . Key fixes included correcting a backend JWT  field type, standardizing frontend token storage by removing , and implementing a centralized  for robust token handling. A major breakthrough involved identifying and resolving a token storage mismatch between  and , ensuring  could handle both generic and Telegram-scoped tokens. The engineer also unified  instances across the frontend and eliminated redundant  calls, which were causing logout storms. The trajectory concludes with the engineer summarizing the completed fixes, despite the automated  reporting a React app loading failure.
+The trajectory chronicles an iterative debugging process, initially tackling  and auto-logout issues. Following a database migration from MongoDB to PostgreSQL, the focus shifted dramatically to resolving numerous post-migration problems: Account Disabled, User not found, search failures, profile loading errors, and critically, the inability to upload, display, edit, and delete posts and stories. The AI engineer, guided by user videos and , systematically addressed schema mismatches in PostgreSQL, translated MongoDB-specific queries in , and fixed data type inconsistencies (string vs. integer IDs) across various backend endpoints in  and . Frontend components like  and  were also updated for correct token handling and API call prefixes. The most recent efforts concentrated on ensuring captions display correctly on posts and resolving UI layout issues for post details, indicating a transition from core functionality fixes to UI/UX refinement post-migration.
 </analysis>
 
 <product_requirements>
-The LuvHive application is an MVP dating platform with core features including premium membership tiers (4 types via Telegram Stars with invoice generation), accurate premium status synchronization between Telegram bot and webapp (both PostgreSQL), and resolution of  conflicts in Telegram Mini Apps by scoping data per Telegram User ID. It also requires displaying LuvHive Verified status based on 6 criteria (Email/Phone Verified, Complete Profile, Personality Quiz, No Violations, 45 Days) with dynamic violation counts. User registration must be friction-free (Name, Username, Email/Mobile, Password, Age, Gender, City, Country, Interests mandatory; Profile Photo/Bio optional initially). Post-registration, profile completion is encouraged (based on , , , /, , ), with all profile data, especially pictures and location, persisting correctly. The application underwent a critical migration from fragmented MongoDB/PostgreSQL to a unified PostgreSQL database, leading to numerous post-migration authentication and profile data persistence issues, which have been the focus of the recent development. The latest work has primarily addressed  and automatic logout issues.
+The LuvHive application is an MVP dating platform with premium membership tiers (4 types via Telegram Stars) and accurate premium status synchronization. Key features include displaying LuvHive Verified status based on 6 criteria, friction-free user registration (Name, Username, Email/Mobile, Password, Age, Gender, City, Country, Interests mandatory; Profile Photo/Bio optional), and correct persistence of all profile data, especially pictures and location. A critical migration from fragmented MongoDB/PostgreSQL to a unified PostgreSQL database introduced  and automatic logout issues, which were initially addressed by centralizing authentication logic and token storage. Subsequent issues revolved around account access, search functionality, profile editing, and the core social features of posting and viewing stories/posts, including correct display of captions and proper authorization for delete/archive actions, all stemming from schema and query translation inconsistencies post-migration.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Development**: React (frontend), FastAPI (backend), PostgreSQL (database).
--   **Authentication & Authorization**: JWT,  (custom utility),  interceptors.
--   **Database Migration**: MongoDB to PostgreSQL,  for ORM-like abstraction.
--   **Environment Management**: Kubernetes, Supervisor,  file configurations.
--   **Telegram Mini Apps**: Scoped  for distinct user sessions.
+-   **Authentication & Authorization**: JWT,  (custom utility),  interceptors, centralized token handling.
+-   **Database Migration**: MongoDB to PostgreSQL,  (for PostgreSQL query translation).
+-   **Environment Management**: Kubernetes, Supervisor,  files.
+-   **Data Type Consistency**: Explicit string/integer casting for user and post IDs.
+-   **JSON Serialization**: Handling JSON strings for list/dict fields in database.
 </key_technical_concepts>
 
 <code_architecture>
 
 
--   : The main FastAPI backend. During this trajectory, the JWT  field's type (string instead of integer) was fixed to ensure user ID consistency for PostgreSQL queries during authentication.
--    (NEW FILE, Heavily Modified): This file is critical for centralized authentication. It was initially created to handle tokens but significantly refactored. Its  now checks both generic  and Telegram-scoped  in .  was updated to save to both. Its  function configures  with request interceptors to automatically attach the correct  token and response interceptors to clear both token types and redirect to  upon  errors.
--   : Provides utility functions for  in Telegram Mini Apps. Modified to work in conjunction with  to ensure consistent storage and retrieval of Telegram-scoped tokens, supporting the unified token handling strategy.
--   : The main React application component. Its  function was updated to use 's  for consistent token storage, replacing direct usage of  for login.
--   , , , , , , , : These frontend pages were extensively refactored. All direct  calls, manual  headers, and redundant  calls were replaced with the global  instance from . Additionally, specific pages like  and  that were erroneously creating new  instances were corrected to use the globally exported one, and redundant  calls in  blocks were removed to prevent logout storms.
--   , : User registration pages. Fixed to ensure the token received post-registration is immediately stored via 's  *before* any subsequent authenticated API calls (e.g., ), resolving a critical race condition that caused immediate s.
--   , : These components were also migrated to use the centralized  and had manual token handling removed, ensuring consistent authentication across smaller UI elements.
+-   : The main FastAPI backend. Heavily modified to fix PostgreSQL schema mismatches, implement robust ID handling (string/integer coercion) for posts/stories, normalize likes/comments from JSON strings to lists, and consolidate duplicate API endpoints. Critical for authentication, post/story creation/deletion, and profile management.
+-   : Handles social interactions. Modified to ensure  and  are saved correctly during story creation and to support the  field for posts. Previously had issues with content vs caption field names.
+-   : A compatibility layer for PostgreSQL, translating MongoDB-like queries. Extensively modified to handle complex MongoDB query operators (, , , , ),  method, and  for PostgreSQL. Also updated  and  to handle ID conversions and dynamic column mappings.
+-   : Centralized authentication client. , , and  were refactored to handle generic and Telegram-scoped tokens, ensuring consistent token storage and  error handling.
+-   : User profile editing page. Fixed to correctly define , use  for API calls with the  prefix, and ensure the  field persists and displays correctly by updating model definitions in the backend.
+-   : User's profile display page. Updated to correctly import and use  to avoid .
+-   : Main content feed. Modified to correctly fetch and display stories by separating the current user's story () from others and normalizing  to prevent black screens and duplicate story circles.
+-   : Examined to understand the expected full PostgreSQL schema.
+-   : A dynamically created SQL script used to add missing columns and tables to the PostgreSQL database based on schema analysis.
+-   : Another dynamically created SQL script to align  and  tables with application's expected fields.
 </code_architecture>
 
 <pending_tasks>
--   **Verification of Auto-Logout Fix**: The user explicitly reported the automatic logout issue persisted after the fixes, despite the AI engineer's belief in its resolution. The  also reported React app is not loading!, which requires investigation or confirmation from the user regarding the actual application state.
+-   **Frontend UI/Layout Fix for Post Caption**: The user reported that the caption appears below the username (Luvsociety) instead of beside it (like saraalikhan95 [caption]). This is a frontend layout issue.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was deeply engaged in debugging and resolving persistent automatic logout issues. The user provided a video demonstrating that after logging in, they were automatically redirected and logged out. Through a series of iterative analyses using  and , the primary root cause was identified as a TOKEN STORAGE MISMATCH. Specifically,  was using  to store tokens (resulting in  keys), while the  (configured via ) was primarily looking for a generic  key.
-
-The AI engineer addressed this by:
-1.  Modifying :
-    *   Updated the  function to check for both the generic  key and the Telegram-scoped .
-    *   Updated the  function (aliased as ) to ensure tokens are saved to both generic and Telegram-scoped storage via .
-    *   Ensured the 's  response interceptor cleared both token types upon logout.
-2.  Refactoring  and  to use the globally exported  instance, instead of creating new instances, which was contributing to a logout storm.
-3.  Removing  from dependency arrays in  hooks in  as it became a stable import.
-4.  Crucially, identifying and removing redundant  calls from individual page  blocks (e.g., in , , ). These were found to conflict with the global  interceptor, causing users to be logged out multiple times unnecessarily.
-
-The final action in the trajectory was the AI engineer preparing a summary, noting that while the technical fixes were implemented, the  reported React app is not loading!, a discrepancy from the user's ability to log in (though with auto-logout). The user's latest explicit request reiterated the auto-logout problem, asking for further deep analysis.
+Immediately prior to this summary, the AI engineer was working on fixing a display issue related to post captions. The user reported that while captions were now appearing, their layout was incorrect: luvsociety upar bhi dikh raha and neecha bhi dikh raha caption ke sath luvsociety upar wala hi dikhna chaiya and uske side main caption dikhna chaiya. This was accompanied by a screenshot demonstrating the incorrect layout. The AI engineer acknowledged this, stating, Bilkul samajh gaya! Caption aa raha hai lekin layout galat hai. Instagram jaisa layout chahiye jahan username aur caption ek hi line me ho. Main frontend fix karta hu. This indicates a shift from backend data persistence and API logic to frontend rendering and styling. The previous efforts had successfully ensured captions were being retrieved and sent by the backend. The next step identified was to modify the frontend to correct this visual presentation.
 </current_work>
 
 <optional_next_step>
-Reconfirm with the user if the automatic logout issue is now resolved after the latest fixes.
+Adjust frontend (likely in  or a post component) to display the post's username and caption on the same line.
 </optional_next_step>
+
+**User's most recent request:** Caption ab aa raha hai magar Aisa aa raha luvsociety upar bhi dikh raha and neecha bhi dikh raha caption ke sath luvsociety upar wala hi dikhna chaiya and uske side main caption dikhna chaiya 2nd ss dekho saraalikhan95 name likha hai and uske side main uska caption hai aisa hona chaiya samjhe
+
+**AI's last action/response:** Bilkul samajh gaya! Caption aa raha hai lekin layout galat hai. Instagram jaisa layout chahiye jahan username aur caption ek hi line me ho. Main frontend fix karta hu:
+
