@@ -7554,6 +7554,15 @@ class LuvHiveAPITester:
             print("❌ Cannot proceed without second test user")
             return
         
+        # ========== CRITICAL POSTGRESQL SCHEMA FIX TESTS ==========
+        print("\n🔥 CRITICAL: Testing 4 Broken Features After PostgreSQL Schema Fixes...")
+        print("=" * 60)
+        self.test_post_creation()
+        self.test_story_creation()
+        self.test_user_search_functionality()
+        self.test_profile_operations()
+        self.test_health_endpoint()
+        
         # ========== NEW FORMDATA FILE UPLOAD TESTS (CRITICAL) ==========
         print("🔥 CRITICAL: Testing NEW FormData File Upload Flow - THE ROOT CAUSE FIX!")
         print("-" * 80)
