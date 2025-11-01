@@ -409,12 +409,13 @@ const RegisterPage = ({ onLogin }) => {
 
       const token = response.data.access_token;
       
+      // Save token FIRST so httpClient can use it
+      setToken(token);
+      
       // Fetch a complete user profile after registration to avoid missing fields.
       // This prevents issues with missing ID or profileImage immediately after sign-up.
       try {
-        const meRes = await httpClient.get(`${API}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const meRes = await httpClient.get(`${API}/auth/me`);
         const fullUser = meRes.data.user || meRes.data;
         
         // Normalize the user object to ensure profileImage field exists
