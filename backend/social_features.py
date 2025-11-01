@@ -513,9 +513,8 @@ async def create_story(
             # resolves correctly in both preview and production environments.
             image_url = f"/api/uploads/stories/{filename}"
         
-        # Create story
-        story = {
-            "id": str(uuid4()),
+        # Create story - don't set id manually, let PostgreSQL auto-generate it
+        story_data = {
             "userId": userId if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
@@ -531,14 +530,16 @@ async def create_story(
             "expiresAt": datetime.now(timezone.utc) + timedelta(hours=24)
         }
         
-        await db.stories.insert_one(story)
+        # Insert and get database-generated ID
+        insert_result = await db.stories.insert_one(story_data)
+        story_id = insert_result.get('inserted_id')
         
         return {
             "success": True,
             "message": "Story created successfully",
             "story": {
-                "id": story["id"],
-                "expiresAt": story["expiresAt"].isoformat()
+                "id": str(story_id),  # Return integer ID as string
+                "expiresAt": story_data["expiresAt"].isoformat()
             }
         }
         
