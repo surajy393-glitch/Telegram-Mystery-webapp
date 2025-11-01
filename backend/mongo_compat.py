@@ -717,12 +717,32 @@ class Cursor:
                             param_num += 1
                         elif op == '$nin':
                             if op_value:  # Only add if list is not empty
+                                # Convert string IDs to integers for user_id/id fields
+                                if db_key in ['id', 'user_id']:
+                                    converted_values = []
+                                    for val in op_value:
+                                        try:
+                                            converted_values.append(int(val) if isinstance(val, str) else val)
+                                        except (ValueError, TypeError):
+                                            converted_values.append(val)
+                                    op_value = converted_values
+                                
                                 placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
                                 where_parts.append(f"{db_key} NOT IN ({placeholders})")
                                 values.extend(op_value)
                                 param_num += len(op_value)
                         elif op == '$in':
                             if op_value:  # Only add if list is not empty
+                                # Convert string IDs to integers for user_id/id fields
+                                if db_key in ['id', 'user_id']:
+                                    converted_values = []
+                                    for val in op_value:
+                                        try:
+                                            converted_values.append(int(val) if isinstance(val, str) else val)
+                                        except (ValueError, TypeError):
+                                            converted_values.append(val)
+                                    op_value = converted_values
+                                
                                 placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
                                 where_parts.append(f"{db_key} IN ({placeholders})")
                                 values.extend(op_value)
