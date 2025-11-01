@@ -1,48 +1,58 @@
 <analysis>
-The trajectory chronicles an iterative debugging process, initially tackling  and auto-logout issues. Following a database migration from MongoDB to PostgreSQL, the focus shifted dramatically to resolving numerous post-migration problems: Account Disabled, User not found, search failures, profile loading errors, and critically, the inability to upload, display, edit, and delete posts and stories. The AI engineer, guided by user videos and , systematically addressed schema mismatches in PostgreSQL, translated MongoDB-specific queries in , and fixed data type inconsistencies (string vs. integer IDs) across various backend endpoints in  and . Frontend components like  and  were also updated for correct token handling and API call prefixes. The most recent efforts concentrated on ensuring captions display correctly on posts and resolving UI layout issues for post details, indicating a transition from core functionality fixes to UI/UX refinement post-migration.
+The trajectory details an extensive debugging process for the LuvHive application following a critical migration from MongoDB to PostgreSQL. Initially, the focus was on  and general post-migration errors like Account Disabled. The core of the work revolved around resolving data type inconsistencies (string vs. integer IDs), schema mismatches, and translating MongoDB-specific queries within . Iterative fixes were applied to backend files (, ) and frontend components (, ) to ensure correct display of posts, stories, and especially captions. A persistent challenge involved the comment functionality, repeatedly failing due to  operator incompatibility with PostgreSQL and  field type mismatches, requiring multiple calls to the  and detailed user-provided analyses to resolve. The process highlighted the complexity of database migration and the need for meticulous data and query handling.
 </analysis>
 
 <product_requirements>
-The LuvHive application is an MVP dating platform with premium membership tiers (4 types via Telegram Stars) and accurate premium status synchronization. Key features include displaying LuvHive Verified status based on 6 criteria, friction-free user registration (Name, Username, Email/Mobile, Password, Age, Gender, City, Country, Interests mandatory; Profile Photo/Bio optional), and correct persistence of all profile data, especially pictures and location. A critical migration from fragmented MongoDB/PostgreSQL to a unified PostgreSQL database introduced  and automatic logout issues, which were initially addressed by centralizing authentication logic and token storage. Subsequent issues revolved around account access, search functionality, profile editing, and the core social features of posting and viewing stories/posts, including correct display of captions and proper authorization for delete/archive actions, all stemming from schema and query translation inconsistencies post-migration.
+The LuvHive application is an MVP dating platform with premium tiers, LuvHive Verified status based on six criteria, and a registration process requiring Name, Username, Email/Mobile, Password, Age, Gender, City, Country, and Interests. Profile data, including pictures and location, must persist correctly. A crucial migration from a fragmented MongoDB/PostgreSQL setup to a unified PostgreSQL database introduced widespread issues: , auto-logout, account access problems, search failures, profile editing errors, and critically, failures in core social features like posting and viewing stories/posts. The primary ongoing goal is to ensure correct display of captions, proper authorization for delete/archive actions, and fully functional comment sections, all stemming from schema, ID handling, and query translation inconsistencies post-migration.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Development**: React (frontend), FastAPI (backend), PostgreSQL (database).
--   **Authentication & Authorization**: JWT,  (custom utility),  interceptors, centralized token handling.
--   **Database Migration**: MongoDB to PostgreSQL,  (for PostgreSQL query translation).
+-   **Authentication & Authorization**: JWT, ,  interceptors, centralized token handling.
+-   **Database Migration**: MongoDB to PostgreSQL,  (query translation).
+-   **Data Type Consistency**: Explicit string/integer casting for IDs (, ),  objects vs. ISO strings.
+-   **JSON Serialization**: Handling JSON strings for list/dict fields (, ) in PostgreSQL.
 -   **Environment Management**: Kubernetes, Supervisor,  files.
--   **Data Type Consistency**: Explicit string/integer casting for user and post IDs.
--   **JSON Serialization**: Handling JSON strings for list/dict fields in database.
 </key_technical_concepts>
 
 <code_architecture>
 
-
--   : The main FastAPI backend. Heavily modified to fix PostgreSQL schema mismatches, implement robust ID handling (string/integer coercion) for posts/stories, normalize likes/comments from JSON strings to lists, and consolidate duplicate API endpoints. Critical for authentication, post/story creation/deletion, and profile management.
--   : Handles social interactions. Modified to ensure  and  are saved correctly during story creation and to support the  field for posts. Previously had issues with content vs caption field names.
--   : A compatibility layer for PostgreSQL, translating MongoDB-like queries. Extensively modified to handle complex MongoDB query operators (, , , , ),  method, and  for PostgreSQL. Also updated  and  to handle ID conversions and dynamic column mappings.
--   : Centralized authentication client. , , and  were refactored to handle generic and Telegram-scoped tokens, ensuring consistent token storage and  error handling.
--   : User profile editing page. Fixed to correctly define , use  for API calls with the  prefix, and ensure the  field persists and displays correctly by updating model definitions in the backend.
--   : User's profile display page. Updated to correctly import and use  to avoid .
--   : Main content feed. Modified to correctly fetch and display stories by separating the current user's story () from others and normalizing  to prevent black screens and duplicate story circles.
--   : Examined to understand the expected full PostgreSQL schema.
--   : A dynamically created SQL script used to add missing columns and tables to the PostgreSQL database based on schema analysis.
--   : Another dynamically created SQL script to align  and  tables with application's expected fields.
+-   : Main FastAPI backend. Heavily modified to fix PostgreSQL schema mismatches, implement ID handling (string/integer coercion), normalize likes/comments from JSON strings, and consolidate duplicate API endpoints (, caption editing). Important for authentication, post/story management, and profile actions. Changes included adding  helper, fixing , , removing duplicate  endpoints, and fixing , , , ,  for ID coercion. A duplicate comment endpoint was commented out.
+-   : Handles social interactions (posts, stories, comments, likes). Modified to ensure  and  are saved correctly, support  field, and address  vs. auto-increment ID inconsistencies. Critical changes involved:
+    -   : Removed UUID generation, now returns database-generated ID as string.
+    -   : Removed UUID generation.
+    -   , : Added integer conversion for  and  parameters.
+    -   : Implemented robust parsing for / (from JSON strings), removed duplicates, and provided  fallback. Corrected  and  calculations.
+    -   Added  endpoint for unified data structure (counts, ).
+    -   : Modified  to use fetch-append- pattern instead of  due to PostgreSQL incompatibility.
+    -   : Made robust to handle string  values by converting them to  objects and setting default UTC timezone.
+-   : Compatibility layer for PostgreSQL. Modified to handle MongoDB query operators and methods (, , , , , , , , ) and ID conversions. Identified as the source of  operator incompatibility for comment updates.
+-   : Main content feed. Modified to correct post caption layout (username and caption on the same line, Instagram-style) and to use  instead of .
+-   : User's profile display page. Initially showing correct caption layout but later found to have duplicate username issues. Extensive modifications to fix:
+    -   API base URL: Changed from  to .
+    -   : Updated to use the new backend endpoint.
+    -   : Unified / logic to a single  endpoint.
+    -   : Sent  field and  as .
+    -    / : Corrected endpoints and parameter names.
+    -    / : Updated field names for consistency with backend  / .
 </code_architecture>
 
 <pending_tasks>
--   **Frontend UI/Layout Fix for Post Caption**: The user reported that the caption appears below the username (Luvsociety) instead of beside it (like saraalikhan95 [caption]). This is a frontend layout issue.
+-   **Verify Comment Functionality**: Confirm that comments can be successfully added and fetched on the Post Detail Page without errors or incorrect counts, following the latest  fix.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was working on fixing a display issue related to post captions. The user reported that while captions were now appearing, their layout was incorrect: luvsociety upar bhi dikh raha and neecha bhi dikh raha caption ke sath luvsociety upar wala hi dikhna chaiya and uske side main caption dikhna chaiya. This was accompanied by a screenshot demonstrating the incorrect layout. The AI engineer acknowledged this, stating, Bilkul samajh gaya! Caption aa raha hai lekin layout galat hai. Instagram jaisa layout chahiye jahan username aur caption ek hi line me ho. Main frontend fix karta hu. This indicates a shift from backend data persistence and API logic to frontend rendering and styling. The previous efforts had successfully ensured captions were being retrieved and sent by the backend. The next step identified was to modify the frontend to correct this visual presentation.
+Immediately prior to this summary, the AI engineer was deep into resolving persistent issues with the comment functionality, particularly on the Post Detail Page. The user reported that comments failed to add (showing Failed to add comment alert) and failed to fetch (500 errors in console), despite comments sometimes being successfully saved in the backend. This was a recurring problem, intensified by the MongoDB to PostgreSQL migration.
+
+Through multiple iterations and repeated calls to the  (totaling 9 calls over several user reports), several root causes were identified:
+1.  **MongoDB  operator incompatibility**: The  layer was attempting to use  to add comments, which is not directly supported by PostgreSQL. The fix involved fetching the existing comments array, appending the new comment, and then using a  operation to update the entire array. This was implemented in .
+2.  ** data type mismatch**: The  field for comments was stored as an ISO-formatted string in PostgreSQL but was expected as a  object by the  helper function in the backend, leading to  and 500 errors during comment fetching.
+3.  **Duplicate API endpoints**: A duplicate comment endpoint in  caused unpredictable behavior, which was resolved by commenting it out.
+4.  **Frontend/Backend field inconsistencies**: Numerous issues with API endpoints, parameter names ( vs ), and count field names ( vs ) in  were addressed in earlier stages to ensure proper communication.
+
+The very last action taken was to apply a robust fix to the  function in , as suggested by the user, to correctly parse string  values into  objects and ensure timezone awareness. This was done after a previous attempt to fix  caused a regression (feed disappeared) and had to be reverted. The backend was successfully restarted after this final  fix.
 </current_work>
 
 <optional_next_step>
-Adjust frontend (likely in  or a post component) to display the post's username and caption on the same line.
+Verify that comment fetching and adding functionality now works correctly on the Post Detail Page without any errors.
 </optional_next_step>
-
-**User's most recent request:** Caption ab aa raha hai magar Aisa aa raha luvsociety upar bhi dikh raha and neecha bhi dikh raha caption ke sath luvsociety upar wala hi dikhna chaiya and uske side main caption dikhna chaiya 2nd ss dekho saraalikhan95 name likha hai and uske side main uska caption hai aisa hona chaiya samjhe
-
-**AI's last action/response:** Bilkul samajh gaya! Caption aa raha hai lekin layout galat hai. Instagram jaisa layout chahiye jahan username aur caption ek hi line me ho. Main frontend fix karta hu:
-
