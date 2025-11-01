@@ -121,10 +121,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
 
   const checkUsernameChange = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/auth/can-change-username`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get('/auth/can-change-username');
       setCanChangeUsername(response.data.canChange);
       setDaysRemaining(response.data.daysRemaining);
     } catch (error) {
