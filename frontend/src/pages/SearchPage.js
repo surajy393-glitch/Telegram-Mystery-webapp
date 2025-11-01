@@ -26,7 +26,7 @@ import {
 import HashtagText from "@/components/HashtagText";
 import SearchSkeleton from "@/components/LoadingSkeleton";
 import { searchCache, trendingCache } from "@/utils/cache";
-import { createHttpClient } from "@/utils/authClient";
+import { httpClient } from "@/utils/authClient";
 
 const SearchPage = ({ user, onLogout }) => {
   const location = useLocation();
