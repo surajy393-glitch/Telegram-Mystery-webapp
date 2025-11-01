@@ -4184,7 +4184,13 @@ async def unlike_post(post_id: str, current_user: User = Depends(get_current_use
 @api_router.get("/posts/{post_id}/comments")
 async def get_post_comments(post_id: str, current_user: User = Depends(get_current_user)):
     """Get all comments for a post"""
-    post = await db.posts.find_one({"id": post_id})
+    # Coerce post_id to int for DB lookup
+    try:
+        lookup_id = int(post_id)
+    except (ValueError, TypeError):
+        lookup_id = post_id
+
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
