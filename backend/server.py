@@ -3759,11 +3759,32 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
         
         # Separate current user's stories - compare as strings
         if user_id_str == current_user_id_str:
+            # Unified URL: try all possible field names
+            unified_url = (
+                story.get("mediaUrl") or 
+                story.get("media_url") or 
+                story.get("imageUrl") or 
+                story.get("image_url") or 
+                ""
+            )
+            # Unified Type: try all possible field names
+            unified_type = (
+                story.get("mediaType") or 
+                story.get("media_type") or 
+                story.get("storyType") or 
+                story.get("story_type") or 
+                "image"
+            )
+            # Unified Caption: try caption and content
+            unified_caption = story.get("caption") or story.get("content") or ""
+            
             my_stories.append({
                 "id": story["id"],
-                "mediaType": story.get("mediaType") or story.get("media_type") or "image",
-                "mediaUrl": story.get("mediaUrl") or story.get("media_url") or "",
-                "caption": story.get("caption", ""),
+                "mediaType": unified_type,
+                "mediaUrl": unified_url,
+                "imageUrl": unified_url,  # Include for compatibility
+                "storyType": unified_type,  # Include for compatibility
+                "caption": unified_caption,
                 "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
             })
             continue
