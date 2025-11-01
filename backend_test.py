@@ -1135,7 +1135,7 @@ class FeedStoriesRetrievalTester:
         
         # SUCCESS CRITERIA CHECK
         print(f"\n🎯 SUCCESS CRITERIA VERIFICATION:")
-        critical_phases = ['Phase 2 - Posts', 'Phase 3 - Stories', 'Phase 4 - Profile']
+        critical_phases = ['Phase 3 - Feed Endpoints', 'Phase 4 - Stories Endpoints']
         all_critical_passed = True
         
         for phase in critical_phases:
@@ -1146,27 +1146,33 @@ class FeedStoriesRetrievalTester:
             else:
                 print(f"   ✅ {phase}: PASSED")
         
-        auth_results = self.results['phase_results']['Phase 1 - Authentication']
+        auth_results = self.results['phase_results']['Phase 2 - Authentication']
         if auth_results['failed'] > 0:
             print(f"   ❌ Authentication: FAILED ({auth_results['failed']} failures)")
             all_critical_passed = False
         else:
             print(f"   ✅ Authentication: PASSED")
         
-        social_results = self.results['phase_results']['Phase 5 - Social']
-        social_status = "PASSED" if social_results['failed'] == 0 else f"PARTIAL ({social_results['failed']} failures)"
-        print(f"   {'✅' if social_results['failed'] == 0 else '⚠️'} Social Interactions: {social_status}")
+        db_results = self.results['phase_results']['Phase 1 - Database Check']
+        db_status = "PASSED" if db_results['failed'] == 0 else f"FAILED ({db_results['failed']} failures)"
+        print(f"   {'✅' if db_results['failed'] == 0 else '❌'} Database Content: {db_status}")
+        
+        format_results = self.results['phase_results']['Phase 5 - Response Format']
+        format_status = "PASSED" if format_results['failed'] == 0 else f"PARTIAL ({format_results['failed']} failures)"
+        print(f"   {'✅' if format_results['failed'] == 0 else '⚠️'} Response Format: {format_status}")
         
         print(f"\n🏆 FINAL VERDICT:")
         if all_critical_passed and success_rate >= 80:
-            print("   ✅ COMPREHENSIVE TESTING PASSED")
-            print("   🎉 MongoDB to PostgreSQL migration is SUCCESSFUL!")
+            print("   ✅ FEED AND STORIES RETRIEVAL WORKING")
+            print("   🎉 $nin/$in type conversion fix is SUCCESSFUL!")
+            print("   ✅ No 500 errors detected in feed/stories endpoints")
         elif all_critical_passed:
-            print("   ⚠️ CRITICAL FEATURES WORKING (some minor issues)")
-            print("   📝 PostgreSQL migration core functionality is working")
+            print("   ⚠️ FEED/STORIES ENDPOINTS WORKING (some minor issues)")
+            print("   📝 Core feed/stories functionality is working")
         else:
-            print("   ❌ CRITICAL FAILURES DETECTED")
-            print("   🚨 PostgreSQL migration has MAJOR ISSUES that need fixing")
+            print("   ❌ CRITICAL FEED/STORIES FAILURES DETECTED")
+            print("   🚨 Feed shows 'No posts yet' and stories section empty")
+            print("   🚨 500 errors still occurring in feed/stories endpoints")
         
         return all_critical_passed and success_rate >= 80
     
