@@ -926,11 +926,22 @@ async def get_following(userId: str):
 # UTILITY FUNCTIONS
 
 def get_time_ago(dt):
-    """Convert datetime to 'time ago' format"""
+    """Convert datetime to 'time ago' format - handles both datetime objects and ISO strings"""
+    # Handle string input (PostgreSQL migration fix)
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt)
+        except Exception:
+            # If parsing fails, use current time as fallback
+            dt = datetime.now(timezone.utc)
+    
+    # Handle None/NULL values from migration
+    if dt is None:
+        dt = datetime.now(timezone.utc)
+    
     # Ensure dt is timezone-aware
     if dt.tzinfo is None:
-        from datetime import timezone as tz
-        dt = dt.replace(tzinfo=tz.utc)
+        dt = dt.replace(tzinfo=timezone.utc)
     
     now = datetime.now(timezone.utc)
     diff = now - dt
