@@ -1532,7 +1532,7 @@ async def login(user_data: UserLogin):
             detail="Please verify your email address before signing in. Check your email for verification link."
         )
     
-    access_token = create_access_token(data={"sub": user["id"]})
+    access_token = create_access_token(data={"sub": str(user["id"])})
     
     return {
         "message": "Login successful",
