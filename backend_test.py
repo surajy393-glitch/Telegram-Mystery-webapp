@@ -89,7 +89,7 @@ class LuvHiveAPITester:
                 "fullName": "Alex Johnson",
                 "username": f"alex_test_{datetime.now().strftime('%H%M%S')}",
                 "age": 28,
-                "gender": "male",
+                "gender": "Male",  # Use proper case
                 "country": "Canada",
                 "password": "SecurePass456!"
             }
