@@ -17,7 +17,6 @@ import {
   X,
   Send
 } from "lucide-react";
-import axios from "axios";
 import {
   Tabs,
   TabsContent,
@@ -27,9 +26,7 @@ import {
 import HashtagText from "@/components/HashtagText";
 import SearchSkeleton from "@/components/LoadingSkeleton";
 import { searchCache, trendingCache } from "@/utils/cache";
-import { getToken } from "@/utils/telegramStorage";
-
-const API = "/api";
+import { createHttpClient } from "@/utils/authClient";
 
 const SearchPage = ({ user, onLogout }) => {
   const location = useLocation();
