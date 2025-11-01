@@ -217,13 +217,6 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
-      if (!token) {
-        console.error("No authentication token found");
-        alert("Please log in to follow users");
-        return;
-      }
-
       console.log(`Starting follow action for user ${targetUserId}, currently following: ${isFollowing}`);
 
       // Add to following in progress
@@ -263,11 +256,9 @@ const SearchPage = ({ user, onLogout }) => {
 
       // Make API call in background
       const endpoint = isFollowing ? "unfollow" : "follow";
-      console.log(`Making API call to: ${API}/users/${targetUserId}/${endpoint}`);
+      console.log(`Making API call to: /api/users/${targetUserId}/${endpoint}`);
       
-      const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.post(`/api/users/${targetUserId}/${endpoint}`, {});
       
       console.log("Follow action successful:", response.data);
       
