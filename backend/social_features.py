@@ -517,13 +517,26 @@ async def get_post_comments(postId: str, userId: Optional[str] = None):
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
-        comments = post.get("comments", [])
+        # Parse comments - handle both JSON strings and objects
+        raw_comments = post.get("comments", [])
+        if isinstance(raw_comments, str):
+            try:
+                import json as _json
+                comments = _json.loads(raw_comments)
+            except Exception:
+                comments = []
+        else:
+            comments = raw_comments if isinstance(raw_comments, list) else []
         
         # Organize comments and replies
         comment_map = {}
         root_comments = []
         
         for comment in comments:
+            # Skip if comment is not a dict
+            if not isinstance(comment, dict):
+                continue
+                
             comment_id = comment.get("id")
             likes = comment.get("likes", [])
             user_liked = userId in likes if userId else False
