@@ -303,24 +303,38 @@ async def add_comment(
 ):
     """Add comment or reply to a post"""
     try:
-        post = await db.posts.find_one({"id": postId})
+        # Convert postId and userId to integers for PostgreSQL lookup
+        try:
+            post_id_int = int(postId)
+            user_id_int = int(userId)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid ID format")
+        
+        post = await db.posts.find_one({"id": post_id_int})
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
-        user = await db.users.find_one({"id": userId})
+        user = await db.users.find_one({"id": user_id_int})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
         # If it's a reply, validate parent comment exists
         if parentCommentId:
-            parent_exists = any(c.get("id") == parentCommentId for c in post.get("comments", []))
+            comments_list = post.get("comments", [])
+            if isinstance(comments_list, str):
+                try:
+                    import json
+                    comments_list = json.loads(comments_list)
+                except:
+                    comments_list = []
+            parent_exists = any(c.get("id") == parentCommentId for c in comments_list)
             if not parent_exists:
                 raise HTTPException(status_code=404, detail="Parent comment not found")
         
         # UNIFIED COMMENT FORMAT - matches /api/posts endpoint
         comment = {
             "id": str(uuid4()),
-            "userId": userId if not isAnonymous else "anonymous",
+            "userId": str(user_id_int) if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userProfileImage": user.get("profileImage") if not isAnonymous else None,  # Changed from userAvatar
             "text": content,  # Changed from content to text
@@ -333,12 +347,12 @@ async def add_comment(
         
         # Add comment to post
         await db.posts.update_one(
-            {"id": postId},
+            {"id": post_id_int},
             {"$push": {"comments": comment}}
         )
         
         # Create notification for post owner (if not commenting on own post and not anonymous)
-        if not isAnonymous and post.get("userId") != userId:
+        if not isAnonymous and post.get("userId") != user_id_int:
             notification = {
                 "id": str(uuid4()),
                 "userId": post.get("userId"),
