@@ -4130,7 +4130,13 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
 
 @api_router.post("/posts/{post_id}/like")
 async def like_post(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    # Coerce post_id to int for DB lookup
+    try:
+        lookup_id = int(post_id)
+    except (ValueError, TypeError):
+        lookup_id = post_id
+
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
