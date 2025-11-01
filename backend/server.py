@@ -4081,6 +4081,14 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
         is_founder = post_author.get("isFounder", False) if post_author else False
         current_profile_image = post_author.get("profileImage") if post_author else post.get("userProfileImage")
         
+        # Parse likes and comments which may be JSON strings
+        raw_likes = post.get("likes", [])
+        likes_list = parse_likes_comments(raw_likes)
+        likes_list = [str(l) for l in likes_list] if isinstance(likes_list, list) else []
+        
+        raw_comments = post.get("comments", [])
+        comments_list = parse_likes_comments(raw_comments)
+        
         post_data = {
             "id": post["id"],
             # Cast userId to string to avoid type mismatch in frontend
@@ -4091,11 +4099,12 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "isFounder": is_founder,
             "mediaType": post.get("mediaType", "image"),
             "mediaUrl": post.get("mediaUrl", ""),
+            "imageUrl": post.get("imageUrl", ""),  # Include legacy field for older posts
             "caption": post.get("caption", ""),
-            "likes": post.get("likes", []),
-            "comments": post.get("comments", []),
+            "likes": likes_list,
+            "comments": comments_list,
             "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"],
-            "isLiked": str(current_user.id) in [str(l) for l in post.get("likes", [])],
+            "isLiked": str(current_user.id) in likes_list,
             "isSaved": post["id"] in saved_posts
         }
         
