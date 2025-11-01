@@ -862,7 +862,7 @@ const PostDetailPage = ({ user }) => {
                     <Send className="w-7 h-7" />
                   </button>
                 </div>
-                <p className="font-semibold text-sm mb-1">{post.likesCount || 0} likes</p>
+                <p className="font-semibold text-sm mb-1">{post.likeCount || 0} likes</p>
                 <p className="text-gray-500 text-xs mb-3">
                   {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
