@@ -4825,26 +4825,30 @@ async def get_saved_posts(current_user: User = Depends(get_current_user)):
 # Save/Unsave Post
 @api_router.post("/posts/{post_id}/save")
 async def save_post(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    lookup_id = coerce_id(post_id)
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    # Check if already saved
+    # Check if already saved - use string post_id for savedPosts array
     user = await db.users.find_one({"id": int(current_user.id)})
     saved_posts = user.get("savedPosts", [])
     
-    if post_id in saved_posts:
+    # Convert post_id to string for consistent comparison
+    post_id_str = str(post["id"])
+    
+    if post_id_str in saved_posts:
         # Unsave
         await db.users.update_one(
             {"id": current_user.id},
-            {"$pull": {"savedPosts": post_id}}
+            {"$pull": {"savedPosts": post_id_str}}
         )
         return {"message": "Post unsaved", "isSaved": False}
     else:
         # Save
         await db.users.update_one(
             {"id": current_user.id},
-            {"$addToSet": {"savedPosts": post_id}}
+            {"$addToSet": {"savedPosts": post_id_str}}
         )
         return {"message": "Post saved", "isSaved": True}
 
