@@ -15,7 +15,7 @@ class Collection:
     def __init__(self, table_name: str):
         self.table_name = table_name
     
-    async def find_one(self, filter_dict: Dict[str, Any]) -> Optional[Dict]:
+    async def find_one(self, filter_dict: Dict[str, Any], projection: Dict[str, Any] = None) -> Optional[Dict]:
         """Find single document matching filter"""
         pool = await get_pool()
         
