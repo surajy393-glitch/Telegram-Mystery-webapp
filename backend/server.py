@@ -5086,7 +5086,8 @@ async def get_notifications(current_user: User = Depends(get_current_user)):
             "type": notif["type"],
             "postId": notif.get("postId"),
             "isRead": notif.get("isRead", False),
-            "createdAt": notif["createdAt"].isoformat()
+            "createdAt": notif["createdAt"] if isinstance(notif["createdAt"], str)
+                      else notif["createdAt"].isoformat()
         })
     
     return {"notifications": notifications_list}
