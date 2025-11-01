@@ -4306,7 +4306,7 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
         raise HTTPException(status_code=404, detail="Comment not found")
 
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"comments": comments}}
     )
 
