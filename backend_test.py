@@ -7478,11 +7478,11 @@ class LuvHiveAPITester:
                 "fullName": f"Sarah Johnson {unique_id}",
                 "username": f"sarah_j_{unique_id}",
                 "age": 26,
-                "gender": "female",
+                "gender": "Female",  # Use capitalized gender
                 "country": "United States",
                 "password": "SecurePass123!",
                 "email": f"sarah.johnson{unique_id}@example.com",
-                "mobileNumber": f"+1555{unique_id:04d}"
+                "mobileNumber": f"555{unique_id:07d}"  # 10 digit mobile number
             }
             
             response = self.session.post(f"{API_BASE}/auth/register-enhanced", data=form_data)
