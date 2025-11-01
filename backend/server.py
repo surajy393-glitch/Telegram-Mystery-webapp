@@ -4315,7 +4315,13 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
 @api_router.delete("/posts/{post_id}/comment/{comment_id}")
 async def delete_comment(post_id: str, comment_id: str, current_user: User = Depends(get_current_user)):
     """Delete a comment (only by comment owner)"""
-    post = await db.posts.find_one({"id": post_id})
+    # Coerce post_id to int for DB lookup
+    try:
+        lookup_id = int(post_id)
+    except (ValueError, TypeError):
+        lookup_id = post_id
+
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
