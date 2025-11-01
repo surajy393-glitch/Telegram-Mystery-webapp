@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { setToken as saveToken } from "@/utils/authClient";
 
 const API = "/api";
 
