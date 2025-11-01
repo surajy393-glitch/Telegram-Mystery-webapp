@@ -125,11 +125,11 @@ backend:
 
   - task: "Story Creation (Critical PostgreSQL Schema Fix)"
     implemented: true
-    working: true
+    working: false
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
@@ -137,6 +137,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ SUCCESS: Story creation now working correctly after PostgreSQL schema fixes. POST /api/stories returns 200 status with successful story creation. Fixed user_id string-to-integer conversion issue in mongo_compat.py insert_one method. Story created with all required fields (username, mediaUrl). The main agent's PostgreSQL schema migration fixes are working correctly."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Story creation returns 200 but with unexpected response format - nested 'story' object instead of direct story data, breaking frontend expectations. Additionally, GET /api/stories returns 405 'Method Not Allowed' indicating the stories feed endpoint is missing or misconfigured. Stories are created but cannot be retrieved from feed."
 
   - task: "User Search Functionality (Critical PostgreSQL Schema Fix)"
     implemented: true
