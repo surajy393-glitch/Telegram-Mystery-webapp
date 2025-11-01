@@ -4234,59 +4234,61 @@ async def get_post_comments(post_id: str, current_user: User = Depends(get_curre
             comments = []
     return {"comments": comments}
 
-@api_router.post("/posts/{post_id}/comment")
-async def add_comment_to_post(post_id: str, text: str = Form(...), parentCommentId: Optional[str] = Form(None), current_user: User = Depends(get_current_user)):
-    """Add a comment to a post"""
-    # Coerce post_id to int for DB lookup
-    try:
-        lookup_id = int(post_id)
-    except (ValueError, TypeError):
-        lookup_id = post_id
+# DUPLICATE ENDPOINT - DISABLED (use /api/social/posts/{postId}/comment instead)
+# @api_router.post("/posts/{post_id}/comment")
+# async def add_comment_to_post(post_id: str, text: str = Form(...), parentCommentId: Optional[str] = Form(None), current_user: User = Depends(get_current_user)):
+#     """Add a comment to a post"""
+#     # Coerce post_id to int for DB lookup
+#     try:
+#         lookup_id = int(post_id)
+#     except (ValueError, TypeError):
+#         lookup_id = post_id
+#
+#     post = await db.posts.find_one({"id": lookup_id})
+#     if not post:
+#         raise HTTPException(status_code=404, detail="Post not found")
+#
+#     # Comments may be stored as JSON string; parse into a list
+#     comments = post.get("comments", [])
+#     if isinstance(comments, str):
+#         try:
+#             comments = json.loads(comments)
+#         except Exception:
+#             comments = []
+#
+#     comment = {
+#         "id": str(uuid4()),
+#         "userId": current_user.id,
+#         "username": current_user.username,
+#         "userProfileImage": current_user.profileImage,
+#         "text": text,
+#         "likes": [],
+#         "likesCount": 0,
+#         "parentCommentId": parentCommentId,
+#         "createdAt": datetime.now(timezone.utc).isoformat()
+#     }
+#
+#     comments.append(comment)
+#
+#     await db.posts.update_one(
+#         {"id": lookup_id},
+#         {"$set": {"comments": comments}}
+#     )
+#
+#     # Create notification if commenting on someone else's post
+#     if str(post.get("userId")) != str(current_user.id):
+#         notification = Notification(
+#             userId=post["userId"],
+#             fromUserId=current_user.id,
+#             fromUsername=current_user.username,
+#             fromUserImage=current_user.profileImage,
+#             type="comment",
+#             postId=post_id
+#         )
+#         await db.notifications.insert_one(notification.dict())
+#     
+#     return {"message": "Comment added", "comment": comment}
 
-    post = await db.posts.find_one({"id": lookup_id})
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-
-    # Comments may be stored as JSON string; parse into a list
-    comments = post.get("comments", [])
-    if isinstance(comments, str):
-        try:
-            comments = json.loads(comments)
-        except Exception:
-            comments = []
-
-    comment = {
-        "id": str(uuid4()),
-        "userId": current_user.id,
-        "username": current_user.username,
-        "userProfileImage": current_user.profileImage,
-        "text": text,
-        "likes": [],
-        "likesCount": 0,
-        "parentCommentId": parentCommentId,
-        "createdAt": datetime.now(timezone.utc).isoformat()
-    }
-
-    comments.append(comment)
-
-    await db.posts.update_one(
-        {"id": lookup_id},
-        {"$set": {"comments": comments}}
-    )
-
-    # Create notification if commenting on someone else's post
-    if str(post.get("userId")) != str(current_user.id):
-        notification = Notification(
-            userId=post["userId"],
-            fromUserId=current_user.id,
-            fromUsername=current_user.username,
-            fromUserImage=current_user.profileImage,
-            type="comment",
-            postId=post_id
-        )
-        await db.notifications.insert_one(notification.dict())
-    
-    return {"message": "Comment added", "comment": comment}
 
 @api_router.post("/posts/{post_id}/comment/{comment_id}/like")
 async def like_comment(post_id: str, comment_id: str, current_user: User = Depends(get_current_user)):
