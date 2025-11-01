@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createHttpClient } from "@/utils/authClient";
+import { createHttpClient, getToken } from "@/utils/authClient";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
