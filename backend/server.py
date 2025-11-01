@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 import jwt
 from jwt import PyJWTError
+import json  # add this
 import base64
 import hmac
 import hashlib
