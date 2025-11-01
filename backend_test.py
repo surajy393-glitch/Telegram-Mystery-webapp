@@ -10173,28 +10173,13 @@ class ComprehensiveEndToEndTester:
         return self.results['failed'] == 0
 
 if __name__ == "__main__":
-    import sys
-    tester = LuvHiveAPITester()
+    tester = ComprehensiveEndToEndTester()
     
-    # Check if we should run only specific tests
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "telegram":
-            success = tester.run_telegram_tests_only()
-        elif sys.argv[1] == "explore":
-            success = tester.run_explore_tests()
-        elif sys.argv[1] == "verified":
-            success = tester.run_luvhive_verified_tests()
-        elif sys.argv[1] == "followback":
-            success = tester.run_follow_back_tests_only()
-        elif sys.argv[1] == "auth":
-            success = tester.run_authentication_baseline_test()
-        elif sys.argv[1] == "schema":
-            success = tester.run_postgresql_schema_tests()
-        else:
-            print(f"Unknown test suite: {sys.argv[1]}")
-            print("Available options: telegram, explore, verified, followback, auth, schema")
-            sys.exit(1)
-    else:
-        success = tester.run_all_tests()
+    # Run comprehensive end-to-end tests
+    success = tester.run_comprehensive_tests()
     
-    sys.exit(0 if success else 1)
+    # Print comprehensive summary
+    overall_success = tester.print_comprehensive_summary()
+    
+    # Exit with appropriate code
+    sys.exit(0 if overall_success else 1)
