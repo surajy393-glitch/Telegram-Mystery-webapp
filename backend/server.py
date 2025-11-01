@@ -3807,9 +3807,35 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
             }
         stories_by_user[user_id_str]["stories"].append({
             "id": story["id"],
-            "mediaType": story.get("mediaType") or story.get("media_type") or "image",
-            "mediaUrl": story.get("mediaUrl") or story.get("media_url") or "",
-            "caption": story.get("caption", ""),
+            "mediaType": (
+                story.get("mediaType") or 
+                story.get("media_type") or 
+                story.get("storyType") or 
+                story.get("story_type") or 
+                "image"
+            ),
+            "mediaUrl": (
+                story.get("mediaUrl") or 
+                story.get("media_url") or 
+                story.get("imageUrl") or 
+                story.get("image_url") or 
+                ""
+            ),
+            "imageUrl": (
+                story.get("mediaUrl") or 
+                story.get("media_url") or 
+                story.get("imageUrl") or 
+                story.get("image_url") or 
+                ""
+            ),
+            "storyType": (
+                story.get("mediaType") or 
+                story.get("media_type") or 
+                story.get("storyType") or 
+                story.get("story_type") or 
+                "image"
+            ),
+            "caption": story.get("caption") or story.get("content") or "",
             "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
         })
     
