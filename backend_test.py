@@ -7707,15 +7707,17 @@ class LuvHiveAPITester:
             
             if verification_response.status_code == 200:
                 verification_data = verification_response.json()
-                required_fields = ['isVerified', 'criteria', 'currentValues', 'allCriteriaMet']
+                required_fields = ['isVerified', 'criteria', 'criteriaMetCount', 'totalCriteria']
                 missing_fields = [field for field in required_fields if field not in verification_data]
                 
                 if missing_fields:
                     self.log_result("Protected Endpoints - /verification-status", False, 
                                   f"Missing fields: {missing_fields}")
                 else:
+                    criteria_count = len(verification_data['criteria'])
+                    met_count = verification_data['criteriaMetCount']
                     self.log_result("Protected Endpoints - /verification-status", True, 
-                                  f"✅ Verification status retrieved: {len(verification_data['criteria'])} criteria")
+                                  f"✅ Verification status retrieved: {criteria_count} criteria, {met_count} met")
             else:
                 self.log_result("Protected Endpoints - /verification-status", False, 
                               f"Status: {verification_response.status_code}", verification_response.text)
