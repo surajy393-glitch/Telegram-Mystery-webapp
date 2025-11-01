@@ -95,7 +95,7 @@ const SearchPage = ({ user, onLogout }) => {
         onLogout();
       }
     }
-  }, [httpClient, onLogout]);
+  }, [onLogout]);
 
   const fetchExplorePosts = useCallback(async () => {
     try {
@@ -113,7 +113,7 @@ const SearchPage = ({ user, onLogout }) => {
         onLogout();
       }
     }
-  }, [httpClient, onLogout]);
+  }, [onLogout]);
 
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
@@ -159,7 +159,7 @@ const SearchPage = ({ user, onLogout }) => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeTab, httpClient, onLogout]);
+  }, [searchQuery, activeTab, onLogout]);
 
   // Debounced search suggestions to reduce API calls
   const fetchSuggestions = useCallback(async (query) => {
@@ -178,7 +178,7 @@ const SearchPage = ({ user, onLogout }) => {
         onLogout();
       }
     }
-  }, [httpClient, onLogout]);
+  }, [onLogout]);
 
   const handleInputChange = useCallback((e) => {
     const value = e.target.value;
