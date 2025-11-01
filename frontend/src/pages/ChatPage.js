@@ -76,7 +76,6 @@ const ChatPage = ({ user }) => {
         `receiverId=${userId}&message=${encodeURIComponent(newMessage)}`,
         {
           headers: { 
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/x-www-form-urlencoded'
           }
         }
