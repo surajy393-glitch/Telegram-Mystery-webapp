@@ -77,9 +77,53 @@ class FeedStoriesRetrievalTester:
             })
         print()
     
-    # ========== PHASE 1: USER REGISTRATION & AUTHENTICATION ==========
+    # ========== PHASE 1: DATABASE CONTENT CHECK ==========
     
-    def phase1_register_fresh_user(self):
+    async def phase1_check_database_content(self):
+        """Phase 1: Check if posts and stories exist in database"""
+        try:
+            # Load database connection from backend
+            load_dotenv('/app/backend/.env')
+            DATABASE_URL = os.environ.get('DATABASE_URL')
+            
+            if not DATABASE_URL:
+                self.log_result("Database Connection", False, "DATABASE_URL not found in backend/.env",
+                              phase="Phase 1 - Database Check")
+                return False
+            
+            # Connect to PostgreSQL
+            conn = await asyncpg.connect(DATABASE_URL)
+            
+            # Check posts count
+            posts_count = await conn.fetchval("SELECT COUNT(*) FROM webapp_posts")
+            
+            # Check stories count  
+            stories_count = await conn.fetchval("SELECT COUNT(*) FROM webapp_stories")
+            
+            # Get user IDs
+            user_ids = await conn.fetch("SELECT id, username FROM webapp_users LIMIT 5")
+            
+            await conn.close()
+            
+            self.log_result("Database Content Check", True, 
+                          f"Found {posts_count} posts, {stories_count} stories, {len(user_ids)} users",
+                          phase="Phase 1 - Database Check")
+            
+            # Store some user IDs for testing
+            if user_ids:
+                self.test_user_ids = [str(row['id']) for row in user_ids]
+                self.test_usernames = [row['username'] for row in user_ids]
+            
+            return posts_count > 0 or stories_count > 0
+            
+        except Exception as e:
+            self.log_result("Database Content Check", False, "Exception occurred", str(e),
+                          phase="Phase 1 - Database Check")
+            return False
+    
+    # ========== PHASE 2: USER REGISTRATION & AUTHENTICATION ==========
+    
+    def phase2_register_fresh_user(self):
         """Phase 1: Register a fresh user for comprehensive testing"""
         try:
             import time
