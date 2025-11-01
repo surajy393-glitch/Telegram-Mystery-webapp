@@ -111,28 +111,46 @@ class Collection:
         """Insert single document"""
         pool = await get_pool()
         
-        # Valid PostgreSQL columns for webapp_users table (actual columns from DB)
-        valid_columns = {
-            'id', 'full_name', 'username', 'email', 'mobile_number', 'password',
-            'age', 'gender', 'city', 'interests', 'email_verified', 'mobile_verified',
-            'profile_photo_url', 'profile_photo_file_id', 'bio',
-            'is_private', 'is_verified', 'verify_status', 'verify_method',
-            'verified_name', 'verify_code', 'verify_code_expires_at',
-            'verify_code_photo_url', 'verify_photo_file',
-            'followers_count', 'following_count',
-            'created_at', 'updated_at', 'username_changed_at',
-            'telegram_id', 'is_premium', 'is_founder', 'violations_count',
-            'auth_method', 'verification_pathway', 'verified_at',
-            'country', 'is_online', 'last_seen',
-            'telegram_username', 'telegram_first_name', 'telegram_last_name',
-            'telegram_photo_url', 'appear_in_search', 'allow_direct_messages',
-            'show_online_status', 'allow_tagging', 'allow_story_replies',
-            'show_vibe_score', 'push_notifications', 'email_notifications',
-            'personality_answers', 'last_username_change'
+        # Define valid columns for each table
+        table_columns = {
+            'webapp_users': {
+                'id', 'full_name', 'username', 'email', 'mobile_number', 'password',
+                'age', 'gender', 'city', 'interests', 'email_verified', 'mobile_verified',
+                'profile_photo_url', 'profile_photo_file_id', 'bio',
+                'is_private', 'is_verified', 'verify_status', 'verify_method',
+                'verified_name', 'verify_code', 'verify_code_expires_at',
+                'verify_code_photo_url', 'verify_photo_file',
+                'followers_count', 'following_count',
+                'created_at', 'updated_at', 'username_changed_at',
+                'telegram_id', 'is_premium', 'is_founder', 'violations_count',
+                'auth_method', 'verification_pathway', 'verified_at',
+                'country', 'is_online', 'last_seen',
+                'telegram_username', 'telegram_first_name', 'telegram_last_name',
+                'telegram_photo_url', 'appear_in_search', 'allow_direct_messages',
+                'show_online_status', 'allow_tagging', 'allow_story_replies',
+                'show_vibe_score', 'push_notifications', 'email_notifications',
+                'personality_answers', 'last_username_change'
+            },
+            'webapp_posts': {
+                'id', 'user_id', 'username', 'user_profile_image', 'media_type',
+                'media_url', 'caption', 'likes', 'comments', 'is_archived',
+                'likes_hidden', 'comments_disabled', 'is_pinned', 'created_at',
+                'telegram_file_id', 'telegram_file_path', 'likes_count', 'comments_count'
+            },
+            'webapp_stories': {
+                'id', 'user_id', 'username', 'user_profile_image', 'media_type',
+                'media_url', 'caption', 'likes', 'viewers', 'is_archived',
+                'created_at', 'expires_at', 'telegram_file_id', 'telegram_file_path',
+                'views_count'
+            }
         }
+        
+        # Get valid columns for this table
+        valid_columns = table_columns.get(self.table_name, set())
         
         # Field mappings from MongoDB/App names to PostgreSQL column names
         field_mappings = {
+            # User fields
             'password_hash': 'password',
             'profileImage': 'profile_photo_url',
             'profile_image': 'profile_photo_url',
@@ -168,7 +186,21 @@ class Collection:
             'verifiedAt': 'verified_at',
             'verificationPathway': 'verification_pathway',
             'isFounder': 'is_founder',
-            'city': 'city'  # Added city field mapping
+            # Post/Story fields
+            'userId': 'user_id',
+            'userProfileImage': 'user_profile_image',
+            'mediaType': 'media_type',
+            'mediaUrl': 'media_url',
+            'isArchived': 'is_archived',
+            'likesHidden': 'likes_hidden',
+            'commentsDisabled': 'comments_disabled',
+            'isPinned': 'is_pinned',
+            'telegramFileId': 'telegram_file_id',
+            'telegramFilePath': 'telegram_file_path',
+            'likesCount': 'likes_count',
+            'commentsCount': 'comments_count',
+            'expiresAt': 'expires_at',
+            'viewsCount': 'views_count'
         }
         
         # Convert camelCase keys to snake_case
