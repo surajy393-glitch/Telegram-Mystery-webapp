@@ -3750,38 +3750,43 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     stories_by_user = {}
     my_stories = []
     
+    # Convert current_user.id to string for consistent comparison
+    current_user_id_str = str(current_user.id)
+    
     for story in stories:
         user_id = story["userId"]
+        user_id_str = str(user_id)  # Ensure userId is also string for comparison
         
-        # Separate current user's stories
-        if user_id == current_user.id:
+        # Separate current user's stories - compare as strings
+        if user_id_str == current_user_id_str:
             my_stories.append({
                 "id": story["id"],
-                "mediaType": story.get("mediaType", "image"),
+                "mediaType": story.get("mediaType") or story.get("media_type") or "image",
                 "mediaUrl": story.get("mediaUrl") or story.get("media_url") or "",
                 "caption": story.get("caption", ""),
                 "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
             })
             continue
         
-        if user_id not in stories_by_user:
+        # Use stringified userId as key to avoid type mismatches
+        if user_id_str not in stories_by_user:
             # Get user's current profile picture, verification, and founder status
             story_author = await db.users.find_one({"id": user_id})
             is_verified = story_author.get("isVerified", False) if story_author else False
             is_founder = story_author.get("isFounder", False) if story_author else False
             current_profile_image = story_author.get("profileImage") if story_author else story.get("userProfileImage")
             
-            stories_by_user[user_id] = {
-                "userId": user_id,
+            stories_by_user[user_id_str] = {
+                "userId": user_id_str,
                 "username": story["username"],
                 "userProfileImage": current_profile_image,  # Use current profile picture
                 "isVerified": is_verified,
                 "isFounder": is_founder,
                 "stories": []
             }
-        stories_by_user[user_id]["stories"].append({
+        stories_by_user[user_id_str]["stories"].append({
             "id": story["id"],
-            "mediaType": story.get("mediaType", "image"),
+            "mediaType": story.get("mediaType") or story.get("media_type") or "image",
             "mediaUrl": story.get("mediaUrl") or story.get("media_url") or "",
             "caption": story.get("caption", ""),
             "createdAt": story["createdAt"].isoformat() if hasattr(story["createdAt"], 'isoformat') else story["createdAt"]
