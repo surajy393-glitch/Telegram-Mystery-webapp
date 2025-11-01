@@ -774,13 +774,6 @@ const FeedPage = ({ user, onLogout }) => {
                   )}
                 </div>
 
-                {/* Post Content */}
-                {post.content && post.content.trim() && post.content !== 'Photo post' && (
-                  <div className="px-4 pb-3">
-                    <p className="text-gray-800">{post.content}</p>
-                  </div>
-                )}
-
                 {/* Post Image - FIXED VERSION */}
                 {post.imageUrl ? (
                   <div 
@@ -800,7 +793,14 @@ const FeedPage = ({ user, onLogout }) => {
                       }}
                     />
                   </div>
-                ) : null}
+                ) : (
+                  /* Text-only posts - show content here */
+                  post.content && post.content.trim() && post.content !== 'Photo post' && (
+                    <div className="px-4 pb-3">
+                      <p className="text-gray-800">{post.content}</p>
+                    </div>
+                  )
+                )}
 
                 {/* Post Actions */}
                 <div className="px-4 py-3 flex items-center justify-between border-t border-gray-100">
