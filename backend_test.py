@@ -124,7 +124,7 @@ class FeedStoriesRetrievalTester:
     # ========== PHASE 2: USER REGISTRATION & AUTHENTICATION ==========
     
     def phase2_register_fresh_user(self):
-        """Phase 1: Register a fresh user for comprehensive testing"""
+        """Phase 2: Register a fresh user for feed/stories testing"""
         try:
             import time
             unique_id = int(time.time()) % 10000
