@@ -4194,7 +4194,13 @@ async def get_post_comments(post_id: str, current_user: User = Depends(get_curre
 @api_router.post("/posts/{post_id}/comment")
 async def add_comment_to_post(post_id: str, text: str = Form(...), parentCommentId: Optional[str] = Form(None), current_user: User = Depends(get_current_user)):
     """Add a comment to a post"""
-    post = await db.posts.find_one({"id": post_id})
+    # Coerce post_id to int for DB lookup
+    try:
+        lookup_id = int(post_id)
+    except (ValueError, TypeError):
+        lookup_id = post_id
+
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
