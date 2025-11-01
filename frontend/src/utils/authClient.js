@@ -20,15 +20,41 @@
 import axios from 'axios';
 
 /**
+ * Get Telegram user ID for scoped storage
+ */
+function getTelegramUserId() {
+  try {
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      return window.Telegram.WebApp.initDataUnsafe.user.id;
+    }
+  } catch (e) {
+    // Not in Telegram context
+  }
+  return 'default';
+}
+
+/**
  * Read the persisted JWT from localStorage and remove extraneous
  * quotation marks if the token was previously stored using
  * `JSON.stringify`.  Without this sanitisation the server will
  * interpret the value as a literal string surrounded by quotes
  * (e.g. "abcdef") and respond with `401 Invalid token`.
+ * 
+ * ALSO checks Telegram-scoped storage (tg_[id]_token) for compatibility
  */
 export function getToken() {
-  const stored = localStorage.getItem('token');
+  // First try Telegram-scoped storage (for Telegram Mini App compatibility)
+  const telegramUserId = getTelegramUserId();
+  const telegramKey = `tg_${telegramUserId}_token`;
+  let stored = localStorage.getItem(telegramKey);
+  
+  // Fallback to regular token key if Telegram token not found
+  if (!stored) {
+    stored = localStorage.getItem('token');
+  }
+  
   if (!stored) return null;
+  
   // If the token is wrapped in quotes (e.g. "abc"), remove them.
   return stored.replace(/^"+|"+$/g, '');
 }
