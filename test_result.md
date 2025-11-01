@@ -505,6 +505,21 @@ test_plan:
   social_endpoints_missing_or_broken: true
   critical_feed_functionality_broken: true
 
+  - task: "Comment Functionality with Notification System (Review Request Fix)"
+    implemented: true
+    working: true
+    file: "backend/social_features.py, backend/mongo_compat.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "REVIEW REQUEST: Test comment functionality after notification table fix. User reported comments failing with 'Error adding comment: request failed with status code 500' due to notification insertion failing. Fix applied: Added webapp_notifications table configuration to mongo_compat.py with all 8 columns and field mappings (fromUserId → actor_id, postId → post_id, commentId → comment_id, isRead → is_read)."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMMENT NOTIFICATION FUNCTIONALITY FULLY WORKING: Comprehensive testing confirms the webapp_notifications table fix is successful. DETAILED TEST RESULTS: 1) ✅ Comment Creation with Different User - POST /api/social/posts/{postId}/comment returns 200, comment added successfully, notification created in database, 2) ✅ Comment Creation on Own Post - POST /api/social/posts/{postId}/comment returns 200, comment added successfully, NO notification created (correct behavior), 3) ✅ Comment Retrieval - GET /api/social/posts/{postId}/comments returns 200 with comments list, 4) ✅ Notification Database Verification - Found 1 comment notification in webapp_notifications table with correct user_id=99 (post owner), actor_id=100 (commenter), post_id=75, type='comment', 5) ✅ No 500 Errors - All comment operations working without server errors. CRITICAL FIX CONFIRMED: Updated mongo_compat.py to convert actor_id and post_id string values to integers for PostgreSQL compatibility. SUCCESS CRITERIA MET: Comments can be added without 500 errors, notifications properly inserted into webapp_notifications table, comments can be fetched without errors. The user-reported issue is RESOLVED."
+
 agent_communication:
   - agent: "main"
     message: "CRITICAL FRONTEND FIX VERIFICATION REQUEST: Test Profile and Edit Profile pages after ReferenceError fix. FIXES APPLIED: 1) EditProfilePage.js: Added `const token = getToken()` in fetchProfile() - fixes ReferenceError, 2) EditProfilePage.js: Changed `/auth/can-change-username` to `${API}/auth/can-change-username` - fixes 404 error, 3) MyProfilePage.js: Imported `getToken` and added `const token = getToken()` in fetchProfileData() - fixes ReferenceError, 4) Database: Confirmed `last_username_change` column exists in webapp_users table, 5) Frontend and Backend restarted successfully. TESTING NEEDED: Verify NO ReferenceError in console, NO 404 errors for /auth/can-change-username, Profile page loads correctly, Edit Profile page loads correctly, All API calls return 200 status."
