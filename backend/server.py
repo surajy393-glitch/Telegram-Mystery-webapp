@@ -3762,9 +3762,12 @@ async def unlike_story(story_id: str, current_user: User = Depends(get_current_u
 
 @api_router.get("/stories/feed")
 async def get_stories_feed(current_user: User = Depends(get_current_user)):
-    # Get all stories that haven't expired
+    # Get all stories that haven't expired AND are not archived
     now = datetime.now(timezone.utc)
-    stories = await db.stories.find({"expiresAt": {"$gt": now}}).sort("createdAt", -1).to_list(1000)
+    stories = await db.stories.find({
+        "expiresAt": {"$gt": now},
+        "isArchived": False
+    }).sort("createdAt", -1).to_list(1000)
     
     # Group stories by user and separate current user's stories
     stories_by_user = {}
