@@ -638,10 +638,6 @@ class Cursor:
         values = []
         param_num = param_num_start
         
-        # Debug logging
-        print(f"DEBUG _build_where_clause: filter_dict keys = {list(filter_dict.keys())}")
-        print(f"DEBUG _build_where_clause: filter_dict = {filter_dict}")
-        
         for key, value in filter_dict.items():
             # Handle special MongoDB operators
             if key == '$and':
@@ -718,8 +714,6 @@ class Cursor:
                     param_num += 1
         
         where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
-        print(f"DEBUG _build_where_clause: Generated WHERE clause = {where_clause}")
-        print(f"DEBUG _build_where_clause: Values = {values}")
         return where_clause, values
     
     def _snake_to_camel(self, data: Dict) -> Dict:
