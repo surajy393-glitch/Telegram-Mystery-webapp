@@ -556,31 +556,6 @@ const PostDetailPage = ({ user }) => {
 
             {/* Post Details */}
             <div className="md:w-2/5 flex flex-col max-h-[80vh]">
-              {/* User Info */}
-              <div className="p-4 border-b">
-                <div className="flex items-center gap-3">
-                  {post.userProfileImage ? (
-                    <img
-                      src={post.userProfileImage || "https://via.placeholder.com/40"}
-                      alt={post.username}
-                      className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                      onClick={() => navigate(`/profile/${post.userId}`)}
-                      onError={(e) => e.target.src = "https://via.placeholder.com/40"}
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold">
-                      {post.username?.[0]?.toUpperCase() || "U"}
-                    </div>
-                  )}
-                  <span 
-                    className="font-semibold text-gray-800 cursor-pointer hover:text-pink-600"
-                    onClick={() => navigate(`/profile/${post.userId}`)}
-                  >
-                    {post.username}
-                  </span>
-                </div>
-              </div>
-
               {/* Caption and Comments */}
               <div className="flex-1 overflow-y-auto p-4">
                 {/* Caption */}
