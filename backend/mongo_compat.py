@@ -278,11 +278,17 @@ class Collection:
             'expiresAt': 'expires_at',
             'viewsCount': 'views_count',
             # Notification fields
-            'fromUserId': 'actor_id',
-            'actorId': 'actor_id',
+            'fromUserId': 'from_user_id',
+            'actorId': 'from_user_id',           # fallback
+            'fromUsername': 'from_username',
+            'fromUserImage': 'from_user_image',
+            'commentText': 'message',            # comment text stored in message
+            'message': 'message',
             'postId': 'post_id',
+            'storyId': 'post_id',                # स्टोरी लाइक का id भी post_id में स्टोर करें
             'commentId': 'comment_id',
-            'isRead': 'is_read'
+            'isRead': 'is_read',
+            'read': 'is_read'
         }
         
         # Convert camelCase keys to snake_case
