@@ -208,31 +208,132 @@ class ComprehensiveEndToEndTester:
                           phase="Phase 1 - Authentication")
             return False
     
-    def register_second_user(self):
-        """Register a second user for testing interactions"""
+    # ========== PHASE 2: POST FEATURES (CRITICAL) ==========
+    
+    def phase2_create_post(self):
+        """Phase 2: Test POST /api/posts endpoint (create post)"""
         try:
-            user_data = {
-                "fullName": "Alex Johnson",
-                "username": f"alex_test_{datetime.now().strftime('%H%M%S')}",
-                "age": 28,
-                "gender": "Male",  # Use proper case
-                "country": "Canada",
-                "password": "SecurePass456!"
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Testing post creation after PostgreSQL migration! 🚀 #test #migration #postgresql"
             }
             
-            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            response = self.session.post(f"{API_BASE}/posts", json=post_data)
             
-            if response.status_code == 200:
+            if response.status_code in [200, 201]:
                 data = response.json()
-                self.test_user_id = data['user']['id']
-                self.log_result("Second User Registration", True, f"Registered user: {user_data['username']}")
-                return True
+                # Handle both direct post data and nested post object
+                post = data.get('post', data)
+                
+                if 'id' in post:
+                    self.test_post_id = post['id']
+                    self.log_result("Create Post", True, 
+                                  f"Post created successfully, ID: {self.test_post_id}",
+                                  phase="Phase 2 - Posts")
+                    return True
+                else:
+                    self.log_result("Create Post", False, 
+                                  f"Post created but missing ID in response: {data}",
+                                  phase="Phase 2 - Posts")
+                    return False
             else:
-                self.log_result("Second User Registration", False, f"Status: {response.status_code}", response.text)
+                self.log_result("Create Post", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 2 - Posts")
                 return False
                 
         except Exception as e:
-            self.log_result("Second User Registration", False, "Exception occurred", str(e))
+            self.log_result("Create Post", False, "Exception occurred", str(e),
+                          phase="Phase 2 - Posts")
+            return False
+    
+    def phase2_get_posts_feed(self):
+        """Phase 2: Test GET /api/posts/feed endpoint (retrieve posts)"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts_count = len(data['posts'])
+                    self.log_result("Get Posts Feed", True, 
+                                  f"Retrieved {posts_count} posts from feed",
+                                  phase="Phase 2 - Posts")
+                    return True
+                else:
+                    self.log_result("Get Posts Feed", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 2 - Posts")
+                    return False
+            else:
+                self.log_result("Get Posts Feed", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 2 - Posts")
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Posts Feed", False, "Exception occurred", str(e),
+                          phase="Phase 2 - Posts")
+            return False
+    
+    def phase2_like_post(self):
+        """Phase 2: Test POST /api/posts/{postId}/like endpoint"""
+        try:
+            if not self.test_post_id:
+                self.log_result("Like Post", False, "No test post ID available",
+                              phase="Phase 2 - Posts")
+                return False
+            
+            response = self.session.post(f"{API_BASE}/posts/{self.test_post_id}/like")
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.log_result("Like Post", True, 
+                              f"Post liked successfully: {data.get('message', 'Success')}",
+                              phase="Phase 2 - Posts")
+                return True
+            else:
+                self.log_result("Like Post", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 2 - Posts")
+                return False
+                
+        except Exception as e:
+            self.log_result("Like Post", False, "Exception occurred", str(e),
+                          phase="Phase 2 - Posts")
+            return False
+    
+    def phase2_comment_on_post(self):
+        """Phase 2: Test POST /api/posts/{postId}/comment endpoint"""
+        try:
+            if not self.test_post_id:
+                self.log_result("Comment on Post", False, "No test post ID available",
+                              phase="Phase 2 - Posts")
+                return False
+            
+            comment_data = {
+                "comment": "Great post! Testing comment functionality after PostgreSQL migration 👍"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts/{self.test_post_id}/comment", json=comment_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.log_result("Comment on Post", True, 
+                              f"Comment added successfully: {data.get('message', 'Success')}",
+                              phase="Phase 2 - Posts")
+                return True
+            else:
+                self.log_result("Comment on Post", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 2 - Posts")
+                return False
+                
+        except Exception as e:
+            self.log_result("Comment on Post", False, "Exception occurred", str(e),
+                          phase="Phase 2 - Posts")
             return False
     
     def test_get_user_profile(self):
