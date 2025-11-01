@@ -7825,9 +7825,11 @@ if __name__ == "__main__":
             success = tester.run_luvhive_verified_tests()
         elif sys.argv[1] == "followback":
             success = tester.run_follow_back_tests_only()
+        elif sys.argv[1] == "auth":
+            success = tester.run_authentication_baseline_test()
         else:
             print(f"Unknown test suite: {sys.argv[1]}")
-            print("Available options: telegram, explore, verified, followback")
+            print("Available options: telegram, explore, verified, followback, auth")
             sys.exit(1)
     else:
         success = tester.run_all_tests()
