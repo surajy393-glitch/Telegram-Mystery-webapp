@@ -4079,7 +4079,7 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
             "likes": post.get("likes", []),
             "comments": post.get("comments", []),
             "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"],
-            "isLiked": current_user.id in post.get("likes", []),
+            "isLiked": str(current_user.id) in [str(l) for l in post.get("likes", [])],
             "isSaved": post["id"] in saved_posts
         }
         
