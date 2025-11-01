@@ -158,11 +158,11 @@ backend:
 
   - task: "Profile Operations (Critical PostgreSQL Schema Fix)"
     implemented: true
-    working: true
+    working: false
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
@@ -170,6 +170,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ SUCCESS: Profile operations now working correctly after PostgreSQL schema fixes. GET /api/users/38/profile returns 200 status with complete user profile data (username: Luststorm). The main agent's PostgreSQL schema migration fixes have resolved the previous 500 errors."
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIAL SUCCESS: GET /api/users/{userId}/profile works correctly, but PUT /api/auth/update-profile returns 404 'Not Found' indicating the profile update endpoint is missing or misconfigured. Users can view profiles but cannot update them."
 
   - task: "Health Endpoint Fix (Critical PostgreSQL Schema Fix)"
     implemented: true
