@@ -160,8 +160,8 @@ class FeedStoriesRetrievalTester:
                           phase="Phase 2 - Authentication")
             return False
     
-    def phase1_test_login(self):
-        """Phase 1: Test login with registered user"""
+    def phase2_test_login(self):
+        """Phase 2: Test login with registered user"""
         try:
             # Logout first by clearing token
             self.session.headers.pop('Authorization', None)
