@@ -256,7 +256,13 @@ class Collection:
             'likesCount': 'likes_count',
             'commentsCount': 'comments_count',
             'expiresAt': 'expires_at',
-            'viewsCount': 'views_count'
+            'viewsCount': 'views_count',
+            # Notification fields
+            'fromUserId': 'actor_id',
+            'actorId': 'actor_id',
+            'postId': 'post_id',
+            'commentId': 'comment_id',
+            'isRead': 'is_read'
         }
         
         # Convert camelCase keys to snake_case
