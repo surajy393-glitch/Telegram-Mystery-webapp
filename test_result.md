@@ -442,10 +442,15 @@ metadata:
 
 test_plan:
   current_focus:
+    - "MongoDB Compatibility Layer Fixes"
+    - "Feed Endpoints - Posts and Stories Retrieval"
+    - "Social Interactions - Like, Comment, Follow Endpoints"
     - "Post Creation (Critical PostgreSQL Schema Fix)"
     - "Story Creation (Critical PostgreSQL Schema Fix)"
-    - "Profile Operations (Critical PostgreSQL Schema Fix)"
   stuck_tasks:
+    - "MongoDB Compatibility Layer Fixes"
+    - "Feed Endpoints - Posts and Stories Retrieval"
+    - "Social Interactions - Like, Comment, Follow Endpoints"
     - "Post Creation (Critical PostgreSQL Schema Fix)"
     - "Story Creation (Critical PostgreSQL Schema Fix)"
     - "Profile Operations (Critical PostgreSQL Schema Fix)"
@@ -453,9 +458,10 @@ test_plan:
   test_priority: "high_first"
   backend_testing_needed: true
   frontend_testing_needed: false
-  postgresql_schema_migration_incomplete: true
-  critical_database_schema_issues_detected: true
-  mongodb_to_postgresql_migration_failed: true
+  postgresql_migration_partially_complete: true
+  mongodb_compatibility_layer_broken: true
+  social_endpoints_missing_or_broken: true
+  critical_feed_functionality_broken: true
 
 agent_communication:
   - agent: "main"
