@@ -7773,7 +7773,7 @@ class LuvHiveAPITester:
             # Test 3: Malformed token (with extra quotes) should fail
             malformed_token = f'"{token}"'  # Add extra quotes
             malformed_headers = {'Authorization': f'Bearer {malformed_token}'}
-            malformed_response = self.session.get(f"{API_BASE}/auth/me", headers=malformed_headers)
+            malformed_response = fresh_session.get(f"{API_BASE}/auth/me", headers=malformed_headers)
             
             if malformed_response.status_code == 401:
                 self.log_result("Token Validation - Malformed Token", True, 
