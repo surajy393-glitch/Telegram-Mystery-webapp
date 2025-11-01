@@ -926,19 +926,7 @@ async def get_following(userId: str):
 # UTILITY FUNCTIONS
 
 def get_time_ago(dt):
-    """Convert datetime to 'time ago' format - handles both datetime objects and ISO strings"""
-    # Handle string timestamps from JSONB (PostgreSQL migration fix)
-    if isinstance(dt, str):
-        try:
-            from datetime import datetime
-            dt = datetime.fromisoformat(dt.replace('Z', '+00:00'))
-        except Exception:
-            return "Recently"
-    
-    # Handle None or invalid input
-    if not dt or not hasattr(dt, 'tzinfo'):
-        return "Recently"
-    
+    """Convert datetime to 'time ago' format"""
     # Ensure dt is timezone-aware
     if dt.tzinfo is None:
         from datetime import timezone as tz
