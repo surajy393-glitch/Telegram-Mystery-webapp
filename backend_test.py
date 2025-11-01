@@ -7831,12 +7831,16 @@ class LuvHiveAPITester:
         print(f"🌐 Testing against: {API_BASE}")
         print("=" * 60)
         
-        # Test 1: User Registration (Enhanced)
-        print("\n1️⃣ Testing User Registration...")
-        auth_data = self.test_enhanced_registration()
+        # Test 1: User Registration (Regular JSON)
+        print("\n1️⃣ Testing Regular Registration...")
+        auth_data = self.test_regular_registration()
         
-        # Test 2: Login Flow
-        print("\n2️⃣ Testing Login Flow...")
+        # Test 2: User Registration (Enhanced Form Data)
+        print("\n2️⃣ Testing Enhanced Registration...")
+        enhanced_auth_data = self.test_enhanced_registration()
+        
+        # Test 3: Login Flow
+        print("\n3️⃣ Testing Login Flow...")
         login_auth_data = self.test_login_flow()
         
         # Use login auth data for subsequent tests (more realistic)
