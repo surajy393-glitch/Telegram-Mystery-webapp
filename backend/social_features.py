@@ -135,6 +135,84 @@ async def create_post(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@social_router.get("/posts/{postId}")
+async def get_post_detail(postId: str, userId: Optional[str] = None):
+    """
+    Return detailed post data including like/comment counts and flags.
+    """
+    try:
+        post_id_int = int(postId)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+
+    post = await db.posts.find_one({"id": post_id_int})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Normalize likes and remove duplicates
+    raw_likes = post.get("likes", [])
+    if isinstance(raw_likes, str):
+        try:
+            import json as _json
+            raw_likes = _json.loads(raw_likes)
+        except Exception:
+            raw_likes = []
+    normalized_likes = []
+    for l in raw_likes:
+        try:
+            uid = int(l)
+        except (ValueError, TypeError):
+            uid = l
+        if uid not in normalized_likes:
+            normalized_likes.append(uid)
+    like_count = len(normalized_likes)
+
+    # Normalize comments and remove duplicates
+    raw_comments = post.get("comments", [])
+    if isinstance(raw_comments, str):
+        try:
+            import json as _json
+            raw_comments = _json.loads(raw_comments)
+        except Exception:
+            raw_comments = []
+    unique_comments = []
+    seen_ids = set()
+    for c in raw_comments:
+        cid = c.get("id") if isinstance(c, dict) else None
+        if cid and cid not in seen_ids:
+            seen_ids.add(cid)
+            unique_comments.append(c)
+    comment_count = len(unique_comments)
+
+    # Determine if current user liked this post
+    try:
+        user_id_int = int(userId) if userId else None
+    except (ValueError, TypeError):
+        user_id_int = userId
+    user_liked = (user_id_int in normalized_likes) if userId else False
+
+    # Get post author info
+    post_author = await db.users.find_one({"id": post.get("userId")})
+    
+    return {
+        "id": str(post["id"]),
+        "userId": str(post.get("userId")),
+        "username": post.get("username"),
+        "userProfileImage": post_author.get("profileImage") if post_author else None,
+        "content": post.get("content"),
+        "caption": post.get("caption") or post.get("content"),
+        "postType": post.get("postType"),
+        "imageUrl": post.get("imageUrl") or post.get("mediaUrl"),
+        "mediaUrl": post.get("mediaUrl"),
+        "mediaType": post.get("mediaType", "image"),
+        "likeCount": like_count,
+        "commentCount": comment_count,
+        "userLiked": user_liked,
+        "likesHidden": post.get("likesHidden", False),
+        "commentsDisabled": post.get("commentsDisabled", False),
+        "createdAt": post["createdAt"].isoformat() if hasattr(post["createdAt"], 'isoformat') else post["createdAt"]
+    }
+
 @social_router.get("/feed")
 async def get_feed(
     userId: str,
