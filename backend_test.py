@@ -336,29 +336,162 @@ class ComprehensiveEndToEndTester:
                           phase="Phase 2 - Posts")
             return False
     
-    def test_get_user_profile(self):
-        """Test GET /api/users/{userId}/profile endpoint"""
-        if not self.test_user_id:
-            self.log_result("Get User Profile", False, "No test user ID available")
-            return
-        
+    # ========== PHASE 3: STORY FEATURES (CRITICAL) ==========
+    
+    def phase3_create_story(self):
+        """Phase 3: Test POST /api/stories endpoint (create story)"""
         try:
-            response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/profile")
+            story_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Testing story creation after PostgreSQL migration! ✨ #story #test"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories", json=story_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                # Handle both direct story data and nested story object
+                story = data.get('story', data)
+                
+                if 'id' in story:
+                    self.test_story_id = story['id']
+                    self.log_result("Create Story", True, 
+                                  f"Story created successfully, ID: {self.test_story_id}",
+                                  phase="Phase 3 - Stories")
+                    return True
+                else:
+                    self.log_result("Create Story", False, 
+                                  f"Story created but missing ID in response: {data}",
+                                  phase="Phase 3 - Stories")
+                    return False
+            else:
+                self.log_result("Create Story", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Stories")
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Story", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Stories")
+            return False
+    
+    def phase3_get_stories(self):
+        """Phase 3: Test GET /api/stories endpoint (retrieve stories)"""
+        try:
+            response = self.session.get(f"{API_BASE}/stories")
             
             if response.status_code == 200:
                 data = response.json()
-                required_fields = ['id', 'username', 'fullName', 'age', 'gender', 'followersCount', 'followingCount']
+                
+                if 'stories' in data and isinstance(data['stories'], list):
+                    stories_count = len(data['stories'])
+                    self.log_result("Get Stories", True, 
+                                  f"Retrieved {stories_count} stories",
+                                  phase="Phase 3 - Stories")
+                    return True
+                else:
+                    self.log_result("Get Stories", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 3 - Stories")
+                    return False
+            else:
+                self.log_result("Get Stories", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Stories")
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Stories", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Stories")
+            return False
+    
+    def phase3_view_story(self):
+        """Phase 3: Test POST /api/stories/{storyId}/view endpoint"""
+        try:
+            if not self.test_story_id:
+                self.log_result("View Story", False, "No test story ID available",
+                              phase="Phase 3 - Stories")
+                return False
+            
+            response = self.session.post(f"{API_BASE}/stories/{self.test_story_id}/view")
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.log_result("View Story", True, 
+                              f"Story viewed successfully: {data.get('message', 'Success')}",
+                              phase="Phase 3 - Stories")
+                return True
+            else:
+                self.log_result("View Story", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Stories")
+                return False
+                
+        except Exception as e:
+            self.log_result("View Story", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Stories")
+            return False
+    
+    # ========== PHASE 4: PROFILE OPERATIONS (CRITICAL) ==========
+    
+    def phase4_get_user_profile(self):
+        """Phase 4: Test GET /api/users/{userId}/profile endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/profile")
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['id', 'username', 'fullName', 'age', 'gender']
                 
                 missing_fields = [field for field in required_fields if field not in data]
                 if missing_fields:
-                    self.log_result("Get User Profile", False, f"Missing fields: {missing_fields}")
+                    self.log_result("Get User Profile", False, 
+                                  f"Missing fields: {missing_fields}",
+                                  phase="Phase 4 - Profile")
+                    return False
                 else:
-                    self.log_result("Get User Profile", True, f"Retrieved profile for user: {data['username']}")
+                    self.log_result("Get User Profile", True, 
+                                  f"Retrieved profile for user: {data['username']}",
+                                  phase="Phase 4 - Profile")
+                    return True
             else:
-                self.log_result("Get User Profile", False, f"Status: {response.status_code}", response.text)
+                self.log_result("Get User Profile", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Profile")
+                return False
                 
         except Exception as e:
-            self.log_result("Get User Profile", False, "Exception occurred", str(e))
+            self.log_result("Get User Profile", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Profile")
+            return False
+    
+    def phase4_test_edit_profile(self):
+        """Phase 4: Test profile edit functionality"""
+        try:
+            profile_data = {
+                "fullName": "Emma Rodriguez Updated",
+                "bio": "Updated bio after PostgreSQL migration testing! 🎉"
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/update-profile", json=profile_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("Edit Profile", True, 
+                              f"Profile updated successfully: {data.get('message', 'Success')}",
+                              phase="Phase 4 - Profile")
+                return True
+            else:
+                self.log_result("Edit Profile", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Profile")
+                return False
+                
+        except Exception as e:
+            self.log_result("Edit Profile", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Profile")
+            return False
     
     def test_get_user_profile_invalid_id(self):
         """Test GET /api/users/{userId}/profile with invalid user ID"""
