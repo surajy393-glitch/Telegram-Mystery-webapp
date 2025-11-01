@@ -285,7 +285,7 @@ class Collection:
                 continue
             
             # Special handling for ID fields - convert string to int for PostgreSQL
-            if db_key in ['id', 'user_id'] and isinstance(value, str):
+            if db_key in ['id', 'user_id', 'actor_id', 'post_id', 'comment_id'] and isinstance(value, str):
                 try:
                     value = int(value)
                 except (ValueError, TypeError):
