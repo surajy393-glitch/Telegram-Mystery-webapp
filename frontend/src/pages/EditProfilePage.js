@@ -121,7 +121,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
 
   const checkUsernameChange = async () => {
     try {
-      const response = await httpClient.get('/auth/can-change-username');
+      const response = await httpClient.get(`${API}/auth/can-change-username`);
       setCanChangeUsername(response.data.canChange);
       setDaysRemaining(response.data.daysRemaining);
     } catch (error) {
