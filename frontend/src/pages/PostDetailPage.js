@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, MessageCircle, Send, Image as ImageIcon, MoreVertical, Trash2, Flag, Ban, Bookmark, Archive, Link as LinkIcon, Edit } from "lucide-react";
 import { httpClient } from "@/utils/authClient";
 
-const API = "/api";
+const API = "/api/social";  // Changed from "/api" to match backend social routes
 
 const PostDetailPage = ({ user }) => {
   const { postId } = useParams();
@@ -41,7 +41,9 @@ const PostDetailPage = ({ user }) => {
 
   const fetchPostDetails = async () => {
     try {
-      const response = await httpClient.get(`${API}/posts/${postId}`);
+      const response = await httpClient.get(`${API}/posts/${postId}`, {
+        params: { userId: user?.id }  // Send userId to get userLiked status
+      });
       setPost(response.data);
       setLoading(false);
     } catch (error) {
