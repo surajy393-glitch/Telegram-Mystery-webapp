@@ -442,15 +442,7 @@ const HomePage = ({ user, onLogout }) => {
     if (!reportingPost) return;
     
     try {
-      await httpClient.post(`${API}/posts/${reportingPost.id}/report`, 
-        { reason }, 
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      await httpClient.post(`${API}/posts/${reportingPost.id}/report`, { reason });
       alert("Report submitted successfully. Thank you for helping keep LuvHive safe!");
       setShowReportDialog(false);
       setReportingPost(null);
