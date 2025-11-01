@@ -409,13 +409,16 @@ backend:
     implemented: false
     working: false
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL FAILURE: Social interaction endpoints are missing or misconfigured. POST /api/posts/{postId}/like returns 404 'Not Found', POST /api/posts/{postId}/comment returns 404 'Not Found', POST /api/follow returns 404 'Not Found'. These core social features are completely non-functional after the PostgreSQL migration."
+      - working: false
+        agent: "testing"
+        comment: "❌ FINAL VERIFICATION: Social interactions remain broken. POST /api/posts/{postId}/like returns 500 'Internal Server Error', POST /api/posts/{postId}/comment returns 422 validation error (expects 'text' field not 'comment'), POST /api/follow returns 404 'Not Found', POST /api/unfollow returns 404 'Not Found'. Core social features are non-functional - users cannot like posts, comment properly, or follow/unfollow other users."
 
   - task: "Feed Endpoints - Posts and Stories Retrieval"
     implemented: false
