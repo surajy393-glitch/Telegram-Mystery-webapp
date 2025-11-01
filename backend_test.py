@@ -7768,6 +7768,18 @@ class LuvHiveAPITester:
             
             response = fresh_session.get(f"{API_BASE}/auth/me", headers=headers)
             
+            # Debug: Test with curl to compare
+            import subprocess
+            try:
+                curl_result = subprocess.run([
+                    'curl', '-s', '-X', 'GET', f"{API_BASE}/auth/me",
+                    '-H', f'Authorization: Bearer {token}'
+                ], capture_output=True, text=True, timeout=10)
+                print(f"   Curl response code: {curl_result.returncode}")
+                print(f"   Curl response: {curl_result.stdout[:100]}...")
+            except Exception as e:
+                print(f"   Curl test failed: {e}")
+            
             if response.status_code == 200:
                 self.log_result("Token Validation - Valid Token", True, "✅ Valid token accepted")
             else:
