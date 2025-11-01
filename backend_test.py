@@ -7844,18 +7844,18 @@ class LuvHiveAPITester:
         login_auth_data = self.test_login_flow()
         
         # Use login auth data for subsequent tests (more realistic)
-        test_auth_data = login_auth_data or auth_data
+        test_auth_data = login_auth_data or enhanced_auth_data or auth_data
         
-        # Test 3: Protected Endpoints with Valid Token
-        print("\n3️⃣ Testing Protected Endpoints...")
+        # Test 4: Protected Endpoints with Valid Token
+        print("\n4️⃣ Testing Protected Endpoints...")
         self.test_protected_endpoints_with_valid_token(test_auth_data)
         
-        # Test 4: Token Validation and Format
-        print("\n4️⃣ Testing Token Validation...")
+        # Test 5: Token Validation and Format
+        print("\n5️⃣ Testing Token Validation...")
         self.test_token_validation_and_format(test_auth_data)
         
-        # Test 5: Backend Logs Check
-        print("\n5️⃣ Checking Backend Logs...")
+        # Test 6: Backend Logs Check
+        print("\n6️⃣ Checking Backend Logs...")
         self.check_backend_logs()
         
         # Print results
