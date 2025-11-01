@@ -28,16 +28,25 @@ print("Testing complete MongoDB to PostgreSQL migration...")
 print("PHASES: 1) Auth 2) Posts 3) Stories 4) Profile 5) Social")
 print("=" * 60)
 
-class LuvHiveAPITester:
+class ComprehensiveEndToEndTester:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
         self.current_user_id = None
-        self.test_user_id = None
+        self.current_username = None
+        self.test_post_id = None
+        self.test_story_id = None
         self.results = {
             'passed': 0,
             'failed': 0,
-            'errors': []
+            'errors': [],
+            'phase_results': {
+                'Phase 1 - Authentication': {'passed': 0, 'failed': 0},
+                'Phase 2 - Posts': {'passed': 0, 'failed': 0},
+                'Phase 3 - Stories': {'passed': 0, 'failed': 0},
+                'Phase 4 - Profile': {'passed': 0, 'failed': 0},
+                'Phase 5 - Social': {'passed': 0, 'failed': 0}
+            }
         }
     
     def log_result(self, test_name, success, message="", error_details=""):
