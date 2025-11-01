@@ -96,8 +96,8 @@ async def create_post(
             if file_ext in ["mp4", "mov", "avi", "mkv", "webm"]:
                 media_type = "video"
 
-        post = {
-            "id": str(uuid4()),
+        # Don't set id manually - let PostgreSQL auto-generate it
+        post_data = {
             "userId": userId if not isAnonymous else "anonymous",
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
@@ -119,14 +119,17 @@ async def create_post(
             "gender": user.get("gender", "Unknown")
         }
 
-        await db.posts.insert_one(post)
+        # Insert and get the database-generated ID
+        insert_result = await db.posts.insert_one(post_data)
+        post_id = insert_result.get('inserted_id')
 
         return {
             "success": True,
             "message": "Post created successfully",
             "post": {
-                "id": post["id"],
-                "createdAt": post["createdAt"].isoformat()
+                # Return integer ID as string for frontend
+                "id": str(post_id),
+                "createdAt": post_data["createdAt"].isoformat()
             }
         }
     except Exception as e:
