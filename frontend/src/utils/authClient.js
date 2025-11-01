@@ -61,12 +61,23 @@ export function getToken() {
 
 /**
  * Store token in localStorage without extra quotes
+ * Stores in BOTH regular and Telegram-scoped locations for compatibility
  */
 export function setToken(token) {
   if (token) {
+    // Store in regular location
     localStorage.setItem('token', token);
+    
+    // Also store in Telegram-scoped location for consistency
+    const telegramUserId = getTelegramUserId();
+    const telegramKey = `tg_${telegramUserId}_token`;
+    localStorage.setItem(telegramKey, token);
   } else {
+    // Remove from both locations
     localStorage.removeItem('token');
+    const telegramUserId = getTelegramUserId();
+    const telegramKey = `tg_${telegramUserId}_token`;
+    localStorage.removeItem(telegramKey);
   }
 }
 
