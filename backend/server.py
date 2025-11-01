@@ -267,7 +267,10 @@ class UserLogin(BaseModel):
     password: str
 
 class Story(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    # Use an optional integer for the primary key. The actual value is assigned
+    # after insertion into the database via postgres serial. Avoid generating
+    # UUIDs that are never persisted (see story creation endpoints).
+    id: Optional[int] = None
     userId: str
     username: str
     userProfileImage: Optional[str] = None
