@@ -357,6 +357,22 @@ def coerce_post_id(post_id: str):
     except (ValueError, TypeError):
         return post_id
 
+def coerce_id(raw_id):
+    """Helper to coerce a string id into int where possible"""
+    try:
+        return int(raw_id)
+    except (ValueError, TypeError):
+        return raw_id
+
+def parse_likes_comments(field_value):
+    """Parse likes or comments field which may be JSON string or list"""
+    if isinstance(field_value, str):
+        try:
+            return json.loads(field_value)
+        except Exception:
+            return []
+    return field_value if isinstance(field_value, list) else []
+
 def verify_telegram_hash(auth_data: dict, bot_token: str) -> bool:
     """
     Verify Telegram Login Widget hash for security
