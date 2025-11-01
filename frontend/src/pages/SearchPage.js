@@ -100,20 +100,21 @@ const SearchPage = ({ user, onLogout }) => {
 
   const fetchExplorePosts = useCallback(async () => {
     try {
-      const token = getToken();
       console.log('🔍 Fetching explore posts');
       
-      const response = await axios.get(`${API}/search/explore`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get('/api/search/explore');
       
       console.log('✅ Explore posts response:', response.data);
       setExplorePosts(response.data.posts || []);
     } catch (error) {
       console.error("❌ Error fetching explore posts:", error);
       setExplorePosts([]);
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - logging out");
+        onLogout();
+      }
     }
-  }, []);
+  }, [httpClient, onLogout]);
 
   const handleSearch = useCallback(async (query = searchQuery, type = activeTab) => {
     if (!query.trim()) return;
