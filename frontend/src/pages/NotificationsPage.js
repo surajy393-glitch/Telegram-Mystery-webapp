@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
-import axios from "axios";
-
-const API = "/api";
-import { getToken } from "@/utils/telegramStorage";
+import { createHttpClient } from "@/utils/authClient";
 
 const getRelativeTime = (dateString) => {
   const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
@@ -33,6 +30,7 @@ const NotificationsPage = ({ user, onLogout }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const httpClient = createHttpClient();
 
   useEffect(() => {
     fetchNotifications();
@@ -40,18 +38,17 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const fetchNotifications = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get('/api/notifications');
       setNotifications(response.data.notifications || []);
       
       // Mark all as read
-      await axios.post(`${API}/notifications/read-all`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post('/api/notifications/read-all', {});
     } catch (error) {
       console.error("Error fetching notifications:", error);
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - logging out");
+        onLogout();
+      }
     } finally {
       setLoading(false);
     }
@@ -59,10 +56,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleAcceptFollowRequest = async (fromUserId) => {
     try {
-      const token = getToken();
-      await axios.post(`${API}/users/${fromUserId}/accept-follow-request`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`/api/users/${fromUserId}/accept-follow-request`, {});
       
       // Remove notification from list
       setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.fromUserId === fromUserId)));
@@ -76,10 +70,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleRejectFollowRequest = async (fromUserId) => {
     try {
-      const token = getToken();
-      await axios.post(`${API}/users/${fromUserId}/reject-follow-request`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`/api/users/${fromUserId}/reject-follow-request`, {});
       
       // Remove notification from list
       setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.fromUserId === fromUserId)));
@@ -92,10 +83,7 @@ const NotificationsPage = ({ user, onLogout }) => {
 
   const handleFollowBack = async (fromUserId) => {
     try {
-      const token = getToken();
-      await axios.post(`${API}/users/${fromUserId}/follow`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`/api/users/${fromUserId}/follow`, {});
       
       // Remove notification from list after following back
       setNotifications(prev => prev.filter(n => !(n.type === 'started_following' && n.fromUserId === fromUserId)));

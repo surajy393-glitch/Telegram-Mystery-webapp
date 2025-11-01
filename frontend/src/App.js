@@ -20,6 +20,7 @@ import ChatPage from "@/pages/ChatPage";
 import TelegramAuthHandler from "@/components/TelegramAuthHandler";
 import { Toaster } from "@/components/ui/toaster";
 import { getToken, getUser, setToken, setUser as setStorageUser, clearAuth, getTelegramUserId } from "@/utils/telegramStorage";
+import { createHttpClient } from "@/utils/authClient";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,23 +59,23 @@ function App() {
   // Function to refresh user data from server
   const refreshUserData = async (token, currentUser) => {
     try {
-      const response = await fetch("/api/auth/me", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("🔄 Refreshed user data from server:", data.username, "isPremium:", data.isPremium);
+      const httpClient = createHttpClient();
+      const response = await httpClient.get("/api/auth/me");
+      
+      if (response.data) {
+        console.log("🔄 Refreshed user data from server:", response.data.username, "isPremium:", response.data.isPremium);
         
         // Update user data in storage and state with fresh data
-        setStorageUser(data);
-        setUser(data);
+        setStorageUser(response.data);
+        setUser(response.data);
       }
     } catch (error) {
       console.error("⚠️ Failed to refresh user data:", error);
+      // If we get 401, token is invalid - force logout
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - forcing logout");
+        handleLogout();
+      }
     }
   };
 
@@ -82,28 +83,26 @@ function App() {
   // Function to auto-link Telegram account
   const linkTelegramAccount = async (token, telegramId, currentUser) => {
     try {
-      const response = await fetch("/api/auth/link-telegram", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ telegramId: parseInt(telegramId) })
+      const httpClient = createHttpClient();
+      const response = await httpClient.post("/api/auth/link-telegram", {
+        telegramId: parseInt(telegramId)
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
         console.log("✅ Telegram account linked successfully");
         
         // Update user data in storage and state
         const updatedUser = { ...currentUser, telegramId: parseInt(telegramId) };
         setStorageUser(updatedUser);
         setUser(updatedUser);
-      } else {
-        console.log("⚠️ Failed to link Telegram account:", await response.text());
       }
     } catch (error) {
       console.error("❌ Error linking Telegram account:", error);
+      // If we get 401, token is invalid - force logout
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid during Telegram linking - forcing logout");
+        handleLogout();
+      }
     }
   };
 
