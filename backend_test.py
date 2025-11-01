@@ -7541,7 +7541,7 @@ class LuvHiveAPITester:
                 "fullName": f"Emma Wilson {unique_id}",
                 "username": f"emma_w_{unique_id}",
                 "age": 24,
-                "gender": "female",
+                "gender": "Female",  # Use capitalized gender
                 "country": "Australia",
                 "password": "RegularPass123!",
                 "email": f"emma.wilson{unique_id}@example.com",
