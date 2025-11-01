@@ -54,10 +54,8 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
         return;
       }
       
-      console.log("📝 EditProfile: Fetching profile with token...");
-      const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      console.log("📝 EditProfile: Fetching profile with httpClient...");
+      const response = await httpClient.get('/auth/me');
       
       console.log("✅ EditProfile: Profile data received");
       console.log("   Full Name:", response.data.fullName);
