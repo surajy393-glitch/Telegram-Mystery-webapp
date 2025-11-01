@@ -396,6 +396,42 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE FOLLOWERS/FOLLOWING LIST TESTING COMPLETE: All 6 test scenarios passed (100% success rate). DETAILED RESULTS: 1) ✅ Public Account Followers - Successfully retrieved followers list with correct response format {followers: [...]} including required fields (id, username, fullName, profileImage, isFollowing), 2) ✅ Public Account Following - Successfully retrieved following list with correct response format {following: [...]} and proper field structure, 3) ✅ Private Account Blocked Access - Correctly returns 403 status with 'This account is private' message when non-followers attempt to access private account lists, 4) ✅ Private Account Allowed Access - Successfully allows access to followers/following lists when user follows the private account, 5) ✅ Own Profile Always Allowed - Users can always view their own followers/following regardless of privacy settings, 6) ✅ Response Format Validation - Both endpoints return correct data structure with proper arrays and required user fields. Privacy rules working correctly: public accounts accessible to all, private accounts restricted to followers and owner only."
 
+  - task: "Social Interactions - Like, Comment, Follow Endpoints"
+    implemented: false
+    working: false
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL FAILURE: Social interaction endpoints are missing or misconfigured. POST /api/posts/{postId}/like returns 404 'Not Found', POST /api/posts/{postId}/comment returns 404 'Not Found', POST /api/follow returns 404 'Not Found'. These core social features are completely non-functional after the PostgreSQL migration."
+
+  - task: "Feed Endpoints - Posts and Stories Retrieval"
+    implemented: false
+    working: false
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL FAILURE: Feed endpoints are broken after PostgreSQL migration. GET /api/posts/feed returns 500 'Collection.find_one() takes 2 positional arguments but 3 were given' indicating MongoDB compatibility layer syntax errors. GET /api/stories returns 405 'Method Not Allowed' indicating missing endpoint. Users cannot view any posts or stories in their feeds."
+
+  - task: "MongoDB Compatibility Layer Fixes"
+    implemented: false
+    working: false
+    file: "backend/mongo_compat.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL FAILURE: MongoDB compatibility layer has multiple syntax errors. 'Collection.find_one() takes 2 positional arguments but 3 were given' errors throughout the system. 'str' object cannot be interpreted as an integer errors in PostgreSQL queries. The compatibility layer is not properly translating MongoDB queries to PostgreSQL syntax."
+
 metadata:
   created_by: "main_agent"
   version: "4.0"
