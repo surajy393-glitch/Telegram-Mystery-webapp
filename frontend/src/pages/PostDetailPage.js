@@ -64,7 +64,6 @@ const PostDetailPage = ({ user }) => {
     if (!post) return;
     
     try {
-      const token = getToken();
       const isLiked = post.userLiked;
       const endpoint = isLiked ? 'unlike' : 'like';
       
@@ -117,7 +116,6 @@ const PostDetailPage = ({ user }) => {
 
   const handleLikeComment = async (commentId) => {
     try {
-      const token = getToken();
       
       // Optimistic update
       setComments(prev => prev.map(comment => {

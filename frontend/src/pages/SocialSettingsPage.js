@@ -71,7 +71,6 @@ const SocialSettingsPage = ({ user, onLogout }) => {
     setSettings({ ...settings, [key]: newValue });
     
     try {
-      const token = getToken();
       
       // Map frontend setting key to backend setting key
       const settingMap = {

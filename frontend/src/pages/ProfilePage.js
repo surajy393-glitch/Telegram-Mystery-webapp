@@ -422,7 +422,6 @@ const ProfilePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
       if (!token) {
         console.error("No authentication token found");
         return;
