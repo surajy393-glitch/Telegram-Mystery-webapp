@@ -174,7 +174,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
         formDataToSend.append("profileImage", profileImagePreview);
       }
 
-      const response = await httpClient.put('/auth/profile', formDataToSend, {
+      const response = await httpClient.put(`${API}/auth/profile`, formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
@@ -185,7 +185,9 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
       // Update app state by calling onLogin with existing token and updated user
-      if (onLogin) {        onLogin(currentToken, updatedUser);
+      const currentToken = getToken();
+      if (onLogin) {
+        onLogin(currentToken, updatedUser);
       }
 
       alert("Profile updated successfully!");
