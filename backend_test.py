@@ -49,8 +49,8 @@ class ComprehensiveEndToEndTester:
             }
         }
     
-    def log_result(self, test_name, success, message="", error_details=""):
-        """Log test results"""
+    def log_result(self, test_name, success, message="", error_details="", phase=""):
+        """Log test results with phase tracking"""
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status}: {test_name}")
         if message:
@@ -60,12 +60,17 @@ class ComprehensiveEndToEndTester:
         
         if success:
             self.results['passed'] += 1
+            if phase and phase in self.results['phase_results']:
+                self.results['phase_results'][phase]['passed'] += 1
         else:
             self.results['failed'] += 1
+            if phase and phase in self.results['phase_results']:
+                self.results['phase_results'][phase]['failed'] += 1
             self.results['errors'].append({
                 'test': test_name,
                 'message': message,
-                'error': error_details
+                'error': error_details,
+                'phase': phase
             })
         print()
     
