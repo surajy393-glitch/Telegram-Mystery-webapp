@@ -7468,13 +7468,13 @@ class LuvHiveAPITester:
     # ========== AUTHENTICATION FLOW TESTS ==========
     
     def test_enhanced_registration(self):
-        """Test POST /api/auth/register-enhanced endpoint"""
+        """Test POST /api/auth/register-enhanced endpoint (form data)"""
         try:
             import time
             unique_id = int(time.time()) % 10000
             
-            # Test enhanced registration with realistic data
-            user_data = {
+            # Test enhanced registration with form data (as expected by backend)
+            form_data = {
                 "fullName": f"Sarah Johnson {unique_id}",
                 "username": f"sarah_j_{unique_id}",
                 "age": 26,
@@ -7485,7 +7485,7 @@ class LuvHiveAPITester:
                 "mobileNumber": f"+1555{unique_id:04d}"
             }
             
-            response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=user_data)
+            response = self.session.post(f"{API_BASE}/auth/register-enhanced", data=form_data)
             
             if response.status_code == 200:
                 data = response.json()
