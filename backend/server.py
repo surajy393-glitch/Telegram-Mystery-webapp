@@ -4127,7 +4127,7 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
         "caption": post.get("caption", ""),
         "likesCount": len(likes),
         "commentsCount": len(comments),
-        "userLiked": current_user.id in likes,
+        "userLiked": str(current_user.id) in [str(l) for l in likes],
         "isSaved": post["id"] in saved_posts,
         "likesHidden": post.get("likesHidden", False),
         "commentsDisabled": post.get("commentsDisabled", False),
