@@ -7530,6 +7530,69 @@ class LuvHiveAPITester:
             self.log_result("Enhanced Registration", False, "Exception occurred", str(e))
             return None
     
+    def test_regular_registration(self):
+        """Test POST /api/auth/register endpoint (JSON)"""
+        try:
+            import time
+            unique_id = int(time.time()) % 10000
+            
+            # Test regular registration with JSON data
+            user_data = {
+                "fullName": f"Emma Wilson {unique_id}",
+                "username": f"emma_w_{unique_id}",
+                "age": 24,
+                "gender": "female",
+                "country": "Australia",
+                "password": "RegularPass123!",
+                "email": f"emma.wilson{unique_id}@example.com",
+                "authMethod": "password"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check response structure
+                required_fields = ['message', 'access_token', 'token_type', 'user']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Regular Registration", False, f"Missing fields: {missing_fields}")
+                    return None
+                
+                # Validate token format (should be plain JWT string)
+                token = data['access_token']
+                if not isinstance(token, str) or len(token) < 100:
+                    self.log_result("Regular Registration", False, f"Invalid token format: {type(token)}, length: {len(token) if isinstance(token, str) else 'N/A'}")
+                    return None
+                
+                # Check token doesn't have extra quotes
+                if token.startswith('"') and token.endswith('"'):
+                    self.log_result("Regular Registration", False, "Token has extra quotes - format issue detected")
+                    return None
+                
+                # Validate user data
+                user = data['user']
+                if user['username'] != user_data['username'] or user['email'] != user_data['email']:
+                    self.log_result("Regular Registration", False, "User data mismatch in response")
+                    return None
+                
+                self.log_result("Regular Registration", True, 
+                              f"✅ User registered: {user['username']}, Token format: JWT string ({len(token)} chars)")
+                return {
+                    'token': token,
+                    'user_id': user['id'],
+                    'username': user['username']
+                }
+            else:
+                self.log_result("Regular Registration", False, f"Status: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Regular Registration", False, "Exception occurred", str(e))
+            return None
+    
     def test_login_flow(self):
         """Test POST /api/auth/login endpoint with proper token format validation"""
         try:
