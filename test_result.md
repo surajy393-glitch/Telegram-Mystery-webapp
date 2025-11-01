@@ -674,6 +674,18 @@ agent_communication:
         agent: "testing"
         comment: "✅ COMPREHENSIVE UPDATED SETTINGS TESTING COMPLETE: All requested changes verified working correctly. KEY FINDINGS: 1) ✅ publicProfile setting COMPLETELY REMOVED from /api/auth/me endpoint (no longer returned), 2) ✅ /api/auth/settings correctly REJECTS publicProfile as invalid setting (400 status or ignored), 3) ✅ blockedUsers array present in /api/auth/me response, 4) ✅ GET /api/users/blocked endpoint working (fixed routing conflict by moving before /users/{userId}), 5) ✅ POST /api/users/{userId}/unblock endpoint working with proper validation, 6) ✅ All 9 remaining settings persist correctly: isPrivate, appearInSearch, allowDirectMessages, showOnlineStatus, allowTagging, allowStoryReplies, showVibeScore, pushNotifications, emailNotifications. TESTING SUMMARY: 23/23 tests passed including AI vibe compatibility, user blocking/unblocking, story hiding, authentication, and comprehensive settings validation. Updated functionality is production-ready."
 
+  - task: "Frontend Authentication Token Migration Testing"
+    implemented: false
+    working: false
+    file: "frontend/src/App.js, frontend/src/pages/LoginPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL AUTHENTICATION ISSUES IDENTIFIED: Cannot complete JWT token migration testing due to multiple blocking issues: 1) LOGIN FAILURES: All test credentials return 401 'Invalid username or password' (tested Luvsociety, Luststorm, testuser with password123), 2) REGISTRATION BLOCKED: Registration requires email OTP verification which cannot be completed in testing environment, backend registration API has validation errors requiring age/gender/country fields, 3) DATABASE SCHEMA ERRORS: Backend logs show 'column is_archived does not exist' errors preventing user operations, 4) AUTHENTICATION FLOW: Frontend correctly handles unauthenticated state with proper redirects, but cannot test token generation/validation without valid credentials. NEEDS: Valid test credentials or backend database fixes to proceed with JWT sub field verification (integer→string migration) and protected route testing."
+
 frontend:
   - task: "Enhanced Login Page with Telegram OTP System"
     implemented: true
