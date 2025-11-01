@@ -4060,7 +4060,8 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
         
         post_data = {
             "id": post["id"],
-            "userId": post["userId"],
+            # Cast userId to string to avoid type mismatch in frontend
+            "userId": str(post["userId"]),
             "username": post["username"],
             "userProfileImage": current_profile_image,  # Use current profile picture
             "isVerified": is_verified,
