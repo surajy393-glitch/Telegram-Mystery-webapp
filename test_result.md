@@ -385,19 +385,20 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend Authentication Token Migration Testing"
+    - "Post Creation (Critical PostgreSQL Schema Fix)"
+    - "Story Creation (Critical PostgreSQL Schema Fix)"
+    - "Profile Operations (Critical PostgreSQL Schema Fix)"
   stuck_tasks:
-    - "Frontend Authentication Token Migration Testing"
+    - "Post Creation (Critical PostgreSQL Schema Fix)"
+    - "Story Creation (Critical PostgreSQL Schema Fix)"
+    - "Profile Operations (Critical PostgreSQL Schema Fix)"
   test_all: false
   test_priority: "high_first"
-  backend_testing_needed: false
-  frontend_testing_needed: true
-  three_dot_menu_backend_complete: true
-  luvhive_verified_backend_complete: true
-  followers_following_backend_complete: true
-  authentication_testing_blocked: true
-  automatic_logout_debugging_complete: true
-  frontend_routing_issue_detected: true
+  backend_testing_needed: true
+  frontend_testing_needed: false
+  postgresql_schema_migration_incomplete: true
+  critical_database_schema_issues_detected: true
+  mongodb_to_postgresql_migration_failed: true
 
 agent_communication:
   - agent: "main"
