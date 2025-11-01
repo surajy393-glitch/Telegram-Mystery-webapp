@@ -258,17 +258,11 @@ class Collection:
             'expiresAt': 'expires_at',
             'viewsCount': 'views_count',
             # Notification fields
-            'userId': 'user_id',
-            'fromUserId': 'from_user_id',
-            'fromUsername': 'from_username',
-            'fromUserImage': 'from_user_image',
+            'fromUserId': 'actor_id',
             'actorId': 'actor_id',
             'postId': 'post_id',
-            'commentText': 'comment_text',
             'commentId': 'comment_id',
-            'isRead': 'is_read',
-            'createdAt': 'created_at'
-            # 'type' map नहीं करना पड़ेगा क्योंकि same name
+            'isRead': 'is_read'
         }
         
         # Convert camelCase keys to snake_case
