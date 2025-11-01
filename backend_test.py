@@ -60,7 +60,7 @@ class LuvHiveAPITester:
                 "fullName": f"Test User {unique_id}",
                 "username": f"testuser{unique_id}",
                 "age": 25,
-                "gender": "female",
+                "gender": "Female",  # Use proper case
                 "country": "United States",
                 "password": "test123"
             }
