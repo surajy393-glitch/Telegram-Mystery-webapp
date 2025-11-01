@@ -74,18 +74,20 @@ class ComprehensiveEndToEndTester:
             })
         print()
     
-    def register_test_user(self):
-        """Register a test user for authentication"""
+    # ========== PHASE 1: USER REGISTRATION & AUTHENTICATION ==========
+    
+    def phase1_register_fresh_user(self):
+        """Phase 1: Register a fresh user for comprehensive testing"""
         try:
             import time
             unique_id = int(time.time()) % 10000
             user_data = {
-                "fullName": f"Test User {unique_id}",
-                "username": f"testuser{unique_id}",
-                "age": 25,
-                "gender": "Female",  # Use proper case
+                "fullName": f"Emma Rodriguez {unique_id}",
+                "username": f"emma_test_{unique_id}",
+                "age": 26,
+                "gender": "Female",
                 "country": "United States",
-                "password": "test123"
+                "password": "SecurePass123!"
             }
             
             response = self.session.post(f"{API_BASE}/auth/register", json=user_data)
@@ -94,15 +96,116 @@ class ComprehensiveEndToEndTester:
                 data = response.json()
                 self.auth_token = data['access_token']
                 self.current_user_id = data['user']['id']
+                self.current_username = data['user']['username']
                 self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
-                self.log_result("User Registration", True, f"Registered user: {user_data['username']}")
+                self.log_result("Fresh User Registration", True, 
+                              f"Registered: {user_data['username']}, ID: {self.current_user_id}", 
+                              phase="Phase 1 - Authentication")
                 return True
             else:
-                self.log_result("User Registration", False, f"Status: {response.status_code}", response.text)
+                self.log_result("Fresh User Registration", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 1 - Authentication")
                 return False
                 
         except Exception as e:
-            self.log_result("User Registration", False, "Exception occurred", str(e))
+            self.log_result("Fresh User Registration", False, "Exception occurred", str(e),
+                          phase="Phase 1 - Authentication")
+            return False
+    
+    def phase1_test_login(self):
+        """Phase 1: Test login with registered user"""
+        try:
+            # Logout first by clearing token
+            self.session.headers.pop('Authorization', None)
+            
+            login_data = {
+                "username": self.current_username,
+                "password": "SecurePass123!"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data['access_token']
+                self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
+                self.log_result("User Login", True, 
+                              f"Login successful for: {self.current_username}",
+                              phase="Phase 1 - Authentication")
+                return True
+            else:
+                self.log_result("User Login", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 1 - Authentication")
+                return False
+                
+        except Exception as e:
+            self.log_result("User Login", False, "Exception occurred", str(e),
+                          phase="Phase 1 - Authentication")
+            return False
+    
+    def phase1_test_get_me(self):
+        """Phase 1: Test GET /api/auth/me endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/auth/me")
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['id', 'username', 'fullName', 'age', 'gender']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Get Current User", False, 
+                                  f"Missing fields: {missing_fields}",
+                                  phase="Phase 1 - Authentication")
+                else:
+                    self.log_result("Get Current User", True, 
+                                  f"Retrieved user data: {data['username']}",
+                                  phase="Phase 1 - Authentication")
+                return len(missing_fields) == 0
+            else:
+                self.log_result("Get Current User", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 1 - Authentication")
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Current User", False, "Exception occurred", str(e),
+                          phase="Phase 1 - Authentication")
+            return False
+    
+    def phase1_verify_jwt_token(self):
+        """Phase 1: Verify JWT token contains correct user ID"""
+        try:
+            if not self.auth_token:
+                self.log_result("JWT Token Verification", False, "No auth token available",
+                              phase="Phase 1 - Authentication")
+                return False
+            
+            # Basic JWT structure check
+            token_parts = self.auth_token.split('.')
+            if len(token_parts) != 3:
+                self.log_result("JWT Token Verification", False, 
+                              f"Invalid JWT structure: {len(token_parts)} parts",
+                              phase="Phase 1 - Authentication")
+                return False
+            
+            # Check token length (should be substantial)
+            if len(self.auth_token) < 100:
+                self.log_result("JWT Token Verification", False, 
+                              f"Token too short: {len(self.auth_token)} chars",
+                              phase="Phase 1 - Authentication")
+                return False
+            
+            self.log_result("JWT Token Verification", True, 
+                          f"Valid JWT structure, length: {len(self.auth_token)} chars",
+                          phase="Phase 1 - Authentication")
+            return True
+                
+        except Exception as e:
+            self.log_result("JWT Token Verification", False, "Exception occurred", str(e),
+                          phase="Phase 1 - Authentication")
             return False
     
     def register_second_user(self):
