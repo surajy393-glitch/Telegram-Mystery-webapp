@@ -212,7 +212,7 @@ async def get_feed(
             user_liked = userId in post.get("likes", [])
             
             formatted_posts.append({
-                "id": post["id"],
+                "id": str(post["id"]),  # Convert integer ID to string for frontend
                 "userId": post.get("userId"),
                 "username": post.get("username"),
                 "userAvatar": current_profile_image,  # Use current profile picture
@@ -221,7 +221,7 @@ async def get_feed(
                 "content": post.get("content"),
                 "caption": post.get("caption") or post.get("content"),  # Add caption field for Instagram-style display
                 "postType": post.get("postType"),
-                "imageUrl": post.get("imageUrl"),
+                "imageUrl": post.get("imageUrl") or post.get("mediaUrl"),  # Fallback to mediaUrl if imageUrl not present
                 "isAnonymous": post.get("isAnonymous", False),
                 "likes": like_count,
                 "comments": comment_count,
