@@ -666,16 +666,19 @@ agent_communication:
         comment: "✅ COMPREHENSIVE UPDATED SETTINGS TESTING COMPLETE: All requested changes verified working correctly. KEY FINDINGS: 1) ✅ publicProfile setting COMPLETELY REMOVED from /api/auth/me endpoint (no longer returned), 2) ✅ /api/auth/settings correctly REJECTS publicProfile as invalid setting (400 status or ignored), 3) ✅ blockedUsers array present in /api/auth/me response, 4) ✅ GET /api/users/blocked endpoint working (fixed routing conflict by moving before /users/{userId}), 5) ✅ POST /api/users/{userId}/unblock endpoint working with proper validation, 6) ✅ All 9 remaining settings persist correctly: isPrivate, appearInSearch, allowDirectMessages, showOnlineStatus, allowTagging, allowStoryReplies, showVibeScore, pushNotifications, emailNotifications. TESTING SUMMARY: 23/23 tests passed including AI vibe compatibility, user blocking/unblocking, story hiding, authentication, and comprehensive settings validation. Updated functionality is production-ready."
 
   - task: "Frontend Authentication Token Migration Testing"
-    implemented: false
+    implemented: true
     working: false
-    file: "frontend/src/App.js, frontend/src/pages/LoginPage.js"
-    stuck_count: 1
+    file: "frontend/src/App.js, frontend/src/utils/authClient.js"
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL AUTHENTICATION ISSUES IDENTIFIED: Cannot complete JWT token migration testing due to multiple blocking issues: 1) LOGIN FAILURES: All test credentials return 401 'Invalid username or password' (tested Luvsociety, Luststorm, testuser with password123), 2) REGISTRATION BLOCKED: Registration requires email OTP verification which cannot be completed in testing environment, backend registration API has validation errors requiring age/gender/country fields, 3) DATABASE SCHEMA ERRORS: Backend logs show 'column is_archived does not exist' errors preventing user operations, 4) AUTHENTICATION FLOW: Frontend correctly handles unauthenticated state with proper redirects, but cannot test token generation/validation without valid credentials. NEEDS: Valid test credentials or backend database fixes to proceed with JWT sub field verification (integer→string migration) and protected route testing."
+      - working: false
+        agent: "testing"
+        comment: "❌ COMPREHENSIVE AUTHENTICATION MIGRATION TESTING FAILED (1/9 tests passed, 11.1% success rate). CRITICAL FINDINGS: 1) ❌ FRONTEND COMPILATION ISSUE FIXED: Fixed syntax error in HomePage.js line 126 (incorrect escape sequence in httpClient.get call), frontend now compiles successfully, 2) ❌ PROTECTED ROUTE ACCESS CONTROL BROKEN: All protected routes (/feed, /notifications, /search, /profile/1) are accessible without authentication - users can access these pages directly without being redirected to login, 3) ❌ AUTOMATIC LOGOUT NOT WORKING: Invalid tokens are NOT automatically removed from localStorage, users with invalid tokens can still access protected routes without being logged out, 4) ❌ 401 HANDLING MISSING: httpClient response interceptor not properly handling 401 errors - no automatic token cleanup or redirects occurring, 5) ✅ NO JAVASCRIPT ERRORS: Frontend loads without console errors. ROOT CAUSE: Authentication guards in App.js routing are not properly enforcing authentication checks, and httpClient 401 interceptor is not functioning as expected. REQUIRES: Fix authentication routing guards and verify httpClient 401 handling is working properly."
 
 frontend:
   - task: "Enhanced Login Page with Telegram OTP System"
