@@ -4133,41 +4133,40 @@ async def like_post(post_id: str, current_user: User = Depends(get_current_user)
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
     likes = post.get("likes", [])
-    # Likes may be a JSON string; parse into list
+    # Parse JSON string if needed
     if isinstance(likes, str):
         try:
             likes = json.loads(likes)
         except Exception:
             likes = []
-    # Determine whether we're liking or unliking
-    is_liking = current_user.id not in likes
-    
-    if current_user.id in likes:
-        try:
-            likes.remove(current_user.id)
-        except ValueError:
-            pass
+
+    # Normalize all IDs to string for consistent comparison
+    likes = [str(l) for l in likes]
+    user_id_str = str(current_user.id)
+
+    if user_id_str in likes:
+        likes.remove(user_id_str)
     else:
-        likes.append(current_user.id)
-        
-        # Create notification if liking someone else's post
-        if post["userId"] != current_user.id:
+        likes.append(user_id_str)
+        # Create notification when liking someone else's post
+        if str(post["userId"]) != user_id_str:
             notification = Notification(
-                userId=post["userId"],
-                fromUserId=current_user.id,
+                userId=str(post["userId"]),
+                fromUserId=user_id_str,
                 fromUsername=current_user.username,
                 fromUserImage=current_user.profileImage,
                 type="like",
                 postId=post_id
             )
             await db.notifications.insert_one(notification.dict())
-    
+
     await db.posts.update_one(
         {"id": post_id},
         {"$set": {"likes": likes}}
     )
+    return {"message": "Success", "likes": len(likes)}
     
     return {"message": "Success", "likes": len(likes)}
 
