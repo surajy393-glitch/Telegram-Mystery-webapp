@@ -4134,10 +4134,20 @@ async def like_post(post_id: str, current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Post not found")
     
     likes = post.get("likes", [])
+    # Likes may be a JSON string; parse into list
+    if isinstance(likes, str):
+        try:
+            likes = json.loads(likes)
+        except Exception:
+            likes = []
+    # Determine whether we're liking or unliking
     is_liking = current_user.id not in likes
     
     if current_user.id in likes:
-        likes.remove(current_user.id)
+        try:
+            likes.remove(current_user.id)
+        except ValueError:
+            pass
     else:
         likes.append(current_user.id)
         
