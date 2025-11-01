@@ -4096,6 +4096,19 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
     user = await db.users.find_one({"id": int(current_user.id)})
     saved_posts = user.get("savedPosts", [])
     
+    # Normalize likes/comments to lists. They may be stored as JSON strings.
+    likes = post.get("likes", [])
+    if isinstance(likes, str):
+        try:
+            likes = json.loads(likes)
+        except Exception:
+            likes = []
+    comments = post.get("comments", [])
+    if isinstance(comments, str):
+        try:
+            comments = json.loads(comments)
+        except Exception:
+            comments = []
     return {
         "id": post["id"],
         "userId": post["userId"],
@@ -4105,9 +4118,9 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
         "mediaType": post.get("mediaType", "image"),
         "mediaUrl": post.get("mediaUrl", ""),
         "caption": post.get("caption", ""),
-        "likesCount": len(post.get("likes", [])),
-        "commentsCount": len(post.get("comments", [])),
-        "userLiked": current_user.id in post.get("likes", []),
+        "likesCount": len(likes),
+        "commentsCount": len(comments),
+        "userLiked": current_user.id in likes,
         "isSaved": post["id"] in saved_posts,
         "likesHidden": post.get("likesHidden", False),
         "commentsDisabled": post.get("commentsDisabled", False),
