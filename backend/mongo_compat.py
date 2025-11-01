@@ -556,6 +556,7 @@ class Cursor:
         self._sort_field = None
         self._sort_order = None
         self._limit_value = None
+        self._skip_value = 0
     
     def sort(self, field: str, order: int = 1):
         """Sort results (1 = ascending, -1 = descending)"""
@@ -566,6 +567,11 @@ class Cursor:
     def limit(self, count: int):
         """Limit number of results"""
         self._limit_value = count
+        return self
+    
+    def skip(self, count: int):
+        """Skip number of results (for pagination)"""
+        self._skip_value = count
         return self
     
     async def to_list(self, length: int = None):
