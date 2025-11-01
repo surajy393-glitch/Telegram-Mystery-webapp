@@ -692,7 +692,7 @@ agent_communication:
     implemented: true
     working: false
     file: "frontend/src/App.js, frontend/src/utils/authClient.js"
-    stuck_count: 3
+    stuck_count: 4
     priority: "high"
     needs_retesting: false
     status_history:
@@ -705,6 +705,9 @@ agent_communication:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL FRONTEND ROUTING ISSUE DETECTED - COMPLETE LOGIN FLOW TESTING BLOCKED. COMPREHENSIVE FINDINGS: 1) ✅ BACKEND AUTHENTICATION WORKING: Successfully created test user 'testlogin2025' and verified login API returns proper JWT tokens (eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...), backend /api/auth/login endpoint functional, 2) ❌ FRONTEND ROUTING BROKEN: Sign In button on landing page not clickable via Playwright (timeout errors), direct navigation to /login shows landing page instead of login form, page title stuck on 'Loading...' indicating React app not fully rendering, 3) ❌ LOGIN FORM NOT ACCESSIBLE: Multiple attempts to access login form failed - no form elements found, no input fields detected, navigation to /login redirects back to landing page, 4) ❌ AUTHENTICATION FLOW BLOCKED: Cannot test token storage, auto-logout fix, or protected route access due to inability to complete login process, 5) 🔍 ROOT CAUSE: Frontend routing issue preventing login page from rendering properly, React components not loading correctly (stuck on Loading... state). CRITICAL PRIORITY: Main agent must investigate frontend routing configuration and React app loading issues before authentication testing can proceed."
+      - working: false
+        agent: "testing"
+        comment: "🔍 COMPREHENSIVE AUTO-LOGOUT FIX VERIFICATION COMPLETE - CRITICAL FINDINGS IDENTIFIED. DETAILED TEST RESULTS: 1) ✅ LOGIN FLOW WORKING: Successfully accessed login page at /login, login form elements present (username, password fields), test credentials (testlogin2025/testpass123) accepted, tokens generated and stored in localStorage, 2) ✅ API CALLS WORKING: Direct API calls to /api/auth/me return 200 status with valid JWT tokens, backend authentication system fully functional, user data retrieved successfully, 3) ✅ TOKEN STORAGE PARTIALLY WORKING: Tokens stored in Telegram-scoped location (tg_default_token) but NOT in regular location (token), dual storage fix not fully implemented, 4) ❌ CRITICAL ISSUE - AUTO-LOGOUT STILL OCCURRING: Despite successful login and valid tokens, users are automatically logged out when navigating between pages, tokens cleared from localStorage during navigation, 401 interceptor triggering incorrectly, 5) ❌ AUTHENTICATION PERSISTENCE BROKEN: Users cannot stay logged in - redirected to landing page on navigation, authentication state not maintained across page loads, protected routes inaccessible. ROOT CAUSE: The auto-logout fix is INCOMPLETE - while login generates tokens, the authentication persistence and routing logic still has issues causing automatic logout. The dual token storage (token + tg_default_token) is not working correctly, and the authentication state management in App.js needs investigation."
 
 frontend:
   - task: "Enhanced Login Page with Telegram OTP System"
