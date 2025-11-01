@@ -4112,7 +4112,7 @@ async def get_single_post(post_id: str, current_user: User = Depends(get_current
             comments = []
     return {
         "id": post["id"],
-        "userId": post["userId"],
+        "userId": str(post["userId"]),
         "username": post["username"],
         "userProfileImage": post.get("userProfileImage"),
         "imageUrl": post.get("imageUrl"),
