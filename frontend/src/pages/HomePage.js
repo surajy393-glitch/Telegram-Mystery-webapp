@@ -170,7 +170,6 @@ const HomePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/create`, newPost);
 
       setShowCreatePost(false);
@@ -188,7 +187,6 @@ const HomePage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
       await httpClient.post(`${API}/stories/create`, newStory);
 
       setShowCreateStory(false);
@@ -201,7 +199,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleLike = async (postId) => {
     try {
-      const token = getToken();
       const response = await httpClient.post(`${API}/posts/${postId}/like`, {});
       console.log("Like response:", response.data);
       
@@ -230,7 +227,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleSavePost = async (postId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${postId}/save`, {});
       fetchFeed();
     } catch (error) {
@@ -320,7 +316,6 @@ const HomePage = ({ user, onLogout }) => {
     if (!storyToDelete) return;
 
     try {
-      const token = getToken();
       await httpClient.delete(`${API}/stories/${storyToDelete}`);
       
       setShowDeleteConfirm(false);
@@ -399,7 +394,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleUnfollowFromPost = async (postUserId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/users/${postUserId}/unfollow`, {});
       alert("Unfollowed successfully!");
       fetchFeed(); // Refresh feed
@@ -411,7 +405,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleFollowFromPost = async (postUserId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/users/${postUserId}/follow`, {});
       alert("Following successfully!");
       fetchFeed(); // Refresh feed
@@ -423,7 +416,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleMuteUser = async (postUserId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/users/${postUserId}/mute`, {});
       alert("User muted. You won't see their posts anymore.");
       fetchFeed(); // Refresh feed to remove muted user's posts
@@ -436,7 +428,6 @@ const HomePage = ({ user, onLogout }) => {
   const handleBlockUser = async (postUserId) => {
     if (window.confirm("Are you sure you want to block this user? They won't be able to see your posts or follow you.")) {
       try {
-        const token = getToken();
         await httpClient.post(`${API}/users/${postUserId}/block`, {});
         alert("User blocked successfully");
         fetchFeed(); // Refresh feed to remove blocked user's posts
@@ -451,7 +442,6 @@ const HomePage = ({ user, onLogout }) => {
     if (!reportingPost) return;
     
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${reportingPost.id}/report`, 
         { reason }, 
         {
@@ -472,7 +462,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleArchivePost = async (postId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${postId}/archive`, {});
       alert("Post archived successfully!");
       fetchFeed();
@@ -483,7 +472,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleHideLikes = async (postId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${postId}/hide-likes`, {});
       fetchFeed();
     } catch (error) {
@@ -493,7 +481,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handleToggleComments = async (postId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${postId}/toggle-comments`, {});
       fetchFeed();
     } catch (error) {
@@ -505,7 +492,6 @@ const HomePage = ({ user, onLogout }) => {
     if (!editingPost) return;
 
     try {
-      const token = getToken();
       const formData = new FormData();
       formData.append("caption", editCaption);
       
@@ -525,7 +511,6 @@ const HomePage = ({ user, onLogout }) => {
     if (!deletingPost) return;
 
     try {
-      const token = getToken();
       await httpClient.delete(`${API}/posts/${deletingPost}`);
       
       setShowDeleteDialog(false);
@@ -539,7 +524,6 @@ const HomePage = ({ user, onLogout }) => {
 
   const handlePinPost = async (postId) => {
     try {
-      const token = getToken();
       await httpClient.post(`${API}/posts/${postId}/pin`, {});
       alert("Post pinned successfully!");
       fetchFeed();
