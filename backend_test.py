@@ -7682,8 +7682,12 @@ class LuvHiveAPITester:
             token = auth_data['token']
             headers = {'Authorization': f'Bearer {token}'}
             
+            # Use a fresh session to avoid any session-related issues
+            import requests
+            fresh_session = requests.Session()
+            
             # Test 1: GET /api/auth/me
-            me_response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            me_response = fresh_session.get(f"{API_BASE}/auth/me", headers=headers)
             
             if me_response.status_code != 200:
                 self.log_result("Protected Endpoints - /auth/me", False, 
