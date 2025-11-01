@@ -483,8 +483,11 @@ async def create_story(
             "username": user.get("username") if not isAnonymous else "Anonymous",
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
             "content": content if content else "",  # Allow empty content if image is present
+            "caption": content if content else "",  # Add caption field for compatibility
             "storyType": storyType,
             "imageUrl": image_url,
+            "mediaUrl": image_url,  # Add mediaUrl for compatibility with /api/stories/feed
+            "mediaType": storyType,  # Add mediaType for compatibility with /api/stories/feed
             "isAnonymous": isAnonymous,
             "views": [],
             "createdAt": datetime.now(timezone.utc),
