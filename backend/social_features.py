@@ -204,12 +204,58 @@ async def get_feed(
             is_founder = post_author.get("isFounder", False) if post_author else False
             current_profile_image = post_author.get("profileImage") if post_author else post.get("userAvatar")
             
-            # Get like count
-            like_count = len(post.get("likes", []))
-            comment_count = len(post.get("comments", []))
+            # Parse likes: handle JSON strings and remove duplicates
+            raw_likes = post.get("likes", [])
+            if isinstance(raw_likes, str):
+                try:
+                    import json as _json
+                    parsed_likes = _json.loads(raw_likes)
+                except Exception:
+                    parsed_likes = []
+            else:
+                parsed_likes = raw_likes or []
             
-            # Check if current user liked
-            user_liked = userId in post.get("likes", [])
+            # Normalize to integers and remove duplicates
+            normalized_likes = []
+            for l in parsed_likes:
+                try:
+                    uid = int(l)
+                except (ValueError, TypeError):
+                    uid = l
+                if uid not in normalized_likes:
+                    normalized_likes.append(uid)
+            like_count = len(normalized_likes)
+            
+            # Parse comments: handle JSON strings and remove duplicates by comment ID
+            raw_comments = post.get("comments", [])
+            if isinstance(raw_comments, str):
+                try:
+                    import json as _json
+                    parsed_comments = _json.loads(raw_comments)
+                except Exception:
+                    parsed_comments = []
+            else:
+                parsed_comments = raw_comments or []
+            
+            # Remove duplicate comments by ID
+            unique_comments = []
+            seen_comment_ids = set()
+            for c in parsed_comments:
+                if isinstance(c, dict):
+                    cid = c.get("id")
+                    if cid and cid not in seen_comment_ids:
+                        seen_comment_ids.add(cid)
+                        unique_comments.append(c)
+                else:
+                    unique_comments.append(c)
+            comment_count = len(unique_comments)
+            
+            # Check if current user liked (using normalized likes)
+            try:
+                user_id_int = int(userId)
+            except (ValueError, TypeError):
+                user_id_int = userId
+            user_liked = user_id_int in normalized_likes
             
             formatted_posts.append({
                 "id": str(post["id"]),  # Convert integer ID to string for frontend
@@ -223,8 +269,11 @@ async def get_feed(
                 "postType": post.get("postType"),
                 "imageUrl": post.get("imageUrl") or post.get("mediaUrl"),  # Fallback to mediaUrl if imageUrl not present
                 "isAnonymous": post.get("isAnonymous", False),
+                # Support both old and new field names for frontend compatibility
                 "likes": like_count,
                 "comments": comment_count,
+                "likeCount": like_count,
+                "commentCount": comment_count,
                 "shares": post.get("shares", 0),
                 "views": post.get("views", 0),
                 "userLiked": user_liked,
