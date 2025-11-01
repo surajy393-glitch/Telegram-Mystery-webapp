@@ -252,10 +252,356 @@ class FeedStoriesRetrievalTester:
                 
         except Exception as e:
             self.log_result("JWT Token Verification", False, "Exception occurred", str(e),
-                          phase="Phase 1 - Authentication")
+                          phase="Phase 2 - Authentication")
             return False
     
-    # ========== PHASE 2: POST FEATURES (CRITICAL) ==========
+    # ========== PHASE 3: FEED ENDPOINTS TESTING (CRITICAL) ==========
+    
+    def phase3_test_social_feed_endpoint(self):
+        """Phase 3: Test GET /api/social/feed endpoint"""
+        try:
+            if not hasattr(self, 'test_user_ids') or not self.test_user_ids:
+                self.log_result("Social Feed Endpoint", False, "No test user IDs available",
+                              phase="Phase 3 - Feed Endpoints")
+                return False
+            
+            # Test with first available user ID
+            test_user_id = self.test_user_ids[0]
+            response = self.session.get(f"{API_BASE}/social/feed?userId={test_user_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts_count = len(data['posts'])
+                    self.log_result("Social Feed Endpoint", True, 
+                                  f"Retrieved {posts_count} posts from social feed (userId={test_user_id})",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return True
+                else:
+                    self.log_result("Social Feed Endpoint", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return False
+            else:
+                self.log_result("Social Feed Endpoint", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Feed Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Social Feed Endpoint", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Feed Endpoints")
+            return False
+    
+    def phase3_test_posts_feed_endpoint(self):
+        """Phase 3: Test GET /api/posts/feed endpoint (authenticated)"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'posts' in data and isinstance(data['posts'], list):
+                    posts_count = len(data['posts'])
+                    self.log_result("Posts Feed Endpoint", True, 
+                                  f"Retrieved {posts_count} posts from authenticated feed",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return True
+                else:
+                    self.log_result("Posts Feed Endpoint", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return False
+            else:
+                self.log_result("Posts Feed Endpoint", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Feed Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Posts Feed Endpoint", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Feed Endpoints")
+            return False
+    
+    def phase3_create_test_post(self):
+        """Phase 3: Create a test post to verify creation works"""
+        try:
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Test post for feed retrieval verification after $nin/$in fix 🚀"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts", json=post_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                # Handle both direct post data and nested post object
+                post = data.get('post', data)
+                
+                if 'id' in post:
+                    self.test_post_id = post['id']
+                    self.log_result("Create Test Post", True, 
+                                  f"Test post created successfully, ID: {self.test_post_id}",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return True
+                else:
+                    self.log_result("Create Test Post", False, 
+                                  f"Post created but missing ID in response: {data}",
+                                  phase="Phase 3 - Feed Endpoints")
+                    return False
+            else:
+                self.log_result("Create Test Post", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 3 - Feed Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Test Post", False, "Exception occurred", str(e),
+                          phase="Phase 3 - Feed Endpoints")
+            return False
+    
+    # ========== PHASE 4: STORIES ENDPOINTS TESTING (CRITICAL) ==========
+    
+    def phase4_test_social_stories_endpoint(self):
+        """Phase 4: Test GET /api/social/stories endpoint"""
+        try:
+            if not hasattr(self, 'test_user_ids') or not self.test_user_ids:
+                self.log_result("Social Stories Endpoint", False, "No test user IDs available",
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+            
+            # Test with first available user ID
+            test_user_id = self.test_user_ids[0]
+            response = self.session.get(f"{API_BASE}/social/stories?userId={test_user_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'stories' in data and isinstance(data['stories'], list):
+                    stories_count = len(data['stories'])
+                    self.log_result("Social Stories Endpoint", True, 
+                                  f"Retrieved {stories_count} stories from social endpoint (userId={test_user_id})",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return True
+                else:
+                    self.log_result("Social Stories Endpoint", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return False
+            else:
+                self.log_result("Social Stories Endpoint", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Social Stories Endpoint", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Stories Endpoints")
+            return False
+    
+    def phase4_test_stories_feed_endpoint(self):
+        """Phase 4: Test GET /api/stories/feed endpoint (if exists)"""
+        try:
+            response = self.session.get(f"{API_BASE}/stories/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'stories' in data and isinstance(data['stories'], list):
+                    stories_count = len(data['stories'])
+                    self.log_result("Stories Feed Endpoint", True, 
+                                  f"Retrieved {stories_count} stories from authenticated feed",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return True
+                else:
+                    self.log_result("Stories Feed Endpoint", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return False
+            elif response.status_code == 404:
+                self.log_result("Stories Feed Endpoint", False, 
+                              "Endpoint not found (404) - stories feed endpoint missing",
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+            elif response.status_code == 405:
+                self.log_result("Stories Feed Endpoint", False, 
+                              "Method not allowed (405) - stories feed endpoint misconfigured",
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+            else:
+                self.log_result("Stories Feed Endpoint", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Stories Feed Endpoint", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Stories Endpoints")
+            return False
+    
+    def phase4_test_stories_get_endpoint(self):
+        """Phase 4: Test GET /api/stories endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/stories")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'stories' in data and isinstance(data['stories'], list):
+                    stories_count = len(data['stories'])
+                    self.log_result("Stories Get Endpoint", True, 
+                                  f"Retrieved {stories_count} stories from /api/stories",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return True
+                else:
+                    self.log_result("Stories Get Endpoint", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return False
+            elif response.status_code == 405:
+                self.log_result("Stories Get Endpoint", False, 
+                              "Method not allowed (405) - GET /api/stories endpoint missing",
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+            else:
+                self.log_result("Stories Get Endpoint", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Stories Get Endpoint", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Stories Endpoints")
+            return False
+    
+    def phase4_create_test_story(self):
+        """Phase 4: Create a test story to verify creation works"""
+        try:
+            story_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Test story for retrieval verification after $nin/$in fix ✨"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories", json=story_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                # Handle both direct story data and nested story object
+                story = data.get('story', data)
+                
+                if 'id' in story:
+                    self.test_story_id = story['id']
+                    self.log_result("Create Test Story", True, 
+                                  f"Test story created successfully, ID: {self.test_story_id}",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return True
+                else:
+                    self.log_result("Create Test Story", False, 
+                                  f"Story created but missing ID in response: {data}",
+                                  phase="Phase 4 - Stories Endpoints")
+                    return False
+            else:
+                self.log_result("Create Test Story", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 4 - Stories Endpoints")
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Test Story", False, "Exception occurred", str(e),
+                          phase="Phase 4 - Stories Endpoints")
+            return False
+    
+    # ========== PHASE 5: RESPONSE FORMAT VERIFICATION ==========
+    
+    def phase5_verify_feed_response_format(self):
+        """Phase 5: Verify feed responses have all required fields"""
+        try:
+            response = self.session.get(f"{API_BASE}/posts/feed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                posts = data.get('posts', [])
+                
+                if len(posts) == 0:
+                    self.log_result("Feed Response Format", True, 
+                                  "No posts available to check format (empty result is valid)",
+                                  phase="Phase 5 - Response Format")
+                    return True
+                
+                # Check first post has required fields
+                required_fields = ['id', 'userId', 'username', 'mediaUrl', 'caption', 'createdAt']
+                
+                first_post = posts[0]
+                missing_fields = [field for field in required_fields if field not in first_post]
+                
+                if len(missing_fields) == 0:
+                    self.log_result("Feed Response Format", True, 
+                                  f"All required fields present in feed posts: {', '.join(required_fields)}",
+                                  phase="Phase 5 - Response Format")
+                    return True
+                else:
+                    self.log_result("Feed Response Format", False, 
+                                  f"Missing fields in feed posts: {', '.join(missing_fields)}",
+                                  phase="Phase 5 - Response Format")
+                    return False
+            else:
+                self.log_result("Feed Response Format", False, 
+                              f"Cannot verify format - feed endpoint failed: {response.status_code}",
+                              phase="Phase 5 - Response Format")
+                return False
+                
+        except Exception as e:
+            self.log_result("Feed Response Format", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Response Format")
+            return False
+    
+    def phase5_verify_stories_response_format(self):
+        """Phase 5: Verify stories responses have all required fields"""
+        try:
+            if not hasattr(self, 'test_user_ids') or not self.test_user_ids:
+                self.log_result("Stories Response Format", False, "No test user IDs available",
+                              phase="Phase 5 - Response Format")
+                return False
+            
+            test_user_id = self.test_user_ids[0]
+            response = self.session.get(f"{API_BASE}/social/stories?userId={test_user_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                stories = data.get('stories', [])
+                
+                if len(stories) == 0:
+                    self.log_result("Stories Response Format", True, 
+                                  "No stories available to check format (empty result is valid)",
+                                  phase="Phase 5 - Response Format")
+                    return True
+                
+                # Check first story has required fields
+                required_fields = ['id', 'userId', 'username', 'mediaUrl', 'caption', 'createdAt']
+                
+                first_story = stories[0]
+                missing_fields = [field for field in required_fields if field not in first_story]
+                
+                if len(missing_fields) == 0:
+                    self.log_result("Stories Response Format", True, 
+                                  f"All required fields present in stories: {', '.join(required_fields)}",
+                                  phase="Phase 5 - Response Format")
+                    return True
+                else:
+                    self.log_result("Stories Response Format", False, 
+                                  f"Missing fields in stories: {', '.join(missing_fields)}",
+                                  phase="Phase 5 - Response Format")
+                    return False
+            else:
+                self.log_result("Stories Response Format", False, 
+                              f"Cannot verify format - stories endpoint failed: {response.status_code}",
+                              phase="Phase 5 - Response Format")
+                return False
+                
+        except Exception as e:
+            self.log_result("Stories Response Format", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Response Format")
+            return False
+    
+    # ========== LEGACY METHODS (KEPT FOR COMPATIBILITY) ==========
     
     def phase2_create_post(self):
         """Phase 2: Test POST /api/posts endpoint (create post)"""
