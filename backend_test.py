@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for LuvHive Enhanced Features
-Tests the newly implemented endpoints for user profiles, AI compatibility, blocking, and story hiding
+COMPREHENSIVE SOCIAL FEATURES TESTING - MongoDB to PostgreSQL Migration Verification
+Tests ALL social features after fixing social_features.py to use PostgreSQL compatibility layer
 """
 
 import requests
@@ -9,6 +9,7 @@ import json
 import sys
 import os
 from datetime import datetime
+import time
 
 # Load environment variables
 sys.path.append('/app/backend')
@@ -18,6 +19,13 @@ load_dotenv('/app/frontend/.env')
 # Get backend URL from frontend env
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-token-fix-7.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
+
+print("🚀 COMPREHENSIVE SOCIAL FEATURES TESTING")
+print("=" * 60)
+print(f"Backend URL: {BACKEND_URL}")
+print(f"API Base: {API_BASE}")
+print("Testing MongoDB to PostgreSQL migration fix...")
+print("=" * 60)
 
 class LuvHiveAPITester:
     def __init__(self):
