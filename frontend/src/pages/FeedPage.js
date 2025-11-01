@@ -802,6 +802,21 @@ const FeedPage = ({ user, onLogout }) => {
                   )
                 )}
 
+                {/* Instagram-style Caption (for image posts) */}
+                {post.imageUrl && post.content && post.content.trim() && post.content !== 'Photo post' && (
+                  <div className="px-4 pt-3">
+                    <p className="text-gray-800">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-pink-600 mr-2"
+                        onClick={() => navigate(`/profile/${post.userId}`)}
+                      >
+                        {post.username}
+                      </span>
+                      <span>{post.content}</span>
+                    </p>
+                  </div>
+                )}
+
                 {/* Post Actions */}
                 <div className="px-4 py-3 flex items-center justify-between border-t border-gray-100">
                   <button
