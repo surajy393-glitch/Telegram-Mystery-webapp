@@ -8845,6 +8845,200 @@ class LuvHiveAPITester:
         print("\n🎯 Authentication testing completed!")
         return self.results
 
+    # ========== POSTGRESQL SCHEMA FIX TESTS ==========
+    
+    def test_post_creation_schema_fix(self):
+        """Test POST /api/posts - Critical PostgreSQL Schema Fix"""
+        try:
+            post_data = {
+                "mediaType": "image",
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Testing post creation after PostgreSQL schema fixes"
+            }
+            
+            response = self.session.post(f"{API_BASE}/posts", json=post_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'success' in data['message'].lower():
+                    # Verify post has required fields
+                    if 'post' in data:
+                        post = data['post']
+                        required_fields = ['username', 'mediaUrl', 'caption']
+                        missing_fields = [field for field in required_fields if field not in post]
+                        
+                        if missing_fields:
+                            self.log_result("Post Creation Schema Fix", False, 
+                                          f"Post created but missing fields: {missing_fields}")
+                        else:
+                            self.log_result("Post Creation Schema Fix", True, 
+                                          f"✅ SUCCESS: Post created with all required fields (username: {post.get('username')}, mediaUrl present, caption present)")
+                    else:
+                        self.log_result("Post Creation Schema Fix", True, 
+                                      f"✅ SUCCESS: Post created successfully - {data['message']}")
+                else:
+                    self.log_result("Post Creation Schema Fix", False, 
+                                  f"Unexpected response: {data}")
+            else:
+                self.log_result("Post Creation Schema Fix", False, 
+                              f"❌ CRITICAL FAILURE: Status {response.status_code} (expected 200)", response.text)
+                
+        except Exception as e:
+            self.log_result("Post Creation Schema Fix", False, "Exception occurred", str(e))
+    
+    def test_story_creation_schema_fix(self):
+        """Test POST /api/stories - Critical PostgreSQL Schema Fix"""
+        try:
+            story_data = {
+                "mediaType": "image", 
+                "mediaUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+                "caption": "Testing story creation after PostgreSQL schema fixes"
+            }
+            
+            response = self.session.post(f"{API_BASE}/stories", json=story_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'success' in data['message'].lower():
+                    # Verify story has required fields
+                    if 'story' in data:
+                        story = data['story']
+                        required_fields = ['username', 'mediaUrl']
+                        missing_fields = [field for field in required_fields if field not in story]
+                        
+                        if missing_fields:
+                            self.log_result("Story Creation Schema Fix", False, 
+                                          f"Story created but missing fields: {missing_fields}")
+                        else:
+                            self.log_result("Story Creation Schema Fix", True, 
+                                          f"✅ SUCCESS: Story created with all required fields (username: {story.get('username')}, mediaUrl present)")
+                    else:
+                        self.log_result("Story Creation Schema Fix", True, 
+                                      f"✅ SUCCESS: Story created successfully - {data['message']}")
+                else:
+                    self.log_result("Story Creation Schema Fix", False, 
+                                  f"Unexpected response: {data}")
+            else:
+                self.log_result("Story Creation Schema Fix", False, 
+                              f"❌ CRITICAL FAILURE: Status {response.status_code} (expected 200)", response.text)
+                
+        except Exception as e:
+            self.log_result("Story Creation Schema Fix", False, "Exception occurred", str(e))
+    
+    def test_user_search_schema_fix(self):
+        """Test POST /api/search - Critical PostgreSQL Schema Fix"""
+        try:
+            search_data = {
+                "query": "Luvhive",
+                "type": "users"
+            }
+            
+            response = self.session.post(f"{API_BASE}/search", json=search_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'users' in data and isinstance(data['users'], list):
+                    self.log_result("User Search Schema Fix", True, 
+                                  f"✅ SUCCESS: User search working correctly, found {len(data['users'])} users for query 'Luvhive'")
+                else:
+                    self.log_result("User Search Schema Fix", False, 
+                                  "Response missing 'users' array")
+            else:
+                self.log_result("User Search Schema Fix", False, 
+                              f"❌ CRITICAL FAILURE: Status {response.status_code} (expected 200)", response.text)
+                
+        except Exception as e:
+            self.log_result("User Search Schema Fix", False, "Exception occurred", str(e))
+    
+    def test_profile_operations_schema_fix(self):
+        """Test GET /api/users/{userId}/profile - Critical PostgreSQL Schema Fix"""
+        try:
+            # Use existing user ID (38 or similar as mentioned in review request)
+            test_user_ids = ["38", "1", "2", "3", str(self.current_user_id)]
+            
+            for user_id in test_user_ids:
+                if user_id and user_id != "None":
+                    response = self.session.get(f"{API_BASE}/users/{user_id}/profile")
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        required_fields = ['id', 'username', 'fullName']
+                        missing_fields = [field for field in required_fields if field not in data]
+                        
+                        if missing_fields:
+                            self.log_result("Profile Operations Schema Fix", False, 
+                                          f"Profile retrieved but missing fields: {missing_fields}")
+                        else:
+                            self.log_result("Profile Operations Schema Fix", True, 
+                                          f"✅ SUCCESS: Profile operations working correctly for user {user_id} (username: {data.get('username')})")
+                        return
+                    elif response.status_code == 404:
+                        # User doesn't exist, try next one
+                        continue
+                    else:
+                        self.log_result("Profile Operations Schema Fix", False, 
+                                      f"❌ CRITICAL FAILURE: Status {response.status_code} (expected 200) for user {user_id}", response.text)
+                        return
+            
+            # If we get here, no valid user was found
+            self.log_result("Profile Operations Schema Fix", False, 
+                          "No valid user found to test profile operations")
+                
+        except Exception as e:
+            self.log_result("Profile Operations Schema Fix", False, "Exception occurred", str(e))
+
+    def run_postgresql_schema_tests(self):
+        """Run the 4 critical PostgreSQL schema fix tests"""
+        print("🚀 Starting PostgreSQL Schema Fix Verification Tests")
+        print(f"🔗 Testing against: {API_BASE}")
+        print("=" * 80)
+        print("📋 TESTING 4 CRITICAL FEATURES AFTER POSTGRESQL SCHEMA FIXES:")
+        print("   1. Post Creation (POST /api/posts)")
+        print("   2. Story Creation (POST /api/stories)")  
+        print("   3. User Search (POST /api/search)")
+        print("   4. Profile Operations (GET /api/users/{userId}/profile)")
+        print("=" * 80)
+        
+        # Authentication setup
+        if not self.login_existing_user("Luvsociety", "password123"):
+            if not self.register_test_user():
+                print("❌ Cannot proceed without authentication")
+                return
+        
+        # Run the 4 critical tests
+        print("\n🔧 Testing PostgreSQL Schema Fixes...")
+        self.test_post_creation_schema_fix()
+        self.test_story_creation_schema_fix()
+        self.test_user_search_schema_fix()
+        self.test_profile_operations_schema_fix()
+        
+        # Print final results
+        print("\n" + "=" * 80)
+        print("📊 POSTGRESQL SCHEMA FIX TEST RESULTS")
+        print("=" * 80)
+        total_tests = self.results['passed'] + self.results['failed']
+        success_rate = (self.results['passed'] / total_tests * 100) if total_tests > 0 else 0
+        
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        if self.results['failed'] > 0:
+            print(f"\n🔍 Failed Tests Summary:")
+            for error in self.results['errors']:
+                print(f"   • {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"     Error: {error['error']}")
+        
+        print("\n🎯 SUCCESS CRITERIA: ALL 4 features MUST return 200 status (not 500)")
+        if self.results['failed'] == 0:
+            print("🎉 ALL TESTS PASSED - PostgreSQL schema fixes are working correctly!")
+        else:
+            print("⚠️ SOME TESTS FAILED - PostgreSQL schema issues may still exist")
+        
+        print("=" * 80)
+        return self.results['failed'] == 0
+
 if __name__ == "__main__":
     import sys
     tester = LuvHiveAPITester()
@@ -8861,12 +9055,13 @@ if __name__ == "__main__":
             success = tester.run_follow_back_tests_only()
         elif sys.argv[1] == "auth":
             success = tester.run_authentication_baseline_test()
+        elif sys.argv[1] == "schema":
+            success = tester.run_postgresql_schema_tests()
         else:
             print(f"Unknown test suite: {sys.argv[1]}")
-            print("Available options: telegram, explore, verified, followback, auth")
+            print("Available options: telegram, explore, verified, followback, auth, schema")
             sys.exit(1)
     else:
         success = tester.run_all_tests()
     
-    sys.exit(0 if success else 1)
     sys.exit(0 if success else 1)
