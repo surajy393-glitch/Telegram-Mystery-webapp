@@ -84,6 +84,29 @@ class Collection:
             filter_dict = {}
         return Cursor(self.table_name, filter_dict)
     
+    async def count_documents(self, filter_dict: Dict[str, Any] = None):
+        """Count documents matching filter"""
+        pool = await get_pool()
+        
+        if filter_dict is None or not filter_dict:
+            # Simple count all
+            query = f"SELECT COUNT(*) FROM {self.table_name}"
+            row = await pool.fetchrow(query)
+            return row[0]
+        
+        # Build WHERE clause for count with filter
+        cursor = Cursor(self.table_name, filter_dict)
+        where_clause, values = cursor._build_where_clause(filter_dict)
+        query = f"SELECT COUNT(*) FROM {self.table_name} WHERE {where_clause}"
+        
+        try:
+            row = await pool.fetchrow(query, *values)
+            return row[0]
+        except Exception as e:
+            print(f"Error in count_documents: {e}")
+            print(f"Query: {query}")
+            return 0
+    
     async def insert_one(self, document: Dict[str, Any]):
         """Insert single document"""
         pool = await get_pool()
