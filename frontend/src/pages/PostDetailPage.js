@@ -67,23 +67,25 @@ const PostDetailPage = ({ user }) => {
     
     try {
       const isLiked = post.userLiked;
-      const endpoint = isLiked ? 'unlike' : 'like';
       
-      // Optimistic update
+      // Optimistic update - use likeCount not likesCount
       setPost(prev => ({
         ...prev,
         userLiked: !isLiked,
-        likesCount: isLiked ? Math.max(0, prev.likesCount - 1) : prev.likesCount + 1
+        likeCount: isLiked ? Math.max(0, prev.likeCount - 1) : prev.likeCount + 1
       }));
 
-      await httpClient.post(`${API}/posts/${postId}/${endpoint}`, {});
+      // Only 'like' endpoint exists - it toggles like/unlike
+      const formData = new FormData();
+      formData.append('userId', user.id);
+      await httpClient.post(`${API}/posts/${postId}/like`, formData);
     } catch (error) {
       console.error("Error liking post:", error);
-      // Rollback on error
+      // Rollback on error - use likeCount not likesCount
       setPost(prev => ({
         ...prev,
         userLiked: !prev.userLiked,
-        likesCount: prev.userLiked ? prev.likesCount + 1 : Math.max(0, prev.likesCount - 1)
+        likeCount: prev.userLiked ? prev.likeCount + 1 : Math.max(0, prev.likeCount - 1)
       }));
     }
   };
