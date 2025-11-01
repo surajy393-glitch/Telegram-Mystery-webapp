@@ -30,7 +30,6 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('postId', post.id);
       formData.append('userId', user.id);
@@ -41,9 +40,7 @@ const CommentModal = ({ post, user, isOpen, onClose, onCommentAdded }) => {
         formData.append('parentCommentId', replyingTo.id);
       }
 
-      await axios.post(`${API}/social/posts/${post.id}/comment`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/social/posts/${post.id}/comment`, formData);
 
       setNewComment('');
       setReplyingTo(null);
