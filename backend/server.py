@@ -3796,7 +3796,7 @@ async def get_stories_feed(current_user: User = Depends(get_current_user)):
     my_story_obj = None
     if my_stories:
         my_story_obj = {
-            "userId": current_user.id,
+            "userId": str(current_user.id),  # Convert to string for consistency
             "username": current_user.username,
             "userProfileImage": current_user.profileImage,
             "isVerified": current_user.isVerified,
