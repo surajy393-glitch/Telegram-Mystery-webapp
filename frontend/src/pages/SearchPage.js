@@ -170,15 +170,16 @@ const SearchPage = ({ user, onLogout }) => {
     }
 
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/search/suggestions?q=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`/api/search/suggestions?q=${encodeURIComponent(query)}`);
       setSuggestions(response.data.suggestions);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
+      if (error.response?.status === 401) {
+        console.log("🚪 Token invalid - logging out");
+        onLogout();
+      }
     }
-  }, []);
+  }, [httpClient, onLogout]);
 
   const handleInputChange = useCallback((e) => {
     const value = e.target.value;
