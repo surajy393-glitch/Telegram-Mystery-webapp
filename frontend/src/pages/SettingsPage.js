@@ -76,7 +76,6 @@ const SettingsPage = ({ user, onLogout }) => {
   const handleDownloadData = async () => {
     try {
       const response = await httpClient.get(`${API}/auth/download-data`, {
-        headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
       
