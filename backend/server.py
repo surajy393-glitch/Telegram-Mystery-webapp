@@ -4349,7 +4349,7 @@ async def delete_comment(post_id: str, comment_id: str, current_user: User = Dep
     updated_comments = [c for c in comments if c["id"] != comment_id and c.get("parentCommentId") != comment_id]
 
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"comments": updated_comments}}
     )
 
