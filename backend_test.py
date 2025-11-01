@@ -7686,7 +7686,8 @@ class LuvHiveAPITester:
             print(f"   Length: {len(token)}")
             print(f"   First 20 chars: {token[:20]}...")
             print(f"   Last 20 chars: ...{token[-20:]}")
-            print(f"   Has quotes: {token.startswith('\"') and token.endswith('\"')}")
+            has_quotes = token.startswith('"') and token.endswith('"')
+            print(f"   Has quotes: {has_quotes}")
             print(f"   JWT parts: {len(token.split('.'))}")
             
             # Test 2: Valid token should work
