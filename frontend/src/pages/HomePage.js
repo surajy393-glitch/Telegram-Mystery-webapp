@@ -123,7 +123,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const fetchNotificationCount = async () => {
     try {
-      const response = await httpClient.get(\'/api/notifications/unread-count\');
+      const response = await httpClient.get('/api/notifications/unread-count');
       setNotificationCount(response.data.count);
     } catch (error) {
       console.error("Error fetching notification count:", error);
