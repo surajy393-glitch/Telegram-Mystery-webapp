@@ -222,6 +222,13 @@ class Collection:
             if db_key not in valid_columns:
                 continue
             
+            # Special handling for ID fields - convert string to int for PostgreSQL
+            if db_key in ['id', 'user_id'] and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass  # Keep as string if conversion fails
+            
             # Convert lists/dicts to JSON (datetime objects are handled directly by asyncpg)
             if isinstance(value, (list, dict)):
                 value = json.dumps(value)
