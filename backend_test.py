@@ -179,7 +179,7 @@ class FeedStoriesRetrievalTester:
                 self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
                 self.log_result("User Login", True, 
                               f"Login successful for: {self.current_username}",
-                              phase="Phase 1 - Authentication")
+                              phase="Phase 2 - Authentication")
                 return True
             else:
                 self.log_result("User Login", False, 
