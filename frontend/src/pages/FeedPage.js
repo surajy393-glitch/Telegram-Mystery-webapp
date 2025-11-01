@@ -114,22 +114,32 @@ const FeedPage = ({ user, onLogout }) => {
         }
       }
       
-      // Normalize mediaUrl in all stories to avoid undefined
-      const normalizeMediaUrl = (storyGroup) => {
+      // Normalize all URL and type fields in stories to avoid undefined
+      const normalizeStory = (storyGroup) => {
         if (storyGroup && storyGroup.stories) {
-          storyGroup.stories = storyGroup.stories.map(story => ({
-            ...story,
-            mediaUrl: story.mediaUrl || story.media_url || ""
-          }));
+          storyGroup.stories = storyGroup.stories.map(story => {
+            // Get unified URL from any possible field
+            const unifiedUrl = story.mediaUrl || story.media_url || story.imageUrl || story.image_url || "";
+            // Get unified type from any possible field
+            const unifiedType = story.mediaType || story.media_type || story.storyType || story.story_type || "image";
+            
+            return {
+              ...story,
+              mediaUrl: unifiedUrl,
+              imageUrl: unifiedUrl,  // Ensure both fields exist
+              mediaType: unifiedType,
+              storyType: unifiedType  // Ensure both fields exist
+            };
+          });
         }
         return storyGroup;
       };
       
       if (myStoryData) {
-        myStoryData = normalizeMediaUrl(myStoryData);
+        myStoryData = normalizeStory(myStoryData);
       }
       
-      otherStoriesData = otherStoriesData.map(normalizeMediaUrl);
+      otherStoriesData = otherStoriesData.map(normalizeStory);
       
       setMyStories(myStoryData);
       setOtherStories(otherStoriesData);
