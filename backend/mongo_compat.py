@@ -19,50 +19,8 @@ class Collection:
         """Find single document matching filter (projection parameter ignored for now)"""
         pool = await get_pool()
         
-        # Build WHERE clause
-        where_parts = []
-        values = []
-        param_num = 1
-        
-        for key, value in filter_dict.items():
-            # Convert camelCase to snake_case
-            db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
-            
-            # Special handling for ID fields - convert string to int for PostgreSQL
-            if db_key in ['id', 'user_id'] and isinstance(value, str):
-                try:
-                    value = int(value)
-                except (ValueError, TypeError):
-                    pass  # Keep as string if conversion fails
-            
-            # Handle special operators
-            if isinstance(value, dict):
-                for op, op_value in value.items():
-                    if op == '$ne':
-                        # Also convert string to int for $ne operator
-                        if db_key in ['id', 'user_id'] and isinstance(op_value, str):
-                            try:
-                                op_value = int(op_value)
-                            except (ValueError, TypeError):
-                                pass
-                        where_parts.append(f"{db_key} != ${param_num}")
-                        values.append(op_value)
-                        param_num += 1
-                    elif op == '$in':
-                        placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
-                        where_parts.append(f"{db_key} IN ({placeholders})")
-                        values.extend(op_value)
-                        param_num += len(op_value)
-                    elif op == '$regex':
-                        where_parts.append(f"{db_key} ~* ${param_num}")
-                        values.append(op_value)
-                        param_num += 1
-            else:
-                where_parts.append(f"{db_key} = ${param_num}")
-                values.append(value)
-                param_num += 1
-        
-        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        # Use the same advanced query building logic as Cursor class
+        where_clause, values = self._build_where_clause(filter_dict)
         query = f"SELECT * FROM {self.table_name} WHERE {where_clause} LIMIT 1"
         
         try:
@@ -77,6 +35,100 @@ class Collection:
             print(f"Query: {query}")
             print(f"Values: {values}")
             raise
+    
+    def _build_where_clause(self, filter_dict: Dict[str, Any], param_num_start: int = 1):
+        """Build WHERE clause from MongoDB-style filter (shared with Cursor class)"""
+        where_parts = []
+        values = []
+        param_num = param_num_start
+        
+        for key, value in filter_dict.items():
+            # Handle special MongoDB operators
+            if key == '$and':
+                # Handle $and operator
+                and_parts = []
+                for sub_filter in value:
+                    sub_where, sub_values = self._build_where_clause(sub_filter, param_num)
+                    and_parts.append(f"({sub_where})")
+                    values.extend(sub_values)
+                    param_num += len(sub_values)
+                where_parts.append(f"({' AND '.join(and_parts)})")
+            elif key == '$or':
+                # Handle $or operator
+                or_parts = []
+                for sub_filter in value:
+                    sub_where, sub_values = self._build_where_clause(sub_filter, param_num)
+                    or_parts.append(f"({sub_where})")
+                    values.extend(sub_values)
+                    param_num += len(sub_values)
+                where_parts.append(f"({' OR '.join(or_parts)})")
+            else:
+                # Regular field
+                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+                
+                # Special handling for ID fields - convert string to int for PostgreSQL
+                if db_key in ['id', 'user_id'] and isinstance(value, str):
+                    try:
+                        value = int(value)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Handle special operators
+                if isinstance(value, dict):
+                    for op, op_value in value.items():
+                        if op == '$ne':
+                            # Also convert string to int for $ne operator
+                            if db_key in ['id', 'user_id'] and isinstance(op_value, str):
+                                try:
+                                    op_value = int(op_value)
+                                except (ValueError, TypeError):
+                                    pass
+                            where_parts.append(f"{db_key} != ${param_num}")
+                            values.append(op_value)
+                            param_num += 1
+                        elif op == '$nin':
+                            if op_value:  # Only add if list is not empty
+                                # Convert string IDs to integers for user_id/id fields
+                                if db_key in ['id', 'user_id']:
+                                    converted_values = []
+                                    for val in op_value:
+                                        try:
+                                            converted_values.append(int(val) if isinstance(val, str) else val)
+                                        except (ValueError, TypeError):
+                                            converted_values.append(val)
+                                    op_value = converted_values
+                                
+                                placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
+                                where_parts.append(f"{db_key} NOT IN ({placeholders})")
+                                values.extend(op_value)
+                                param_num += len(op_value)
+                        elif op == '$in':
+                            if op_value:  # Only add if list is not empty
+                                # Convert string IDs to integers for user_id/id fields
+                                if db_key in ['id', 'user_id']:
+                                    converted_values = []
+                                    for val in op_value:
+                                        try:
+                                            converted_values.append(int(val) if isinstance(val, str) else val)
+                                        except (ValueError, TypeError):
+                                            converted_values.append(val)
+                                    op_value = converted_values
+                                
+                                placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
+                                where_parts.append(f"{db_key} IN ({placeholders})")
+                                values.extend(op_value)
+                                param_num += len(op_value)
+                        elif op == '$regex':
+                            where_parts.append(f"{db_key} ~* ${param_num}")
+                            values.append(op_value)
+                            param_num += 1
+                else:
+                    where_parts.append(f"{db_key} = ${param_num}")
+                    values.append(value)
+                    param_num += 1
+        
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        return where_clause, values
     
     def find(self, filter_dict: Dict[str, Any] = None):
         """Find multiple documents - returns a cursor-like object"""
