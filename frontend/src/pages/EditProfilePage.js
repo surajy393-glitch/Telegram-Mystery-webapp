@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
-import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { httpClient, getToken } from "@/utils/authClient";
 
 const API = "/api";
-import { getToken } from "@/utils/telegramStorage";
 
 const EditProfilePage = ({ user, onLogin, onLogout }) => {
   const navigate = useNavigate();
