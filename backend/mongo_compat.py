@@ -194,6 +194,10 @@ class Collection:
                 'media_url', 'caption', 'likes', 'viewers', 'is_archived',
                 'created_at', 'expires_at', 'telegram_file_id', 'telegram_file_path',
                 'views_count'
+            },
+            'webapp_notifications': {
+                'id', 'user_id', 'type', 'actor_id', 'post_id', 'comment_id',
+                'is_read', 'created_at'
             }
         }
         
