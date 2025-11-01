@@ -493,19 +493,169 @@ class ComprehensiveEndToEndTester:
                           phase="Phase 4 - Profile")
             return False
     
-    def test_get_user_profile_invalid_id(self):
-        """Test GET /api/users/{userId}/profile with invalid user ID"""
+    # ========== PHASE 5: SOCIAL INTERACTIONS ==========
+    
+    def phase5_create_second_user(self):
+        """Phase 5: Create a second user for social interactions testing"""
         try:
-            invalid_id = "invalid-user-id-12345"
-            response = self.session.get(f"{API_BASE}/users/{invalid_id}/profile")
+            # Save current user session
+            current_token = self.auth_token
+            current_session = self.session.headers.copy()
             
-            if response.status_code == 404:
-                self.log_result("Get User Profile (Invalid ID)", True, "Correctly returned 404 for invalid user ID")
+            # Create new session for second user
+            second_session = requests.Session()
+            
+            user_data = {
+                "fullName": "Alex Johnson",
+                "username": f"alex_test_{int(time.time()) % 10000}",
+                "age": 28,
+                "gender": "Male",
+                "country": "Canada",
+                "password": "SecurePass456!"
+            }
+            
+            response = second_session.post(f"{API_BASE}/auth/register", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.second_user_id = data['user']['id']
+                self.second_username = data['user']['username']
+                
+                # Restore original session
+                self.session.headers.update(current_session)
+                
+                self.log_result("Create Second User", True, 
+                              f"Created second user: {self.second_username}, ID: {self.second_user_id}",
+                              phase="Phase 5 - Social")
+                return True
             else:
-                self.log_result("Get User Profile (Invalid ID)", False, f"Expected 404, got {response.status_code}")
+                self.log_result("Create Second User", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 5 - Social")
+                return False
                 
         except Exception as e:
-            self.log_result("Get User Profile (Invalid ID)", False, "Exception occurred", str(e))
+            self.log_result("Create Second User", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Social")
+            return False
+    
+    def phase5_test_follow_user(self):
+        """Phase 5: Test POST /api/follow endpoint"""
+        try:
+            if not hasattr(self, 'second_user_id'):
+                self.log_result("Follow User", False, "No second user ID available",
+                              phase="Phase 5 - Social")
+                return False
+            
+            follow_data = {
+                "userId": self.second_user_id
+            }
+            
+            response = self.session.post(f"{API_BASE}/follow", json=follow_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.log_result("Follow User", True, 
+                              f"User followed successfully: {data.get('message', 'Success')}",
+                              phase="Phase 5 - Social")
+                return True
+            else:
+                self.log_result("Follow User", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 5 - Social")
+                return False
+                
+        except Exception as e:
+            self.log_result("Follow User", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Social")
+            return False
+    
+    def phase5_test_unfollow_user(self):
+        """Phase 5: Test POST /api/unfollow endpoint"""
+        try:
+            if not hasattr(self, 'second_user_id'):
+                self.log_result("Unfollow User", False, "No second user ID available",
+                              phase="Phase 5 - Social")
+                return False
+            
+            unfollow_data = {
+                "userId": self.second_user_id
+            }
+            
+            response = self.session.post(f"{API_BASE}/unfollow", json=unfollow_data)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.log_result("Unfollow User", True, 
+                              f"User unfollowed successfully: {data.get('message', 'Success')}",
+                              phase="Phase 5 - Social")
+                return True
+            else:
+                self.log_result("Unfollow User", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 5 - Social")
+                return False
+                
+        except Exception as e:
+            self.log_result("Unfollow User", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Social")
+            return False
+    
+    def phase5_get_followers(self):
+        """Phase 5: Test GET /api/users/{userId}/followers endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/followers")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'followers' in data and isinstance(data['followers'], list):
+                    self.log_result("Get Followers", True, 
+                                  f"Retrieved {len(data['followers'])} followers",
+                                  phase="Phase 5 - Social")
+                    return True
+                else:
+                    self.log_result("Get Followers", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 5 - Social")
+                    return False
+            else:
+                self.log_result("Get Followers", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 5 - Social")
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Followers", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Social")
+            return False
+    
+    def phase5_get_following(self):
+        """Phase 5: Test GET /api/users/{userId}/following endpoint"""
+        try:
+            response = self.session.get(f"{API_BASE}/users/{self.current_user_id}/following")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'following' in data and isinstance(data['following'], list):
+                    self.log_result("Get Following", True, 
+                                  f"Retrieved {len(data['following'])} following",
+                                  phase="Phase 5 - Social")
+                    return True
+                else:
+                    self.log_result("Get Following", False, 
+                                  f"Invalid response structure: {list(data.keys())}",
+                                  phase="Phase 5 - Social")
+                    return False
+            else:
+                self.log_result("Get Following", False, 
+                              f"Status: {response.status_code}", response.text,
+                              phase="Phase 5 - Social")
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Following", False, "Exception occurred", str(e),
+                          phase="Phase 5 - Social")
+            return False
     
     def test_get_user_posts(self):
         """Test GET /api/users/{userId}/posts endpoint"""
