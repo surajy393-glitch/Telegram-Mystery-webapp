@@ -4916,21 +4916,38 @@ async def get_archived(current_user: User = Depends(get_current_user)):
 # Archive story
 @api_router.post("/stories/{story_id}/archive")
 async def archive_story(story_id: str, current_user: User = Depends(get_current_user)):
-    story = await db.stories.find_one({"id": story_id})
+    """
+    Toggle the archived state of a story. Accept numeric IDs or legacy UUIDs.
+    Coerce the story_id to an integer when possible so that the lookup
+    matches the PostgreSQL serial primary key.
+    """
+    # Attempt to convert the provided ID to an integer for lookup
+    try:
+        lookup_id = int(story_id)
+    except (ValueError, TypeError):
+        lookup_id = story_id
+
+    # Locate the story
+    story = await db.stories.find_one({"id": lookup_id})
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
-    # Check if current user owns the story using both userId and username.
+
+    # Authorize the request: user must own the story by userId or username
     owner_id_matches = str(story.get("userId")) == str(current_user.id)
     owner_username_matches = str(story.get("username")).lower() == str(current_user.username).lower()
     if not (owner_id_matches or owner_username_matches):
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     is_archived = story.get("isArchived", False)
+    # Toggle the archived flag
     await db.stories.update_one(
-        {"id": story_id},
+        {"id": lookup_id},
         {"$set": {"isArchived": not is_archived}}
     )
-    return {"message": "Story archived" if not is_archived else "Story unarchived", "isArchived": not is_archived}
+    return {
+        "message": "Story archived" if not is_archived else "Story unarchived",
+        "isArchived": not is_archived
+    }
 
 # Notifications
 @api_router.get("/notifications")
