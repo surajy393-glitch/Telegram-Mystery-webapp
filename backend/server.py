@@ -1556,7 +1556,7 @@ async def login(user_data: UserLogin):
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id": user["id"],
+            "id": str(user["id"]),
             "fullName": user["fullName"],
             "username": user["username"],
             "age": user["age"],
