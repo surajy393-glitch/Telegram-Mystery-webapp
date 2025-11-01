@@ -196,16 +196,8 @@ class Collection:
                 'views_count'
             },
             'webapp_notifications': {
-                'id',               # SERIAL / PRIMARY KEY
-                'user_id',          # जिस यूज़र को notify करना है
-                'from_user_id',     # किसने action किया
-                'from_username',
-                'from_user_image',
-                'type',             # like, comment, follow_request, etc.
-                'post_id',
-                'comment_text',
-                'is_read',
-                'created_at'
+                'id', 'user_id', 'type', 'actor_id', 'post_id', 'comment_id',
+                'is_read', 'created_at'
             }
         }
         
