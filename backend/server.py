@@ -4246,7 +4246,7 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    # Parse comments from JSON string if necessary
+    # Parse comments JSON string to list
     comments = post.get("comments", [])
     if isinstance(comments, str):
         try:
@@ -4255,22 +4255,24 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
             comments = []
 
     comment_found = False
+    user_id_str = str(current_user.id)
 
     for comment in comments:
         if comment["id"] == comment_id:
             comment_found = True
             likes = comment.get("likes", [])
-            # Ensure likes is a list (parse JSON string if necessary)
+            # Parse likes JSON string if necessary and normalize
             if isinstance(likes, str):
                 try:
                     likes = json.loads(likes)
                 except Exception:
                     likes = []
+            likes = [str(l) for l in likes]
 
-            if current_user.id in likes:
-                likes.remove(current_user.id)
+            if user_id_str in likes:
+                likes.remove(user_id_str)
             else:
-                likes.append(current_user.id)
+                likes.append(user_id_str)
 
             comment["likes"] = likes
             comment["likesCount"] = len(likes)
