@@ -4905,45 +4905,48 @@ async def delete_post(post_id: str, current_user: User = Depends(get_current_use
 # Post Management (Own Posts)
 @api_router.post("/posts/{post_id}/archive")
 async def archive_post(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    lookup_id = coerce_id(post_id)
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post["userId"] != current_user.id:
+    if str(post["userId"]) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     is_archived = post.get("isArchived", False)
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"isArchived": not is_archived}}
     )
     return {"message": "Post archived" if not is_archived else "Post unarchived", "isArchived": not is_archived}
 
 @api_router.post("/posts/{post_id}/hide-likes")
 async def hide_likes(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    lookup_id = coerce_id(post_id)
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post["userId"] != current_user.id:
+    if str(post["userId"]) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     likes_hidden = post.get("likesHidden", False)
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"likesHidden": not likes_hidden}}
     )
     return {"message": "Likes hidden" if not likes_hidden else "Likes shown", "likesHidden": not likes_hidden}
 
 @api_router.post("/posts/{post_id}/toggle-comments")
 async def toggle_comments(post_id: str, current_user: User = Depends(get_current_user)):
-    post = await db.posts.find_one({"id": post_id})
+    lookup_id = coerce_id(post_id)
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post["userId"] != current_user.id:
+    if str(post["userId"]) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     comments_disabled = post.get("commentsDisabled", False)
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"commentsDisabled": not comments_disabled}}
     )
     return {"message": "Comments disabled" if not comments_disabled else "Comments enabled", "commentsDisabled": not comments_disabled}
