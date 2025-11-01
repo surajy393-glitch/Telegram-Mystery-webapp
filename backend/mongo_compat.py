@@ -743,6 +743,7 @@ class Cursor:
                                         except (ValueError, TypeError):
                                             converted_values.append(val)
                                     op_value = converted_values
+                                    print(f"DEBUG $in: db_key={db_key}, original={op_value}, converted={converted_values}")
                                 
                                 placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
                                 where_parts.append(f"{db_key} IN ({placeholders})")
