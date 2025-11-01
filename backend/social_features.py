@@ -472,10 +472,21 @@ async def add_comment(
             "likesCount": 0  # Added likesCount
         }
         
-        # Add comment to post
+        # Get current comments and append new comment (FIXED: use $set instead of $push for PostgreSQL)
+        post_comments = post.get("comments", [])
+        if isinstance(post_comments, str):
+            try:
+                import json
+                post_comments = json.loads(post_comments)
+            except:
+                post_comments = []
+        
+        post_comments.append(comment)
+        
+        # Add comment to post using $set instead of $push
         await db.posts.update_one(
             {"id": post_id_int},
-            {"$push": {"comments": comment}}
+            {"$set": {"comments": post_comments}}
         )
         
         # Create notification for post owner (if not commenting on own post and not anonymous)
