@@ -143,6 +143,7 @@ async def get_feed(
         skip = (page - 1) * limit
         
         # Get user to check blockedUsers and mutedUsers
+        print(f"DEBUG: userId type={type(userId)}, value={userId}")
         current_user = await db.users.find_one({"id": userId})
         if not current_user:
             return {"success": False, "posts": []}
@@ -150,11 +151,13 @@ async def get_feed(
         blocked_users = current_user.get("blockedUsers", [])
         muted_users = current_user.get("mutedUsers", [])
         excluded_users = list(set(blocked_users + muted_users))
+        print(f"DEBUG: excluded_users={excluded_users}, types={[type(x) for x in excluded_users]}")
         
         # Build query to exclude blocked/muted users and own posts
         query = {
             "userId": {"$nin": excluded_users + [userId]}  # Exclude blocked, muted, and own posts
         }
+        print(f"DEBUG: query={query}")
         
         # Filter by city if provided
         if city:
