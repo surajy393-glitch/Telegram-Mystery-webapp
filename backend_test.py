@@ -7528,13 +7528,16 @@ class LuvHiveAPITester:
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting LuvHive Backend API Testing - AUTHENTICATION DEBUGGING PRIORITY!")
+        print("🚀 Starting LuvHive Backend API Testing - CRITICAL TOKEN VALIDATION PRIORITY!")
         print("=" * 80)
         print(f"📡 Testing against: {API_BASE}")
         print()
         
-        # PRIORITY: Run authentication debugging tests first
-        print("\n🚨 PRIORITY: AUTHENTICATION FLOW DEBUGGING")
+        # CRITICAL PRIORITY: Run token validation tests first
+        critical_success = self.run_critical_token_validation_tests()
+        
+        print("\n" + "=" * 60)
+        print("🔧 RUNNING ADDITIONAL AUTHENTICATION TESTS")
         print("=" * 60)
         
         self.test_complete_login_flow()
