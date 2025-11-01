@@ -4,7 +4,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown, MoreVertical, Shield, AlertCircle, EyeOff, Link2, Share2, Zap, Lock, Info } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 import { getPostMediaUrl as normalizePostMediaUrl } from "@/utils/media";
 import {
   Dialog,
@@ -19,7 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getToken } from "@/utils/telegramStorage";
 
 // Use a fallback so API calls don't break when the env var is missing
 const API = "/api";
@@ -162,13 +161,10 @@ const ProfilePage = ({ user, onLogout }) => {
     console.log("=== fetchAccountInfo CALLED with ID:", userId);
     
     try {
-      const token = getToken();
       const url = `${API}/users/${userId}/account-info`;
       console.log("Fetching from URL:", url);
       
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(url);
       
       console.log("✅ Account info received:", response.data);
       setAccountInfo(response.data);
@@ -187,10 +183,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/auth/me`);
       setProfile(response.data);
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -201,10 +194,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchUsers = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/users/list`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/users/list`);
       setUsers(response.data.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -213,16 +203,14 @@ const ProfilePage = ({ user, onLogout }) => {
 
   const fetchUserProfile = async (targetUserId) => {
     try {
-      const token = getToken();
-      const headers = { Authorization: `Bearer ${token}` };
-      let response;
+            let response;
       try {
         // Attempt the detailed UUID-only endpoint
-        response = await axios.get(`${API}/users/${targetUserId}/profile`, { headers });
+        response = await httpClient.get(`${API}/users/${targetUserId}/profile`);
       } catch (err) {
         // Fallback to the generic endpoint that accepts usernames as well
         console.log("Profile endpoint failed, trying fallback with username:", targetUserId);
-        response = await axios.get(`${API}/users/${targetUserId}`, { headers });
+        response = await httpClient.get(`${API}/users/${targetUserId}`);
       }
       console.log("Profile fetched successfully:", response.data.username);
       setViewingUser(response.data);
@@ -241,12 +229,10 @@ const ProfilePage = ({ user, onLogout }) => {
   const fetchUserPosts = async (accountId, username) => {
     setPostsLoading(true);
     try {
-      const token = getToken();
-      const headers = { Authorization: `Bearer ${token}` };
-      
+            
       // 1. Try to load posts via the normal endpoint (now accepts UUID or username)
       console.log("Fetching posts with accountId:", accountId, "username:", username);
-      let response = await axios.get(`${API}/users/${accountId}/posts`, { headers });
+      let response = await httpClient.get(`${API}/users/${accountId}/posts`);
       console.log("Posts API response:", response.data);
       
       let postsData = Array.isArray(response.data.posts)
@@ -258,7 +244,7 @@ const ProfilePage = ({ user, onLogout }) => {
       // 2. If no posts returned but postsCount shows > 0, try using the username slug
       if (postsData.length === 0 && viewingUser?.postsCount > 0 && username) {
         console.log("No posts with UUID, trying username fallback:", username);
-        const fallback = await axios.get(`${API}/users/${username}/posts`, { headers });
+        const fallback = await httpClient.get(`${API}/users/${username}/posts`);
         console.log("Fallback response:", fallback.data);
         postsData = Array.isArray(fallback.data.posts)
           ? fallback.data.posts
@@ -270,7 +256,7 @@ const ProfilePage = ({ user, onLogout }) => {
       // 3. If still empty and we expect posts, load the feed and filter by this user
       if (postsData.length === 0 && viewingUser?.postsCount > 0) {
         console.warn("User posts endpoint returned nothing; falling back to feed");
-        const feedResp = await axios.get(`${API}/posts/feed`, { headers });
+        const feedResp = await httpClient.get(`${API}/posts/feed`);
         const feedPosts = Array.isArray(feedResp.data.posts) ? feedResp.data.posts : [];
         postsData = feedPosts.filter(
           (p) => p.userId === accountId || p.username === username
@@ -289,9 +275,7 @@ const ProfilePage = ({ user, onLogout }) => {
       if (error.response?.status === 500 || error.response?.status === 404) {
         console.warn("Primary endpoints failed, attempting feed fallback");
         try {
-          const token = getToken();
-          const headers = { Authorization: `Bearer ${token}` };
-          const feedResp = await axios.get(`${API}/posts/feed`, { headers });
+                    const feedResp = await httpClient.get(`${API}/posts/feed`);
           const feedPosts = Array.isArray(feedResp.data.posts) ? feedResp.data.posts : [];
           const filteredPosts = feedPosts.filter(
             (p) => p.userId === accountId || p.username === username
@@ -320,12 +304,9 @@ const ProfilePage = ({ user, onLogout }) => {
     
     setShowVibeCompatibility(true);
     try {
-      const token = getToken();
       console.log(`Fetching vibe compatibility for user: ${viewingUser.id}`);
       
-      const response = await axios.get(`${API}/auth/calculate-compatibility/${viewingUser.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/auth/calculate-compatibility/${viewingUser.id}`);
       
       console.log("Vibe compatibility response:", response.data);
       setVibeScore(response.data);
@@ -340,10 +321,7 @@ const ProfilePage = ({ user, onLogout }) => {
     if (!viewingUser) return;
     
     try {
-      const token = getToken();
-      await axios.post(`${API}/users/${viewingUser.id}/block`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/users/${viewingUser.id}/block`, {});
       alert(`${viewingUser.username} has been blocked`);
     } catch (error) {
       console.error("Error blocking user:", error);
@@ -359,10 +337,7 @@ const ProfilePage = ({ user, onLogout }) => {
   const handleHideStory = async () => {
     if (!viewingUser) return;
     try {
-      const token = getToken();
-      await axios.post(`${API}/users/${viewingUser.id}/hide-story`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/users/${viewingUser.id}/hide-story`, {});
       alert("You will no longer see stories from this user");
     } catch (error) {
       console.error("Error hiding story:", error);
@@ -423,14 +398,11 @@ const ProfilePage = ({ user, onLogout }) => {
     setFollowersLoading(true);
 
     try {
-      const token = getToken();
       const endpoint = type === 'followers' 
         ? `${API}/users/${viewingUser?.id}/followers` 
         : `${API}/users/${viewingUser?.id}/following`;
       
-      const response = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(endpoint);
 
       // Backend returns {followers: [...]} or {following: [...]}
       const listData = type === 'followers' ? response.data.followers : response.data.following;
@@ -476,9 +448,7 @@ const ProfilePage = ({ user, onLogout }) => {
 
       console.log(`Action: ${endpoint} for user ${targetUserId}`);
       
-      const response = await axios.post(`${API}/users/${targetUserId}/${endpoint}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.post(`${API}/users/${targetUserId}/${endpoint}`, {});
       
       console.log("Follow action response:", response.data);
       

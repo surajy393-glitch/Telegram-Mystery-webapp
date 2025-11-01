@@ -9,8 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import axios from "axios";
-import { getToken } from "@/utils/telegramStorage";
+import { httpClient } from "@/utils/authClient";
 
 const API = "/api";
 
@@ -27,10 +26,7 @@ const SettingsPage = ({ user, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/auth/me`);
       setProfile(response.data);
       
       // Load all settings from profile
@@ -62,13 +58,10 @@ const SettingsPage = ({ user, onLogout }) => {
     
     setUpdating(prev => ({ ...prev, [settingKey]: true }));
     try {
-      const token = getToken();
       const newValue = !settings[settingKey];
       
-      await axios.put(`${API}/auth/settings`, {
+      await httpClient.put(`${API}/auth/settings`, {
         [settingKey]: newValue
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       setSettings(prev => ({ ...prev, [settingKey]: newValue }));
@@ -82,8 +75,7 @@ const SettingsPage = ({ user, onLogout }) => {
 
   const handleDownloadData = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/auth/download-data`, {
+      const response = await httpClient.get(`${API}/auth/download-data`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });

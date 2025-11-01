@@ -9,8 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import axios from 'axios';
-import { getToken } from "@/utils/telegramStorage";
+import { httpClient } from "@/utils/authClient";
 
 const API = "/api";
 
@@ -46,10 +45,7 @@ const SocialSettingsPage = ({ user, onLogout }) => {
 
   const fetchUserSettings = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/auth/me`);
       
       // Map backend settings to frontend state
       setSettings({
@@ -91,9 +87,8 @@ const SocialSettingsPage = ({ user, onLogout }) => {
       const backendKey = settingMap[key];
       
       // Save to backend
-      await axios.put(`${API}/auth/settings`, 
-        { [backendKey]: newValue },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await httpClient.put(`${API}/auth/settings`, 
+        { [backendKey]: newValue }
       );
       
       console.log(`Setting ${key} updated to ${newValue}`);

@@ -6,8 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Grid, Bookmark, Crown, Settings, Shield } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import axios from "axios";
-import { getToken } from "@/utils/telegramStorage";
+import { httpClient } from "@/utils/authClient";
 
 // Use a fallback so API calls don't break when the env var is missing
 const API = "/api";
@@ -47,16 +46,15 @@ const MyProfilePage = ({ user, onLogout }) => {
     try {
       const token = getToken();
       console.log("🔑 Fetching profile data with token:", token ? "Present" : "Missing");
-      const headers = { Authorization: `Bearer ${token}` };
-
+      
       const [profileRes, postsRes, savedRes, archivedRes] = await Promise.all([
-        axios.get(`${API}/auth/me`, { headers }).catch((err) => {
+        httpClient.get(`${API}/auth/me`).catch((err) => {
           console.error("❌ /auth/me failed:", err.response?.status, err.message);
           return { data: user };
         }),
-        axios.get(`${API}/profile/posts`, { headers }).catch(() => ({ data: { posts: [] } })),
-        axios.get(`${API}/profile/saved`, { headers }).catch(() => ({ data: { posts: [] } })),
-        axios.get(`${API}/profile/archived`, { headers }).catch(() => ({ data: { archived: [] } }))
+        httpClient.get(`${API}/profile/posts`).catch(() => ({ data: { posts: [] } })),
+        httpClient.get(`${API}/profile/saved`).catch(() => ({ data: { posts: [] } })),
+        httpClient.get(`${API}/profile/archived`).catch(() => ({ data: { archived: [] } }))
       ]);
 
       if (profileRes.data) {
@@ -120,10 +118,7 @@ const MyProfilePage = ({ user, onLogout }) => {
     setLoadingFollowers(true);
     
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/users/${profile.id}/followers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/users/${profile.id}/followers`);
       setFollowersList(response.data.followers || []);
     } catch (error) {
       console.error("Error fetching followers:", error);
@@ -140,10 +135,7 @@ const MyProfilePage = ({ user, onLogout }) => {
     setLoadingFollowing(true);
     
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/users/${profile.id}/following`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/users/${profile.id}/following`);
       setFollowingList(response.data.following || []);
     } catch (error) {
       console.error("Error fetching following:", error);

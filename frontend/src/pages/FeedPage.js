@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createHttpClient } from "@/utils/authClient";
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { httpClient } from "@/utils/authClient";
 import { Heart, MessageCircle, Share2, Send, Image as ImageIcon, Plus, Bell, Search, User, MoreVertical, Bookmark, UserIcon as UserIconLucide, AlertCircle, Trash2, Download } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 const API = "/api";
-import { getToken } from "@/utils/telegramStorage";
 
 const FeedPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -85,10 +84,7 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchNotificationCount = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`/api/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`/api/notifications/unread-count`);
       setNotificationCount(response.data.count);
     } catch (error) {
       console.error("Error fetching notification count:", error);
@@ -97,7 +93,7 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchStories = async () => {
     try {
-      const response = await axios.get(`/api/social/stories?userId=${user.id}`);
+      const response = await httpClient.get(`/api/social/stories?userId=${user.id}`);
       
       const stories = response.data.stories || [];
       
@@ -136,7 +132,7 @@ const FeedPage = ({ user, onLogout }) => {
       if (!append) setLoading(true);
       else setLoadingMore(true);
       
-      const response = await axios.get(`/api/social/feed?userId=${user.id}&page=${pageNum}&limit=10`);
+      const response = await httpClient.get(`/api/social/feed?userId=${user.id}&page=${pageNum}&limit=10`);
       const newPosts = response.data.posts || [];
       
       // Mark these posts as seen
@@ -180,7 +176,7 @@ const FeedPage = ({ user, onLogout }) => {
         formData.append('image', selectedImage);
       }
 
-      const response = await axios.post(`/api/social/posts`, formData, {
+      const response = await httpClient.post(`/api/social/posts`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -205,7 +201,7 @@ const FeedPage = ({ user, onLogout }) => {
       const formData = new FormData();
       formData.append('userId', user.id);
       
-      const response = await axios.post(`/api/social/posts/${postId}/like`, formData);
+      const response = await httpClient.post(`/api/social/posts/${postId}/like`, formData);
       
       if (response.data.success) {
         // Update local state
@@ -233,7 +229,7 @@ const FeedPage = ({ user, onLogout }) => {
       formData.append('content', commentText);
       formData.append('isAnonymous', false);
 
-      const response = await axios.post(`/api/social/posts/${postId}/comment`, formData);
+      const response = await httpClient.post(`/api/social/posts/${postId}/comment`, formData);
 
       if (response.data.success) {
         setCommentText('');
@@ -280,13 +276,10 @@ const FeedPage = ({ user, onLogout }) => {
     if (mentions.length > 0) {
       try {
         // Send notifications to mentioned users
-        const token = getToken();
-        await axios.post(`/api/notifications/mentions`, {
+        await httpClient.post(`/api/notifications/mentions`, {
           mentionedUsernames: mentions,
           type: 'story_mention',
           content: text
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
         });
       } catch (error) {
         console.error('Error processing mentions:', error);
@@ -313,7 +306,7 @@ const FeedPage = ({ user, onLogout }) => {
       formData.append('isAnonymous', false);
       formData.append('image', newStory.mediaFile); // Send the actual file
 
-      const response = await axios.post(`/api/social/stories`, formData, {
+      const response = await httpClient.post(`/api/social/stories`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -680,9 +673,7 @@ const FeedPage = ({ user, onLogout }) => {
                             <>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`/api/users/${post.userId}/follow`, {}, {
-                                    headers: { Authorization: `Bearer ${getToken()}` }
-                                  });
+                                  await httpClient.post(`/api/users/${post.userId}/follow`, {});
                                   alert('Following user');
                                   setOpenPostMenu(null);
                                 } catch (error) {
@@ -694,9 +685,7 @@ const FeedPage = ({ user, onLogout }) => {
                               </button>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`/api/users/${post.userId}/unfollow`, {}, {
-                                    headers: { Authorization: `Bearer ${getToken()}` }
-                                  });
+                                  await httpClient.post(`/api/users/${post.userId}/unfollow`, {});
                                   alert('Unfollowed user');
                                   setOpenPostMenu(null);
                                 } catch (error) {
@@ -708,9 +697,7 @@ const FeedPage = ({ user, onLogout }) => {
                               </button>
                               <button onClick={async () => { 
                                 try {
-                                  await axios.post(`/api/users/${post.userId}/mute`, {}, {
-                                    headers: { Authorization: `Bearer ${getToken()}` }
-                                  });
+                                  await httpClient.post(`/api/users/${post.userId}/mute`, {});
                                   alert('User muted. You won\'t see their posts anymore.');
                                   setOpenPostMenu(null);
                                 } catch (error) {
@@ -723,9 +710,7 @@ const FeedPage = ({ user, onLogout }) => {
                               <button onClick={async () => { 
                                 if (window.confirm('Block this user?')) {
                                   try {
-                                    await axios.post(`/api/users/${post.userId}/block`, {}, {
-                                      headers: { Authorization: `Bearer ${getToken()}` }
-                                    });
+                                    await httpClient.post(`/api/users/${post.userId}/block`, {});
                                     alert('User blocked');
                                     setOpenPostMenu(null);
                                   } catch (error) {
@@ -740,9 +725,8 @@ const FeedPage = ({ user, onLogout }) => {
                                 const reason = prompt('Report reason:');
                                 if (reason) {
                                   try {
-                                    await axios.post(`/api/posts/${post.id}/report`, 
-                                      { reason }, 
-                                      { headers: { Authorization: `Bearer ${getToken()}` }}
+                                    await httpClient.post(`/api/posts/${post.id}/report`, 
+                                      { reason }
                                     );
                                     alert('Report submitted');
                                     setOpenPostMenu(null);
@@ -920,10 +904,7 @@ const FeedPage = ({ user, onLogout }) => {
                   if (lastWord.startsWith('@') && lastWord.length > 1) {
                     const searchTerm = lastWord.substring(1);
                     try {
-                      const token = getToken();
-                      const response = await axios.get(`/api/search?query=${searchTerm}`, {
-                        headers: { Authorization: `Bearer ${token}` }
-                      });
+                      const response = await httpClient.get(`/api/search?query=${searchTerm}`);
                       setMentionSuggestions(response.data.users || []);
                       setShowMentions(true);
                     } catch (error) {
@@ -1060,11 +1041,8 @@ const FeedPage = ({ user, onLogout }) => {
                           onClick={async () => {
                             if (window.confirm('Delete this story?')) {
                               try {
-                                const token = getToken();
                                 const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                                await axios.delete(`/api/stories/${storyId}`, {
-                                  headers: { Authorization: `Bearer ${token}` }
-                                });
+                                await httpClient.delete(`/api/stories/${storyId}`);
                                 alert('Story deleted');
                                 setOpenStoryMenu(false);
                                 setShowStoryViewer(false);
@@ -1084,11 +1062,8 @@ const FeedPage = ({ user, onLogout }) => {
                         <button 
                           onClick={async () => {
                             try {
-                              const token = getToken();
                               const storyId = viewingStories.stories[currentStoryIndex]?.id;
-                              await axios.post(`/api/stories/${storyId}/archive`, {}, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
+                              await httpClient.post(`/api/stories/${storyId}/archive`, {});
                               alert('Story archived');
                               setOpenStoryMenu(false);
                               setShowStoryViewer(false);
@@ -1172,10 +1147,7 @@ const FeedPage = ({ user, onLogout }) => {
                         <button 
                           onClick={async () => {
                             try {
-                              const token = getToken();
-                              await axios.post(`/api/users/${viewingStories.userId}/mute`, {}, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
+                              await httpClient.post(`/api/users/${viewingStories.userId}/mute`, {});
                               alert(`Muted ${viewingStories.username}. You won't see their posts anymore.`);
                               setOpenStoryMenu(false);
                               setShowStoryViewer(false);
@@ -1260,21 +1232,16 @@ const FeedPage = ({ user, onLogout }) => {
                   <button
                     onClick={async () => {
                       try {
-                        const token = getToken();
                         const storyId = viewingStories.stories[currentStoryIndex]?.id;
                         const isLiked = storyLikes[storyId];
                         
                         if (isLiked) {
                           // Unlike
-                          await axios.delete(`/api/stories/${storyId}/like`, {
-                            headers: { Authorization: `Bearer ${token}` }
-                          });
+                          await httpClient.delete(`/api/stories/${storyId}/like`);
                           setStoryLikes({ ...storyLikes, [storyId]: false });
                         } else {
                           // Like
-                          await axios.post(`/api/stories/${storyId}/like`, {}, {
-                            headers: { Authorization: `Bearer ${token}` }
-                          });
+                          await httpClient.post(`/api/stories/${storyId}/like`, {});
                           setStoryLikes({ ...storyLikes, [storyId]: true });
                         }
                       } catch (error) {
@@ -1355,10 +1322,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "I just don't like it" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "I just don't like it" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1376,10 +1341,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Harassment or bullying" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Harassment or bullying" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1397,10 +1360,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Self-harm or dangerous content" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Self-harm or dangerous content" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1418,10 +1379,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Hate speech or violence" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Hate speech or violence" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1439,10 +1398,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Illegal activities" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Illegal activities" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1460,10 +1417,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Adult content" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Adult content" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1481,10 +1436,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Spam or scam" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Spam or scam" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1502,10 +1455,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Misinformation" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Misinformation" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);
@@ -1523,10 +1474,8 @@ const FeedPage = ({ user, onLogout }) => {
               <button
                 onClick={async () => {
                   try {
-                    const token = getToken();
-                    await axios.post(`/api/stories/${reportingStory?.id}/report`, 
-                      { reason: "Copyright violation" }, 
-                      { headers: { Authorization: `Bearer ${token}` }}
+                    await httpClient.post(`/api/stories/${reportingStory?.id}/report`, 
+                      { reason: "Copyright violation" }
                     );
                     alert('Report submitted successfully!');
                     setShowStoryReportDialog(false);

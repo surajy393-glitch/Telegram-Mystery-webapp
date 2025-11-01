@@ -4,7 +4,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Crown } from "lucide-react";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
@@ -43,10 +42,7 @@ const ChatPage = ({ user }) => {
 
   const fetchChatUser = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/users/list`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/users/list`);
       const foundUser = response.data.users.find(u => u.id === userId);
       setChatUser(foundUser);
     } catch (error) {
@@ -56,10 +52,7 @@ const ChatPage = ({ user }) => {
 
   const fetchMessages = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/chat/messages/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/chat/messages/${userId}`);
       setMessages(response.data.messages || []);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -79,8 +72,7 @@ const ChatPage = ({ user }) => {
     if (!newMessage.trim()) return;
 
     try {
-      const token = getToken();
-      await axios.post(`${API}/chat/send`, 
+      await httpClient.post(`${API}/chat/send`, 
         `receiverId=${userId}&message=${encodeURIComponent(newMessage)}`,
         {
           headers: { 

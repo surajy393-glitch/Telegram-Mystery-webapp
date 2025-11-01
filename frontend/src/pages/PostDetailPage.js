@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { createHttpClient } from "@/utils/authClient";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, MessageCircle, Send, Image as ImageIcon, MoreVertical, Trash2, Flag, Ban, Bookmark, Archive, Link as LinkIcon, Edit } from "lucide-react";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 
 const API = "/api";
-import { getToken } from "@/utils/telegramStorage";
 
 const PostDetailPage = ({ user }) => {
   const { postId } = useParams();
@@ -42,10 +41,7 @@ const PostDetailPage = ({ user }) => {
 
   const fetchPostDetails = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/posts/${postId}`);
       setPost(response.data);
       setLoading(false);
     } catch (error) {
@@ -56,10 +52,7 @@ const PostDetailPage = ({ user }) => {
 
   const fetchComments = async () => {
     try {
-      const token = getToken();
-      const response = await axios.get(`${API}/posts/${postId}/comments`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(`${API}/posts/${postId}/comments`);
       setComments(response.data.comments || []);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -82,9 +75,7 @@ const PostDetailPage = ({ user }) => {
         likesCount: isLiked ? Math.max(0, prev.likesCount - 1) : prev.likesCount + 1
       }));
 
-      await axios.post(`${API}/posts/${postId}/${endpoint}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/${endpoint}`, {});
     } catch (error) {
       console.error("Error liking post:", error);
       // Rollback on error
@@ -100,14 +91,12 @@ const PostDetailPage = ({ user }) => {
     if (!newComment.trim()) return;
 
     try {
-      const token = getToken();
       const formData = new FormData();
       formData.append('text', newComment);
       
-      const response = await axios.post(
+      const response = await httpClient.post(
         `${API}/posts/${postId}/comment`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData
       );
 
       // Add new comment to list
@@ -147,10 +136,9 @@ const PostDetailPage = ({ user }) => {
       }));
 
       // Make API call - for now we'll update the post's comments array
-      const response = await axios.post(
+      const response = await httpClient.post(
         `${API}/posts/${postId}/comment/${commentId}/like`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {}
       );
     } catch (error) {
       console.error("Error liking comment:", error);
@@ -161,15 +149,13 @@ const PostDetailPage = ({ user }) => {
     if (!replyText.trim()) return;
 
     try {
-      const token = getToken();
       const formData = new FormData();
       formData.append('text', replyText);
       formData.append('parentCommentId', commentId);
       
-      const response = await axios.post(
+      const response = await httpClient.post(
         `${API}/posts/${postId}/comment`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData
       );
 
       // Add reply to comments list
@@ -187,10 +173,7 @@ const PostDetailPage = ({ user }) => {
     if (!window.confirm("Delete this comment?")) return;
 
     try {
-      const token = getToken();
-      await axios.delete(`${API}/posts/${postId}/comment/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.delete(`${API}/posts/${postId}/comment/${commentId}`);
 
       // Remove from local state
       setComments(prev => prev.filter(c => c.id !== commentId));
@@ -213,11 +196,9 @@ const PostDetailPage = ({ user }) => {
     if (!reason) return;
 
     try {
-      const token = getToken();
-      await axios.post(
+      await httpClient.post(
         `${API}/posts/${postId}/comment/${commentId}/report`,
-        { reason },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { reason }
       );
 
       alert("Comment reported. We'll review it shortly.");
@@ -232,11 +213,9 @@ const PostDetailPage = ({ user }) => {
     if (!window.confirm(`Block ${username}? You won't see their posts or comments.`)) return;
 
     try {
-      const token = getToken();
-      await axios.post(
+      await httpClient.post(
         `${API}/users/${userId}/block`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {}
       );
 
       alert(`${username} has been blocked`);
@@ -252,12 +231,9 @@ const PostDetailPage = ({ user }) => {
 
   const handleSavePost = async () => {
     try {
-      const token = getToken();
       const endpoint = post?.isSaved ? 'unsave' : 'save';
       
-      await axios.post(`${API}/posts/${postId}/${endpoint}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/${endpoint}`, {});
 
       setPost(prev => ({
         ...prev,
@@ -276,10 +252,7 @@ const PostDetailPage = ({ user }) => {
     if (!window.confirm("Archive this post? You can find it in your profile's archive tab.")) return;
 
     try {
-      const token = getToken();
-      await axios.post(`${API}/posts/${postId}/archive`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/archive`, {});
 
       alert("Post archived");
       navigate(-1);
@@ -293,10 +266,7 @@ const PostDetailPage = ({ user }) => {
     if (!window.confirm("Delete this post permanently?")) return;
 
     try {
-      const token = getToken();
-      await axios.delete(`${API}/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.delete(`${API}/posts/${postId}`);
 
       alert("Post deleted");
       navigate(-1);
@@ -318,11 +288,9 @@ const PostDetailPage = ({ user }) => {
     }
 
     try {
-      const token = getToken();
-      await axios.post(
+      await httpClient.post(
         `${API}/posts/${postId}/report`,
-        { reason: reportReason },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { reason: reportReason }
       );
 
       alert("Post reported. We'll review it shortly.");
@@ -336,10 +304,7 @@ const PostDetailPage = ({ user }) => {
 
   const handleHideLikes = async () => {
     try {
-      const token = getToken();
-      await axios.post(`${API}/posts/${postId}/hide-likes`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/hide-likes`, {});
 
       setPost(prev => ({
         ...prev,
@@ -362,13 +327,10 @@ const PostDetailPage = ({ user }) => {
 
   const submitEditCaption = async () => {
     try {
-      const token = getToken();
       const formData = new FormData();
       formData.append('caption', editedCaption);
       
-      await axios.put(`${API}/posts/${postId}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.put(`${API}/posts/${postId}`, formData);
 
       setPost(prev => ({
         ...prev,
@@ -396,10 +358,7 @@ const PostDetailPage = ({ user }) => {
 
   const handleTurnOffComments = async () => {
     try {
-      const token = getToken();
-      await axios.post(`${API}/posts/${postId}/toggle-comments`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/toggle-comments`, {});
 
       alert(post?.commentsDisabled ? "Comments enabled" : "Comments disabled");
       setPost(prev => ({

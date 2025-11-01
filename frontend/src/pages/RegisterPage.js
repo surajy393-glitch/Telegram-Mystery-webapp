@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 import {
   Dialog,
   DialogContent,
@@ -88,7 +88,7 @@ const RegisterPage = ({ onLogin }) => {
     setUsernameMessage("Checking availability...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
+      const response = await httpClient.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
       const data = response.data;
       
       if (data.available) {
@@ -128,7 +128,7 @@ const RegisterPage = ({ onLogin }) => {
     setOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/send-email-otp`, {
+      const response = await httpClient.post(`${API}/auth/send-email-otp`, {
         email: formData.email
       });
       
@@ -163,7 +163,7 @@ const RegisterPage = ({ onLogin }) => {
     setOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/verify-email-otp`, {
+      const response = await httpClient.post(`${API}/auth/verify-email-otp`, {
         email: formData.email,
         otp: emailOtp.trim()
       });
@@ -217,7 +217,7 @@ const RegisterPage = ({ onLogin }) => {
     setMobileOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/send-mobile-otp`, {
+      const response = await httpClient.post(`${API}/auth/send-mobile-otp`, {
         mobileNumber: formData.mobileNumber
       });
       
@@ -252,7 +252,7 @@ const RegisterPage = ({ onLogin }) => {
     setMobileOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/verify-mobile-otp`, {
+      const response = await httpClient.post(`${API}/auth/verify-mobile-otp`, {
         mobileNumber: formData.mobileNumber,
         otp: mobileOtp.trim()
       });
@@ -286,7 +286,7 @@ const RegisterPage = ({ onLogin }) => {
     setEmailMessage("Checking email...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
+      const response = await httpClient.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
       const data = response.data;
       
       if (data.available) {
@@ -313,7 +313,7 @@ const RegisterPage = ({ onLogin }) => {
     setMobileMessage("Checking mobile number...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
+      const response = await httpClient.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
       const data = response.data;
       
       if (data.available) {
@@ -366,7 +366,7 @@ const RegisterPage = ({ onLogin }) => {
 
     try {
       // First register the user with enhanced endpoint
-      const response = await axios.post(`${API}/auth/register-enhanced`, {
+      const response = await httpClient.post(`${API}/auth/register-enhanced`, {
         fullName: formData.fullName,
         username: formData.username,
         email: formData.email,
@@ -412,7 +412,7 @@ const RegisterPage = ({ onLogin }) => {
       // Fetch a complete user profile after registration to avoid missing fields.
       // This prevents issues with missing ID or profileImage immediately after sign-up.
       try {
-        const meRes = await axios.get(`${API}/auth/me`, {
+        const meRes = await httpClient.get(`${API}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const fullUser = meRes.data.user || meRes.data;
@@ -552,7 +552,7 @@ const RegisterPage = ({ onLogin }) => {
 
           // First check if user already exists
           try {
-            const checkResponse = await axios.post(`${API}/auth/telegram-signin`, {
+            const checkResponse = await httpClient.post(`${API}/auth/telegram-signin`, {
               telegramId: user.id
             });
             
@@ -579,7 +579,7 @@ const RegisterPage = ({ onLogin }) => {
           }
 
           // User doesn't exist, proceed with registration
-          const response = await axios.post(`${API}/auth/telegram`, {
+          const response = await httpClient.post(`${API}/auth/telegram`, {
             id: user.id,
             first_name: user.first_name,
             last_name: user.last_name || "",

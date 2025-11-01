@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 import { setToken as saveToken } from "@/utils/authClient";
 
 const API = "/api";
@@ -181,7 +181,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setUsernameMessage("Checking availability...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
+      const response = await httpClient.get(`${API}/auth/check-username/${encodeURIComponent(username)}`);
       const data = response.data;
       
       if (data.available) {
@@ -219,7 +219,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setEmailMessage("Checking email...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
+      const response = await httpClient.get(`${API}/auth/check-email/${encodeURIComponent(email)}`);
       const data = response.data;
       
       if (data.available) {
@@ -246,7 +246,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setMobileMessage("Checking mobile number...");
     
     try {
-      const response = await axios.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
+      const response = await httpClient.get(`${API}/auth/check-mobile/${encodeURIComponent(mobile)}`);
       const data = response.data;
       
       if (data.available) {
@@ -275,7 +275,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/send-email-otp`, {
+      const response = await httpClient.post(`${API}/auth/send-email-otp`, {
         email: formData.email
       });
       
@@ -310,7 +310,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/verify-email-otp`, {
+      const response = await httpClient.post(`${API}/auth/verify-email-otp`, {
         email: formData.email,
         otp: emailOtp.trim()
       });
@@ -364,7 +364,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setMobileOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/send-mobile-otp`, {
+      const response = await httpClient.post(`${API}/auth/send-mobile-otp`, {
         mobileNumber: formData.mobileNumber
       });
       
@@ -399,7 +399,7 @@ const DatingRegisterPage = ({ onLogin }) => {
     setMobileOtpLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/verify-mobile-otp`, {
+      const response = await httpClient.post(`${API}/auth/verify-mobile-otp`, {
         mobileNumber: formData.mobileNumber,
         otp: mobileOtp.trim()
       });
@@ -567,7 +567,7 @@ const DatingRegisterPage = ({ onLogin }) => {
         formDataToSend.append("profilePhoto", formData.profilePhoto);
       }
 
-      const response = await axios.post(`${API}/auth/register-enhanced`, formDataToSend, {
+      const response = await httpClient.post(`${API}/auth/register-enhanced`, formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
@@ -577,7 +577,7 @@ const DatingRegisterPage = ({ onLogin }) => {
       let fullUser;
       try {
         // Attempt to fetch the complete user record using the new token.
-        const meResponse = await axios.get(`${API}/auth/me`, {
+        const meResponse = await httpClient.get(`${API}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         fullUser = meResponse.data.user || meResponse.data;
