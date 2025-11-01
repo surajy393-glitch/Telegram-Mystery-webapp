@@ -130,7 +130,7 @@ backend:
     implemented: true
     working: false
     file: "backend/server.py"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: true
     status_history:
@@ -143,6 +143,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: Story creation returns 200 but with unexpected response format - nested 'story' object instead of direct story data, breaking frontend expectations. Additionally, GET /api/stories returns 405 'Method Not Allowed' indicating the stories feed endpoint is missing or misconfigured. Stories are created but cannot be retrieved from feed."
+      - working: false
+        agent: "testing"
+        comment: "❌ FINAL VERIFICATION: Story creation works (POST /api/stories returns 200, ID: 20d18d9a-a2cd-4155-9ca1-f89064e326d5) BUT critical story endpoints are broken: GET /api/stories returns 405 'Method Not Allowed' and POST /api/stories/{storyId}/view returns 404 'Not Found'. Stories can be created but cannot be retrieved or viewed, making the feature non-functional."
 
   - task: "User Search Functionality (Critical PostgreSQL Schema Fix)"
     implemented: true
