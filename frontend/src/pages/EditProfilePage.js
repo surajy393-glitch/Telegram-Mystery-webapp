@@ -47,6 +47,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
 
   const fetchProfile = async () => {
     try {
+      const token = getToken();
       if (!token) {
         console.error("❌ No token found, redirecting to login");
         navigate("/login");
