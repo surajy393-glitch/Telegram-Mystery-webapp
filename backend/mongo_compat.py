@@ -572,39 +572,9 @@ class Cursor:
         """Convert cursor to list"""
         pool = await get_pool()
         
-        # Build WHERE clause
-        where_parts = []
-        values = []
-        param_num = 1
+        # Build WHERE clause with support for complex queries
+        where_clause, values = self._build_where_clause(self.filter_dict)
         
-        for key, value in self.filter_dict.items():
-            db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
-            
-            # Special handling for ID fields - convert string to int for PostgreSQL
-            if db_key in ['id', 'user_id'] and isinstance(value, str):
-                try:
-                    value = int(value)
-                except (ValueError, TypeError):
-                    pass
-            
-            # Handle special operators
-            if isinstance(value, dict):
-                for op, op_value in value.items():
-                    if op == '$ne':
-                        where_parts.append(f"{db_key} != ${param_num}")
-                        values.append(op_value)
-                        param_num += 1
-                    elif op == '$in':
-                        placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
-                        where_parts.append(f"{db_key} IN ({placeholders})")
-                        values.extend(op_value)
-                        param_num += len(op_value)
-            else:
-                where_parts.append(f"{db_key} = ${param_num}")
-                values.append(value)
-                param_num += 1
-        
-        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
         query = f"SELECT * FROM {self.table_name} WHERE {where_clause}"
         
         # Add sorting
@@ -628,7 +598,92 @@ class Cursor:
         except Exception as e:
             print(f"Error in to_list: {e}")
             print(f"Query: {query}")
+            print(f"Values: {values}")
             raise
+    
+    def _build_where_clause(self, filter_dict: Dict[str, Any], param_num_start: int = 1):
+        """Build WHERE clause from MongoDB-style filter"""
+        where_parts = []
+        values = []
+        param_num = param_num_start
+        
+        for key, value in filter_dict.items():
+            # Handle special MongoDB operators
+            if key == '$and':
+                # Handle $and operator
+                and_parts = []
+                for sub_filter in value:
+                    sub_where, sub_values = self._build_where_clause(sub_filter, param_num)
+                    and_parts.append(f"({sub_where})")
+                    values.extend(sub_values)
+                    param_num += len(sub_values)
+                where_parts.append(f"({' AND '.join(and_parts)})")
+            elif key == '$or':
+                # Handle $or operator
+                or_parts = []
+                for sub_filter in value:
+                    sub_where, sub_values = self._build_where_clause(sub_filter, param_num)
+                    or_parts.append(f"({sub_where})")
+                    values.extend(sub_values)
+                    param_num += len(sub_values)
+                where_parts.append(f"({' OR '.join(or_parts)})")
+            else:
+                # Regular field
+                db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+                
+                # Special handling for ID fields - convert string to int for PostgreSQL
+                if db_key in ['id', 'user_id'] and isinstance(value, str):
+                    try:
+                        value = int(value)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Handle special operators
+                if isinstance(value, dict):
+                    for op, op_value in value.items():
+                        if op == '$ne':
+                            where_parts.append(f"{db_key} != ${param_num}")
+                            values.append(op_value)
+                            param_num += 1
+                        elif op == '$nin':
+                            if op_value:  # Only add if list is not empty
+                                placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
+                                where_parts.append(f"{db_key} NOT IN ({placeholders})")
+                                values.extend(op_value)
+                                param_num += len(op_value)
+                        elif op == '$in':
+                            if op_value:  # Only add if list is not empty
+                                placeholders = ','.join([f'${i}' for i in range(param_num, param_num + len(op_value))])
+                                where_parts.append(f"{db_key} IN ({placeholders})")
+                                values.extend(op_value)
+                                param_num += len(op_value)
+                        elif op == '$regex':
+                            # Handle regex with case-insensitive option
+                            options = value.get('$options', '')
+                            if 'i' in options:
+                                # Use ILIKE for case-insensitive pattern matching
+                                # Convert regex patterns to SQL LIKE patterns
+                                pattern = op_value.replace('^\\s*', '').replace('\\s*$', '').replace('\\', '')
+                                where_parts.append(f"{db_key} ILIKE ${param_num}")
+                                values.append(f"%{pattern}%")
+                            else:
+                                # Use ~* for case-insensitive regex
+                                where_parts.append(f"{db_key} ~* ${param_num}")
+                                values.append(op_value)
+                            param_num += 1
+                        elif op == '$text':
+                            # Handle text search - fallback to ILIKE
+                            search_term = op_value.get('$search', '').replace('"', '')
+                            where_parts.append(f"({db_key} ILIKE ${param_num} OR username ILIKE ${param_num})")
+                            values.append(f"%{search_term}%")
+                            param_num += 1
+                else:
+                    where_parts.append(f"{db_key} = ${param_num}")
+                    values.append(value)
+                    param_num += 1
+        
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        return where_clause, values
     
     def _snake_to_camel(self, data: Dict) -> Dict:
         """Convert snake_case keys to camelCase with special mappings"""
