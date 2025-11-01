@@ -4169,7 +4169,7 @@ async def like_post(post_id: str, current_user: User = Depends(get_current_user)
             await db.notifications.insert_one(notification.dict())
 
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"likes": likes}}
     )
     return {"message": "Success", "likes": len(likes)}
