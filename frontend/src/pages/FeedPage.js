@@ -93,35 +93,20 @@ const FeedPage = ({ user, onLogout }) => {
 
   const fetchStories = async () => {
     try {
-      const response = await httpClient.get(`/api/social/stories?userId=${user.id}`);
+      const response = await httpClient.get(`/api/stories/feed`);
       
-      const stories = response.data.stories || [];
+      // Backend now returns { myStory, stories }
+      const myStoryData = response.data.myStory || null;
+      const otherStoriesData = response.data.stories || [];
       
-      // Group stories by user
-      const storyGroups = {};
-      stories.forEach(story => {
-        const userId = story.userId;
-        if (!storyGroups[userId]) {
-          storyGroups[userId] = {
-            userId: userId,
-            username: story.username,
-            userProfileImage: story.userAvatar,
-            isVerified: story.isVerified || false,
-            isFounder: story.isFounder || false,
-            stories: []
-          };
-        }
-        storyGroups[userId].stories.push(story);
+      setMyStories(myStoryData);
+      setOtherStories(otherStoriesData);
+      
+      console.log('✅ Fetched stories:', { 
+        myStory: myStoryData, 
+        otherCount: otherStoriesData.length,
+        myStoryHasMedia: myStoryData?.stories?.[0]?.mediaUrl ? 'Yes' : 'No'
       });
-      
-      // Separate my stories from others
-      const myStory = storyGroups[user.id] || null;
-      const otherUserStories = Object.values(storyGroups).filter(g => g.userId !== user.id);
-      
-      setMyStories(myStory);
-      setOtherStories(otherUserStories);
-      
-      console.log('✅ Fetched stories:', { myStory, otherCount: otherUserStories.length });
     } catch (error) {
       console.error("Error fetching stories:", error);
     }
