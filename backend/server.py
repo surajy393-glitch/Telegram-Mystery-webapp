@@ -3686,22 +3686,33 @@ async def create_story(story_data: StoryCreate, current_user: User = Depends(get
 
 @api_router.delete("/stories/{story_id}")
 async def delete_story(story_id: str, current_user: User = Depends(get_current_user)):
-    story = await db.stories.find_one({"id": story_id})
+    """
+    Delete a story owned by the current user. Accept either numeric IDs or
+    legacy UUID identifiers. We attempt to coerce the provided story_id into
+    an integer to match the PostgreSQL serial primary key. If conversion
+    fails we fall back to the raw string.
+    """
+    # Determine the lookup ID (int if possible, otherwise the original string)
+    try:
+        lookup_id = int(story_id)
+    except (ValueError, TypeError):
+        lookup_id = story_id
+
+    # Fetch the story by its identifier
+    story = await db.stories.find_one({"id": lookup_id})
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
-    
-    # Check if the current user owns the story. The userId field is stored
-    # as an integer in PostgreSQL, while current_user.id is a string. To
-    # handle historic data and type mismatches, we compare both the userId
-    # and the username. If either matches, allow deletion; otherwise
-    # return 403.
+
+    # Ensure the current user owns the story. We compare both the userId and
+    # the username to cover potential type mismatches or historical data.
     owner_id_matches = str(story.get("userId")) == str(current_user.id)
     owner_username_matches = str(story.get("username")).lower() == str(current_user.username).lower()
     if not (owner_id_matches or owner_username_matches):
         raise HTTPException(status_code=403, detail="Not authorized to delete this story")
-    
-    await db.stories.delete_one({"id": story_id})
-    
+
+    # Perform the deletion
+    await db.stories.delete_one({"id": lookup_id})
+
     return {"message": "Story deleted successfully"}
 
 @api_router.post("/stories/{story_id}/like")
