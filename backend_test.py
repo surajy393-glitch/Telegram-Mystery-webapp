@@ -7759,7 +7759,9 @@ class LuvHiveAPITester:
             
             # Test 2: Valid token should work
             headers = {'Authorization': f'Bearer {token}'}
-            response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            import requests
+            fresh_session = requests.Session()
+            response = fresh_session.get(f"{API_BASE}/auth/me", headers=headers)
             
             if response.status_code == 200:
                 self.log_result("Token Validation - Valid Token", True, "✅ Valid token accepted")
