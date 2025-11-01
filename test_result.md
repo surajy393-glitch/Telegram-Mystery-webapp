@@ -120,6 +120,21 @@ backend:
         agent: "testing"
         comment: "✅ AUTHENTICATION BASELINE TEST COMPLETE - 100% SUCCESS RATE (10/10 tests passed). COMPREHENSIVE TESTING RESULTS: 1) ✅ Regular Registration (JSON) - POST /api/auth/register working correctly with proper token generation (JWT string, 120 chars), 2) ✅ Enhanced Registration (Form Data) - POST /api/auth/register-enhanced working correctly with form data and file upload support, 3) ✅ Login Flow - POST /api/auth/login working correctly, generates proper JWT tokens (120 chars, no quotes), 4) ✅ Protected Endpoints - All 3 endpoints working: GET /api/auth/me (user data retrieval), GET /api/auth/verification-status (10 criteria, proper structure), GET /api/notifications (empty array for new users), 5) ✅ Token Validation - Valid tokens accepted, malformed tokens (with quotes) correctly rejected (401), invalid tokens correctly rejected (401), 6) ✅ Token Format Analysis - Tokens are proper JWT format (3 parts), no extra quotes, correct length, proper Authorization header format, 7) ✅ Backend Logs - No JWT validation errors found. CRITICAL FIX APPLIED: Fixed JWT token creation inconsistency in login endpoint (line 1535) - was creating tokens with integer 'sub' field instead of string, causing 401 'Invalid token' errors. Now all authentication endpoints create consistent string-based JWT tokens. Authentication system is production-ready and working correctly."
 
+  - task: "Automatic Logout Issue Debugging"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "URGENT DEBUGGING REQUEST: Users report automatic logout after login - /api/auth/me returns 401 immediately after successful login. Testing complete login flow, JWT token validation, and timing issues."
+      - working: true
+        agent: "testing"
+        comment: "✅ AUTOMATIC LOGOUT ISSUE RESOLVED - 100% SUCCESS RATE (6/6 tests passed). COMPREHENSIVE DEBUGGING RESULTS: 1) ✅ Complete Login Flow - POST /api/auth/login + immediate GET /api/auth/me working correctly, returns 200 (not 401), response time ~200ms, 2) ✅ JWT Token Analysis - Tokens have correct 3-part structure, 'sub' field is string type (correct), proper expiration times, no format issues, 3) ✅ Multiple Users Test - 3/3 test users successful (100% success rate), all can login and immediately access /api/auth/me without 401 errors, 4) ✅ Timing Test - Tokens remain valid after 5+ seconds, no timing-related authentication failures, 5) ✅ Malformed Token Handling - Backend correctly rejects invalid tokens with 401 status, 6) ✅ Backend Logs - No JWT validation errors found in recent logs. CONCLUSION: The automatic logout issue described in the review request appears to be RESOLVED. All authentication flows are working correctly with proper JWT token generation and validation."
+
   - task: "Add mutedUsers field to User model and registration"
     implemented: true
     working: true
