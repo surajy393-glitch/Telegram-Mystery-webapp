@@ -124,7 +124,7 @@ const HomePage = ({ user, onLogout }) => {
   const fetchNotificationCount = async () => {
     try {
       const token = getToken();
-      const response = await axios.get(`${API}/notifications/unread-count`, {
+      const response = await httpClient.get(`${API}/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotificationCount(response.data.count);
@@ -175,7 +175,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/create`, newPost, {
+      await httpClient.post(`${API}/posts/create`, newPost, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -195,7 +195,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await axios.post(`${API}/stories/create`, newStory, {
+      await httpClient.post(`${API}/stories/create`, newStory, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -210,7 +210,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleLike = async (postId) => {
     try {
       const token = getToken();
-      const response = await axios.post(`${API}/posts/${postId}/like`, {}, {
+      const response = await httpClient.post(`${API}/posts/${postId}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log("Like response:", response.data);
@@ -241,7 +241,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleSavePost = async (postId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${postId}/save`, {}, {
+      await httpClient.post(`${API}/posts/${postId}/save`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFeed();
@@ -333,7 +333,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await axios.delete(`${API}/stories/${storyToDelete}`, {
+      await httpClient.delete(`${API}/stories/${storyToDelete}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -414,7 +414,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleUnfollowFromPost = async (postUserId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/users/${postUserId}/unfollow`, {}, {
+      await httpClient.post(`${API}/users/${postUserId}/unfollow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Unfollowed successfully!");
@@ -428,7 +428,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleFollowFromPost = async (postUserId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/users/${postUserId}/follow`, {}, {
+      await httpClient.post(`${API}/users/${postUserId}/follow`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Following successfully!");
@@ -442,7 +442,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleMuteUser = async (postUserId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/users/${postUserId}/mute`, {}, {
+      await httpClient.post(`${API}/users/${postUserId}/mute`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("User muted. You won't see their posts anymore.");
@@ -457,7 +457,7 @@ const HomePage = ({ user, onLogout }) => {
     if (window.confirm("Are you sure you want to block this user? They won't be able to see your posts or follow you.")) {
       try {
         const token = getToken();
-        await axios.post(`${API}/users/${postUserId}/block`, {}, {
+        await httpClient.post(`${API}/users/${postUserId}/block`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert("User blocked successfully");
@@ -474,7 +474,7 @@ const HomePage = ({ user, onLogout }) => {
     
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${reportingPost.id}/report`, 
+      await httpClient.post(`${API}/posts/${reportingPost.id}/report`, 
         { reason }, 
         {
           headers: { 
@@ -495,7 +495,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleArchivePost = async (postId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${postId}/archive`, {}, {
+      await httpClient.post(`${API}/posts/${postId}/archive`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Post archived successfully!");
@@ -508,7 +508,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleHideLikes = async (postId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${postId}/hide-likes`, {}, {
+      await httpClient.post(`${API}/posts/${postId}/hide-likes`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFeed();
@@ -520,7 +520,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleToggleComments = async (postId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${postId}/toggle-comments`, {}, {
+      await httpClient.post(`${API}/posts/${postId}/toggle-comments`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFeed();
@@ -537,7 +537,7 @@ const HomePage = ({ user, onLogout }) => {
       const formData = new FormData();
       formData.append("caption", editCaption);
       
-      await axios.put(`${API}/posts/${editingPost.id}/caption`, formData, {
+      await httpClient.put(`${API}/posts/${editingPost.id}/caption`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -556,7 +556,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await axios.delete(`${API}/posts/${deletingPost}`, {
+      await httpClient.delete(`${API}/posts/${deletingPost}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -572,7 +572,7 @@ const HomePage = ({ user, onLogout }) => {
   const handlePinPost = async (postId) => {
     try {
       const token = getToken();
-      await axios.post(`${API}/posts/${postId}/pin`, {}, {
+      await httpClient.post(`${API}/posts/${postId}/pin`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Post pinned successfully!");
