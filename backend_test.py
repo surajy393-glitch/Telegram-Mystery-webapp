@@ -7086,12 +7086,19 @@ class LuvHiveAPITester:
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting LuvHive FormData File Upload Testing - THE REAL FIX!")
+        print("🚀 Starting LuvHive Backend API Testing - AUTHENTICATION DEBUGGING PRIORITY!")
         print("=" * 80)
         print(f"📡 Testing against: {API_BASE}")
-        print("Bot token: 8494034049:AAFnfoQO2mzJE-AEdI79l5s-i8ygnAf6Hzo")
-        print("Channel: -1003138482795")
         print()
+        
+        # PRIORITY: Run authentication debugging tests first
+        print("\n🚨 PRIORITY: AUTHENTICATION FLOW DEBUGGING")
+        print("=" * 60)
+        
+        self.test_complete_login_flow()
+        self.test_token_validation_with_multiple_users()
+        self.test_malformed_token_handling()
+        self.check_backend_logs_for_jwt_errors()
         
         # Setup phase
         if not self.register_test_user():
