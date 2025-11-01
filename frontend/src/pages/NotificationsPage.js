@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
-import { createHttpClient } from "@/utils/authClient";
+import { httpClient } from "@/utils/authClient";
 
 const getRelativeTime = (dateString) => {
   const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
