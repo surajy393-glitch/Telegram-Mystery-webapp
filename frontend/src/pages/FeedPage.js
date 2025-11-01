@@ -795,15 +795,15 @@ const FeedPage = ({ user, onLogout }) => {
                   </div>
                 ) : (
                   /* Text-only posts - show content here */
-                  post.content && post.content.trim() && post.content !== 'Photo post' && (
+                  (post.caption || post.content) && (post.caption || post.content).trim() && (post.caption || post.content) !== 'Photo post' && (
                     <div className="px-4 pb-3">
-                      <p className="text-gray-800">{post.content}</p>
+                      <p className="text-gray-800">{post.caption || post.content}</p>
                     </div>
                   )
                 )}
 
                 {/* Instagram-style Caption (for image posts) */}
-                {post.imageUrl && post.content && post.content.trim() && post.content !== 'Photo post' && (
+                {post.imageUrl && (post.caption || post.content) && (post.caption || post.content).trim() && (post.caption || post.content) !== 'Photo post' && (
                   <div className="px-4 pt-3">
                     <p className="text-gray-800">
                       <span 
@@ -812,7 +812,7 @@ const FeedPage = ({ user, onLogout }) => {
                       >
                         {post.username}
                       </span>
-                      <span>{post.content}</span>
+                      <span>{post.caption || post.content}</span>
                     </p>
                   </div>
                 )}
