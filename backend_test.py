@@ -189,7 +189,7 @@ class FeedStoriesRetrievalTester:
                 
         except Exception as e:
             self.log_result("User Login", False, "Exception occurred", str(e),
-                          phase="Phase 1 - Authentication")
+                          phase="Phase 2 - Authentication")
             return False
     
     def phase1_test_get_me(self):
