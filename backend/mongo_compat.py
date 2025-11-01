@@ -420,7 +420,19 @@ class Collection:
         param_num = 1
         
         for key, value in filter_dict.items():
+            # Convert camelCase keys into snake_case to match DB columns
             db_key = ''.join(['_' + c.lower() if c.isupper() else c for c in key]).lstrip('_')
+
+            # Convert string IDs into integers for numeric primary keys.
+            # Without this conversion PostgreSQL will not match the row and deletion will fail.
+            # Similar logic is used in update_one() for id/user_id fields.
+            if db_key in ['id', 'user_id'] and isinstance(value, str):
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    # If conversion fails, leave the value unchanged
+                    pass
+
             where_parts.append(f"{db_key} = ${param_num}")
             values.append(value)
             param_num += 1
