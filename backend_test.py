@@ -10567,13 +10567,20 @@ class FeedStoriesRetrievalTester:
         return self.results['failed'] == 0
 
 if __name__ == "__main__":
-    tester = ComprehensiveEndToEndTester()
+    tester = FeedStoriesRetrievalTester()
     
-    # Run comprehensive end-to-end tests
-    success = tester.run_comprehensive_tests()
-    
-    # Print comprehensive summary
-    overall_success = tester.print_comprehensive_summary()
-    
-    # Exit with appropriate code
-    sys.exit(0 if overall_success else 1)
+    try:
+        success = asyncio.run(tester.run_feed_stories_tests())
+        tester.print_feed_stories_summary()
+        
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠️ Testing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n\n❌ Testing failed with exception: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
