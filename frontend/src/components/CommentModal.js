@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Heart, Send, MoreVertical } from 'lucide-react';
-import axios from 'axios';
+import { httpClient } from '../utils/authClient';
 
 const API = '/api';
 
