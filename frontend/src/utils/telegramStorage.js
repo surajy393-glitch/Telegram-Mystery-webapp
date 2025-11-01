@@ -27,11 +27,16 @@ export const getStoragePrefix = () => {
 
 /**
  * Get token from localStorage for current Telegram user
+ * Normalizes token by removing any stray quotation marks that may have been
+ * added during JSON.stringify operations
  * @returns {string|null} Auth token or null
  */
 export const getToken = () => {
   const storagePrefix = getStoragePrefix();
-  return localStorage.getItem(`${storagePrefix}token`);
+  const stored = localStorage.getItem(`${storagePrefix}token`);
+  if (!stored) return null;
+  // Remove any stray quotation marks (e.g., "abc" becomes abc)
+  return stored.replace(/^"+|"+$/g, '');
 };
 
 /**
