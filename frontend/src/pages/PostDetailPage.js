@@ -95,7 +95,8 @@ const PostDetailPage = ({ user }) => {
 
     try {
       const formData = new FormData();
-      formData.append('text', newComment);
+      formData.append('content', newComment);  // Changed from 'text' to 'content' to match backend
+      formData.append('userId', user.id);  // Add userId as required by backend
       
       const response = await httpClient.post(
         `${API}/posts/${postId}/comment`,
@@ -103,12 +104,14 @@ const PostDetailPage = ({ user }) => {
       );
 
       // Add new comment to list
-      setComments(prev => [...prev, response.data.comment]);
+      if (response.data.comment) {
+        setComments(prev => [...prev, response.data.comment]);
+      }
       
-      // Update comment count
+      // Update comment count - use commentCount not commentsCount
       setPost(prev => ({
         ...prev,
-        commentsCount: prev.commentsCount + 1
+        commentCount: prev.commentCount + 1
       }));
 
       setNewComment("");
