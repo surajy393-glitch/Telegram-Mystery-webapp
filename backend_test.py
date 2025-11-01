@@ -7721,7 +7721,7 @@ class LuvHiveAPITester:
                               f"Status: {verification_response.status_code}", verification_response.text)
             
             # Test 3: GET /api/notifications
-            notifications_response = self.session.get(f"{API_BASE}/notifications", headers=headers)
+            notifications_response = fresh_session.get(f"{API_BASE}/notifications", headers=headers)
             
             if notifications_response.status_code == 200:
                 notifications_data = notifications_response.json()
