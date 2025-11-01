@@ -4160,6 +4160,12 @@ async def get_post_comments(post_id: str, current_user: User = Depends(get_curre
         raise HTTPException(status_code=404, detail="Post not found")
     
     comments = post.get("comments", [])
+    # Comments may be stored as JSON string; convert to list
+    if isinstance(comments, str):
+        try:
+            comments = json.loads(comments)
+        except Exception:
+            comments = []
     return {"comments": comments}
 
 @api_router.post("/posts/{post_id}/comment")
