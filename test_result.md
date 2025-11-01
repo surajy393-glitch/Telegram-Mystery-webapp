@@ -166,7 +166,7 @@ backend:
     implemented: true
     working: false
     file: "backend/server.py"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: true
     status_history:
@@ -179,6 +179,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ PARTIAL SUCCESS: GET /api/users/{userId}/profile works correctly, but PUT /api/auth/update-profile returns 404 'Not Found' indicating the profile update endpoint is missing or misconfigured. Users can view profiles but cannot update them."
+      - working: false
+        agent: "testing"
+        comment: "❌ FINAL VERIFICATION: Profile viewing works correctly (GET /api/users/{userId}/profile returns 200 with user data) BUT profile editing is broken - PUT /api/auth/update-profile returns 404 'Not Found'. Users can view profiles but cannot update them, making profile management non-functional."
 
   - task: "Health Endpoint Fix (Critical PostgreSQL Schema Fix)"
     implemented: true
