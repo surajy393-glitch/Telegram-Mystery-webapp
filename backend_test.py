@@ -7511,7 +7511,7 @@ class LuvHiveAPITester:
                 
                 # Validate user data
                 user = data['user']
-                if user['username'] != user_data['username'] or user['email'] != user_data['email']:
+                if user['username'] != form_data['username'] or user['email'] != form_data['email']:
                     self.log_result("Enhanced Registration", False, "User data mismatch in response")
                     return None
                 
