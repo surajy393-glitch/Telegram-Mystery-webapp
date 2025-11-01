@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, MessageCircle, Send, Plus, LogOut, User as UserIcon, Bookmark, X, MoreVertical, Trash2, Download, Link2, Share2, AlertCircle, Bell, Search } from "lucide-react";
 import HashtagText from "@/components/HashtagText";
-import axios from "axios";
+import { httpClient } from "@/utils/authClient";
 import { getPostMediaUrl } from '@/utils/media';
 import {
   Dialog,
@@ -19,7 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getToken } from "@/utils/telegramStorage";
 
 const API = "/api";
 
