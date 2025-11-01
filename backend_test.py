@@ -7761,6 +7761,11 @@ class LuvHiveAPITester:
             headers = {'Authorization': f'Bearer {token}'}
             import requests
             fresh_session = requests.Session()
+            
+            # Debug: Print the exact token and test with curl
+            print(f"   Testing token: {token}")
+            print(f"   Authorization header: {headers['Authorization']}")
+            
             response = fresh_session.get(f"{API_BASE}/auth/me", headers=headers)
             
             if response.status_code == 200:
