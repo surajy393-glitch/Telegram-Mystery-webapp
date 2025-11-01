@@ -657,26 +657,130 @@ class ComprehensiveEndToEndTester:
                           phase="Phase 5 - Social")
             return False
     
-    def test_get_user_posts(self):
-        """Test GET /api/users/{userId}/posts endpoint"""
-        if not self.test_user_id:
-            self.log_result("Get User Posts", False, "No test user ID available")
-            return
+    def run_comprehensive_tests(self):
+        """Run all comprehensive end-to-end tests in phases"""
+        print("\n🚀 STARTING COMPREHENSIVE END-TO-END TESTING")
+        print("=" * 60)
         
-        try:
-            response = self.session.get(f"{API_BASE}/users/{self.test_user_id}/posts")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if 'posts' in data and isinstance(data['posts'], list):
-                    self.log_result("Get User Posts", True, f"Retrieved {len(data['posts'])} posts")
-                else:
-                    self.log_result("Get User Posts", False, "Response missing 'posts' array")
+        # Phase 1: User Registration & Authentication
+        print("\n📋 PHASE 1: USER REGISTRATION & AUTHENTICATION")
+        print("-" * 50)
+        
+        if not self.phase1_register_fresh_user():
+            print("❌ CRITICAL: User registration failed - cannot continue")
+            return False
+        
+        if not self.phase1_test_login():
+            print("❌ CRITICAL: User login failed - cannot continue")
+            return False
+        
+        self.phase1_test_get_me()
+        self.phase1_verify_jwt_token()
+        
+        # Phase 2: Post Features (CRITICAL)
+        print("\n📝 PHASE 2: POST FEATURES (CRITICAL)")
+        print("-" * 50)
+        
+        self.phase2_create_post()
+        self.phase2_get_posts_feed()
+        self.phase2_like_post()
+        self.phase2_comment_on_post()
+        
+        # Phase 3: Story Features (CRITICAL)
+        print("\n📖 PHASE 3: STORY FEATURES (CRITICAL)")
+        print("-" * 50)
+        
+        self.phase3_create_story()
+        self.phase3_get_stories()
+        self.phase3_view_story()
+        
+        # Phase 4: Profile Operations (CRITICAL)
+        print("\n👤 PHASE 4: PROFILE OPERATIONS (CRITICAL)")
+        print("-" * 50)
+        
+        self.phase4_get_user_profile()
+        self.phase4_test_edit_profile()
+        
+        # Phase 5: Social Interactions
+        print("\n🤝 PHASE 5: SOCIAL INTERACTIONS")
+        print("-" * 50)
+        
+        self.phase5_create_second_user()
+        self.phase5_test_follow_user()
+        self.phase5_get_followers()
+        self.phase5_get_following()
+        self.phase5_test_unfollow_user()
+        
+        return True
+    
+    def print_comprehensive_summary(self):
+        """Print comprehensive test summary"""
+        print("\n" + "=" * 60)
+        print("🏁 COMPREHENSIVE END-TO-END TEST RESULTS")
+        print("=" * 60)
+        
+        total_tests = self.results['passed'] + self.results['failed']
+        success_rate = (self.results['passed'] / total_tests * 100) if total_tests > 0 else 0
+        
+        print(f"📊 OVERALL RESULTS:")
+        print(f"   Total Tests: {total_tests}")
+        print(f"   Passed: {self.results['passed']} ✅")
+        print(f"   Failed: {self.results['failed']} ❌")
+        print(f"   Success Rate: {success_rate:.1f}%")
+        
+        print(f"\n📋 PHASE-BY-PHASE BREAKDOWN:")
+        for phase, results in self.results['phase_results'].items():
+            phase_total = results['passed'] + results['failed']
+            if phase_total > 0:
+                phase_rate = (results['passed'] / phase_total * 100)
+                status = "✅" if results['failed'] == 0 else "❌" if results['passed'] == 0 else "⚠️"
+                print(f"   {status} {phase}: {results['passed']}/{phase_total} ({phase_rate:.1f}%)")
+        
+        if self.results['errors']:
+            print(f"\n❌ FAILED TESTS DETAILS:")
+            for error in self.results['errors']:
+                print(f"   • {error['test']} ({error.get('phase', 'Unknown Phase')})")
+                if error['message']:
+                    print(f"     Message: {error['message']}")
+                if error['error']:
+                    print(f"     Error: {error['error']}")
+        
+        # SUCCESS CRITERIA CHECK
+        print(f"\n🎯 SUCCESS CRITERIA VERIFICATION:")
+        critical_phases = ['Phase 2 - Posts', 'Phase 3 - Stories', 'Phase 4 - Profile']
+        all_critical_passed = True
+        
+        for phase in critical_phases:
+            phase_results = self.results['phase_results'][phase]
+            if phase_results['failed'] > 0:
+                all_critical_passed = False
+                print(f"   ❌ {phase}: FAILED ({phase_results['failed']} failures)")
             else:
-                self.log_result("Get User Posts", False, f"Status: {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_result("Get User Posts", False, "Exception occurred", str(e))
+                print(f"   ✅ {phase}: PASSED")
+        
+        auth_results = self.results['phase_results']['Phase 1 - Authentication']
+        if auth_results['failed'] > 0:
+            print(f"   ❌ Authentication: FAILED ({auth_results['failed']} failures)")
+            all_critical_passed = False
+        else:
+            print(f"   ✅ Authentication: PASSED")
+        
+        social_results = self.results['phase_results']['Phase 5 - Social']
+        social_status = "PASSED" if social_results['failed'] == 0 else f"PARTIAL ({social_results['failed']} failures)"
+        print(f"   {'✅' if social_results['failed'] == 0 else '⚠️'} Social Interactions: {social_status}")
+        
+        print(f"\n🏆 FINAL VERDICT:")
+        if all_critical_passed and success_rate >= 80:
+            print("   ✅ COMPREHENSIVE TESTING PASSED")
+            print("   🎉 MongoDB to PostgreSQL migration is SUCCESSFUL!")
+        elif all_critical_passed:
+            print("   ⚠️ CRITICAL FEATURES WORKING (some minor issues)")
+            print("   📝 PostgreSQL migration core functionality is working")
+        else:
+            print("   ❌ CRITICAL FAILURES DETECTED")
+            print("   🚨 PostgreSQL migration has MAJOR ISSUES that need fixing")
+        
+        return all_critical_passed and success_rate >= 80
     
     def test_ai_vibe_compatibility(self):
         """Test POST /api/ai/vibe-compatibility endpoint"""
