@@ -7547,8 +7547,8 @@ class LuvHiveAPITester:
                 "email": f"mike.chen{unique_id}@example.com"
             }
             
-            # Register user first
-            reg_response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=register_data)
+            # Register user first using regular registration (JSON)
+            reg_response = self.session.post(f"{API_BASE}/auth/register", json=register_data)
             if reg_response.status_code != 200:
                 self.log_result("Login Flow", False, "Could not register test user for login")
                 return None
