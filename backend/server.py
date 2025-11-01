@@ -5899,16 +5899,16 @@ async def health_check():
         user_count = await db.users.count_documents({})
         return {
             "status": "healthy",
-            "database": db_name,
+            "database": "postgresql",
             "user_count": user_count,
-            "mongo_url": mongo_url.replace(mongo_url.split('@')[-1] if '@' in mongo_url else '', '***') if mongo_url else None
+            "db_url": "postgresql://neondb"
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         return {
             "status": "unhealthy",
             "error": str(e),
-            "database": db_name
+            "database": "postgresql"
         }
 
 # Serve uploaded files endpoint
