@@ -152,7 +152,7 @@ class FeedStoriesRetrievalTester:
             else:
                 self.log_result("Fresh User Registration", False, 
                               f"Status: {response.status_code}", response.text,
-                              phase="Phase 1 - Authentication")
+                              phase="Phase 2 - Authentication")
                 return False
                 
         except Exception as e:
