@@ -3687,8 +3687,8 @@ async def delete_story(story_id: str, current_user: User = Depends(get_current_u
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
     
-    # Check if user owns the story
-    if story["userId"] != current_user.id:
+    # Check if user owns the story (compare as strings to avoid type mismatch)
+    if str(story["userId"]) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to delete this story")
     
     await db.stories.delete_one({"id": story_id})
