@@ -4245,32 +4245,45 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    # Parse comments from JSON string if necessary
     comments = post.get("comments", [])
+    if isinstance(comments, str):
+        try:
+            comments = json.loads(comments)
+        except Exception:
+            comments = []
+
     comment_found = False
-    
+
     for comment in comments:
         if comment["id"] == comment_id:
             comment_found = True
             likes = comment.get("likes", [])
-            
+            # Ensure likes is a list (parse JSON string if necessary)
+            if isinstance(likes, str):
+                try:
+                    likes = json.loads(likes)
+                except Exception:
+                    likes = []
+
             if current_user.id in likes:
                 likes.remove(current_user.id)
             else:
                 likes.append(current_user.id)
-            
+
             comment["likes"] = likes
             comment["likesCount"] = len(likes)
             break
-    
+
     if not comment_found:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     await db.posts.update_one(
         {"id": post_id},
         {"$set": {"comments": comments}}
     )
-    
+
     return {"message": "Success", "likes": len(likes)}
 
 @api_router.delete("/posts/{post_id}/comment/{comment_id}")
