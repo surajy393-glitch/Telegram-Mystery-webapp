@@ -103,6 +103,7 @@ async def create_post(
             "userAvatar": user.get("profileImage") if not isAnonymous else None,
             "userProfileImage": user.get("profileImage") if not isAnonymous else None,
             "content": content if content else "",
+            "caption": content if content else "",  # Add caption field for frontend compatibility
             "postType": postType,
             "mediaUrl": media_url,
             "mediaType": media_type,
