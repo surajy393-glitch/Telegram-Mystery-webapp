@@ -310,19 +310,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "LuvHive Verified - isVerified field in User model"
-    - "Admin Manual Verification Endpoint"
-    - "Verification Status Endpoint"
-    - "Include isVerified in Feed and Story Endpoints"
-    - "Followers/Following List Endpoints"
-    - "VerifiedBadge Component"
-    - "Display Verified Badge on MyProfilePage"
-    - "Display Verified Badge on ProfilePage"
-    - "Display Verified Badge on Posts in FeedPage"
-    - "Display Verified Badge on Stories in FeedPage"
-    - "Verification Status Page"
-    - "Add LuvHive Verified Button to Settings"
-  stuck_tasks: []
+    - "Frontend Authentication Token Migration Testing"
+  stuck_tasks:
+    - "Frontend Authentication Token Migration Testing"
   test_all: false
   test_priority: "high_first"
   backend_testing_needed: false
@@ -330,6 +320,7 @@ test_plan:
   three_dot_menu_backend_complete: true
   luvhive_verified_backend_complete: true
   followers_following_backend_complete: true
+  authentication_testing_blocked: true
 
 agent_communication:
   - agent: "main"
