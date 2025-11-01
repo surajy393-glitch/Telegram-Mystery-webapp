@@ -95,9 +95,41 @@ const FeedPage = ({ user, onLogout }) => {
     try {
       const response = await httpClient.get(`/api/stories/feed`);
       
-      // Backend now returns { myStory, stories }
-      const myStoryData = response.data.myStory || null;
-      const otherStoriesData = response.data.stories || [];
+      // Backend returns { myStory, stories }
+      let myStoryData = response.data.myStory || null;
+      let otherStoriesData = response.data.stories || [];
+      
+      // Fallback: If myStory is null but current user's story exists in otherStories,
+      // extract it and set as myStory
+      if (!myStoryData && user?.id) {
+        const currentUserIdStr = String(user.id);
+        const myStoryIndex = otherStoriesData.findIndex(
+          storyGroup => String(storyGroup.userId) === currentUserIdStr
+        );
+        
+        if (myStoryIndex !== -1) {
+          myStoryData = otherStoriesData[myStoryIndex];
+          // Remove from otherStories to prevent duplicate
+          otherStoriesData = otherStoriesData.filter((_, idx) => idx !== myStoryIndex);
+        }
+      }
+      
+      // Normalize mediaUrl in all stories to avoid undefined
+      const normalizeMediaUrl = (storyGroup) => {
+        if (storyGroup && storyGroup.stories) {
+          storyGroup.stories = storyGroup.stories.map(story => ({
+            ...story,
+            mediaUrl: story.mediaUrl || story.media_url || ""
+          }));
+        }
+        return storyGroup;
+      };
+      
+      if (myStoryData) {
+        myStoryData = normalizeMediaUrl(myStoryData);
+      }
+      
+      otherStoriesData = otherStoriesData.map(normalizeMediaUrl);
       
       setMyStories(myStoryData);
       setOtherStories(otherStoriesData);
@@ -105,7 +137,8 @@ const FeedPage = ({ user, onLogout }) => {
       console.log('✅ Fetched stories:', { 
         myStory: myStoryData, 
         otherCount: otherStoriesData.length,
-        myStoryHasMedia: myStoryData?.stories?.[0]?.mediaUrl ? 'Yes' : 'No'
+        myStoryHasMedia: myStoryData?.stories?.[0]?.mediaUrl ? 'Yes' : 'No',
+        firstOtherStory: otherStoriesData[0]?.username
       });
     } catch (error) {
       console.error("Error fetching stories:", error);
