@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-FINAL COMPREHENSIVE END-TO-END TESTING - MongoDB to PostgreSQL Migration Verification
-Tests ALL features after complete PostgreSQL migration fixes as requested in review
+CRITICAL FEED AND STORIES RETRIEVAL TESTING
+Tests feed and stories retrieval after $nin/$in type conversion fix in mongo_compat.py
+Focus: Verify that posts and stories can be retrieved without 500 errors
 """
 
 import requests
@@ -10,6 +11,8 @@ import sys
 import os
 from datetime import datetime
 import time
+import asyncio
+import asyncpg
 
 # Load environment variables
 sys.path.append('/app/backend')
@@ -20,12 +23,12 @@ load_dotenv('/app/frontend/.env')
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-token-fix-7.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-print("🚀 FINAL COMPREHENSIVE END-TO-END TESTING")
+print("🚀 CRITICAL FEED AND STORIES RETRIEVAL TESTING")
 print("=" * 60)
 print(f"Backend URL: {BACKEND_URL}")
 print(f"API Base: {API_BASE}")
-print("Testing complete MongoDB to PostgreSQL migration...")
-print("PHASES: 1) Auth 2) Posts 3) Stories 4) Profile 5) Social")
+print("Testing feed and stories retrieval after $nin/$in type conversion fix...")
+print("FOCUS: Verify no 500 errors, posts/stories are retrievable")
 print("=" * 60)
 
 class ComprehensiveEndToEndTester:
