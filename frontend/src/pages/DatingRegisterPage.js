@@ -574,12 +574,14 @@ const DatingRegisterPage = ({ onLogin }) => {
       });
 
       const token = response.data.access_token;
+      
+      // Save token FIRST so httpClient can use it
+      saveToken(token); // Use authClient's setToken to avoid quote issues
+      
       let fullUser;
       try {
         // Attempt to fetch the complete user record using the new token.
-        const meResponse = await httpClient.get(`${API}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const meResponse = await httpClient.get(`${API}/auth/me`);
         fullUser = meResponse.data.user || meResponse.data;
       } catch (err) {
         // Fall back to the user returned from registration if /auth/me fails.
@@ -605,8 +607,7 @@ const DatingRegisterPage = ({ onLogin }) => {
         normalizedUser.profileImage = photoPreview;
       }
 
-      // Save token and normalized user using proper storage helpers
-      saveToken(token); // Use authClient's setToken to avoid quote issues
+      // Save normalized user to localStorage
       localStorage.setItem("user", JSON.stringify(normalizedUser));
 
       console.log("🎉 Registration successful! User data:", normalizedUser);
