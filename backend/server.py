@@ -4227,12 +4227,12 @@ async def add_comment_to_post(post_id: str, text: str = Form(...), parentComment
     comments.append(comment)
 
     await db.posts.update_one(
-        {"id": post_id},
+        {"id": lookup_id},
         {"$set": {"comments": comments}}
     )
 
     # Create notification if commenting on someone else's post
-    if post["userId"] != current_user.id:
+    if str(post.get("userId")) != str(current_user.id):
         notification = Notification(
             userId=post["userId"],
             fromUserId=current_user.id,
