@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { httpClient } from "../utils/authClient";
 
 const API = "/api";
 
