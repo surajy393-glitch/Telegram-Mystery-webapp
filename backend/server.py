@@ -3687,8 +3687,14 @@ async def delete_story(story_id: str, current_user: User = Depends(get_current_u
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
     
-    # Check if user owns the story (compare as strings to avoid type mismatch)
-    if str(story["userId"]) != str(current_user.id):
+    # Check if the current user owns the story. The userId field is stored
+    # as an integer in PostgreSQL, while current_user.id is a string. To
+    # handle historic data and type mismatches, we compare both the userId
+    # and the username. If either matches, allow deletion; otherwise
+    # return 403.
+    owner_id_matches = str(story.get("userId")) == str(current_user.id)
+    owner_username_matches = str(story.get("username")).lower() == str(current_user.username).lower()
+    if not (owner_id_matches or owner_username_matches):
         raise HTTPException(status_code=403, detail="Not authorized to delete this story")
     
     await db.stories.delete_one({"id": story_id})
