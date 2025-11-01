@@ -202,10 +202,10 @@ const PostDetailPage = ({ user }) => {
       // Remove from local state
       setComments(prev => prev.filter(c => c.id !== commentId));
       
-      // Update comment count
+      // Update comment count - use commentCount not commentsCount
       setPost(prev => ({
         ...prev,
-        commentsCount: Math.max(0, prev.commentsCount - 1)
+        commentCount: Math.max(0, prev.commentCount - 1)
       }));
 
       setShowMenuFor(null);
