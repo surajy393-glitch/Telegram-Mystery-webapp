@@ -100,7 +100,12 @@ class Collection:
             'created_at', 'updated_at', 'username_changed_at',
             'telegram_id', 'is_premium', 'is_founder', 'violations_count',
             'auth_method', 'verification_pathway', 'verified_at',
-            'country', 'is_online', 'last_seen'
+            'country', 'is_online', 'last_seen',
+            'telegram_username', 'telegram_first_name', 'telegram_last_name',
+            'telegram_photo_url', 'appear_in_search', 'allow_direct_messages',
+            'show_online_status', 'allow_tagging', 'allow_story_replies',
+            'show_vibe_score', 'push_notifications', 'email_notifications',
+            'personality_answers', 'last_username_change'
         }
         
         # Field mappings from MongoDB/App names to PostgreSQL column names
