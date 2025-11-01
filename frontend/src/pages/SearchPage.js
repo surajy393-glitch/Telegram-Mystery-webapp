@@ -90,10 +90,7 @@ const SearchPage = ({ user, onLogout }) => {
       console.error("Error details:", error.response?.data);
       // Set empty data to avoid showing loading state forever
       setTrendingContent({trending_hashtags: [], trending_users: []});
-      if (error.response?.status === 401) {
-        console.log("🚪 Token invalid - logging out");
-        onLogout();
-      }
+      
     }
   }, [onLogout]);
 
@@ -108,10 +105,7 @@ const SearchPage = ({ user, onLogout }) => {
     } catch (error) {
       console.error("❌ Error fetching explore posts:", error);
       setExplorePosts([]);
-      if (error.response?.status === 401) {
-        console.log("🚪 Token invalid - logging out");
-        onLogout();
-      }
+      
     }
   }, [onLogout]);
 
@@ -152,10 +146,7 @@ const SearchPage = ({ user, onLogout }) => {
       console.error("❌ Error searching:", error);
       console.error("❌ Error response:", error.response?.data);
       alert(`Search failed: ${error.response?.data?.detail || error.message}`);
-      if (error.response?.status === 401) {
-        console.log("🚪 Token invalid - logging out");
-        onLogout();
-      }
+      
     } finally {
       setLoading(false);
     }
@@ -173,10 +164,7 @@ const SearchPage = ({ user, onLogout }) => {
       setSuggestions(response.data.suggestions);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
-      if (error.response?.status === 401) {
-        console.log("🚪 Token invalid - logging out");
-        onLogout();
-      }
+      
     }
   }, [onLogout]);
 

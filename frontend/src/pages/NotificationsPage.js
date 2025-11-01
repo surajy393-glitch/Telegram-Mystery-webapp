@@ -44,10 +44,7 @@ const NotificationsPage = ({ user, onLogout }) => {
       await httpClient.post('/api/notifications/read-all', {});
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      if (error.response?.status === 401) {
-        console.log("🚪 Token invalid - logging out");
-        onLogout();
-      }
+      
     } finally {
       setLoading(false);
     }
