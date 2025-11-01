@@ -31,6 +31,7 @@ import { createHttpClient } from "@/utils/authClient";
 const SearchPage = ({ user, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const httpClient = createHttpClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
     users: [],
