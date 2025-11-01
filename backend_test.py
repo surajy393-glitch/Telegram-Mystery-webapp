@@ -31,7 +31,7 @@ print("Testing feed and stories retrieval after $nin/$in type conversion fix..."
 print("FOCUS: Verify no 500 errors, posts/stories are retrievable")
 print("=" * 60)
 
-class ComprehensiveEndToEndTester:
+class FeedStoriesRetrievalTester:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
