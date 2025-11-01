@@ -1189,6 +1189,7 @@ async def get_current_user(authorization: str = Header(None)):
         "hiddenStoryUsers": [],  # TODO: fetch from relationship table
         "lastUsernameChange": user_data.get("username_changed_at"),
         "country": user_data.get("country"),
+        "city": user_data.get("city"),
         "createdAt": user_data.get("created_at", datetime.utcnow()),
     }
     
