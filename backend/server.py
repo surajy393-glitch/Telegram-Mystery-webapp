@@ -4292,28 +4292,35 @@ async def delete_comment(post_id: str, comment_id: str, current_user: User = Dep
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    # Parse comments from JSON string if necessary
     comments = post.get("comments", [])
+    if isinstance(comments, str):
+        try:
+            comments = json.loads(comments)
+        except Exception:
+            comments = []
+
     comment_to_delete = None
-    
+
     for comment in comments:
         if comment["id"] == comment_id:
             if comment["userId"] != current_user.id:
                 raise HTTPException(status_code=403, detail="You can only delete your own comments")
             comment_to_delete = comment
             break
-    
+
     if not comment_to_delete:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     # Remove comment and its replies
     updated_comments = [c for c in comments if c["id"] != comment_id and c.get("parentCommentId") != comment_id]
-    
+
     await db.posts.update_one(
         {"id": post_id},
         {"$set": {"comments": updated_comments}}
     )
-    
+
     return {"message": "Comment deleted successfully"}
 
 @api_router.post("/posts/{post_id}/comment/{comment_id}/report")
