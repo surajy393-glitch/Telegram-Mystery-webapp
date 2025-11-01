@@ -7784,7 +7784,7 @@ class LuvHiveAPITester:
             
             # Test 4: Invalid token should fail
             invalid_headers = {'Authorization': 'Bearer invalid-token-12345'}
-            invalid_response = self.session.get(f"{API_BASE}/auth/me", headers=invalid_headers)
+            invalid_response = fresh_session.get(f"{API_BASE}/auth/me", headers=invalid_headers)
             
             if invalid_response.status_code == 401:
                 self.log_result("Token Validation - Invalid Token", True, 
