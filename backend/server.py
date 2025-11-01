@@ -4096,12 +4096,7 @@ async def get_posts_feed(current_user: User = Depends(get_current_user)):
 @api_router.get("/posts/{post_id}")
 async def get_single_post(post_id: str, current_user: User = Depends(get_current_user)):
     """Get a single post by ID"""
-    # Coerce ID to int for PostgreSQL primary key match
-    try:
-        lookup_id = int(post_id)
-    except (ValueError, TypeError):
-        lookup_id = post_id
-
+    lookup_id = coerce_post_id(post_id)
     post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
