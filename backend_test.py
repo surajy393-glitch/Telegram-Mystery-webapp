@@ -7703,7 +7703,7 @@ class LuvHiveAPITester:
                           f"✅ User data retrieved: {me_data['username']}")
             
             # Test 2: GET /api/auth/verification-status
-            verification_response = self.session.get(f"{API_BASE}/auth/verification-status", headers=headers)
+            verification_response = fresh_session.get(f"{API_BASE}/auth/verification-status", headers=headers)
             
             if verification_response.status_code == 200:
                 verification_data = verification_response.json()
