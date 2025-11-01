@@ -10,22 +10,18 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from uuid import uuid4
+
+# Import PostgreSQL-backed MongoDB compatibility layer
+from mongo_compat import db
 
 # Setup logger
 logger = logging.getLogger(__name__)
 
 # Create router
 social_router = APIRouter(prefix="/api/social", tags=["social"])
-
-# MongoDB connection
-MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = os.environ.get("DB_NAME", "luvhive_database")
-client = AsyncIOMotorClient(MONGO_URL)
-db = client[DB_NAME]
 
 # Pydantic Models
 class CreatePostRequest(BaseModel):
