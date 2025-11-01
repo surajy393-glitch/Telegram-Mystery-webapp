@@ -196,8 +196,28 @@ class Collection:
                 'views_count'
             },
             'webapp_notifications': {
-                'id', 'user_id', 'type', 'actor_id', 'post_id', 'comment_id',
-                'is_read', 'created_at'
+                # PRIMARY KEY
+                'id',
+                # किस यूज़र को नोटिफिकेशन जाएगा
+                'user_id',
+                # नोटिफिकेशन का प्रकार: like, comment, follow, etc.
+                'type',
+                # जिसने action किया
+                'from_user_id',
+                # actor का username
+                'from_username',
+                # actor की प्रोफ़ाइल इमेज (nullable)
+                'from_user_image',
+                # notification message या commentText
+                'message',
+                # संबंधित पोस्ट/स्टोरी का id (nullable)
+                'post_id',
+                # कमेंट id (nullable) – replies/like के लिए
+                'comment_id',
+                # पढ़ा गया या नहीं
+                'is_read',
+                # टाइमस्टैम्प
+                'created_at'
             }
         }
         
