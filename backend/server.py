@@ -4787,16 +4787,29 @@ async def report_post(post_id: str, report_data: ReportPostRequest, current_user
 
 @api_router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, current_user: User = Depends(get_current_user)):
-    """Delete a post (only by post owner)"""
-    post = await db.posts.find_one({"id": post_id})
+    """
+    Delete a post owned by the current user. Accept both numeric IDs or legacy
+    UUIDs. Coerce the post_id to int when possible for PostgreSQL match.
+    """
+    # Try to coerce the path parameter to int (for numeric primary keys)
+    try:
+        lookup_id = int(post_id)
+    except (ValueError, TypeError):
+        lookup_id = post_id
+
+    # Fetch the post
+    post = await db.posts.find_one({"id": lookup_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    if post["userId"] != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only delete your own posts")
-    
-    await db.posts.delete_one({"id": post_id})
-    
+
+    # Authorization: allow deletion if userId or username matches current_user
+    owner_id_matches = str(post.get("userId")) == str(current_user.id)
+    owner_username_matches = str(post.get("username")).lower() == str(current_user.username).lower()
+    if not (owner_id_matches or owner_username_matches):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
+
+    # Perform deletion
+    await db.posts.delete_one({"id": lookup_id})
     return {"message": "Post deleted successfully"}
 
 # Post Management (Own Posts)
