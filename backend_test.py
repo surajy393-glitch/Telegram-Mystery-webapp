@@ -1050,59 +1050,54 @@ class FeedStoriesRetrievalTester:
                           phase="Phase 5 - Social")
             return False
     
-    def run_comprehensive_tests(self):
-        """Run all comprehensive end-to-end tests in phases"""
-        print("\n🚀 STARTING COMPREHENSIVE END-TO-END TESTING")
+    async def run_feed_stories_tests(self):
+        """Run focused feed and stories retrieval tests"""
+        print("\n🚀 STARTING FEED AND STORIES RETRIEVAL TESTING")
         print("=" * 60)
         
-        # Phase 1: User Registration & Authentication
-        print("\n📋 PHASE 1: USER REGISTRATION & AUTHENTICATION")
+        # Phase 1: Database Content Check
+        print("\n📊 PHASE 1: DATABASE CONTENT CHECK")
         print("-" * 50)
         
-        if not self.phase1_register_fresh_user():
+        db_has_content = await self.phase1_check_database_content()
+        if not db_has_content:
+            print("⚠️ WARNING: No posts or stories found in database")
+        
+        # Phase 2: User Registration & Authentication
+        print("\n🔐 PHASE 2: USER REGISTRATION & AUTHENTICATION")
+        print("-" * 50)
+        
+        if not self.phase2_register_fresh_user():
             print("❌ CRITICAL: User registration failed - cannot continue")
             return False
         
-        if not self.phase1_test_login():
+        if not self.phase2_test_login():
             print("❌ CRITICAL: User login failed - cannot continue")
             return False
         
-        self.phase1_test_get_me()
-        self.phase1_verify_jwt_token()
-        
-        # Phase 2: Post Features (CRITICAL)
-        print("\n📝 PHASE 2: POST FEATURES (CRITICAL)")
+        # Phase 3: Feed Endpoints Testing (CRITICAL)
+        print("\n📰 PHASE 3: FEED ENDPOINTS TESTING (CRITICAL)")
         print("-" * 50)
         
-        self.phase2_create_post()
-        self.phase2_get_posts_feed()
-        self.phase2_like_post()
-        self.phase2_comment_on_post()
+        self.phase3_create_test_post()  # Create a post first
+        self.phase3_test_social_feed_endpoint()  # Test social feed
+        self.phase3_test_posts_feed_endpoint()   # Test authenticated feed
         
-        # Phase 3: Story Features (CRITICAL)
-        print("\n📖 PHASE 3: STORY FEATURES (CRITICAL)")
+        # Phase 4: Stories Endpoints Testing (CRITICAL)
+        print("\n📖 PHASE 4: STORIES ENDPOINTS TESTING (CRITICAL)")
         print("-" * 50)
         
-        self.phase3_create_story()
-        self.phase3_get_stories()
-        self.phase3_view_story()
+        self.phase4_create_test_story()          # Create a story first
+        self.phase4_test_social_stories_endpoint()  # Test social stories
+        self.phase4_test_stories_feed_endpoint()    # Test stories feed (if exists)
+        self.phase4_test_stories_get_endpoint()     # Test GET /api/stories
         
-        # Phase 4: Profile Operations (CRITICAL)
-        print("\n👤 PHASE 4: PROFILE OPERATIONS (CRITICAL)")
+        # Phase 5: Response Format Verification
+        print("\n✅ PHASE 5: RESPONSE FORMAT VERIFICATION")
         print("-" * 50)
         
-        self.phase4_get_user_profile()
-        self.phase4_test_edit_profile()
-        
-        # Phase 5: Social Interactions
-        print("\n🤝 PHASE 5: SOCIAL INTERACTIONS")
-        print("-" * 50)
-        
-        self.phase5_create_second_user()
-        self.phase5_test_follow_user()
-        self.phase5_get_followers()
-        self.phase5_get_following()
-        self.phase5_test_unfollow_user()
+        self.phase5_verify_feed_response_format()
+        self.phase5_verify_stories_response_format()
         
         return True
     
