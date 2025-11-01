@@ -1101,10 +1101,10 @@ class FeedStoriesRetrievalTester:
         
         return True
     
-    def print_comprehensive_summary(self):
-        """Print comprehensive test summary"""
+    def print_feed_stories_summary(self):
+        """Print feed and stories test summary"""
         print("\n" + "=" * 60)
-        print("🏁 COMPREHENSIVE END-TO-END TEST RESULTS")
+        print("🏁 FEED AND STORIES RETRIEVAL TEST RESULTS")
         print("=" * 60)
         
         total_tests = self.results['passed'] + self.results['failed']
