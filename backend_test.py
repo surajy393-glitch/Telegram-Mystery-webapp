@@ -7465,6 +7465,352 @@ class LuvHiveAPITester:
         
         return self.results['failed'] == 0
 
+    # ========== AUTHENTICATION FLOW TESTS ==========
+    
+    def test_enhanced_registration(self):
+        """Test POST /api/auth/register-enhanced endpoint"""
+        try:
+            import time
+            unique_id = int(time.time()) % 10000
+            
+            # Test enhanced registration with realistic data
+            user_data = {
+                "fullName": f"Sarah Johnson {unique_id}",
+                "username": f"sarah_j_{unique_id}",
+                "age": 26,
+                "gender": "female",
+                "country": "United States",
+                "password": "SecurePass123!",
+                "email": f"sarah.johnson{unique_id}@example.com",
+                "mobileNumber": f"+1555{unique_id:04d}"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=user_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check response structure
+                required_fields = ['message', 'access_token', 'token_type', 'user']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Enhanced Registration", False, f"Missing fields: {missing_fields}")
+                    return None
+                
+                # Validate token format (should be plain JWT string)
+                token = data['access_token']
+                if not isinstance(token, str) or len(token) < 100:
+                    self.log_result("Enhanced Registration", False, f"Invalid token format: {type(token)}, length: {len(token) if isinstance(token, str) else 'N/A'}")
+                    return None
+                
+                # Check token doesn't have extra quotes
+                if token.startswith('"') and token.endswith('"'):
+                    self.log_result("Enhanced Registration", False, "Token has extra quotes - format issue detected")
+                    return None
+                
+                # Validate user data
+                user = data['user']
+                if user['username'] != user_data['username'] or user['email'] != user_data['email']:
+                    self.log_result("Enhanced Registration", False, "User data mismatch in response")
+                    return None
+                
+                self.log_result("Enhanced Registration", True, 
+                              f"✅ User registered: {user['username']}, Token format: JWT string ({len(token)} chars)")
+                return {
+                    'token': token,
+                    'user_id': user['id'],
+                    'username': user['username']
+                }
+            else:
+                self.log_result("Enhanced Registration", False, f"Status: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Enhanced Registration", False, "Exception occurred", str(e))
+            return None
+    
+    def test_login_flow(self):
+        """Test POST /api/auth/login endpoint with proper token format validation"""
+        try:
+            # First register a user for login testing
+            import time
+            unique_id = int(time.time()) % 10000
+            
+            register_data = {
+                "fullName": f"Michael Chen {unique_id}",
+                "username": f"mike_c_{unique_id}",
+                "age": 29,
+                "gender": "male", 
+                "country": "Canada",
+                "password": "LoginTest123!",
+                "email": f"mike.chen{unique_id}@example.com"
+            }
+            
+            # Register user first
+            reg_response = self.session.post(f"{API_BASE}/auth/register-enhanced", json=register_data)
+            if reg_response.status_code != 200:
+                self.log_result("Login Flow", False, "Could not register test user for login")
+                return None
+            
+            # Now test login
+            login_data = {
+                "username": register_data['username'],
+                "password": register_data['password']
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check response structure
+                required_fields = ['message', 'access_token', 'token_type', 'user']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Login Flow", False, f"Missing fields: {missing_fields}")
+                    return None
+                
+                # Validate token format (should be plain JWT string, no quotes)
+                token = data['access_token']
+                if not isinstance(token, str):
+                    self.log_result("Login Flow", False, f"Token should be string, got {type(token)}")
+                    return None
+                
+                # Check token doesn't have extra quotes (common issue)
+                if token.startswith('"') and token.endswith('"'):
+                    self.log_result("Login Flow", False, "❌ CRITICAL: Token has extra quotes - backend format issue!")
+                    return None
+                
+                # Validate JWT format (should have 3 parts separated by dots)
+                token_parts = token.split('.')
+                if len(token_parts) != 3:
+                    self.log_result("Login Flow", False, f"Invalid JWT format: {len(token_parts)} parts instead of 3")
+                    return None
+                
+                # Validate token_type
+                if data['token_type'] != 'bearer':
+                    self.log_result("Login Flow", False, f"Expected token_type 'bearer', got '{data['token_type']}'")
+                    return None
+                
+                self.log_result("Login Flow", True, 
+                              f"✅ Login successful: {data['user']['username']}, Token: JWT format ({len(token)} chars), No quotes")
+                return {
+                    'token': token,
+                    'user_id': data['user']['id'],
+                    'username': data['user']['username']
+                }
+            else:
+                self.log_result("Login Flow", False, f"Status: {response.status_code}", response.text)
+                return None
+                
+        except Exception as e:
+            self.log_result("Login Flow", False, "Exception occurred", str(e))
+            return None
+    
+    def test_protected_endpoints_with_valid_token(self, auth_data):
+        """Test protected endpoints with valid Bearer token"""
+        if not auth_data:
+            self.log_result("Protected Endpoints Test", False, "No auth data available")
+            return
+        
+        try:
+            token = auth_data['token']
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            # Test 1: GET /api/auth/me
+            me_response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            
+            if me_response.status_code != 200:
+                self.log_result("Protected Endpoints - /auth/me", False, 
+                              f"Status: {me_response.status_code}", me_response.text)
+                return
+            
+            me_data = me_response.json()
+            if 'id' not in me_data or 'username' not in me_data:
+                self.log_result("Protected Endpoints - /auth/me", False, "Missing user data in response")
+                return
+            
+            self.log_result("Protected Endpoints - /auth/me", True, 
+                          f"✅ User data retrieved: {me_data['username']}")
+            
+            # Test 2: GET /api/auth/verification-status
+            verification_response = self.session.get(f"{API_BASE}/auth/verification-status", headers=headers)
+            
+            if verification_response.status_code == 200:
+                verification_data = verification_response.json()
+                required_fields = ['isVerified', 'criteria', 'currentValues', 'allCriteriaMet']
+                missing_fields = [field for field in required_fields if field not in verification_data]
+                
+                if missing_fields:
+                    self.log_result("Protected Endpoints - /verification-status", False, 
+                                  f"Missing fields: {missing_fields}")
+                else:
+                    self.log_result("Protected Endpoints - /verification-status", True, 
+                                  f"✅ Verification status retrieved: {len(verification_data['criteria'])} criteria")
+            else:
+                self.log_result("Protected Endpoints - /verification-status", False, 
+                              f"Status: {verification_response.status_code}", verification_response.text)
+            
+            # Test 3: GET /api/notifications
+            notifications_response = self.session.get(f"{API_BASE}/notifications", headers=headers)
+            
+            if notifications_response.status_code == 200:
+                notifications_data = notifications_response.json()
+                if 'notifications' in notifications_data and isinstance(notifications_data['notifications'], list):
+                    self.log_result("Protected Endpoints - /notifications", True, 
+                                  f"✅ Notifications retrieved: {len(notifications_data['notifications'])} items")
+                else:
+                    self.log_result("Protected Endpoints - /notifications", False, 
+                                  "Invalid notifications response structure")
+            else:
+                self.log_result("Protected Endpoints - /notifications", False, 
+                              f"Status: {notifications_response.status_code}", notifications_response.text)
+                
+        except Exception as e:
+            self.log_result("Protected Endpoints Test", False, "Exception occurred", str(e))
+    
+    def test_token_validation_and_format(self, auth_data):
+        """Test token validation and inspect token format issues"""
+        if not auth_data:
+            self.log_result("Token Validation", False, "No auth data available")
+            return
+        
+        try:
+            token = auth_data['token']
+            
+            # Test 1: Valid token format inspection
+            print(f"🔍 Token Analysis:")
+            print(f"   Type: {type(token)}")
+            print(f"   Length: {len(token)}")
+            print(f"   First 20 chars: {token[:20]}...")
+            print(f"   Last 20 chars: ...{token[-20:]}")
+            print(f"   Has quotes: {token.startswith('\"') and token.endswith('\"')}")
+            print(f"   JWT parts: {len(token.split('.'))}")
+            
+            # Test 2: Valid token should work
+            headers = {'Authorization': f'Bearer {token}'}
+            response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            
+            if response.status_code == 200:
+                self.log_result("Token Validation - Valid Token", True, "✅ Valid token accepted")
+            else:
+                self.log_result("Token Validation - Valid Token", False, 
+                              f"Valid token rejected: {response.status_code}")
+                return
+            
+            # Test 3: Malformed token (with extra quotes) should fail
+            malformed_token = f'"{token}"'  # Add extra quotes
+            malformed_headers = {'Authorization': f'Bearer {malformed_token}'}
+            malformed_response = self.session.get(f"{API_BASE}/auth/me", headers=malformed_headers)
+            
+            if malformed_response.status_code == 401:
+                self.log_result("Token Validation - Malformed Token", True, 
+                              "✅ Malformed token (with quotes) correctly rejected")
+            else:
+                self.log_result("Token Validation - Malformed Token", False, 
+                              f"Malformed token should be rejected, got: {malformed_response.status_code}")
+            
+            # Test 4: Invalid token should fail
+            invalid_headers = {'Authorization': 'Bearer invalid-token-12345'}
+            invalid_response = self.session.get(f"{API_BASE}/auth/me", headers=invalid_headers)
+            
+            if invalid_response.status_code == 401:
+                self.log_result("Token Validation - Invalid Token", True, 
+                              "✅ Invalid token correctly rejected")
+            else:
+                self.log_result("Token Validation - Invalid Token", False, 
+                              f"Invalid token should be rejected, got: {invalid_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Token Validation", False, "Exception occurred", str(e))
+    
+    def check_backend_logs(self):
+        """Check backend logs for JWT validation errors"""
+        try:
+            import subprocess
+            
+            # Check supervisor backend logs
+            result = subprocess.run(
+                ['tail', '-n', '50', '/var/log/supervisor/backend.err.log'],
+                capture_output=True, text=True, timeout=10
+            )
+            
+            if result.returncode == 0:
+                logs = result.stdout
+                
+                # Look for JWT-related errors
+                jwt_errors = []
+                for line in logs.split('\n'):
+                    if any(keyword in line.lower() for keyword in ['jwt', 'token', 'auth', 'bearer']):
+                        jwt_errors.append(line.strip())
+                
+                if jwt_errors:
+                    print(f"\n🔍 Backend Log Analysis (JWT/Auth related):")
+                    for error in jwt_errors[-10:]:  # Show last 10 relevant lines
+                        print(f"   {error}")
+                    
+                    self.log_result("Backend Logs Check", True, 
+                                  f"Found {len(jwt_errors)} JWT/auth related log entries")
+                else:
+                    self.log_result("Backend Logs Check", True, "No JWT validation errors found in logs")
+            else:
+                self.log_result("Backend Logs Check", False, "Could not access backend logs")
+                
+        except Exception as e:
+            self.log_result("Backend Logs Check", False, "Exception occurred", str(e))
+    
+    def run_authentication_baseline_test(self):
+        """Run focused authentication flow testing as requested"""
+        print("🔐 BACKEND AUTHENTICATION TESTING - BASELINE TEST")
+        print(f"🌐 Testing against: {API_BASE}")
+        print("=" * 60)
+        
+        # Test 1: User Registration (Enhanced)
+        print("\n1️⃣ Testing User Registration...")
+        auth_data = self.test_enhanced_registration()
+        
+        # Test 2: Login Flow
+        print("\n2️⃣ Testing Login Flow...")
+        login_auth_data = self.test_login_flow()
+        
+        # Use login auth data for subsequent tests (more realistic)
+        test_auth_data = login_auth_data or auth_data
+        
+        # Test 3: Protected Endpoints with Valid Token
+        print("\n3️⃣ Testing Protected Endpoints...")
+        self.test_protected_endpoints_with_valid_token(test_auth_data)
+        
+        # Test 4: Token Validation and Format
+        print("\n4️⃣ Testing Token Validation...")
+        self.test_token_validation_and_format(test_auth_data)
+        
+        # Test 5: Backend Logs Check
+        print("\n5️⃣ Checking Backend Logs...")
+        self.check_backend_logs()
+        
+        # Print results
+        print("\n" + "=" * 60)
+        print("📊 AUTHENTICATION TEST RESULTS")
+        print("=" * 60)
+        print(f"✅ Passed: {self.results['passed']}")
+        print(f"❌ Failed: {self.results['failed']}")
+        
+        if self.results['passed'] + self.results['failed'] > 0:
+            success_rate = (self.results['passed'] / (self.results['passed'] + self.results['failed']) * 100)
+            print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        if self.results['errors']:
+            print(f"\n🔍 Failed Tests Details:")
+            for error in self.results['errors']:
+                print(f"   • {error['test']}: {error['message']}")
+                if error['error']:
+                    print(f"     Error: {error['error']}")
+        
+        print("\n🎯 Authentication testing completed!")
+        return self.results
+
 if __name__ == "__main__":
     import sys
     tester = LuvHiveAPITester()
