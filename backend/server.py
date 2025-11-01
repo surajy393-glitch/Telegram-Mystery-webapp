@@ -5074,21 +5074,29 @@ async def archive_story(story_id: str, current_user: User = Depends(get_current_
 # Notifications
 @api_router.get("/notifications")
 async def get_notifications(current_user: User = Depends(get_current_user)):
-    notifications = await db.notifications.find({"userId": current_user.id}).sort("createdAt", -1).to_list(100)
-    
+    notifications = await db.notifications.find(
+        {"userId": current_user.id}
+    ).sort("createdAt", -1).to_list(100)
+
     notifications_list = []
     for notif in notifications:
         notifications_list.append({
-            "id": notif["id"],
-            "fromUserId": notif["fromUserId"],
-            "fromUsername": notif["fromUsername"],
+            "id": notif.get("id"),
+            "fromUserId": notif.get("fromUserId"),
+            "fromUsername": notif.get("fromUsername"),
             "fromUserImage": notif.get("fromUserImage"),
-            "type": notif["type"],
+            "type": notif.get("type"),
             "postId": notif.get("postId"),
+            "commentId": notif.get("commentId"),
+            "message": notif.get("message"),
             "isRead": notif.get("isRead", False),
-            "createdAt": notif["createdAt"].isoformat()
+            "createdAt": (
+                notif["createdAt"]
+                if isinstance(notif.get("createdAt"), str)
+                else notif.get("createdAt").isoformat() if notif.get("createdAt") else None
+            )
         })
-    
+
     return {"notifications": notifications_list}
 
 @api_router.get("/notifications/unread-count")
