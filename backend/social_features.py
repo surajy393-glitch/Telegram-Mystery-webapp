@@ -245,24 +245,40 @@ async def get_feed(
 async def like_post(postId: str, userId: str = Form(...), reactionType: str = Form("like")):
     """Like/Unlike a post"""
     try:
-        post = await db.posts.find_one({"id": postId})
+        # Convert postId and userId to integers for PostgreSQL lookup
+        try:
+            post_id_int = int(postId)
+            user_id_int = int(userId)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid ID format")
+        
+        post = await db.posts.find_one({"id": post_id_int})
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
         likes = post.get("likes", [])
         
-        if userId in likes:
+        # Normalize likes to list of integers
+        if isinstance(likes, str):
+            try:
+                import json
+                likes = json.loads(likes)
+            except:
+                likes = []
+        likes = [int(l) if isinstance(l, str) else l for l in likes]
+        
+        if user_id_int in likes:
             # Unlike
-            likes.remove(userId)
+            likes.remove(user_id_int)
             action = "unliked"
         else:
             # Like
-            likes.append(userId)
+            likes.append(user_id_int)
             action = "liked"
         
         # Update post
         await db.posts.update_one(
-            {"id": postId},
+            {"id": post_id_int},
             {"$set": {"likes": likes}}
         )
         
@@ -272,6 +288,8 @@ async def like_post(postId: str, userId: str = Form(...), reactionType: str = Fo
             "likeCount": len(likes)
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
