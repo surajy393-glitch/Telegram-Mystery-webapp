@@ -55,7 +55,7 @@ const EditProfilePage = ({ user, onLogin, onLogout }) => {
       }
       
       console.log("📝 EditProfile: Fetching profile with httpClient...");
-      const response = await httpClient.get('/auth/me');
+      const response = await httpClient.get(`${API}/auth/me`);
       
       console.log("✅ EditProfile: Profile data received");
       console.log("   Full Name:", response.data.fullName);
