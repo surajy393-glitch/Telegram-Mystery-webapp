@@ -248,12 +248,16 @@ class UserProfile(BaseModel):
     gender: str
     bio: Optional[str] = ""
     profileImage: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
 
 class ProfileUpdate(BaseModel):
     fullName: Optional[str] = None
     username: Optional[str] = None
     bio: Optional[str] = None
     profileImage: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
 
 class ReportPostRequest(BaseModel):
     reason: str  # The report category/reason
