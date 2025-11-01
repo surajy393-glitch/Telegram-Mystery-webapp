@@ -507,7 +507,13 @@ async def add_comment(
 async def get_post_comments(postId: str, userId: Optional[str] = None):
     """Get all comments for a post with nested replies"""
     try:
-        post = await db.posts.find_one({"id": postId})
+        # Convert postId to integer for PostgreSQL lookup
+        try:
+            post_id_int = int(postId)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid post ID format")
+        
+        post = await db.posts.find_one({"id": post_id_int})
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
