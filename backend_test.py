@@ -7604,7 +7604,7 @@ class LuvHiveAPITester:
                 "fullName": f"Michael Chen {unique_id}",
                 "username": f"mike_c_{unique_id}",
                 "age": 29,
-                "gender": "male", 
+                "gender": "Male",  # Use capitalized gender
                 "country": "Canada",
                 "password": "LoginTest123!",
                 "email": f"mike.chen{unique_id}@example.com"
