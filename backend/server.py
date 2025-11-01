@@ -4197,7 +4197,15 @@ async def add_comment_to_post(post_id: str, text: str = Form(...), parentComment
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    # Comments may be stored as JSON string; parse into a list
+    comments = post.get("comments", [])
+    if isinstance(comments, str):
+        try:
+            comments = json.loads(comments)
+        except Exception:
+            comments = []
+
     comment = {
         "id": str(uuid4()),
         "userId": current_user.id,
@@ -4209,15 +4217,14 @@ async def add_comment_to_post(post_id: str, text: str = Form(...), parentComment
         "parentCommentId": parentCommentId,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
-    
-    comments = post.get("comments", [])
+
     comments.append(comment)
-    
+
     await db.posts.update_one(
         {"id": post_id},
         {"$set": {"comments": comments}}
     )
-    
+
     # Create notification if commenting on someone else's post
     if post["userId"] != current_user.id:
         notification = Notification(
