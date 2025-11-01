@@ -421,16 +421,19 @@ backend:
         comment: "❌ FINAL VERIFICATION: Social interactions remain broken. POST /api/posts/{postId}/like returns 500 'Internal Server Error', POST /api/posts/{postId}/comment returns 422 validation error (expects 'text' field not 'comment'), POST /api/follow returns 404 'Not Found', POST /api/unfollow returns 404 'Not Found'. Core social features are non-functional - users cannot like posts, comment properly, or follow/unfollow other users."
 
   - task: "Feed Endpoints - Posts and Stories Retrieval"
-    implemented: false
+    implemented: true
     working: false
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL FAILURE: Feed endpoints are broken after PostgreSQL migration. GET /api/posts/feed returns 500 'Collection.find_one() takes 2 positional arguments but 3 were given' indicating MongoDB compatibility layer syntax errors. GET /api/stories returns 405 'Method Not Allowed' indicating missing endpoint. Users cannot view any posts or stories in their feeds."
+      - working: false
+        agent: "testing"
+        comment: "❌ FINAL VERIFICATION: Posts feed is working (GET /api/posts/feed returns 200 with 21 posts) BUT stories feed is broken - GET /api/stories returns 405 'Method Not Allowed'. Users can view posts feed but cannot access stories, making story functionality incomplete."
 
   - task: "MongoDB Compatibility Layer Fixes"
     implemented: false
