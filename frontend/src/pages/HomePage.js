@@ -123,10 +123,7 @@ const HomePage = ({ user, onLogout }) => {
 
   const fetchNotificationCount = async () => {
     try {
-      const token = getToken();
-      const response = await httpClient.get(`${API}/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.get(\'/api/notifications/unread-count\');
       setNotificationCount(response.data.count);
     } catch (error) {
       console.error("Error fetching notification count:", error);
@@ -135,12 +132,11 @@ const HomePage = ({ user, onLogout }) => {
 
   const fetchFeed = async () => {
     try {
-      const token = getToken();
-      const headers = { Authorization: `Bearer ${token}` };
+      
 
       const [storiesRes, postsRes] = await Promise.all([
-        axios.get(`${API}/stories/feed`, { headers }),
-        axios.get(`${API}/posts/feed`, { headers })
+        httpClient.get(`${API}/stories/feed`),
+        httpClient.get(`${API}/posts/feed`)
       ]);
 
       setStories(storiesRes.data.stories || []);
@@ -175,9 +171,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/create`, newPost, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/create`, newPost);
 
       setShowCreatePost(false);
       setNewPost({ mediaUrl: "", caption: "", mediaType: "image" });
@@ -195,9 +189,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await httpClient.post(`${API}/stories/create`, newStory, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/stories/create`, newStory);
 
       setShowCreateStory(false);
       setNewStory({ mediaUrl: "", caption: "", mediaType: "image" });
@@ -210,9 +202,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleLike = async (postId) => {
     try {
       const token = getToken();
-      const response = await httpClient.post(`${API}/posts/${postId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await httpClient.post(`${API}/posts/${postId}/like`, {});
       console.log("Like response:", response.data);
       
       // Immediately update the UI without waiting for full fetch
@@ -241,9 +231,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleSavePost = async (postId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/${postId}/save`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/save`, {});
       fetchFeed();
     } catch (error) {
       console.error("Error saving post:", error);
@@ -333,9 +321,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await httpClient.delete(`${API}/stories/${storyToDelete}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.delete(`${API}/stories/${storyToDelete}`);
       
       setShowDeleteConfirm(false);
       setShowStoryViewer(false);
@@ -414,9 +400,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleUnfollowFromPost = async (postUserId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/users/${postUserId}/unfollow`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/users/${postUserId}/unfollow`, {});
       alert("Unfollowed successfully!");
       fetchFeed(); // Refresh feed
     } catch (error) {
@@ -428,9 +412,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleFollowFromPost = async (postUserId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/users/${postUserId}/follow`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/users/${postUserId}/follow`, {});
       alert("Following successfully!");
       fetchFeed(); // Refresh feed
     } catch (error) {
@@ -442,9 +424,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleMuteUser = async (postUserId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/users/${postUserId}/mute`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/users/${postUserId}/mute`, {});
       alert("User muted. You won't see their posts anymore.");
       fetchFeed(); // Refresh feed to remove muted user's posts
     } catch (error) {
@@ -457,9 +437,7 @@ const HomePage = ({ user, onLogout }) => {
     if (window.confirm("Are you sure you want to block this user? They won't be able to see your posts or follow you.")) {
       try {
         const token = getToken();
-        await httpClient.post(`${API}/users/${postUserId}/block`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await httpClient.post(`${API}/users/${postUserId}/block`, {});
         alert("User blocked successfully");
         fetchFeed(); // Refresh feed to remove blocked user's posts
       } catch (error) {
@@ -495,9 +473,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleArchivePost = async (postId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/${postId}/archive`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/archive`, {});
       alert("Post archived successfully!");
       fetchFeed();
     } catch (error) {
@@ -508,9 +484,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleHideLikes = async (postId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/${postId}/hide-likes`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/hide-likes`, {});
       fetchFeed();
     } catch (error) {
       alert("Failed to toggle likes visibility");
@@ -520,9 +494,7 @@ const HomePage = ({ user, onLogout }) => {
   const handleToggleComments = async (postId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/${postId}/toggle-comments`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/toggle-comments`, {});
       fetchFeed();
     } catch (error) {
       alert("Failed to toggle comments");
@@ -537,9 +509,7 @@ const HomePage = ({ user, onLogout }) => {
       const formData = new FormData();
       formData.append("caption", editCaption);
       
-      await httpClient.put(`${API}/posts/${editingPost.id}/caption`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.put(`${API}/posts/${editingPost.id}/caption`, formData);
 
       setShowEditDialog(false);
       setEditingPost(null);
@@ -556,9 +526,7 @@ const HomePage = ({ user, onLogout }) => {
 
     try {
       const token = getToken();
-      await httpClient.delete(`${API}/posts/${deletingPost}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.delete(`${API}/posts/${deletingPost}`);
       
       setShowDeleteDialog(false);
       setDeletingPost(null);
@@ -572,9 +540,7 @@ const HomePage = ({ user, onLogout }) => {
   const handlePinPost = async (postId) => {
     try {
       const token = getToken();
-      await httpClient.post(`${API}/posts/${postId}/pin`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await httpClient.post(`${API}/posts/${postId}/pin`, {});
       alert("Post pinned successfully!");
       fetchFeed();
     } catch (error) {
