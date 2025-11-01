@@ -325,17 +325,17 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend Authentication Token Migration Testing"
-  stuck_tasks:
-    - "Frontend Authentication Token Migration Testing"
+    - "Automatic Logout Issue Debugging"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   backend_testing_needed: false
-  frontend_testing_needed: true
+  frontend_testing_needed: false
   three_dot_menu_backend_complete: true
   luvhive_verified_backend_complete: true
   followers_following_backend_complete: true
-  authentication_testing_blocked: true
+  authentication_testing_blocked: false
+  automatic_logout_debugging_complete: true
 
 agent_communication:
   - agent: "main"
