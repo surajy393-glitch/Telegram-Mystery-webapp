@@ -18,6 +18,9 @@ import json
 # Import PostgreSQL-backed MongoDB compatibility layer
 from mongo_compat import db
 
+# Import User model and auth from server
+from server import User, get_current_user as get_current_active_user
+
 # Setup logger
 logger = logging.getLogger(__name__)
 
