@@ -4333,6 +4333,25 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
 
             comment["likes"] = likes
             comment["likesCount"] = len(likes)
+
+            # Send notification to comment owner (if liker is not the owner)
+            comment_owner_id = str(comment.get("userId"))
+            if comment_owner_id and comment_owner_id != str(current_user.id):
+                notification = {
+                    "id": str(uuid4()),
+                    "userId": comment_owner_id,       # receiver
+                    "fromUserId": str(current_user.id),
+                    "fromUsername": current_user.username,
+                    "fromUserImage": current_user.profileImage,
+                    "type": "comment_like",
+                    "postId": str(lookup_id),
+                    "commentId": comment_id,
+                    "isRead": False,
+                    "createdAt": datetime.now(timezone.utc)
+                }
+                # insert into notifications table
+                await db.notifications.insert_one(notification)
+
             break
 
     if not comment_found:
