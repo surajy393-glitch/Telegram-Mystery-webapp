@@ -607,40 +607,37 @@ async def get_post_comments(postId: str, userId: Optional[str] = None):
 async def like_comment(commentId: str, userId: str = Form(...)):
     """Like or unlike a comment"""
     try:
-        # Find the post containing this comment
-        post = await db.posts.find_one({"comments.id": commentId})
+        # nested filter की जगह helper function
+        post, comments = await find_post_by_comment_id(commentId)
         if not post:
             raise HTTPException(status_code=404, detail="Comment not found")
-        
-        comments = post.get("comments", [])
-        comment_index = None
-        
-        for idx, comment in enumerate(comments):
-            if comment.get("id") == commentId:
-                comment_index = idx
-                break
-        
-        if comment_index is None:
+
+        # comments list में comment खोजें
+        index = next((i for i, c in enumerate(comments)
+                      if isinstance(c, dict) and c.get("id") == commentId), None)
+        if index is None:
             raise HTTPException(status_code=404, detail="Comment not found")
-        
-        comment = comments[comment_index]
+
+        comment = comments[index]
         likes = comment.get("likes", [])
-        
+        # likes field JSON string भी हो सकता है; parse करें
+        if isinstance(likes, str):
+            try:
+                import json
+                likes = json.loads(likes)
+            except Exception:
+                likes = []
+
         if userId in likes:
-            # Unlike
             likes.remove(userId)
         else:
-            # Like
             likes.append(userId)
-        
+
         comment["likes"] = likes
-        comments[comment_index] = comment
-        
-        await db.posts.update_one(
-            {"id": post["id"]},
-            {"$set": {"comments": comments}}
-        )
-        
+        comment["likesCount"] = len(likes)  # likesCount अपडेट करें
+        comments[index] = comment
+        # comments array वापस DB में save करें
+        await db.posts.update_one({"id": post["id"]}, {"$set": {"comments": comments}})
         return {"success": True, "likesCount": len(likes)}
     except HTTPException:
         raise
