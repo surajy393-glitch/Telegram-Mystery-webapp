@@ -262,9 +262,7 @@ class Collection:
             'actorId': 'actor_id',
             'postId': 'post_id',
             'commentId': 'comment_id',
-            'isRead': 'is_read',
-            'fromUsername': 'from_username',
-            'fromUserImage': 'from_user_image'
+            'isRead': 'is_read'
         }
         
         # Convert camelCase keys to snake_case
