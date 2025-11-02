@@ -4409,6 +4409,12 @@ async def delete_comment(post_id: str, comment_id: str, current_user: User = Dep
         {"$set": {"comments": updated_comments}}
     )
 
+    # Delete notifications related to this comment
+    try:
+        await db.notifications.delete_many({"commentId": comment_id, "postId": str(post_id)})
+    except Exception as e:
+        logger.error(f"Failed to delete comment notifications: {e}")
+
     return {"message": "Comment deleted successfully"}
 
 @api_router.post("/posts/{post_id}/comment/{comment_id}/report")
