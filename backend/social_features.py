@@ -445,10 +445,6 @@ async def add_comment(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Sanitize parentCommentId - convert "undefined", "null", "None" to None
-        if not parentCommentId or parentCommentId in ["undefined", "null", "None"]:
-            parentCommentId = None
-        
         # If it's a reply, validate parent comment exists
         if parentCommentId:
             comments_list = post.get("comments", [])
