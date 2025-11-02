@@ -8,18 +8,14 @@ Social Platform Features for LuvHive
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
-from typing import List, Optional, Annotated
+from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 import os
 import logging
 from uuid import uuid4
-import json
 
 # Import PostgreSQL-backed MongoDB compatibility layer
 from mongo_compat import db
-
-# Import User model and auth from server
-from server import User, get_current_user as get_current_active_user
 
 # Setup logger
 logger = logging.getLogger(__name__)
