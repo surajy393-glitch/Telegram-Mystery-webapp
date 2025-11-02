@@ -645,6 +645,37 @@ async def like_comment(commentId: str, userId: str = Form(...)):
         logger.error(f"Error liking comment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@social_router.delete("/comments/{commentId}")
+async def delete_comment(commentId: str, userId: str = Form(...)):
+    """Delete a comment"""
+    try:
+        post, comments = await find_post_by_comment_id(commentId)
+        if not post:
+            raise HTTPException(status_code=404, detail="Comment not found")
+
+        # Author check (optional): वही user delete कर सके जिसने लिखा है
+        comment_to_delete = next((c for c in comments if c.get("id") == commentId), None)
+        if comment_to_delete and comment_to_delete.get("userId") != userId:
+            raise HTTPException(status_code=403, detail="Not allowed to delete")
+
+        # main comment और उसकी replies हटाएँ
+        new_comments = []
+        for c in comments:
+            if c.get("id") == commentId:
+                continue
+            if c.get("parentCommentId") == commentId:
+                continue
+            new_comments.append(c)
+
+        await db.posts.update_one({"id": post["id"]}, {"$set": {"comments": new_comments}})
+        return {"success": True, "message": "Comment deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting comment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # get_time_ago function is defined in UTILITY FUNCTIONS section
 
 # STORIES ENDPOINTS
