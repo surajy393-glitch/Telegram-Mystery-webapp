@@ -488,21 +488,36 @@ async def add_comment(
             {"$set": {"comments": post_comments}}
         )
         
-        # Create notification for post owner (if not commenting on own post and not anonymous)
-        if not isAnonymous and post.get("userId") != user_id_int:
-            notification = {
-                "id": str(uuid4()),
-                "userId": post.get("userId"),
-                "fromUserId": userId,
-                "fromUsername": user.get("username", "Unknown"),
-                "fromUserImage": user.get("profileImage"),
-                "type": "comment",
-                "postId": postId,
-                "commentText": content[:50],  # Store first 50 chars
-                "isRead": False,
-                "createdAt": datetime.now(timezone.utc)
-            }
-            await db.notifications.insert_one(notification)
+        # Notification logic
+        if not isAnonymous:
+            # Determine who should receive the notification
+            if parentCommentId:
+                # This is a reply – find parent comment owner
+                parent_comment = next((c for c in post_comments if c.get("id") == parentCommentId), None)
+                target_user_id = str(parent_comment["userId"]) if parent_comment else str(post.get("userId"))
+                notif_type = "comment_reply"
+                notif_comment_id = parentCommentId
+            else:
+                # Root comment on someone else's post
+                target_user_id = str(post.get("userId"))
+                notif_type = "comment"
+                notif_comment_id = None
+
+            # Only send if commenter and receiver are different
+            if target_user_id != str(user_id_int):
+                notification = {
+                    "id": str(uuid4()),
+                    "userId": target_user_id,             # receiver
+                    "fromUserId": str(user_id_int),
+                    "fromUsername": user.get("username", "Unknown"),
+                    "fromUserImage": user.get("profileImage"),
+                    "type": notif_type,
+                    "postId": postId,
+                    "commentId": notif_comment_id,
+                    "isRead": False,
+                    "createdAt": datetime.now(timezone.utc)
+                }
+                await db.notifications.insert_one(notification)
         
         return {
             "success": True,
