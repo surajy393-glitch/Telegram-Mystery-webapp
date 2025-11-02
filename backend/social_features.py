@@ -454,7 +454,6 @@ async def add_comment(
             comments_list = post.get("comments", [])
             if isinstance(comments_list, str):
                 try:
-                    import json
                     comments_list = json.loads(comments_list)
                 except:
                     comments_list = []
