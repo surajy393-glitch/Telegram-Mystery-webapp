@@ -259,6 +259,8 @@ class Collection:
             'viewsCount': 'views_count',
             # Notification fields
             'fromUserId': 'actor_id',
+            'fromUsername': 'from_username',
+            'fromUserImage': 'from_user_image',
             'actorId': 'actor_id',
             'postId': 'post_id',
             'commentId': 'comment_id',
