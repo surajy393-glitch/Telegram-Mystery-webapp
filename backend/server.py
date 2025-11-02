@@ -4313,10 +4313,13 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
 
     comment_found = False
     user_id_str = str(current_user.id)
+    target_comment = None
+    is_liking = False
 
     for comment in comments:
         if comment["id"] == comment_id:
             comment_found = True
+            target_comment = comment
             likes = comment.get("likes", [])
             # Parse likes JSON string if necessary and normalize
             if isinstance(likes, str):
@@ -4328,8 +4331,10 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
 
             if user_id_str in likes:
                 likes.remove(user_id_str)
+                is_liking = False
             else:
                 likes.append(user_id_str)
+                is_liking = True
 
             comment["likes"] = likes
             comment["likesCount"] = len(likes)
@@ -4342,6 +4347,24 @@ async def like_comment(post_id: str, comment_id: str, current_user: User = Depen
         {"id": lookup_id},
         {"$set": {"comments": comments}}
     )
+
+    # Notification – comment owner ko bheje agar liker aur owner alag hain
+    if is_liking and target_comment and str(target_comment.get("userId")) != user_id_str:
+        notification = Notification(
+            userId=str(target_comment["userId"]),
+            fromUserId=str(current_user.id),
+            fromUsername=current_user.username,
+            fromUserImage=current_user.profileImage,
+            type="comment_like",
+            postId=str(post_id),
+            commentId=str(comment_id),
+            isRead=False,
+            createdAt=datetime.now(timezone.utc)
+        )
+        try:
+            await db.notifications.insert_one(notification.dict())
+        except Exception as e:
+            logger.error(f"Failed to create notification: {e}")
 
     return {"message": "Success", "likes": len(likes)}
 
