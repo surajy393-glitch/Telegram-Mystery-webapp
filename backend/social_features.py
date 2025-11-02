@@ -449,7 +449,8 @@ async def add_comment(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # If it's a reply, validate parent comment exists
+        # If it's a reply, validate parent comment exists and get parent comment owner
+        parent_comment_user_id = None
         if parentCommentId:
             comments_list = post.get("comments", [])
             if isinstance(comments_list, str):
@@ -457,8 +458,13 @@ async def add_comment(
                     comments_list = json.loads(comments_list)
                 except:
                     comments_list = []
-            parent_exists = any(c.get("id") == parentCommentId for c in comments_list)
-            if not parent_exists:
+            parent_comment = None
+            for c in comments_list:
+                if c.get("id") == parentCommentId:
+                    parent_comment = c
+                    parent_comment_user_id = c.get("userId")
+                    break
+            if not parent_comment:
                 raise HTTPException(status_code=404, detail="Parent comment not found")
         
         # UNIFIED COMMENT FORMAT - matches /api/posts endpoint
