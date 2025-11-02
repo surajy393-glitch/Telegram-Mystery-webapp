@@ -506,31 +506,7 @@ async def add_comment(
                 "isRead": False,
                 "createdAt": datetime.now(timezone.utc)
             }
-            try:
-                await db.notifications.insert_one(notification)
-            except Exception as e:
-                logger.error(f"Failed to create comment notification: {e}")
-        
-        # Create notification for parent comment owner (if it's a reply and not replying to own comment)
-        if parentCommentId and parent_comment_user_id and not isAnonymous:
-            if str(parent_comment_user_id) != str(user_id_int):
-                reply_notification = {
-                    "id": str(uuid4()),
-                    "userId": str(parent_comment_user_id),
-                    "fromUserId": str(user_id_int),
-                    "fromUsername": user.get("username", "Unknown"),
-                    "fromUserImage": user.get("profileImage"),
-                    "type": "comment_reply",
-                    "postId": postId,
-                    "commentId": parentCommentId,
-                    "commentText": content[:50],
-                    "isRead": False,
-                    "createdAt": datetime.now(timezone.utc)
-                }
-                try:
-                    await db.notifications.insert_one(reply_notification)
-                except Exception as e:
-                    logger.error(f"Failed to create reply notification: {e}")
+            await db.notifications.insert_one(notification)
         
         return {
             "success": True,
