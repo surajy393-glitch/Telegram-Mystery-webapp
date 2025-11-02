@@ -588,50 +588,63 @@ async def get_post_comments(postId: str, userId: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Like a comment
-@social_router.post("/comments/{commentId}/like")
-async def like_comment(commentId: str, userId: str = Form(...)):
-    """Like or unlike a comment"""
+@social_router.post("/posts/{post_id}/comments/{comment_id}/like")
+async def like_comment(
+    post_id: str,
+    comment_id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """
+    Toggle like/unlike for a comment on a specific post.
+    We accept post_id in the path to avoid unsupported nested queries.
+    """
     try:
-        # Find the post containing this comment
-        post = await db.posts.find_one({"comments.id": commentId})
+        # Convert post_id to int if needed (PostgreSQL uses integer ids)
+        try:
+            lookup_id = int(post_id)
+        except (ValueError, TypeError):
+            lookup_id = post_id
+
+        post = await db.posts.find_one({"id": lookup_id})
         if not post:
-            raise HTTPException(status_code=404, detail="Comment not found")
-        
+            raise HTTPException(status_code=404, detail="Post not found")
+
+        # Parse comments from JSON string if necessary
         comments = post.get("comments", [])
-        comment_index = None
-        
-        for idx, comment in enumerate(comments):
-            if comment.get("id") == commentId:
-                comment_index = idx
+        if isinstance(comments, str):
+            try:
+                comments = json.loads(comments)
+            except Exception:
+                comments = []
+
+        # Find the target comment and toggle the like
+        target_comment = None
+        for comment in comments:
+            if str(comment.get("id")) == str(comment_id):
+                target_comment = comment
+                likes = comment.get("likes", []) or []
+                if current_user.username in likes:
+                    likes.remove(current_user.username)
+                else:
+                    likes.append(current_user.username)
+                comment["likes"] = likes
                 break
-        
-        if comment_index is None:
+
+        if target_comment is None:
             raise HTTPException(status_code=404, detail="Comment not found")
-        
-        comment = comments[comment_index]
-        likes = comment.get("likes", [])
-        
-        if userId in likes:
-            # Unlike
-            likes.remove(userId)
-        else:
-            # Like
-            likes.append(userId)
-        
-        comment["likes"] = likes
-        comments[comment_index] = comment
-        
+
+        # Persist the updated comments back to the database
         await db.posts.update_one(
-            {"id": post["id"]},
+            {"id": lookup_id},
             {"$set": {"comments": comments}}
         )
-        
-        return {"success": True, "likesCount": len(likes)}
+
+        return {"likes": len(target_comment["likes"])}
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error liking comment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Error liking comment")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # get_time_ago function is defined in UTILITY FUNCTIONS section
 
