@@ -586,20 +586,51 @@ async def get_post_comments(postId: str, userId: Optional[str] = None):
         logger.error(f"Error fetching comments: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Like a comment - DISABLED (use /api/posts/{post_id}/comment/{comment_id}/like from server.py instead)
-# @social_router.post("/posts/{post_id}/comments/{comment_id}/like")
-# async def like_comment(
-#     post_id: str,
-#     comment_id: str,
-#     current_user: Annotated[User, Depends(get_current_active_user)]
-# ):
-#     """
-#     Toggle like/unlike for a comment on a specific post.
-#     We accept post_id in the path to avoid unsupported nested queries.
-#     """
-#     # DISABLED - Duplicate endpoint removed to avoid conflicts
-#     # Frontend should use POST /api/posts/{post_id}/comment/{comment_id}/like
-#     pass
+# Like a comment
+@social_router.post("/comments/{commentId}/like")
+async def like_comment(commentId: str, userId: str = Form(...)):
+    """Like or unlike a comment"""
+    try:
+        # Find the post containing this comment
+        post = await db.posts.find_one({"comments.id": commentId})
+        if not post:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        
+        comments = post.get("comments", [])
+        comment_index = None
+        
+        for idx, comment in enumerate(comments):
+            if comment.get("id") == commentId:
+                comment_index = idx
+                break
+        
+        if comment_index is None:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        
+        comment = comments[comment_index]
+        likes = comment.get("likes", [])
+        
+        if userId in likes:
+            # Unlike
+            likes.remove(userId)
+        else:
+            # Like
+            likes.append(userId)
+        
+        comment["likes"] = likes
+        comments[comment_index] = comment
+        
+        await db.posts.update_one(
+            {"id": post["id"]},
+            {"$set": {"comments": comments}}
+        )
+        
+        return {"success": True, "likesCount": len(likes)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error liking comment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # get_time_ago function is defined in UTILITY FUNCTIONS section
 
