@@ -45,25 +45,6 @@ class LikeRequest(BaseModel):
     reactionType: str = "like"  # like, love, fire, wow
 
 # Helper Functions
-async def find_post_by_comment_id(comment_id: str):
-    """Find post containing a specific comment ID"""
-    # सभी पोस्ट स्कैन करें – छोटे डाटा सेट के लिए ठीक है
-    async for post in db.posts.find({}):
-        raw_comments = post.get("comments", [])
-        # JSON string को list में बदलें
-        if isinstance(raw_comments, str):
-            try:
-                import json
-                comments_list = json.loads(raw_comments)
-            except Exception:
-                comments_list = []
-        else:
-            comments_list = raw_comments if isinstance(raw_comments, list) else []
-        for c in comments_list:
-            if isinstance(c, dict) and c.get("id") == comment_id:
-                return post, comments_list
-    return None, None
-
 async def get_current_user(token: str):
     """Get current user from token - placeholder"""
     # TODO: Implement proper JWT validation
