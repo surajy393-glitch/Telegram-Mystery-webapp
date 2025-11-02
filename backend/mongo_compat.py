@@ -197,7 +197,8 @@ class Collection:
             },
             'webapp_notifications': {
                 'id', 'user_id', 'type', 'actor_id', 'post_id', 'comment_id',
-                'is_read', 'created_at'
+                'is_read', 'created_at',
+                'from_username', 'from_user_image'
             }
         }
         
